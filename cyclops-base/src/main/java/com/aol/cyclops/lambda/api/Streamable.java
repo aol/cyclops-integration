@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.aol.cyclops.streams.StreamUtils;
+
 public interface Streamable<T> extends Iterable<T>{
 
 	default Iterator<T> iterator(){
@@ -32,6 +34,14 @@ public interface Streamable<T> extends Iterable<T>{
 		return new Streamable<T>(){
 			public Stream<T> stream(){
 				return Stream.of(values);
+			}
+		};
+	}
+	public static<T> Streamable<T> of(Iterable<T> values){
+		return new Streamable<T>(){
+			public Stream<T> stream(){
+				return StreamUtils.stream(values);
+				
 			}
 		};
 	}
