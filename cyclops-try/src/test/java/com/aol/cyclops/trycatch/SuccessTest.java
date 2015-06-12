@@ -141,7 +141,7 @@ public class SuccessTest {
 	@Test
 	public void testOnFailClassOfQsuperXConsumerOfX() {
 		errorCaptured = null;
-		success.onFail(IOException.class,e -> errorCaptured =e);
+		success.onFail(FileNotFoundException.class,e -> errorCaptured =e);
 		assertThat(errorCaptured,is(nullValue()));
 	}
 
