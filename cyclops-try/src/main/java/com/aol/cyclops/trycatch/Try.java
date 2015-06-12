@@ -114,7 +114,7 @@ public interface Try<T,X extends Throwable> extends Supplier<T>, ValueObject, St
 	 * @param fn Recovery function
 	 * @return New Success if failure and types match / otherwise this
 	 */
-	public Try<T,X> recoverFor(Class<? super X> t,Function<X, T> fn);
+	public Try<T,X> recoverFor(Class<? extends X> t,Function<X, T> fn);
 	
 	/**
 	 * 
@@ -124,7 +124,7 @@ public interface Try<T,X extends Throwable> extends Supplier<T>, ValueObject, St
 	 * @param fn Recovery FlatMap function. Map from a failure to a Success
 	 * @return Success from recovery function or this  and types match or if already Success
 	 */
-	public Try<T,X> recoverWithFor(Class<? super X> t,Function<X, Success<T,X>> fn);
+	public Try<T,X> recoverWithFor(Class<? extends X> t,Function<X, Success<T,X>> fn);
 	/**
 	 * Flatten a nested Try Structure
 	 * @return Lowest nested Try
@@ -201,7 +201,7 @@ public interface Try<T,X extends Throwable> extends Supplier<T>, ValueObject, St
 		}catch(Throwable t){
 			if(classes.length==0)
 				return Failure.of((X)t);
-			val error = Stream.of(classes).filter(c -> t.getClass().isAssignableFrom(c)).findFirst();
+			val error = Stream.of(classes).filter(c -> c.isAssignableFrom(t.getClass())).findFirst();
 			if(error.isPresent())
 				return Failure.of((X)t);
 			else

@@ -10,6 +10,7 @@ public class GenericsTest {
 
 	@Test
 	public void doIt() {
+		
 		Try.catchExceptions(NullPointerException.class, IOException.class)
 				.init(() -> new BufferedReader(new FileReader("file.txt")))
 				.tryWithResources(this::read)
