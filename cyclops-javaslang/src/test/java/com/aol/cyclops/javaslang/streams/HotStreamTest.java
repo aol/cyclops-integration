@@ -8,16 +8,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.LockSupport;
-import java.util.stream.IntStream;
 
+import javaslang.collection.LazyStream;
 import javaslang.collection.Stream;
 
 import org.junit.Test;
 
-import com.aol.cyclops.sequence.PausableHotStream;
-import com.aol.cyclops.sequence.SequenceM;
-
-import fj.data.Seq;
 
 public class HotStreamTest {
 	static final Executor exec = Executors.newFixedThreadPool(1);
@@ -43,7 +39,7 @@ public class HotStreamTest {
 			System.out.println(i);
 			value= null;
 			CountDownLatch latch = new CountDownLatch(1);
-			StreamUtils.futureOperations(StreamUtils.hotStream(Stream.range(0,Integer.MAX_VALUE)
+			StreamUtils.futureOperations(StreamUtils.hotStream(LazyStream.range(0,Integer.MAX_VALUE)
 					.take(100)
 					.peek(v->value=v)
 					.peek(v->latch.countDown())
@@ -63,7 +59,7 @@ public class HotStreamTest {
 	public void hotStreamConnectBlockingQueue() throws InterruptedException{
 		value= null;
 		CountDownLatch latch = new CountDownLatch(1);
-		StreamUtils.futureOperations(StreamUtils.hotStream(Stream.range(0,Integer.MAX_VALUE)
+		StreamUtils.futureOperations(StreamUtils.hotStream(LazyStream.range(0,Integer.MAX_VALUE)
 				.take(1000)
 				.peek(v->value=v)
 				.peek(v->latch.countDown())
