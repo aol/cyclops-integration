@@ -1,5 +1,7 @@
 # Cyclops Try
 
+cyclops-try has been incorporated into cyclops-core.
+
 Cyclops Try offers an alternative way to manage exception handling.
 
 ## Getting cyclops-try
