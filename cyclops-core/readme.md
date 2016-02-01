@@ -53,7 +53,7 @@ Persistent collection eXtensions
 * POrderedSetX : persistent analogue to JDK SortedSets
 * PBagX : persisent ordered collection that allows duplicates
 
-== Examples 
+## Examples 
 
 With ListX
 
