@@ -1,4 +1,4 @@
-Powerful, lightweight & modular extensions for JDK 8. Import only the modules you need.
+Powerful, lightweight & modular extensions for JDK 8.
 
 [![Join the chat at https://gitter.im/aol/cyclops](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aol/cyclops?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -45,9 +45,9 @@ Powerful, lightweight & modular extensions for JDK 8. Import only the modules yo
 
 ## Cyclops modules on Maven Central!
 
-To import all modules use cyclops-all. For individual modules, see bottom of this page!
+To import all modules use cyclops-core. For individual modules, see bottom of this page!
 
-* Cyclops All : [![Maven Central : cyclops-all](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-all/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-all)
+* Cyclops Core : [![Maven Central : cyclops-all](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-core)
 
 Import integration modules individually as needed.
 
