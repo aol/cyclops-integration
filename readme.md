@@ -7,10 +7,11 @@ Powerful, lightweight & modular extensions for JDK 8.
 
 # Cyclops Modules & Features Including
 
-
+* [Powerful extensions for JDK Collections](https://medium.com/@johnmcclean/extending-jdk-8-collections-8ae8d43dd75e#.dgartiq2o)
 * [Powerful extensions to the Stream interface with SequenceM](http://static.javadoc.io/com.aol.cyclops/cyclops-sequence-api/7.0.0/com/aol/cyclops/sequence/SequenceM.html)
 * [Static Stream functions with StreamUtils](http://static.javadoc.io/com.aol.cyclops/cyclops-streams/7.0.0/com/aol/cyclops/streams/StreamUtils.html)
 * [Replayable Streams with Streamable](http://static.javadoc.io/com.aol.cyclops/cyclops-sequence-api/7.0.0/com/aol/cyclops/sequence/streamable/Streamable.html)
+* [Advanced fluent functions api](https://medium.com/@johnmcclean/can-we-make-working-with-functions-easier-in-java-8-81ed9d1050f2#.jbwl8dlg3)
 * [Memoization](http://static.javadoc.io/com.aol.cyclops/cyclops-functions/6.0.1/com/aol/cyclops/functions/caching/Memoize.html)
 * [Extensible For Comprehensions](https://github.com/aol/cyclops/wiki/Extensible-For-Comprehensions-for-Java-8)
 * [Pattern Matching](https://github.com/aol/cyclops/wiki/Pattern-matching-:-Pattern-Matching-for-Java-8)
