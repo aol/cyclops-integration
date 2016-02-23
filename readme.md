@@ -1,6 +1,6 @@
 Powerful, lightweight & modular extensions for JDK 8.
 
-Cyclops is merging with simple-react. Please update your bookmarks - https://github.com/aol/simple-react
+**Cyclops has merged with simple-react**. Please update your bookmarks - https://github.com/aol/cyclops-react 
 
 This project will contain cyclops-integration modules, but all core development will occur on the merged cyclops-react. Pre-existing modules will still be available for download from Maven Central, bug fixes can be made available for old modules, but all features will be implemented in the merged project.
 
