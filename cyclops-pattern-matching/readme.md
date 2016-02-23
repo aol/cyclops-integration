@@ -1,3 +1,5 @@
+**Cyclops has merged with simple-react**. Please update your bookmarks - https://github.com/aol/cyclops-react 
+
 # Cyclops pattern matching
 
 Powerful Pattern Matching for Java. Use lambda's, hamcrest or scala-like wildcards to match (recursively) on destructured objects!
