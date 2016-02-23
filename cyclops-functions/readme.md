@@ -1,3 +1,5 @@
+**Cyclops has merged with simple-react**. Please update your bookmarks - https://github.com/aol/cyclops-react 
+
 # cyclops-functions
 
 [USER GUIDE](http://gist.asciidoctor.org/?github-aol/cyclops//user-guide/lambdas.adoc)
