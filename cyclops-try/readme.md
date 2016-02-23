@@ -1,3 +1,5 @@
+**Cyclops has merged with simple-react**. Please update your bookmarks - https://github.com/aol/cyclops-react 
+
 # Cyclops Try
 
 cyclops-try has been incorporated into cyclops-core.
