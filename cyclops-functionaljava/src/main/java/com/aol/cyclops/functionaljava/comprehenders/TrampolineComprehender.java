@@ -1,14 +1,14 @@
 package com.aol.cyclops.functionaljava.comprehenders;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-import com.aol.cyclops.lambda.api.Comprehender;
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
 
 import fj.control.Trampoline;
 import fj.data.Option;
 
-public class TrampolineComprehender implements Comprehender<Trampoline>{
+public class TrampolineComprehender implements ValueComprehender<Trampoline>{
 	
 	
 	@Override

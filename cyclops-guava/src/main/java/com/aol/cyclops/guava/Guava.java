@@ -1,15 +1,21 @@
 
 package com.aol.cyclops.guava;
 
-import com.aol.cyclops.monad.AnyM;
+import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.types.anyM.AnyMValue;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 
 public class Guava {
+	
+	public static <T> Maybe<T> asMaybe(Optional<T> option){
+		return  option.isPresent() ? Maybe.just(option.get()) : Maybe.none();
+	}
 	/**
 	 * <pre>
 	 * {@code
-	 * Guava.anyM(Optional.of("hello world"))
+	 * Guava.optional(Optional.of("hello world"))
 				.map(String::toUpperCase)
 				.toSequence()
 				.toList()
@@ -20,8 +26,8 @@ public class Guava {
 	 * @param optionM to construct AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(Optional<T> optionM){
-		return  AnyM.ofMonad(optionM);
+	public static <T> AnyMValue<T> optional(Optional<T> optionM){
+		return  AnyM.ofValue(optionM);
 	}
 	/**
 	 * <pre>
@@ -38,7 +44,7 @@ public class Guava {
 	 * @param streamM to construct AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(FluentIterable<T> streamM){
-		return  AnyM.ofMonad(streamM);
+	public static <T> AnyMValue<T> fluentIterable(FluentIterable<T> streamM){
+		return  AnyM.ofValue(streamM);
 	}
 }

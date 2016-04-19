@@ -1,13 +1,13 @@
 package com.aol.cyclops.functionaljava.comprehenders;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-import com.aol.cyclops.lambda.api.Comprehender;
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
 
 import fj.data.Reader;
 
-public class ReaderComprehender implements Comprehender<Reader>{
+public class ReaderComprehender implements ValueComprehender<Reader>{
 	
 	@Override
 	public Object resolveForCrossTypeFlatMap(Comprehender comp, Reader apply) {

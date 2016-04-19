@@ -2,10 +2,11 @@ package com.aol.cyclops.guava.comprehenders;
 
 import java.util.function.Function;
 
-import com.aol.cyclops.lambda.api.Comprehender;
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
 import com.google.common.base.Optional;
 
-public class OptionalComprehender implements Comprehender<Optional>{
+public class OptionalComprehender implements ValueComprehender<Optional>{
 
 	@Override
 	public Object resolveForCrossTypeFlatMap(Comprehender comp, Optional apply) {

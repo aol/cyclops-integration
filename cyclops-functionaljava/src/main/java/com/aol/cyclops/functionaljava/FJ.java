@@ -3,8 +3,10 @@ package com.aol.cyclops.functionaljava;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import com.aol.cyclops.lambda.monads.ComprehenderSelector;
-import com.aol.cyclops.monad.AnyM;
+import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.internal.monads.ComprehenderSelector;
+import com.aol.cyclops.types.anyM.AnyMSeq;
+import com.aol.cyclops.types.anyM.AnyMValue;
 
 import fj.P1;
 import fj.data.Either;
@@ -140,7 +142,7 @@ public class FJ {
 	 * @param anyM to unwrap to IO Monad
 	 * @return IO Monad
 	 */
-	public static final <B> IO<B> unwrapIO(AnyM<B> anyM){
+	public static final <B> IO<B> unwrapIO(AnyMValue<B> anyM){
 		
 		IO unwrapper = IOFunctions.unit(1);
 		return (IO)new ComprehenderSelector()
@@ -159,8 +161,8 @@ public class FJ {
 	 * @param ioM Construct an AnyM from the supplied IO Monad
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(IO<T> ioM){
-		return AnyM.ofMonad(ioM);
+	public static <T> AnyMValue<T> io(IO<T> ioM){
+		return AnyM.ofValue(ioM);
 	}
 	/**
 	 * <pre>
@@ -172,8 +174,8 @@ public class FJ {
 	 * @param stateM Construct an AnyM from the supplied State Monad
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(State<?,T> stateM){
-		return  AnyM.ofMonad(stateM);
+	public static <T> AnyMValue<T> state(State<?,T> stateM){
+		return  AnyM.ofValue(stateM);
 	}
 	/**
 	 * <pre>
@@ -187,26 +189,12 @@ public class FJ {
 	 * @param validationM to  construct an AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(Validation<?,T> validationM){
-		return  AnyM.ofMonad(validationM);
+	public static <T> AnyMValue<T> validation(Validation<?,T> validationM){
+		return  AnyM.ofValue(validationM);
 	}
 	
 	
-	/**
-	 * uses the same types keeps things simpler
-	 * 
-	 * <pre>
-	 * {@code
-	 * FJ.anyM(Writer.unit("lower", "", Monoid.stringMonoid))
-				.flatMap(a->FJ.anyMValue(Writer.unit("hello",Monoid.stringMonoid)))
-	 * }
-	 * 
-	 * @param writerM to construct an AnyM from
-	 * @return AnyM
-	 */
-	public static <T> AnyM<T> anyM(Writer<T,T> writerM){
-		return  AnyM.ofMonad(writerM);
-	}
+	
 	/**
 	 * <pre>
 	 * {@code
@@ -217,13 +205,13 @@ public class FJ {
 	 * @param writerM to construct an AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyMValue(Writer<T,?> writerM){
-			return  AnyM.ofMonad(writerM);
+	public static <T> AnyMValue<T> writer(Writer<T,?> writerM){
+			return  AnyM.ofValue(writerM);
 	}
 	/**
 	 * <pre>
 	 * {@code 
-	 * 	FJ.anyM(Reader.unit( (Integer a) -> "hello "+a )
+	 * 	FJ.reader(Reader.unit( (Integer a) -> "hello "+a )
 	 * }
 	 * </pre>
 	 * 
@@ -233,26 +221,26 @@ public class FJ {
 	 * @param readerM to create AnyM from 
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(Reader<?,T> readerM){
-		return  AnyM.ofMonad(readerM);
+	public static <T> AnyMValue<T> reader(Reader<?,T> readerM){
+		return  AnyM.ofValue(readerM);
 	}
 	/**
 	 * <pre>
 	 * {@code
-	 * FJ.anyM(FJ.Trampoline.suspend(()-> Trampoline.pure(finalStage()))
+	 * FJ.trampoline(FJ.Trampoline.suspend(()-> Trampoline.pure(finalStage()))
 	 * }
 	 * </pre>
 	 * 
 	 * @param trampolineM to create AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(fj.control.Trampoline<T> trampolineM){
-		return  AnyM.ofMonad(trampolineM);
+	public static <T> AnyMValue<T> trampoline(fj.control.Trampoline<T> trampolineM){
+		return  AnyM.ofValue(trampolineM);
 	}
 	/**
 	 * <pre>
 	 * {@code
-	 * FJ.anyM(IterableW.wrap(Arrays.asList("hello world")))
+	 * FJ.iterableW(IterableW.wrap(Arrays.asList("hello world")))
 				.map(String::toUpperCase)
 				.toSequence()
 				.toList()
@@ -262,14 +250,14 @@ public class FJ {
 	 * @param iterableWM to create AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(IterableW<T> iterableWM){
-		return  AnyM.ofMonad(iterableWM);
+	public static <T> AnyMSeq<T> iterableW(IterableW<T> iterableWM){
+		return  AnyM.ofSeq(iterableWM);
 	}
 	/**
 	 * (Right biased)
 	 * <pre>
 	 * {@code 
-	 * FJ.anyM(Either.right("hello world"))
+	 * FJ.either(Either.right("hello world"))
 			.map(String::toUpperCase)
 			.flatMapOptional(Optional::of)
 			.toSequence()
@@ -280,13 +268,13 @@ public class FJ {
 	 * @param eitherM to construct AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(Either<?,T> eitherM){
-		return  AnyM.ofMonad(eitherM);
+	public static <T> AnyMValue<T> either(Either<?,T> eitherM){
+		return  AnyM.ofValue(eitherM);
 	}
 	/**
 	 * <pre>
 	 * {@code
-	 * FJ.anyM(Either.right("hello world").right())
+	 * FJ.right(Either.right("hello world").right())
 			.map(String::toUpperCase)
 			.toSequence()
 			.toList()
@@ -298,16 +286,16 @@ public class FJ {
 	 * @param rM Right projection to construct AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(Either<?,T>.RightProjection<?,T> rM){
+	public static <T> AnyMValue<T> right(Either<?,T>.RightProjection<?,T> rM){
 		if(rM.toOption().isSome())
-			return  AnyM.ofMonad(Either.right(rM.value()).right());
+			return  AnyM.ofValue(Either.right(rM.value()).right());
 		else
-			return  AnyM.ofMonad(Optional.empty());
+			return  AnyM.ofValue(Optional.empty());
 	}
 	/**
 	 * <pre>
 	 * {@code
-	 *  FJ.anyM(Either.<String,String>left("hello world").left())
+	 *  FJ.left(Either.<String,String>left("hello world").left())
 			.map(String::toUpperCase)
 			.flatMapOptional(Optional::of)
 			.toSequence()
@@ -319,11 +307,11 @@ public class FJ {
 	 * @param lM Left Projection to construct AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(Either<T,?>.LeftProjection<T,?> lM){
+	public static <T> AnyMValue<T> left(Either<T,?>.LeftProjection<T,?> lM){
 		if(lM.toOption().isSome()) //works in the opposite way to javaslang
-			return  AnyM.ofMonad(Either.right(lM.value()).right());
+			return  AnyM.ofValue(Either.right(lM.value()).right());
 		else
-			return  AnyM.ofMonad(Optional.empty());
+			return  AnyM.ofValue(Optional.empty());
 	}
 	/**
 	 * <pre>
@@ -339,13 +327,13 @@ public class FJ {
 	 * @param optionM to construct AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(Option<T> optionM){
-		return  AnyM.ofMonad(optionM);
+	public static <T> AnyMValue<T> option(Option<T> optionM){
+		return  AnyM.ofValue(optionM);
 	}
 	/**
 	 * <pre>
 	 * {@code
-	 * FJ.anyM(Stream.stream("hello world"))
+	 * FJ.stream(Stream.stream("hello world"))
 				.map(String::toUpperCase)
 				.flatMap(i->AnyMonads.anyM(java.util.stream.Stream.of(i)))
 				.toSequence()
@@ -357,13 +345,13 @@ public class FJ {
 	 * @param streamM to construct AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(Stream<T> streamM){
-		return  AnyM.ofMonad(streamM);
+	public static <T> AnyMSeq<T> stream(Stream<T> streamM){
+		return  AnyM.ofSeq(streamM);
 	}
 	/**
 	 * <pre>
 	 * {@code 
-	 * FJ.anyM(List.list("hello world"))
+	 * FJ.list(List.list("hello world"))
 				.map(String::toUpperCase)
 				.toSequence()
 				.toList()
@@ -372,7 +360,7 @@ public class FJ {
 	 * @param listM to Construct AnyM from
 	 * @return AnyM
 	 */
-	public static <T> AnyM<T> anyM(List<T> listM){
-		return  AnyM.ofMonad(listM);
+	public static <T> AnyMSeq<T> list(List<T> listM){
+		return  AnyM.ofSeq(listM);
 	}
 }

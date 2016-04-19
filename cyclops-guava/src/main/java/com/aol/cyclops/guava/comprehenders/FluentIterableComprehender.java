@@ -4,9 +4,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Function;
 
-import com.aol.cyclops.lambda.api.Comprehender;
+import com.aol.cyclops.types.extensability.Comprehender;
 import com.google.common.collect.FluentIterable;
-import com.nurkiewicz.lazyseq.LazySeq;
 
 public class FluentIterableComprehender implements Comprehender<FluentIterable> {
 
@@ -47,15 +46,17 @@ public class FluentIterableComprehender implements Comprehender<FluentIterable> 
 			});
 		if(apply instanceof Iterable)
 			return FluentIterable.from( ((Iterable)apply));
-		if(apply instanceof LazySeq){
-			apply = FluentIterable.from(((LazySeq)apply));
-		}
+		
 		if(apply instanceof Collection){
 			return FluentIterable.from((Collection)apply);
 		}
 		
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);
 		
+	}
+	@Override
+	public FluentIterable fromIterator(Iterator o) {
+		return FluentIterable.from(()->o);
 	}
 
 }
