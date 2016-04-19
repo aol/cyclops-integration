@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.aol.cyclops.util.function.Cacheable;
+
 import javaslang.Function0;
 import javaslang.Function1;
 import javaslang.Function2;
@@ -15,8 +17,6 @@ import javaslang.Tuple2;
 import javaslang.Tuple3;
 import javaslang.Tuple4;
 import lombok.val;
-
-import com.aol.cyclops.functions.caching.Cacheable;
 
 public class Memoize {
 

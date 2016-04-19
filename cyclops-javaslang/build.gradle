@@ -33,7 +33,7 @@ dependencies {
 	
 	provided group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
-	compile 'com.javaslang:javaslang:'+javaslangVersion
+	compile 'io.javaslang:javaslang:'+javaslangVersion
 	provided "org.functionaljava:functionaljava:"+functionalJavaVersion
 	provided "org.functionaljava:functionaljava-java8:"+functionalJavaVersion
 	provided  'com.google.guava:guava:'+guavaVersion
