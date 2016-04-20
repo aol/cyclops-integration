@@ -52,14 +52,15 @@ public class FluxComprehender implements Comprehender<Flux> {
 		
 		return comp.fromIterator(apply.toIterable().iterator());
 	}
-	public static <T> T unwrapOtherMonadTypes(Comprehender<T> comp,Object apply){
-		
+	public static Flux unwrapOtherMonadTypes(Comprehender<Flux> comp,Object apply){
+		if(apply instanceof Flux)
+			return (Flux)apply;
 		if(apply instanceof Iterable){
-			return (T)Flux.fromIterable((Iterable)apply);
+			return Flux.fromIterable((Iterable)apply);
 			
 		}
 		if(apply instanceof BaseStream){
-			return (T)Flux.fromStream(StreamSupport.stream(Spliterators.spliteratorUnknownSize(((BaseStream)apply).iterator(), Spliterator.ORDERED),
+			return Flux.fromStream(StreamSupport.stream(Spliterators.spliteratorUnknownSize(((BaseStream)apply).iterator(), Spliterator.ORDERED),
 					false));
 		}
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);

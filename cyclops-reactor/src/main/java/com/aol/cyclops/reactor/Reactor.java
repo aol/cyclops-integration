@@ -27,14 +27,14 @@ public interface Reactor {
 		return AnyM.ofSeq(flux);
 	}
 	public static <T> StreamTSeq<T> fluxT(Publisher<Flux<T>> nested){
-		return StreamT.fromPublisher(flux(Flux.from(nested).map(f->ReactiveSeq.fromPublisher(f))));
+		return StreamT.fromPublisher(Flux.from(nested).map(f->ReactiveSeq.fromPublisher(f)));
 	}
 	
 	public static <T> AnyMValue<T> mono(Mono<T> mono){
 		return AnyM.ofValue(mono);
 	}
 	public static <T> FutureWTSeq<T> monoT(Publisher<Mono<T>> nested){
-		return FutureWT.fromPublisher(flux(Flux.from(nested).map(f->FutureW.of(f.toCompletableFuture()))));
+		return FutureWT.fromPublisher(Flux.from(nested).map(f->FutureW.of(f.toCompletableFuture())));
 	}
 	public interface ForFlux {
 
@@ -181,13 +181,6 @@ public interface Reactor {
 		}
 	}
 	
-	public static void main(String[] args){
-	   Flux<Integer> flux = Flux.just(1,2,3,4).map(i->i+2);
-	   Flux<String> string = flux.map(s->"hello"+s);
-	  System.out.println(flux.toList().get());
-	  System.out.println(flux.toList().get());
-	  System.out.println(string.toList().get());
-	  System.out.println(string.toList().get());
-	}
+	
 	
 }

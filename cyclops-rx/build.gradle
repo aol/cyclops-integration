@@ -18,7 +18,7 @@ sourceCompatibility = 1.8
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Cyclops Reactor', 'Implementation-Version': version
+        attributes 'Implementation-Title': 'Cyclops Rx', 'Implementation-Version': version
     }
 }
 
@@ -30,10 +30,12 @@ configurations {
 	provided
 }
 dependencies {
-	compile 'io.projectreactor:reactor-core:'+reactorVersion
+	compile 'io.reactivex:rxjava:'+rxJavaVersion
 	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
+	compile 'io.reactivex:rxjava-reactive-streams:1.0.1'
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
-
+	
+	
 	testCompile 'commons-io:commons-io:2.4'
 	testCompile group: 'junit', name: 'junit', version: '4.12'
 	testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -56,13 +58,13 @@ test {
 
 modifyPom {
 	project {
-		name 'cyclops-reactor'
-		description 'Converters and Comprehenders for Reactor'
+		name 'cyclops-rx'
+		description 'Converters and Comprehenders for RxJava'
 		url 'https://github.com/aol/cyclops'
 		inceptionYear '2016'
 
 		groupId 'com.aol.cyclops'
-		artifactId 'cyclops-reactor'
+		artifactId 'cyclops-rx'
 		version "$version"
 		
 		scm {
