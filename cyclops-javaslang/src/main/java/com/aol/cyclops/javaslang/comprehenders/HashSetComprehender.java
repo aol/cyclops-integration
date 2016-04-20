@@ -1,13 +1,13 @@
 package com.aol.cyclops.javaslang.comprehenders;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.BaseStream;
 
-import javaslang.collection.HashSet;
+import com.aol.cyclops.types.extensability.Comprehender;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-import com.nurkiewicz.lazyseq.LazySeq;
+import javaslang.collection.HashSet;
 
 public class HashSetComprehender implements Comprehender<HashSet> {
 
@@ -39,13 +39,13 @@ public class HashSetComprehender implements Comprehender<HashSet> {
 		return HashSet.class;
 	}
 	static HashSet unwrapOtherMonadTypes(Comprehender<HashSet> comp,Object apply){
+		if (comp.instanceOfT(apply))
+			return (HashSet) apply;
 		if(apply instanceof java.util.stream.Stream)
 			return HashSet.of( ((java.util.stream.Stream)apply).iterator());
 		if(apply instanceof Iterable)
 			return HashSet.of( ((Iterable)apply).iterator());
-		if(apply instanceof LazySeq){
-			apply = HashSet.of(((LazySeq)apply).iterator());
-		}
+		
 		if(apply instanceof Collection){
 			return HashSet.ofAll((Collection)apply);
 		}
@@ -58,5 +58,12 @@ public class HashSetComprehender implements Comprehender<HashSet> {
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);
 		
 	}
-
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, HashSet apply) {
+		return comp.fromIterator(apply.iterator());
+	}
+	@Override
+	public HashSet fromIterator(Iterator o) {
+		return  HashSet.ofAll(()->o);
+	}
 }

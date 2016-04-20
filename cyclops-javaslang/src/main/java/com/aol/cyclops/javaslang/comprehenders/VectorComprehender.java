@@ -1,14 +1,13 @@
 package com.aol.cyclops.javaslang.comprehenders;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.BaseStream;
 
-import javaslang.collection.List;
-import javaslang.collection.Vector;
+import com.aol.cyclops.types.extensability.Comprehender;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-import com.nurkiewicz.lazyseq.LazySeq;
+import javaslang.collection.Vector;
 
 public class VectorComprehender implements Comprehender<Vector> {
 
@@ -39,14 +38,19 @@ public class VectorComprehender implements Comprehender<Vector> {
 	public Class getTargetClass() {
 		return Vector.class;
 	}
+	
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, Vector apply) {
+		return comp.fromIterator(apply.iterator());
+	}
 	static Vector unwrapOtherMonadTypes(Comprehender<Vector> comp,Object apply){
+		if (comp.instanceOfT(apply))
+			return (Vector) apply;
 		if(apply instanceof java.util.stream.Stream)
 			return Vector.of( ((java.util.stream.Stream)apply).iterator());
 		if(apply instanceof Iterable)
-			return Vector.of( ((Iterable)apply).iterator());
-		if(apply instanceof LazySeq){
-			apply = Vector.of(((LazySeq)apply).iterator());
-		}
+			return Vector.of( (Iterable)apply);
+		
 		if(apply instanceof Collection){
 			return Vector.ofAll((Collection)apply);
 		}
@@ -57,6 +61,10 @@ public class VectorComprehender implements Comprehender<Vector> {
 		}
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);
 		
+	}
+	@Override
+	public Vector fromIterator(Iterator o) {
+		return  Vector.ofAll(()->o);
 	}
 
 }

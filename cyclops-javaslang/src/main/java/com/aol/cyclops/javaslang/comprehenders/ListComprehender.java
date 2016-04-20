@@ -1,13 +1,14 @@
 package com.aol.cyclops.javaslang.comprehenders;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.BaseStream;
 
-import javaslang.collection.List;
+import com.aol.cyclops.types.extensability.Comprehender;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-import com.nurkiewicz.lazyseq.LazySeq;
+import javaslang.collection.List;
+import javaslang.collection.Vector;
 
 public class ListComprehender implements Comprehender<List> {
 
@@ -39,13 +40,13 @@ public class ListComprehender implements Comprehender<List> {
 		return List.class;
 	}
 	static List unwrapOtherMonadTypes(Comprehender<List> comp,Object apply){
+		if (comp.instanceOfT(apply))
+			return (List) apply;
 		if(apply instanceof java.util.stream.Stream)
 			return List.of( ((java.util.stream.Stream)apply).iterator());
 		if(apply instanceof Iterable)
-			return List.of( ((Iterable)apply).iterator());
-		if(apply instanceof LazySeq){
-			apply = List.of(((LazySeq)apply).iterator());
-		}
+			return List.ofAll( ((Iterable)apply));
+		
 		if(apply instanceof Collection){
 			return List.ofAll((Collection)apply);
 		}
@@ -57,5 +58,12 @@ public class ListComprehender implements Comprehender<List> {
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);
 		
 	}
-
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, List apply) {
+		return comp.fromIterator(apply.iterator());
+	}
+	@Override
+	public List fromIterator(Iterator o) {
+		return  List.ofAll(()->o);
+	}
 }

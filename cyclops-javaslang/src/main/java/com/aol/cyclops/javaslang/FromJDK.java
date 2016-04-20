@@ -4,15 +4,13 @@ import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.aol.cyclops.react.async.subscription.Continueable;
+import com.aol.cyclops.util.ExceptionSoftener;
+
 import javaslang.Function1;
 import javaslang.Function2;
-import javaslang.collection.List;
-import javaslang.collection.LazyStream;
 import javaslang.collection.Stream;
 import javaslang.control.Option;
-
-import com.aol.cyclops.invokedynamic.ExceptionSoftener;
-import com.aol.simple.react.async.subscription.Continueable;
 
 public class FromJDK<T,R> {
 	
@@ -29,26 +27,6 @@ public class FromJDK<T,R> {
 		return Stream.ofAll(()->stream.iterator());
 	}
 	
-	public static<T> Stream<T> stream(java.util.stream.Stream<T> stream, Continueable  sub){
-		
-		Iterator i = stream.iterator();
-		return Stream.ofAll(()-> {return new Iterator(){
-
-			@Override
-			public boolean hasNext() {
-				return !sub.closed() 	
-						&& i.hasNext();
-			}
-
-			@Override
-			public Object next() {
-				try{
-					return i.next();
-				}catch(Throwable t){
-				
-					throw ExceptionSoftener.throwSoftenedException(t);
-				}
-			}};});
-	}
+	
 	
 }

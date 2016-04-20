@@ -18,7 +18,7 @@ sourceCompatibility = 1.8
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Cyclops Javaslang', 'Implementation-Version': version
+        attributes 'Implementation-Title': 'Cyclops Reactor', 'Implementation-Version': version
     }
 }
 
@@ -30,7 +30,7 @@ configurations {
 	provided
 }
 dependencies {
-	
+	compile 'io.projectreactor:reactor-core:'+reactorVersion
 	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
 	compile 'io.javaslang:javaslang:'+javaslangVersion
@@ -61,13 +61,13 @@ test {
 
 modifyPom {
 	project {
-		name 'cyclops-javaslang'
-		description 'Converters and Comprehenders for Javaslang'
+		name 'cyclops-reactor'
+		description 'Converters and Comprehenders for Reactor'
 		url 'https://github.com/aol/cyclops'
-		inceptionYear '2015'
+		inceptionYear '2016'
 
 		groupId 'com.aol.cyclops'
-		artifactId 'cyclops-javaslang'
+		artifactId 'cyclops-reactor'
 		version "$version"
 		
 		scm {

@@ -4,15 +4,14 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
+
+import fj.data.Option;
 import javaslang.control.Either;
 import javaslang.control.Either.RightProjection;
 
-
-import com.aol.cyclops.lambda.api.Comprehender;
-
-import fj.data.Option;
-
-public class RightProjectionComprehender implements Comprehender<RightProjection>{
+public class RightProjectionComprehender implements ValueComprehender<RightProjection>{
 	@Override
 	public Object filter(RightProjection t, Predicate p){
 		return t.filter(x->p.test(x));

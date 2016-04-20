@@ -1,12 +1,18 @@
 package com.aol.cyclops.javaslang;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import com.aol.cyclops.monad.AnyM;
+import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.control.For;
+import com.aol.cyclops.types.anyM.AnyMSeq;
+import com.aol.cyclops.types.anyM.AnyMValue;
+import com.aol.cyclops.util.function.QuadFunction;
+import com.aol.cyclops.util.function.TriFunction;
 
 import javaslang.Value;
-import javaslang.collection.LazyStream;
-import javaslang.collection.List;
+import javaslang.collection.Traversable;
 import javaslang.control.Either;
 import javaslang.control.Either.LeftProjection;
 import javaslang.control.Either.RightProjection;
@@ -14,39 +20,35 @@ import javaslang.control.Option;
 import javaslang.control.Try;
 
 public class Javaslang {
-	public static <T> AnyM<T> anyMonad(Value<T> monadM){
-		return AnyM.ofMonad(monadM);
+	public static <T> AnyMValue<T> value(Value<T> monadM){
+		return AnyM.ofValue(monadM);
 	}
 	
-	public static <T> AnyM<T> anyM(Try<T> tryM){
-		return AnyM.ofMonad(tryM);
-	}
-	public static <T> AnyM<T> anyMFailure(Try<T> tryM){
-		if(tryM.isFailure())
-			return AnyM.ofMonad(Try.of(()->tryM.toEither().left().get()));
-		return AnyM.ofMonad(Optional.empty());
-	}
-	public static <T> AnyM<T> anyM(Either<?,T> tryM){
-		return AnyM.ofMonad(tryM);
-	}
-	public static <T> AnyM<T> anyM(RightProjection<?,T> tryM){
-		if(tryM.toJavaOptional().isPresent())
-			return AnyM.ofMonad(Either.right(tryM.get()));
-		else
-			return AnyM.ofMonad(Optional.empty());
-	}
-	public static <T> AnyM<T> anyM(LeftProjection<T,?> tryM){
-		if(tryM.toJavaOptional().isPresent())
-			return AnyM.ofMonad(Either.right(tryM.get()));
-		else
-			return AnyM.ofMonad(Optional.empty());
-	}
-	public static <T> AnyM<T> anyM(Option<T> tryM){
-		return AnyM.ofMonad(tryM);
+	public static <T> AnyMValue<T> tryM(Try<T> tryM){
+		return AnyM.ofValue(tryM);
 	}
 	
-	public static <T> AnyM<T> anyM(List<T> tryM){
-		return AnyM.ofMonad(tryM);
+	public static <T> AnyMValue<T> either(Either<?,T> tryM){
+		return AnyM.ofValue(tryM);
+	}
+	public static <T> AnyMValue<T> right(RightProjection<?,T> tryM){
+		if(tryM.toJavaOptional().isPresent())
+			return AnyM.ofValue(Either.right(tryM.get()));
+		else
+			return AnyM.ofValue(Optional.empty());
+	}
+	public static <T> AnyMValue<T> left(LeftProjection<T,?> tryM){
+		if(tryM.toJavaOptional().isPresent())
+			return AnyM.ofValue(Either.right(tryM.get()));
+		else
+			return AnyM.ofValue(Optional.empty());
+	}
+	public static <T> AnyMValue<T> option(Option<T> option){
+		return AnyM.ofValue(option);
+	}
+	
+	public static <T> AnyMSeq<T> traversable(Traversable<T> traversable){
+		return AnyM.ofSeq(traversable);
 	}
 	
 	public interface ForTraversable {
@@ -84,7 +86,7 @@ public class Javaslang {
 
 			return AnyM.ofSeq(For.anyM(traversable(value1)).anyM(a -> traversable(value2.apply(a)))
 					.anyM(a -> b -> traversable(value3.apply(a, b))).yield3(yieldingFunction).unwrap()).unwrap();
-			;
+			
 
 		}
 
@@ -98,7 +100,7 @@ public class Javaslang {
 					.ofSeq(For.anyM(traversable(value1)).anyM(a -> traversable(value2.apply(a))).anyM(a -> b -> traversable(value3.apply(a, b)))
 							.filter(a -> b -> c -> filterFunction.apply(a, b, c)).yield3(yieldingFunction).unwrap())
 					.unwrap();
-			;
+			
 
 		}
 
@@ -107,7 +109,7 @@ public class Javaslang {
 
 			return AnyM.ofSeq(For.anyM(traversable(value1)).anyM(a -> traversable(value2.apply(a))).yield2(yieldingFunction).unwrap())
 					.unwrap();
-			;
+			
 
 		}
 
@@ -117,7 +119,7 @@ public class Javaslang {
 
 			return AnyM.ofSeq(For.anyM(traversable(value1)).anyM(a -> traversable(value2.apply(a)))
 					.filter(a -> b -> filterFunction.apply(a, b)).yield2(yieldingFunction).unwrap()).unwrap();
-			;
+			
 
 		}
 	}
@@ -156,7 +158,7 @@ public class Javaslang {
 
 			return AnyM.ofValue(For.anyM(value(value1)).anyM(a -> value(value2.apply(a)))
 					.anyM(a -> b -> value(value3.apply(a, b))).yield3(yieldingFunction).unwrap()).unwrap();
-			;
+			
 
 		}
 
@@ -170,7 +172,7 @@ public class Javaslang {
 					.ofValue(For.anyM(value(value1)).anyM(a -> value(value2.apply(a))).anyM(a -> b -> value(value3.apply(a, b)))
 							.filter(a -> b -> c -> filterFunction.apply(a, b, c)).yield3(yieldingFunction).unwrap())
 					.unwrap();
-			;
+			
 
 		}
 
@@ -179,7 +181,7 @@ public class Javaslang {
 
 			return AnyM.ofValue(For.anyM(value(value1)).anyM(a -> value(value2.apply(a))).yield2(yieldingFunction).unwrap())
 					.unwrap();
-			;
+			
 
 		}
 
@@ -189,7 +191,7 @@ public class Javaslang {
 
 			return AnyM.ofValue(For.anyM(value(value1)).anyM(a -> value(value2.apply(a)))
 					.filter(a -> b -> filterFunction.apply(a, b)).yield2(yieldingFunction).unwrap()).unwrap();
-			;
+			
 
 		}
 	}

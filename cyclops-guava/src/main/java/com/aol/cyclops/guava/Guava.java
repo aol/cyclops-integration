@@ -1,9 +1,16 @@
 
 package com.aol.cyclops.guava;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.control.For;
 import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
+import com.aol.cyclops.util.function.QuadFunction;
+import com.aol.cyclops.util.function.TriFunction;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 
@@ -82,7 +89,7 @@ public class Guava {
 
 			return AnyM.ofValue(For.anyM(optional(value1)).anyM(a -> optional(value2.apply(a)))
 					.anyM(a -> b -> optional(value3.apply(a, b))).yield3(yieldingFunction).unwrap()).unwrap();
-			;
+			
 
 		}
 
@@ -96,7 +103,7 @@ public class Guava {
 					.ofValue(For.anyM(optional(value1)).anyM(a -> optional(value2.apply(a))).anyM(a -> b -> optional(value3.apply(a, b)))
 							.filter(a -> b -> c -> filterFunction.apply(a, b, c)).yield3(yieldingFunction).unwrap())
 					.unwrap();
-			;
+			
 
 		}
 
@@ -105,7 +112,7 @@ public class Guava {
 
 			return AnyM.ofValue(For.anyM(optional(value1)).anyM(a -> optional(value2.apply(a))).yield2(yieldingFunction).unwrap())
 					.unwrap();
-			;
+			
 
 		}
 
@@ -115,7 +122,7 @@ public class Guava {
 
 			return AnyM.ofValue(For.anyM(optional(value1)).anyM(a -> optional(value2.apply(a)))
 					.filter(a -> b -> filterFunction.apply(a, b)).yield2(yieldingFunction).unwrap()).unwrap();
-			;
+			
 
 		}
 	}
@@ -154,7 +161,7 @@ public class Guava {
 
 			return AnyM.ofSeq(For.anyM(fluentIterable(value1)).anyM(a -> fluentIterable(value2.apply(a)))
 					.anyM(a -> b -> fluentIterable(value3.apply(a, b))).yield3(yieldingFunction).unwrap()).unwrap();
-			;
+			
 
 		}
 
@@ -168,7 +175,7 @@ public class Guava {
 					.ofSeq(For.anyM(fluentIterable(value1)).anyM(a -> fluentIterable(value2.apply(a))).anyM(a -> b -> fluentIterable(value3.apply(a, b)))
 							.filter(a -> b -> c -> filterFunction.apply(a, b, c)).yield3(yieldingFunction).unwrap())
 					.unwrap();
-			;
+			
 
 		}
 
@@ -177,7 +184,7 @@ public class Guava {
 
 			return AnyM.ofSeq(For.anyM(fluentIterable(value1)).anyM(a -> fluentIterable(value2.apply(a))).yield2(yieldingFunction).unwrap())
 					.unwrap();
-			;
+			
 
 		}
 
@@ -187,7 +194,7 @@ public class Guava {
 
 			return AnyM.ofSeq(For.anyM(fluentIterable(value1)).anyM(a -> fluentIterable(value2.apply(a)))
 					.filter(a -> b -> filterFunction.apply(a, b)).yield2(yieldingFunction).unwrap()).unwrap();
-			;
+			
 
 		}
 	}

@@ -1,13 +1,13 @@
 package com.aol.cyclops.javaslang.comprehenders;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.BaseStream;
 
-import javaslang.collection.CharSeq;
+import com.aol.cyclops.types.extensability.Comprehender;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-import com.nurkiewicz.lazyseq.LazySeq;
+import javaslang.collection.CharSeq;
 
 public class CharSeqComprehender implements Comprehender<CharSeq> {
 
@@ -39,13 +39,13 @@ public class CharSeqComprehender implements Comprehender<CharSeq> {
 		return CharSeq.class;
 	}
 	static CharSeq unwrapOtherMonadTypes(Comprehender<CharSeq> comp,Object apply){
+		if (comp.instanceOfT(apply))
+			return (CharSeq)apply;
 		if(apply instanceof java.util.stream.Stream)
-			return CharSeq.ofAll( (Iterable<? extends Character>) ((java.util.stream.Stream)apply).iterator());
+			return CharSeq.ofAll( (Iterable<? extends Character>) ((java.util.stream.Stream)apply));
 		if(apply instanceof Iterable)
-			return CharSeq.ofAll( (Iterable<? extends Character>) ((Iterable)apply).iterator());
-		if(apply instanceof LazySeq){
-			apply = CharSeq.ofAll((Iterable<? extends Character>) ((LazySeq)apply).iterator());
-		}
+			return CharSeq.ofAll( (Iterable<? extends Character>) ((Iterable)apply));
+		
 		if(apply instanceof Collection){
 			return CharSeq.ofAll((Collection)apply);
 		}
@@ -56,6 +56,14 @@ public class CharSeqComprehender implements Comprehender<CharSeq> {
 		}
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);
 		
+	}
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, CharSeq apply) {
+		return comp.fromIterator(apply.iterator());
+	}
+	@Override
+	public CharSeq fromIterator(Iterator o) {
+		return  CharSeq.ofAll(()->o);
 	}
 
 }

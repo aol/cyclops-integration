@@ -5,9 +5,7 @@ import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.BaseStream;
 
-import com.aol.cyclops.internal.comprehensions.comprehenders.StreamableComprehender;
 import com.aol.cyclops.types.extensability.Comprehender;
-import com.aol.cyclops.util.stream.StreamUtils;
 
 import fj.data.List;
 
@@ -42,15 +40,14 @@ public class ListComprehender implements Comprehender<List> {
 		return List.class;
 	}
 	
-	
 	@Override
 	public Object resolveForCrossTypeFlatMap(Comprehender comp, List apply) {
-		if(comp instanceof com.aol.cyclops.internal.comprehensions.comprehenders.StreamComprehender || comp instanceof StreamableComprehender){
-			return StreamUtils.stream(apply);
-		}
-		return Comprehender.super.resolveForCrossTypeFlatMap(comp, apply);
+		return comp.fromIterator(apply.iterator());
 	}
+	
 	static List unwrapOtherMonadTypes(Comprehender<List> comp,Object apply){
+		if (comp.instanceOfT(apply))
+			return (List) apply;
 		if(apply instanceof java.util.stream.Stream)
 			return List.iteratorList( ((java.util.stream.Stream)apply).iterator());
 		if(apply instanceof Iterable)

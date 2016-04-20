@@ -10,7 +10,6 @@ import com.aol.cyclops.types.extensability.Comprehender;
 import com.aol.cyclops.util.stream.StreamUtils;
 
 import fj.data.IterableW;
-import fj.data.Stream;
 
 
 public class IterableWComprehender implements Comprehender<IterableW> {
@@ -61,17 +60,9 @@ public class IterableWComprehender implements Comprehender<IterableW> {
 	}
 	
 	
-	@Override
-	public Object resolveForCrossTypeFlatMap(Comprehender comp, IterableW apply) {
-		
-			if(comp instanceof com.aol.cyclops.internal.comprehensions.comprehenders.StreamComprehender || comp instanceof StreamableComprehender){
-				return StreamUtils.stream(apply);
-			}
-			
-		
-		return Comprehender.super.resolveForCrossTypeFlatMap(comp, apply);
-	}
 	static IterableW unwrapOtherMonadTypes(Comprehender<IterableW> comp,final Object apply){
+		if (comp.instanceOfT(apply))
+			return (IterableW) apply;
 		if(apply instanceof java.util.stream.Stream)
 			return IterableW.wrap( ()-> ((java.util.stream.Stream)apply).iterator());
 		if(apply instanceof Iterable)
@@ -91,5 +82,8 @@ public class IterableWComprehender implements Comprehender<IterableW> {
 	public IterableW fromIterator(Iterator o) {
 		return IterableW.wrap(()->o);
 	}
-
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, IterableW apply) {
+		return comp.fromIterator(apply.iterator());
+	}
 }

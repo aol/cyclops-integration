@@ -11,10 +11,8 @@ import java.util.function.Function;
 import java.util.stream.BaseStream;
 
 import com.aol.cyclops.types.extensability.Comprehender;
-import com.aol.cyclops.util.stream.StreamUtils;
 
 import fj.data.Stream;
-import com.aol.cyclops.internal.comprehensions.comprehenders.StreamableComprehender;
 public class StreamComprehender implements Comprehender<Stream> {
 
 	@Override
@@ -45,6 +43,8 @@ public class StreamComprehender implements Comprehender<Stream> {
 		return Stream.class;
 	}
 	static Stream unwrapOtherMonadTypes(Comprehender<Stream> comp,Object apply){
+		if (comp.instanceOfT(apply))
+			return (Stream) apply;
 		if(apply instanceof java.util.stream.Stream)
 			return Stream.iteratorStream( ((java.util.stream.Stream)apply).iterator());
 		if(apply instanceof Iterable)
@@ -59,12 +59,11 @@ public class StreamComprehender implements Comprehender<Stream> {
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);
 		
 	}
-	public Object resolveForCrossTypeFlatMap(Comprehender comp,Stream apply){
-		if(comp instanceof com.aol.cyclops.internal.comprehensions.comprehenders.StreamComprehender || comp instanceof StreamableComprehender){
-			return StreamUtils.stream(apply);
-		}
-		return comp.of(toCollection(apply));
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, Stream apply) {
+		return comp.fromIterator(apply.iterator());
 	}
+	
 	 /**
 	   * Projects an immutable collection of this stream.
 	   *

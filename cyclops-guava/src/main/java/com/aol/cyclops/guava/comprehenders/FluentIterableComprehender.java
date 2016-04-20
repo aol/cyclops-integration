@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Function;
 
+import com.aol.cyclops.internal.comprehensions.comprehenders.StreamableComprehender;
 import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.util.stream.StreamUtils;
 import com.google.common.collect.FluentIterable;
 
 public class FluentIterableComprehender implements Comprehender<FluentIterable> {
@@ -36,7 +38,16 @@ public class FluentIterableComprehender implements Comprehender<FluentIterable> 
 	public Class getTargetClass() {
 		return FluentIterable.class;
 	}
+	
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, FluentIterable apply) {
+		if(comp instanceof com.aol.cyclops.internal.comprehensions.comprehenders.StreamComprehender || comp instanceof StreamableComprehender){
+			return StreamUtils.stream(apply);
+		}
+		return Comprehender.super.resolveForCrossTypeFlatMap(comp, apply);
+	}
 	static FluentIterable unwrapOtherMonadTypes(Comprehender<FluentIterable> comp,Object apply){
+		
 		final Object finalApply = apply;
 		if(apply instanceof java.util.stream.Stream)
 			return FluentIterable.from( new Iterable(){ 
