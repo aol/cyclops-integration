@@ -5,9 +5,12 @@ import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.BaseStream;
 
+import com.aol.cyclops.internal.comprehensions.comprehenders.StreamableComprehender;
 import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.util.stream.StreamUtils;
 
 import fj.data.IterableW;
+import fj.data.Stream;
 
 
 public class IterableWComprehender implements Comprehender<IterableW> {
@@ -55,6 +58,18 @@ public class IterableWComprehender implements Comprehender<IterableW> {
 	@Override
 	public Class getTargetClass() {
 		return IterableW.class;
+	}
+	
+	
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, IterableW apply) {
+		
+			if(comp instanceof com.aol.cyclops.internal.comprehensions.comprehenders.StreamComprehender || comp instanceof StreamableComprehender){
+				return StreamUtils.stream(apply);
+			}
+			
+		
+		return Comprehender.super.resolveForCrossTypeFlatMap(comp, apply);
 	}
 	static IterableW unwrapOtherMonadTypes(Comprehender<IterableW> comp,final Object apply){
 		if(apply instanceof java.util.stream.Stream)
