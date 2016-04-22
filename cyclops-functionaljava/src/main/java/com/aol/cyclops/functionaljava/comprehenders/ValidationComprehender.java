@@ -2,13 +2,13 @@ package com.aol.cyclops.functionaljava.comprehenders;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Option;
-
-import com.aol.cyclops.lambda.api.Comprehender;
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
 
 import fj.data.Validation;
+import jdk.nashorn.internal.runtime.regexp.joni.Option;
 
-public class ValidationComprehender implements Comprehender<Validation> {
+public class ValidationComprehender implements ValueComprehender<Validation> {
 
 	
 	public Object filter(Validation t, Predicate p){

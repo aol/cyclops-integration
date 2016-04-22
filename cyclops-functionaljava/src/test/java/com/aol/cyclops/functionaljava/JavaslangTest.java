@@ -2,14 +2,15 @@ package com.aol.cyclops.functionaljava;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import javaslang.Tuple;
-import javaslang.control.Left;
-import javaslang.control.Option;
-import javaslang.control.Right;
 
 import org.junit.Test;
 
 import fj.P;
+import javaslang.Tuple;
+import javaslang.control.Either;
+import javaslang.control.Either.Left;
+import javaslang.control.Either.Right;
+import javaslang.control.Option;
 
 
 
@@ -34,11 +35,11 @@ public class JavaslangTest {
 	}
 	@Test
 	public void testFromJavaslangEitherLeft(){
-		assertThat(FromJavaslang.either(new Left(1)).left().value(),is(1));
+		assertThat(FromJavaslang.either(Either.left(1)).left().value(),is(1));
 	}
 	@Test
 	public void testFromJavaslangEitherRight(){
-		assertThat(FromJavaslang.either(new Right(1)).right().value(),is(1));
+		assertThat(FromJavaslang.either(Either.right(1)).right().value(),is(1));
 	}
 	@Test
 	public void testFromJavaslangTuple1(){

@@ -2,15 +2,15 @@ package com.aol.cyclops.functionaljava.comprehenders;
 
 import java.util.function.Function;
 
-import com.aol.cyclops.lambda.api.Comprehender;
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
 
 import fj.data.IO;
 import fj.data.IOFunctions;
 import fj.data.Option;
-import fj.data.State;
 
 
-public class IOComprehender implements Comprehender<IO>{
+public class IOComprehender implements ValueComprehender<IO>{
 	
 	
 	@Override

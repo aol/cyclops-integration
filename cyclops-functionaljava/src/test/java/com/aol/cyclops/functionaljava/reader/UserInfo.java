@@ -1,11 +1,9 @@
 package com.aol.cyclops.functionaljava.reader;
 
-import static com.aol.cyclops.functionaljava.FJ.anyM;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import com.aol.cyclops.comprehensions.donotation.typed.Do;
+import com.aol.cyclops.functionaljava.FJ;
 
 import fj.data.Reader;
 
@@ -13,14 +11,13 @@ public class UserInfo implements Users {
 
 	public Reader<UserRepository,Map<String,String> > userInfo(String username) {
 		
-		Do.add(anyM(findUser(username)))
-		 		.withAnyM(user ->anyM(getUser(user.getSupervisor().getId())))
-		 		.yield(user -> boss -> "user:"+username+" boss is "+boss.getName());
+		FJ.ForReader.each2(findUser(username), user ->getUser(user.getSupervisor().getId())
+		 		,(user,boss) -> "user:"+username+" boss is "+boss.getName());
 		
 		
-		return Do.add(anyM(findUser(username)))
-				 .withAnyM(user -> anyM(getUser(user.getSupervisor().getId())))
-				 .yield(user -> boss -> buildMap(user,boss)).unwrap();
+		return FJ.ForReader.each2(findUser(username),
+				 user -> getUser(user.getSupervisor().getId())
+				 ,(user,boss) -> buildMap(user,boss));
 		
 		
 	}

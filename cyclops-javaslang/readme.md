@@ -219,9 +219,7 @@ Example configuration for Memoization with a Guava cache with TTL of 10 minutes 
 		assertThat(s.apply(1,1),equalTo(3));
 ```
 
-## Attribution
 
-cyclops-javaslang extends and modifies Javaslang. Javaslang in licensed under the [Apache 2.0 license](https://github.com/javaslang/javaslang/blob/master/LICENSE)
 
 ## Get cyclops-javaslang
 

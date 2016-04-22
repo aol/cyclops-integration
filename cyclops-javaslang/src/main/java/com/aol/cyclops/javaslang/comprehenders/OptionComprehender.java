@@ -2,11 +2,12 @@ package com.aol.cyclops.javaslang.comprehenders;
 
 import java.util.function.Function;
 
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
+
 import javaslang.control.Option;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-
-public class OptionComprehender implements Comprehender<Option>{
+public class OptionComprehender implements ValueComprehender<Option>{
 
 	@Override
 	public Object resolveForCrossTypeFlatMap(Comprehender comp, Option apply) {

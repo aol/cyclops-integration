@@ -1,16 +1,15 @@
 package com.aol.cyclops.functionaljava.comprehenders;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.BaseStream;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-import com.nurkiewicz.lazyseq.LazySeq;
+import com.aol.cyclops.internal.comprehensions.comprehenders.StreamableComprehender;
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.util.stream.StreamUtils;
 
 import fj.data.IterableW;
-import fj.data.Stream;
 
 
 public class IterableWComprehender implements Comprehender<IterableW> {
@@ -53,18 +52,22 @@ public class IterableWComprehender implements Comprehender<IterableW> {
 		});
 	}
 
+	
+	
 	@Override
 	public Class getTargetClass() {
 		return IterableW.class;
 	}
+	
+	
 	static IterableW unwrapOtherMonadTypes(Comprehender<IterableW> comp,final Object apply){
+		if (comp.instanceOfT(apply))
+			return (IterableW) apply;
 		if(apply instanceof java.util.stream.Stream)
 			return IterableW.wrap( ()-> ((java.util.stream.Stream)apply).iterator());
 		if(apply instanceof Iterable)
 			return IterableW.wrap( ((Iterable)apply));
-		if(apply instanceof LazySeq){
-			return IterableW.wrap(()->((LazySeq)apply).iterator());
-		}
+		
 		final Object finalApply = apply;
 		if(apply instanceof BaseStream){
 			return IterableW.wrap( () -> ((BaseStream)finalApply).iterator());
@@ -75,5 +78,12 @@ public class IterableWComprehender implements Comprehender<IterableW> {
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);
 		
 	}
-
+	@Override
+	public IterableW fromIterator(Iterator o) {
+		return IterableW.wrap(()->o);
+	}
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, IterableW apply) {
+		return comp.fromIterator(apply.iterator());
+	}
 }

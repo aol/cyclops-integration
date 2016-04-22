@@ -2,12 +2,13 @@ package com.aol.cyclops.javaslang.comprehenders;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
+
 import javaslang.concurrent.Future;
 import javaslang.control.Option;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-
-public class FutureComprehender implements Comprehender<Future> {
+public class FutureComprehender implements ValueComprehender<Future> {
 
 	public Object filter(Future t, Predicate p){
 		return t.filter(x->p.test(x));

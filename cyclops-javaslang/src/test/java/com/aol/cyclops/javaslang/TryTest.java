@@ -3,7 +3,7 @@ package com.aol.cyclops.javaslang;
 
 import org.junit.Test;
 
-import com.aol.cyclops.comprehensions.donotation.typed.Do;
+import com.aol.cyclops.control.For;
 
 import javaslang.control.Try;
 
@@ -22,12 +22,12 @@ def prepareCappuccino(): Try[Cappuccino] = for {
 	@Test
 	public void futureTest(){
 		
-		Try<String> result = 	Do.add(grind("arabica beans"))
-							  				 .add(heatWater(new Water(25)))
-							  				 .withAnyM(ground -> water -> Javaslang.anyM(brew(ground,water)))
-							  				 .add(frothMilk("milk"))
-							  				 .yield(ground ->water -> espresso->foam-> combine(espresso,foam))
-							  				 .unwrap();
+		Try<String> result = 	For.iterable(grind("arabica beans"))
+							  	   .iterable(ground->heatWater(new Water(25)))
+							  	   .iterable(ground -> water -> brew(ground,water))
+							  	   .iterable(ground->wqter->espresso->frothMilk("milk"))
+							  	   .yield(ground ->water -> espresso->foam-> combine(espresso,foam))
+							  	   .unwrap();
 		
 		System.out.println(result.get());
 	}

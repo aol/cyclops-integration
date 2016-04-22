@@ -16,18 +16,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import javaslang.Function0;
-import javaslang.Function2;
-import lombok.val;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import com.aol.cyclops.functions.caching.Cacheable;
-import com.aol.cyclops.functions.caching.Memoize;
-import com.aol.cyclops.invokedynamic.ExceptionSoftener;
+import com.aol.cyclops.util.ExceptionSoftener;
+import com.aol.cyclops.util.function.Cacheable;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
+import javaslang.Function0;
+import javaslang.Function2;
+import lombok.val;
 public class MemoiseTest {
 
 	int called= 0;

@@ -9,6 +9,4 @@ public class FromJooqLambda{
 		return (t) -> fn.apply(t);
 	}
 	
-	
-	
 }

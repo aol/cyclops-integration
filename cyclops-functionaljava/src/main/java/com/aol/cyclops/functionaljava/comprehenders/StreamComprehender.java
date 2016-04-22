@@ -8,13 +8,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.*;
+import java.util.stream.BaseStream;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-import com.nurkiewicz.lazyseq.LazySeq;
+import com.aol.cyclops.types.extensability.Comprehender;
 
 import fj.data.Stream;
-
 public class StreamComprehender implements Comprehender<Stream> {
 
 	@Override
@@ -45,13 +43,13 @@ public class StreamComprehender implements Comprehender<Stream> {
 		return Stream.class;
 	}
 	static Stream unwrapOtherMonadTypes(Comprehender<Stream> comp,Object apply){
+		if (comp.instanceOfT(apply))
+			return (Stream) apply;
 		if(apply instanceof java.util.stream.Stream)
 			return Stream.iteratorStream( ((java.util.stream.Stream)apply).iterator());
 		if(apply instanceof Iterable)
 			return Stream.iterableStream( ((Iterable)apply));
-		if(apply instanceof LazySeq){
-			return Stream.iteratorStream(((LazySeq)apply).iterator());
-		}
+		
 		final Object finalApply = apply;
 		if(apply instanceof BaseStream){
 			return Stream.iterableStream( () -> ((BaseStream)finalApply).iterator());
@@ -61,9 +59,11 @@ public class StreamComprehender implements Comprehender<Stream> {
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);
 		
 	}
-	public Object resolveForCrossTypeFlatMap(Comprehender comp,Stream apply){
-		return comp.of(toCollection(apply));
+	@Override
+	public Object resolveForCrossTypeFlatMap(Comprehender comp, Stream apply) {
+		return comp.fromIterator(apply.iterator());
 	}
+	
 	 /**
 	   * Projects an immutable collection of this stream.
 	   *
@@ -129,4 +129,8 @@ public class StreamComprehender implements Comprehender<Stream> {
 	      }
 	    };
 	  }
+	@Override
+	public Stream fromIterator(Iterator o) {
+		return Stream.iterableStream(()->o);
+	}
 }

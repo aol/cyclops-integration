@@ -4,15 +4,16 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-import com.aol.cyclops.streams.StreamUtils;
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
+import com.aol.cyclops.util.stream.StreamUtils;
 
 import fj.Monoid;
 import fj.Semigroup;
 import fj.data.Option;
 import fj.data.Writer;
 
-public class WriterComprehender implements Comprehender<Writer>{
+public class WriterComprehender implements ValueComprehender<Writer>{
 	
 	@Override
 	public Object resolveForCrossTypeFlatMap(Comprehender comp, Writer apply) {

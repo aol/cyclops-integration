@@ -1,12 +1,12 @@
 package com.aol.cyclops.javaslang.comprehenders;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Function;
 
-import javaslang.collection.Queue;
+import com.aol.cyclops.types.extensability.Comprehender;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-import com.nurkiewicz.lazyseq.LazySeq;
+import javaslang.collection.Queue;
 
 public class QueueComprehender implements Comprehender<Queue> {
 
@@ -42,9 +42,7 @@ public class QueueComprehender implements Comprehender<Queue> {
 			return Queue.of( ((java.util.stream.Stream)apply).iterator());
 		if(apply instanceof Iterable)
 			return Queue.of( ((Iterable)apply).iterator());
-		if(apply instanceof LazySeq){
-			apply = Queue.of(((LazySeq)apply).iterator());
-		}
+		
 		if(apply instanceof Collection){
 			return Queue.ofAll((Collection)apply);
 		}
@@ -52,5 +50,8 @@ public class QueueComprehender implements Comprehender<Queue> {
 		return Comprehender.unwrapOtherMonadTypes(comp,apply);
 		
 	}
-
+	@Override
+	public Queue fromIterator(Iterator o) {
+		return  Queue.ofAll(()->o);
+	}
 }

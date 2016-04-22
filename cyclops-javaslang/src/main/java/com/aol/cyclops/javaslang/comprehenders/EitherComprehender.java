@@ -3,12 +3,13 @@ package com.aol.cyclops.javaslang.comprehenders;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
+
 import javaslang.control.Either;
 import javaslang.control.Option;
 
-import com.aol.cyclops.lambda.api.Comprehender;
-
-public class EitherComprehender implements Comprehender<Either> {
+public class EitherComprehender implements ValueComprehender<Either> {
 
 	public Object filter(Either t, Predicate p){
 		return t.right().filter(x->p.test(x));

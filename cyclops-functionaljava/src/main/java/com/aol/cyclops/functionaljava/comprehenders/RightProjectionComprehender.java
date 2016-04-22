@@ -1,24 +1,16 @@
 package com.aol.cyclops.functionaljava.comprehenders;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-
-
-
-
-
-
-
-import com.aol.cyclops.lambda.api.Comprehender;
+import com.aol.cyclops.types.extensability.Comprehender;
+import com.aol.cyclops.types.extensability.ValueComprehender;
 
 import fj.data.Either;
-import fj.data.Option;
-import fj.data.Either.LeftProjection;
 import fj.data.Either.RightProjection;
+import fj.data.Option;
 
-public class RightProjectionComprehender implements Comprehender<RightProjection>{
+public class RightProjectionComprehender implements ValueComprehender<RightProjection>{
 	@Override
 	public Object filter(RightProjection t, Predicate p){
 		return t.filter(x->p.test(x));

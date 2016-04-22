@@ -11,9 +11,8 @@ public class TrampolineDemo {
 	public  void trampolineDemo(){
 		
 		
-		List<String> list = FJ.anyM(FJ.Trampoline.suspend(() -> Trampoline.pure("hello world")))
+		List<String> list = FJ.trampoline(FJ.Trampoline8.suspend(() -> Trampoline.pure("hello world")))
 								.map(String::toUpperCase)
-								.asSequence()
 								.toList();
 		
 		
