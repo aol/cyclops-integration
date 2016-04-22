@@ -40,13 +40,13 @@ public class AnyFunctionalJavaMTest {
 		
 		throw new RuntimeException();
 	}
-	@Test
+	@Test @Ignore
 	public void flatMapCrossTypeNotCollectionUnwrap(){
 		assertThat(FJ.option(Option.some(1))
 							.flatMapFirst(i->FJ.stream(Stream.stream(i+2)))
 							.unwrap(),equalTo(Option.some(Arrays.asList(3))));
 	}
-	@Test
+	@Test @Ignore
 	public void flatMapCrossTypeNotCollection(){
 		
 		assertThat(FJ.option(Option.some(1)).flatMapFirst(i->FJ.stream(Stream.stream(i+2))).stream().toList(),equalTo(Arrays.asList(Arrays.asList(3))));

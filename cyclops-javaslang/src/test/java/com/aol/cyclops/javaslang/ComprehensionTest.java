@@ -98,7 +98,6 @@ def prepareCappuccino(): Try[Cappuccino] = for {
 	}
 	
 	
-	
 	CompletableFuture<String> grind(String beans) {
 		 return CompletableFuture.completedFuture("ground coffee of "+ beans);
 	}

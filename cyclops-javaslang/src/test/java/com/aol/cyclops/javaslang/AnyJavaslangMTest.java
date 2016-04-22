@@ -21,6 +21,7 @@ import javaslang.concurrent.Future;
 import javaslang.control.Either;
 import javaslang.control.Option;
 import javaslang.control.Try;
+import javaslang.control.Try.NonFatalException;
 
 public class AnyJavaslangMTest {
 
@@ -43,7 +44,7 @@ public class AnyJavaslangMTest {
 			.toSequence()
 			.toList(),equalTo(Arrays.asList("HELLO WORLD")));
 	}
-	@Test//(expected=javaslang.control.Failure.NonFatal.class)
+	@Test(expected=NonFatalException.class)
 	public void tryTestFailure(){
 		
 		Javaslang.tryM(Try.failure(new RuntimeException()))
@@ -55,9 +56,11 @@ public class AnyJavaslangMTest {
 	public void tryTestFailureProcess(){
 		
 		Exception e = new RuntimeException();
+		Javaslang.tryM(Try.failure(e));
+		System.out.println("hello!");
 		assertThat(Javaslang.tryM(Try.failure(e))
-				.toSequence()
-				.toList(),equalTo(Arrays.asList(e)));
+				.stream()
+				.toList(),equalTo(Arrays.asList()));
 		
 	}
 	@Test
@@ -65,7 +68,7 @@ public class AnyJavaslangMTest {
 		
 		assertThat(Javaslang.tryM(Try.success("hello world"))
 											.toSequence()
-											.toList(),equalTo(Arrays.asList()));
+											.toList(),equalTo(Arrays.asList("hello world")));
 			
 		
 	}

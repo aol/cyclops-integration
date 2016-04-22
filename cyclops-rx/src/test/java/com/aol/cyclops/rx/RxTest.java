@@ -32,6 +32,8 @@ public class RxTest {
 		Observable<Integer> result = RxCyclops.ForObservable.each2(Observable.just(10,20),a->Observable.<Integer>just(a+10),(a,b)->a+b);
 		
 		assertThat(result.toList().toBlocking().single(),equalTo(ListX.of(30,50)));
+		
+		
 	}
 	
 }

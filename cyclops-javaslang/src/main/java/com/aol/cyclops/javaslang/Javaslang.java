@@ -18,6 +18,7 @@ import javaslang.control.Either.LeftProjection;
 import javaslang.control.Either.RightProjection;
 import javaslang.control.Option;
 import javaslang.control.Try;
+import javaslang.control.Try.Failure;
 
 public class Javaslang {
 	public static <T> AnyMValue<T> value(Value<T> monadM){
