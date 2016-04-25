@@ -6,6 +6,7 @@ There are a number of integration modules for cyclops-react, they are
 
 * [cyclops-rx](https://github.com/aol/cyclops/tree/master/cyclops-rx)
 * [cyclops-reactor](https://github.com/aol/cyclops/tree/master/cyclops-reactor)
+* [cyclops-guava](https://github.com/aol/cyclops/tree/master/cyclops-guava)
 * [cyclops-functionaljava](https://github.com/aol/cyclops/tree/master/cyclops-functionaljava)
 * [cyclops-javaslang](https://github.com/aol/cyclops/tree/master/cyclops-javaslang)
 
