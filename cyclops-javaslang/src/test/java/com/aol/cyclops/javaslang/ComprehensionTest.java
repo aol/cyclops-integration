@@ -12,6 +12,7 @@ import org.jooq.lambda.tuple.Tuple;
 import org.junit.Test;
 
 import com.aol.cyclops.control.For;
+import com.aol.cyclops.types.Traversable;
 
 import javaslang.collection.List;
 import javaslang.collection.Stream;
@@ -20,7 +21,7 @@ import javaslang.control.Option;
 public class ComprehensionTest {
 	@Test
 	public void optionalTest(){
-	
+		
 		assertTrue(Javaslang.ForValue.each2(Option.of(10), a->Option.none(), (a,b)->"failed").isEmpty());
 	}
 	@Test

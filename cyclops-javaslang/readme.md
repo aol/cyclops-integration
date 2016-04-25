@@ -1,45 +1,46 @@
 # Javaslang Integration
 
-v6.2.0 of cyclops-javaslang requires v2.0.0 of Javaslang.
+v8.0.0 of cyclops-javaslang requires v2.0.2 of Javaslang.
 
 # Features
 
-* AnyM / For Comprehension support for Javaslang Monads
-* reactive-streams implementation for Javaslang Traversables
-* conversion between Javaslang and other types
-* Memoize javaslang functions with a configurable Cache (support LRU, or TTL)
-* Javaslang Stream extensions (future operations, hot streams, stream manipulation)
-* Cyclops 7.3.0 and above javaslang based ReactiveStream and LazyStream implementations (fluently call the extensions available via StreamUtils on a single interface).
+1. Native for comprehensions for FunctionalJava types
+2. Monad wrapping via AnyM / AnyMValue / AnyMSeq
+3. reactive-streams support for all Javaslang types (via AnyM support)
+4. Compatible with cyclops-react pattern matching
+5. Ability to use Javaslang types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
+6. Memoize javaslang functions with a configurable Cache (support LRU, or TTL)
+7. Stream extensions via AnyMSeq for all Javaslang traversables
+
 
 # Details & Examples
 
 
-## AnyM
 
-Use Javaslang.anyM to create wrapped Javaslang Monads.
-
-```java	
-assertThat(Javaslang.anyM(Try.of(this::success))
-			.map(String::toUpperCase)
-			.flatMapOptional(Optional::of)
-			.toSequence()
-			.toList(),equalTo(Arrays.asList("HELLO WORLD")));
-```
 
 ## For Comprehensions
+
+cyclops-javaslang For comprehensions allow subsequent steps to refer to the elements of previous steps.
 
 Javaslang specific for-comprehensions
 
 ```java
-    @Test
-	public void futureTest(){
+Value<Integer> option = Javaslang.ForValue.each2(Option.of(10), a-> Option.<Integer>of(a+20), (a,b)->a+b)
+
+//Option[40]
+```
+
+```java
+
+  	@Test
+	public void tryTest(){
 		
-		Try<String> result = 	Do.monad(grind("arabica beans"))
-					  .monad(heatWater(new Water(25)))
-					  .withMonad(ground -> water -> brew(ground,water))
-					  .monad(frothMilk("milk"))
-					  .yield(ground ->water -> espresso->foam-> combine(espresso,foam))
-					  .unwrap();
+		Try<String> result = 	For.iterable(grind("arabica beans"))
+							  	   .iterable(ground->heatWater(new Water(25)))
+							  	   .iterable(ground ->water-> brew(ground,water))
+							  	   .iterable(ground->wqter->espresso->frothMilk("milk"))
+							  	   .yield(ground ->water -> espresso->foam-> combine(espresso,foam))
+							  	   .unwrap();
 		
 		System.out.println(result.get());
 	}
@@ -66,38 +67,43 @@ Javaslang specific for-comprehensions
 		return "cappuccino";
 	}
 ```
+## Schedule emission from  FunctionalJava Stream
 
-## reactive-streams
+```java
 
-cyclops-javaslang provides a reactive-stream publisher and reactive-streams subscriber implementation for Javaslang Traversables.
+import static com.aol.cyclops.javaslang.Javaslang.traversable;
 
-### Subscribe to a javaslang Stream
+
+traversable(Stream.of(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThreadPool(1))
+							 .connect()
+							 .forEach(System.out::println)
+```
+
+Subscribe to a Javaslang Traversable
 
 ```java	
-CyclopsSubscriber<Integer> subscriber =SequenceM.subscriber();
+import static com.aol.cyclops.javaslang.Javaslang.traversable;
+
+SeqSubscriber<Integer> subscriber =SeqSubscriber.subscriber();
 		
 Stream<Integer> stream = Stream.of(1,2,3);
 		
-JavaslangReactiveStreamsPublisher.ofSync(stream)
-				 .subscribe(subscriber);
+traversable(stream).subscribe(subscriber);
 		
-subscriber.sequenceM()
-	 .forEach(System.out::println);
+subscriber.stream()
+	 	  .forEachWithError(System.out::println, System.err::println);
 ```
+## AnyM
 
-### Publish to a javaslang Stream
+Use Javaslang.<type> to wrap Javaslang Monads
 
 ```java	
-SequenceM<Integer> publisher =SequenceM.of(1,2,3);
-		
-JavaslangReactiveStreamsSubscriber<Integer> subscriber = new JavaslangReactiveStreamsSubscriber<>();
-publisher.subscribe(subscriber);
-		
-Stream<Integer> stream = subscriber.getStream();
-		
-		
-stream.forEach(System.out::println);
+assertThat(Javaslang.tryM(Try.of(this::success))
+			.map(String::toUpperCase)
+			.toList(),equalTo(Arrays.asList("HELLO WORLD")));
 ```
+
+
 
 Pacakage com.aol.cyclops.javaslang contains converters for types from various functional libraries for Java
 
@@ -123,74 +129,7 @@ Supported Javaslang Monads include
 * HashSet
 
 
-These are available in Cyclops Comprehensions, or via Cyclops AnyM.
 
-## Example flatMap a Javaslang Try, returning an JDK Optional
-
-```java	
-    assertThat(Javaslang.anyM(Try.of(this::success))
-			.map(String::toUpperCase)
-			.flatMapOptional(Optional::of)
-			.toSequence()
-			.toList(),equalTo(Arrays.asList("HELLO WORLD")));
-```	
-
-
-## HotStream example 
-
-Use StreamUtils to start a Stream emitting on another thread
-
-```java	
-volatile Object value;
-
-	public void hotStream() throws InterruptedException{
-		value= null;
-		CountDownLatch latch = new CountDownLatch(1);
-		StreamUtils.hotStream(Stream.ofAll(1,2,3)
-				.peek(v->value=v)
-				.peek(v->latch.countDown())
-				,exec);
-		
-		latch.await();
-		assertTrue(value!=null);
-	}
-		
-```
-
-Connect to a HotStream that is already emitting data
-
-```java
-StreamUtils.hotStream(Stream.range(0,Integer.MAX_VALUE)
-					.take(100)
-					.peek(v->value=v)
-					.peek(v->latch.countDown())
-					.peek(System.out::println)
-					,exec)
-					.connect()
-					.take(100)
-					.forEach(System.out::println);
-```
-
-## Augmenting existing Stream classes with Lombok ExtensionMethod
-
-```java
-@ExtensionMethod(StreamUtils.class)
-public  class FutureTest {
-
-
-	public void aysncStream(){ 
-	
-	  CompletableFuture<Integer> total =  Stream.ofAll(1,2,3,4,5)
-	         									.map(it -> it*100)
-	        									.futureOperations(exec)
-			 									.reduce( (acc,next) -> acc+next);
-	
-	    //1500
-	}
-
-
-}
-```
 
 ## Memoization with a Guava cache
 
