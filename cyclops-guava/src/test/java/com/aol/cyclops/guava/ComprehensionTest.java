@@ -36,6 +36,7 @@ public class ComprehensionTest {
 	}
 	@Test
 	public void optionalTest(){
+		
 		Guava.ForOptional.each2(Optional.of(10), a->Optional.absent(), (a,b)->"failed");
 		
 		assertFalse(Guava.ForOptional.each2(Optional.of(10), a->Optional.absent(), (a,b)->"failed").isPresent());

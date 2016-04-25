@@ -9,7 +9,7 @@ v8.0.0 of cyclops-rx and above is built using v1.1.3 of RxJava
 * [Javadoc for cyclops-rx](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-rx)
 
 
-# cyclops-reactor features include
+# cyclops-rx features include
 
 1. Native for comprehensions for RxJava Observables
 2. Monad wrapping via AnyM / AnyMValue / AnyMSeq
@@ -19,8 +19,6 @@ v8.0.0 of cyclops-rx and above is built using v1.1.3 of RxJava
 
 
 Use Rx.observable to create wrapped RxJava Monads.
-
-
 
 
 ## Example for comprehensions with Observable
