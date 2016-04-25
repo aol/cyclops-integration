@@ -25,6 +25,7 @@ public class ReactorTest {
 	}
 	@Test
 	public void fluxT() {
+		System.out.println(Reactor.fluxT(Flux.just(Flux.just(1,2,3),Flux.just(10,20,30))).map(i->i*3));
 		assertThat(Reactor.fluxT(Flux.just(Flux.just(1,2,3),Flux.just(10,20,30))).toListX(),equalTo(ListX.of(1,2,3,10,20,30)));
 	}
 	@Test
