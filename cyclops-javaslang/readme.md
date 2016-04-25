@@ -2,6 +2,12 @@
 
 v8.0.0 of cyclops-javaslang requires v2.0.2 of Javaslang.
 
+## Get cyclops-javaslang
+
+
+* [![Maven Central : cyclops-for-comprehensions](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang)
+* [Javadoc for Cyclops Javaslang](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-javaslang/)
+
 # Features
 
 1. Native for comprehensions for FunctionalJava types
@@ -160,8 +166,4 @@ Example configuration for Memoization with a Guava cache with TTL of 10 minutes 
 
 
 
-## Get cyclops-javaslang
 
-
-* [![Maven Central : cyclops-for-comprehensions](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang)
-* [Javadoc for Cyclops Javaslang](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-javaslang/)

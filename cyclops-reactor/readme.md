@@ -2,7 +2,14 @@
 
 v8.0.0 of cyclops-reactor and above is built using v2.5.0-M3 of Project Reactor
 
-Features include
+## Get cyclops-reactor
+
+
+* [![Maven Central : cyclops-reactor](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-reactor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-reactor)
+* [Javadoc for Cyclops-Reactor](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-reactor)
+
+
+# cyclops-reactor features include
 
 1. Native for comprehensions for Reactor types
 2. Monad wrapping via AnyM / AnyMValue / AnyMSeq
@@ -53,8 +60,3 @@ mapped = nested.map(i->i*3);
 //mapped =  [Flux[FutureW[3],FutureW[30]]
 ```
  		
-## Get cyclops-reactor
-
-
-* [![Maven Central : cyclops-reactor](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-reactor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-reactor)
-* [Javadoc for Cyclops-Reactor](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-reactor)

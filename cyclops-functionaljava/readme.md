@@ -2,7 +2,13 @@
 
 v8.0.0 of cyclops-functionaljava and above is built using v4.5 of FunctionalJava.
 
-Features include
+## Get cyclops-functionaljava
+
+
+* [![Maven Central : cyclops-functionaljava](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-functionaljava/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-functionaljava)
+* [Javadoc for cyclops-functionaljava](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-functionaljava)
+
+# cyclops-functionaljava features include
 
 1. Native for comprehensions for FunctionalJava types
 2. Monad wrapping via AnyM / AnyMValue / AnyMSeq
@@ -88,8 +94,4 @@ sub.stream()
     .forEachWithError(System.out::println, System.err::println);
 ```
 			
-## Get cyclops-functionaljava
 
-
-* [![Maven Central : cyclops-functionaljava](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-functionaljava/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-functionaljava)
-* [Javadoc for cyclops-functionaljava](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-functionaljava)
