@@ -1,5 +1,6 @@
 package com.aol.cyclops.javaslang;
 
+import static com.aol.cyclops.javaslang.Javaslang.traversable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -8,6 +9,7 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
 
 import javaslang.Lazy;
 import javaslang.collection.Array;
@@ -28,7 +30,11 @@ public class AnyJavaslangMTest {
 	@Test
 	public void testToList(){
 		
-		assertThat(Javaslang.traversable(List.of(1,2,3)).toList(), equalTo(Arrays.asList(1,2,3)));
+		SeqSubscriber<Integer> sub = SeqSubscriber.subscriber();
+		traversable(List.of(1,2,3)).subscribe(sub);
+		sub.stream().forEachWithError(System.out::println, System.err::println);
+		
+		assertThat(traversable(List.of(1,2,3)).toList(), equalTo(Arrays.asList(1,2,3)));
 	}
 	@Test
 	public void monadTest(){

@@ -8,8 +8,6 @@ import org.junit.Test;
 import fj.P;
 import javaslang.Tuple;
 import javaslang.control.Either;
-import javaslang.control.Either.Left;
-import javaslang.control.Either.Right;
 import javaslang.control.Option;
 
 

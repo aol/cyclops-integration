@@ -4,7 +4,7 @@ package com.aol.cyclops.functionaljava;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.*;
-
+import static  com.aol.cyclops.functionaljava.FJ.ForWriter;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class ComprehensionTest {
 	
 	@Test
 	public void writerTest(){
-		assertThat(FJ.ForWriter.each2(Writer.unit("lower", "", Monoid.stringMonoid),
+		assertThat(ForWriter.each2(Writer.unit("lower", "", Monoid.stringMonoid),
 							a->Writer.unit(a+"hello",Monoid.stringMonoid),(a,b)->a.toUpperCase() + b).value(),equalTo("LOWERlowerhello"));
 						
 	}

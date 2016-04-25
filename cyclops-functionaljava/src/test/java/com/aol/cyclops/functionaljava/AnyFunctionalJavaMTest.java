@@ -1,10 +1,13 @@
 package com.aol.cyclops.functionaljava;
 
+import static com.aol.cyclops.functionaljava.FJ.stream;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -40,6 +43,15 @@ public class AnyFunctionalJavaMTest {
 		
 		throw new RuntimeException();
 	}
+	@Test
+	public void streamSchedule(){
+		Executor ex;
+		
+		stream(Stream.stream(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThreadPool(1))
+									.connect()
+									.forEach(System.out::println);
+	}
+	
 	@Test @Ignore
 	public void flatMapCrossTypeNotCollectionUnwrap(){
 		assertThat(FJ.option(Option.some(1))
