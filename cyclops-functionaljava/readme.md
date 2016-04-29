@@ -82,7 +82,7 @@ FJ.ForOption.each2(Option.some(10), a->Option.none(), (a,b)->"failed")
 //Option.none
  ```
  
- ## Use a Functional Java List as a reactive-streams publisher
+## Use a Functional Java List as a reactive-streams publisher
  
  ```java
 
