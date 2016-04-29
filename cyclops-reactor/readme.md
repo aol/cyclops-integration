@@ -43,7 +43,7 @@ Mono<Integer> result = Reactor.ForMono.each2(Mono.just(10),a->Mono.<Integer>just
 //Mono[30]
  ```
  
- ## FluxT monad transformer
+## FluxT monad transformer
  
 ```java
 StreamTSeq<Integer> nested = Reactor.fluxT(Flux.just(Flux.just(1,2,3),Flux.just(10,20,30)));
@@ -51,7 +51,7 @@ StreamTSeq<Integer> mapped = nested.map(i->i*3);
 
 //mapped = [Flux[ReactiveSeq[3,6,9],ReactiveSeq[30,60,90]]
 ```
- ## MonoT monad transformer
+## MonoT monad transformer
 
 ```java
 FutureWTSeq<Integer> nestedFuture = Reactor.monoT(Flux.just(Mono.just(1),Mono.just(10)));
