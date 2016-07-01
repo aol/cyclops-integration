@@ -1,2 +1,4 @@
 com.aol.cyclops.reactor.comprehenders.FluxComprehender
 com.aol.cyclops.reactor.comprehenders.MonoComprehender
+com.aol.cyclops.reactor.comprehenders.FluxTValueComprehender
+com.aol.cyclops.reactor.comprehenders.FluxTSeqComprehender

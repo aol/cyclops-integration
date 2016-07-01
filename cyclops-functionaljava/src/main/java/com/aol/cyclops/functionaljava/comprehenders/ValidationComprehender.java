@@ -5,8 +5,9 @@ import java.util.function.Predicate;
 import com.aol.cyclops.types.extensability.Comprehender;
 import com.aol.cyclops.types.extensability.ValueComprehender;
 
+import fj.data.Option;
 import fj.data.Validation;
-import jdk.nashorn.internal.runtime.regexp.joni.Option;
+
 
 public class ValidationComprehender implements ValueComprehender<Validation> {
 
@@ -31,7 +32,7 @@ public class ValidationComprehender implements ValueComprehender<Validation> {
 
 	@Override
 	public Validation empty() {
-           return Validation.success(Option.NONE);
+           return Validation.success(Option.none());
         }
 
 	@Override

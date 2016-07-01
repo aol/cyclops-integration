@@ -12,9 +12,10 @@ v8.0.0 of cyclops-rx and above is built using v1.1.3 of RxJava
 # cyclops-rx features include
 
 1. Native for comprehensions for RxJava Observables
-2. Monad wrapping via AnyM / AnyMValue / AnyMSeq
-3. Compatible with cyclops-react pattern matching
-4. Ability to use Observables inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
+2. Native Monad Tranformer for Observable. ObservableT also has native for comprehensions
+3. Monad wrapping via AnyM / AnyMValue / AnyMSeq
+4. Compatible with cyclops-react pattern matching
+5. Ability to use Observables inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
 
 
 

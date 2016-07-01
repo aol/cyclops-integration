@@ -5,10 +5,16 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.concurrent.Executors;
 
 import org.junit.Test;
 
 import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.control.LazyReact;
+import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
+import com.aol.cyclops.types.Functor;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
 
 import javaslang.Lazy;
@@ -24,9 +30,103 @@ import javaslang.control.Either;
 import javaslang.control.Option;
 import javaslang.control.Try;
 import javaslang.control.Try.NonFatalException;
+import lombok.Data;
 
 public class AnyJavaslangMTest {
 
+	private ReactiveSeq<Data> loadById(int id){
+		return null;
+	}
+	
+	private Integer add(Integer a, Integer b){
+		return a+b;
+	}
+	volatile int count = 0;
+	
+	
+		
+	@Test
+	public void emissionTest() throws InterruptedException{
+		
+		
+		
+		
+		Functor<Integer> functor = SortedSetX.of(1,2);
+		Functor<Integer> doubled = functor.map(i->i*2);
+		
+		//Functor[2]
+		
+		
+		
+		Thread.sleep(5000);
+		Javaslang.traversable(List.of("emit","one","word","per","second"))
+        		 .schedule("* * * * * ?", Executors.newScheduledThreadPool(1))
+        		 .connect()
+        		 .map(s->System.currentTimeMillis() /1000 + " : " + s)
+        		 .printOut();
+		
+		
+	}
+	@Test
+	public void arrayFlatMap(){
+		
+		
+		
+		Array.of(1,2)
+		  	 .flatMap(i->new LazyReact().range(i,4))
+		  	 .forEach(System.out::println);
+	}
+	@Test
+	public void listFlatMap(){
+		
+		ListX.of(1,2)
+	     	 .flatMap(i->Array.range(i, 4))
+	     	 .forEach(System.out::println);
+
+	}
+	
+	@Test
+	public void javaslangCyclops(){
+		
+		Javaslang.ForTraversable.each2(List.of(1,2,3), 
+										a->List.range(0, a),
+										this::add);
+		
+		
+		Javaslang.ForValue.each2(Option.none(), a->Option.<Integer>some(a+1), this::add);
+		
+		Option.some(1).flatMap(a->Option.some(a+1).map(b->add(a,b)));
+		
+		Array.of(1,2,3,4)
+			  .flatMap(i->new LazyReact().range(i,10))
+			  .forEach(System.out::println);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	
+		
+		ReactiveSeq.of(1,2,3,4)
+				   .flatMapIterable(i->Stream.iterate(1, a->a+1).take(i))
+				   .map(i->i+2);
+		
+	}
+	
+	@Test
+	public void blog(){
+		Stream.of(1,2,3,4)
+			  .flatMap(this::loadById)
+			  .forEach(System.out::println);
+			  
+	}
+	
+	
 	@Test
 	public void testToList(){
 		
