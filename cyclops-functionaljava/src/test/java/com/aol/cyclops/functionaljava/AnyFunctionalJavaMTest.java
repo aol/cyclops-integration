@@ -48,21 +48,7 @@ public class AnyFunctionalJavaMTest {
 		throw new RuntimeException();
 	}
 	
-	public String load(int i){
-		if(i==4)
-			ExceptionSoftener.throwSoftenedException(new FileNotFoundException(""+i));
-		return "Loaded " + i;
-	}
-	@Test
-	public void forEachWithError(){
-			
-		ReactiveSeq.fromIterable(Stream.stream(1,2,3,4))
-			  	   .retry(this::load)
-			  	   .forEachWithError(System.out::println,System.err::println);
-		
 	
-		
-	}
 	
 	@Test
 	public void streamSchedule(){

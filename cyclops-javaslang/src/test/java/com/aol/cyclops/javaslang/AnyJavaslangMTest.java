@@ -118,13 +118,7 @@ public class AnyJavaslangMTest {
 		
 	}
 	
-	@Test
-	public void blog(){
-		Stream.of(1,2,3,4)
-			  .flatMap(this::loadById)
-			  .forEach(System.out::println);
-			  
-	}
+	
 	
 	
 	@Test
@@ -150,11 +144,11 @@ public class AnyJavaslangMTest {
 			.toSequence()
 			.toList(),equalTo(Arrays.asList("HELLO WORLD")));
 	}
-	@Test(expected=NonFatalException.class)
+	@Test
 	public void tryTestFailure(){
 		
 		Javaslang.tryM(Try.failure(new RuntimeException()))
-			.toSequence()
+			.stream()
 			.forEach(System.out::println);
 		
 	}
