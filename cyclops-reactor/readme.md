@@ -1,6 +1,6 @@
 # Project Reactor Integration
 
-v8.0.0 of cyclops-reactor and above is built using v2.5.0-M3 of Project Reactor
+v8.0.0 of cyclops-reactor and above is built using v2.5.0-M4 of Project Reactor
 
 ## Get cyclops-reactor
 
@@ -12,9 +12,10 @@ v8.0.0 of cyclops-reactor and above is built using v2.5.0-M3 of Project Reactor
 # cyclops-reactor features include
 
 1. Native for comprehensions for Reactor types
-2. Monad wrapping via AnyM / AnyMValue / AnyMSeq
-3. Compatible with cyclops-react pattern matching
-4. Ability to use Reactor types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
+2. Native Monad Tranformer for Flux. FluxT also has native for comprehensions
+3. Monad wrapping via AnyM / AnyMValue / AnyMSeq
+4. Compatible with cyclops-react pattern matching
+5. Ability to use Reactor types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
 
 
 

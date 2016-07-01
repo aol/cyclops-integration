@@ -21,6 +21,8 @@ import com.aol.cyclops.control.monads.transformers.seq.ListTSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.SetX;
 import com.aol.cyclops.reactor.Reactor.ForFlux;
+import com.aol.cyclops.reactor.Reactor.ForFluxTransformer;
+import com.aol.cyclops.reactor.transformer.FluxT;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -136,6 +138,14 @@ public class ReactorTest {
 		Flux<Tuple2<Integer,Integer>> stream = ForFlux.each2(Flux.range(1,10), i->Flux.range(i, 10), Tuple::tuple);
 		Flux<Integer> result = Reactor.ForFlux.each2(Flux.just(10,20),a->Flux.<Integer>just(a+10),(a,b)->a+b);
 		assertThat(result.toList().get(),equalTo(ListX.of(30,50)));
+	}
+	@Test
+	public void fluxTComp(){
+		
+		
+		FluxT<Tuple2<Integer,Integer>> stream = ForFluxTransformer.each2(FluxT.fromIterable(ListX.of(Flux.range(1,10))), i->FluxT.fromIterable(ListX.of(Flux.range(i, 10))), Tuple::tuple);
+		
+		assertThat(stream.toListX().size(),equalTo(100));
 	}
 	@Test
 	public void monoComp(){
