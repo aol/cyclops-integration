@@ -16,7 +16,7 @@ public class MonoComprehender implements ValueComprehender<Mono> {
 	}
 	@Override
 	public Object filter(Mono o,Predicate p) {
-		return FutureW.of(o.toCompletableFuture()).filter(p);
+		return FutureW.of(o.toFuture()).filter(p);
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class MonoComprehender implements ValueComprehender<Mono> {
 	}
 	@Override
     public Object resolveForCrossTypeFlatMap(Comprehender comp, Mono apply) {
-        Xor<Throwable,?> res = FutureW.of(apply.toCompletableFuture()).toXor();
+        Xor<Throwable,?> res = FutureW.of(apply.toFuture()).toXor();
         return res.isPrimary() ? comp.of(res.get()) :  comp.empty();
     }
 	

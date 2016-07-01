@@ -36,7 +36,7 @@ public class FutureW2<T> implements Functor2<T> {
 		Publisher<Integer> source1 = ReactiveSeq.of(1,2,3);
 		Publisher<Integer> source2 = Flux.just(10,20,30);
  		
-		Publisher<Integer> fastest= Flux.amb(source1,source2);
+		Publisher<Integer> fastest= Flux.firstEmitting(source1,source2);
 		
 	
 		

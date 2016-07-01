@@ -35,7 +35,7 @@ public class ReactorTest {
 
 		Stream<List<Integer>> stream = Stream.of(Arrays.asList(1,2,3),Arrays.asList(10,20,30));
 		
-		SetX.fromPublisher(Flux.amb(ReactiveSeq.of(1,2,3),Flux.just(10,20,30))); 
+		SetX.fromPublisher(Flux.firstEmitting(ReactiveSeq.of(1,2,3),Flux.just(10,20,30))); 
 	}
 	@Test
 	public void fluxEx(){
@@ -59,7 +59,7 @@ public class ReactorTest {
 		
 		Flux.just(1,2,3,4)
 			.flatMap(i->ReactiveSeq.range(i, 10))
-			.consume(System.out::println);
+			.subscribe(System.out::println);
 		
 		
 		
@@ -72,18 +72,11 @@ public class ReactorTest {
 		
 		
 		
-		Flux<Data> stream = Flux.amb(Flux.just(10,20,30,50).map(this::loadRemote), 
-										Flux.just(10,20,30,50).map(this::findRemote));
 		
-		SetX<Data> data = SetX.fromPublisher(stream);
-		
-		
-		
-		data.printOut();
 		
 		Flux.just(1,2,3,4)
 			.flatMap(i->Flux.range(i, 10))
-			.consume(System.out::println);
+			.subscribe(System.out::println);
 		
 		
 		
@@ -137,7 +130,7 @@ public class ReactorTest {
 		
 		Flux<Tuple2<Integer,Integer>> stream = ForFlux.each2(Flux.range(1,10), i->Flux.range(i, 10), Tuple::tuple);
 		Flux<Integer> result = Reactor.ForFlux.each2(Flux.just(10,20),a->Flux.<Integer>just(a+10),(a,b)->a+b);
-		assertThat(result.toList().get(),equalTo(ListX.of(30,50)));
+		assertThat(result.collectList().block(),equalTo(ListX.of(30,50)));
 	}
 	@Test
 	public void fluxTComp(){
@@ -150,6 +143,6 @@ public class ReactorTest {
 	@Test
 	public void monoComp(){
 		Mono<Integer> result = Reactor.ForMono.each2(Mono.just(10),a->Mono.<Integer>just(a+10),(a,b)->a+b);
-		assertThat(result.get(),equalTo(30));
+		assertThat(result.block(),equalTo(30));
 	}
 }

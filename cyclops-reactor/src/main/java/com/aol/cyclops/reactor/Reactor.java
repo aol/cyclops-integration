@@ -37,7 +37,7 @@ public interface Reactor {
 		return AnyM.ofValue(mono);
 	}
 	public static <T> FutureWTSeq<T> monoT(Publisher<Mono<T>> nested){
-		return FutureWT.fromPublisher(Flux.from(nested).map(f->FutureW.of(f.toCompletableFuture())));
+		return FutureWT.fromPublisher(Flux.from(nested).map(f->FutureW.of(f.toFuture())));
 	}
 	public interface ForFlux {
 
