@@ -30,12 +30,12 @@ configurations {
 	provided
 }
 dependencies {
-	compile  'com.google.guava:guava:'+guavaVersion
+	provided 'com.google.guava:guava:'+guavaVersion
 	provided group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
 	compile "org.functionaljava:functionaljava:"+functionalJavaVersion
 	compile "org.functionaljava:functionaljava-java8:"+functionalJavaVersion
-	compile 'io.javaslang:javaslang:'+javaslangVersion
+	provided 'io.javaslang:javaslang:'+javaslangVersion
 	testCompile group: 'junit', name: 'junit', version: '4.12'
 	testCompile  group: 'org.hamcrest', name: 'hamcrest-all', version:'1.3'
 	testCompile group: 'org.mockito', name: 'mockito-all', version:'1.9.5'

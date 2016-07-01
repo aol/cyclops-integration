@@ -4,6 +4,7 @@ import static com.aol.cyclops.functionaljava.FJ.stream;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
@@ -15,7 +16,9 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 
 import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.util.ExceptionSoftener;
 
 import fj.Monoid;
 import fj.control.Trampoline;
@@ -35,6 +38,7 @@ public class AnyFunctionalJavaMTest {
     public final SystemOutRule sout = new SystemOutRule().enableLog();
     private static final String SEP = System.getProperty("line.separator");
 
+    
 	private String success(){
 		return "hello world";
 		
@@ -43,6 +47,23 @@ public class AnyFunctionalJavaMTest {
 		
 		throw new RuntimeException();
 	}
+	
+	public String load(int i){
+		if(i==4)
+			ExceptionSoftener.throwSoftenedException(new FileNotFoundException(""+i));
+		return "Loaded " + i;
+	}
+	@Test
+	public void forEachWithError(){
+			
+		ReactiveSeq.fromIterable(Stream.stream(1,2,3,4))
+			  	   .retry(this::load)
+			  	   .forEachWithError(System.out::println,System.err::println);
+		
+	
+		
+	}
+	
 	@Test
 	public void streamSchedule(){
 		Executor ex;
