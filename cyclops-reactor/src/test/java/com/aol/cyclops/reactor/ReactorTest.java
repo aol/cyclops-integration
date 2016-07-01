@@ -33,8 +33,6 @@ public class ReactorTest {
 
 		Stream<List<Integer>> stream = Stream.of(Arrays.asList(1,2,3),Arrays.asList(10,20,30));
 		
-		Stream.map(list->list.stream().reduce(0,(a,b)->a+b).collect(Collectors.toList()));
-		
 		SetX.fromPublisher(Flux.amb(ReactiveSeq.of(1,2,3),Flux.just(10,20,30))); 
 	}
 	@Test
@@ -127,43 +125,7 @@ public class ReactorTest {
 	@Test
 	public void fluxComp(){
 		
-		 // = Stream.of(Arrays.asList(1,2,3),Arrays.asList(10,20,30));
-		
-		
-		Stream<List<Integer>> nestedLists;
-		/**
-		Stream<List<Integer>> doubled =  nestedLists.map(list->list.stream()
-																   .map(i->i*2)
-																   .collect(Collectors.toList()));
-		
-		
-		
-		**/
-		
-		//Stream<Integer> summed = nestedLists.map(list->list.stream().reduce(0,(a,b)->a+b));
-		
-		
-		
-		
-		ListTSeq<Integer> listT = ListT.fromStream(nestedLists);
-		// = listT.map(i->i*2);
-		
-		
-		
-		ListTSeq<Integer> doubled;
-		
-		
-		Stream<ListX<Integer>> doubledStream = doubled.toNestedListX()
-					 								  .stream();
-		
-		
-		Stream<Integer>   summed = listT.reduce(0,(a,b)->a+b)
-									    .stream();
-		
-		
-		
-		
-		
+			
 		
 		ForFlux.each2(Flux.range(1,10), i->Flux.range(i, 10), Tuple::tuple);
 		
