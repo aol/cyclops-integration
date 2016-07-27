@@ -25,7 +25,11 @@ Use Rx.observable to create wrapped RxJava Monads.
 ## Example for comprehensions with Observable
 
 ```java
-Observable<Integer> result = RxCyclops.ForObservable.each2(Obserbable.just(10,20),a->Observable.<Integer>just(a+10),(a,b)->a+b);
+
+import static com.aol.cyclops.rx.RxCyclops.ForObservable.each2;
+
+Observable<Integer> result = each2(Obserbable.just(10,20),a->Observable.<Integer>just(a+10)
+                                                          ,(a,b)->a+b);
 	
 //Observable[30,50]
  ```
@@ -34,7 +38,9 @@ Observable<Integer> result = RxCyclops.ForObservable.each2(Obserbable.just(10,20
  ## observableT monad transformer
  
 ```java
-ObservableTSeq<Integer> nested = RxCyclops.observableT(ReactiveSeq.of(Observable.just(1,2,3),Observable.just(10,20,30)));
+import static com.aol.cyclops.rx.RxCyclops.observableT;
+
+ObservableTSeq<Integer> nested = observableT(ReactiveSeq.of(Observable.just(1,2,3),Observable.just(10,20,30)));
 ObservableTSeq<Integer> mapped = nested.map(i->i*3);
 
 //mapped = [ReactiveSeq[Observable[3,6,9],Observable[30,60,90]]
