@@ -65,7 +65,7 @@ FluxTSeq<Integer> mapped = nested.map(i->i*3);
 ```java
 import static com.aol.cyclops.reactor.Reactor.monoT;
 
-FutureWTSeq<Integer> nestedFuture = Reactor.monoT(Flux.just(Mono.just(1),Mono.just(10)));
+FutureWTSeq<Integer> nestedFuture = monoT(Flux.just(Mono.just(1),Mono.just(10)));
 mapped = nested.map(i->i*3);
 
 //mapped =  [Flux[FutureW[3],FutureW[30]]
