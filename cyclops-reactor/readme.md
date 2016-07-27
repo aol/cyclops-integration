@@ -31,7 +31,10 @@ Supported Reactor Monads include
 ## Example for comprehensions with Flux
 
 ```java
-Flux<Integer> result = Reactor.ForFlux.each2(Flux.just(10,20),a->Flux.<Integer>just(a+10),(a,b)->a+b);
+import static com.aol.cyclops.reactor.Reactor.ForFlux;
+
+Flux<Integer> result = each2(Flux.just(10,20),a->Flux.<Integer>just(a+10)
+                                             ,(a,b)->a+b);
 	
 //Flux[30,50]
  ```
@@ -39,7 +42,10 @@ Flux<Integer> result = Reactor.ForFlux.each2(Flux.just(10,20),a->Flux.<Integer>j
 ## Example for comprehensions with Mono
 
 ```java
-Mono<Integer> result = Reactor.ForMono.each2(Mono.just(10),a->Mono.<Integer>just(a+10),(a,b)->a+b);
+import static com.aol.cyclops.reactor.Reactor.ForMono;
+
+Mono<Integer> result = each2(Mono.just(10),a->Mono.<Integer>just(a+10)
+                                          ,(a,b)->a+b);
 
 //Mono[30]
  ```
@@ -47,8 +53,10 @@ Mono<Integer> result = Reactor.ForMono.each2(Mono.just(10),a->Mono.<Integer>just
 ## FluxT monad transformer
  
 ```java
-StreamTSeq<Integer> nested = Reactor.fluxT(Flux.just(Flux.just(1,2,3),Flux.just(10,20,30)));
-StreamTSeq<Integer> mapped = nested.map(i->i*3);
+import static com.aol.cyclops.reactor.Reactor.fluxT;
+
+FluxTSeq<Integer> nested = fluxT(Flux.just(Flux.just(1,2,3),Flux.just(10,20,30)));
+FluxTSeq<Integer> mapped = nested.map(i->i*3);
 
 //mapped = [Flux[ReactiveSeq[3,6,9],ReactiveSeq[30,60,90]]
 ```
