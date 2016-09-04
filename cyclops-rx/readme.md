@@ -35,7 +35,7 @@ Observable<Integer> result = each2(Obserbable.just(10,20),a->Observable.<Integer
  ```
 
  
- ## observableT monad transformer
+## observableT monad transformer
  
 ```java
 import static com.aol.cyclops.rx.RxCyclops.observableT;
