@@ -1,13 +1,12 @@
 package com.aol.cyclops.reactor;
 
-import static com.aol.cyclops.util.stream.Streamable.fromStream;
+import static com.aol.cyclops.control.Streamable.fromStream;
 import static java.util.stream.Stream.concat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jooq.lambda.tuple.Tuple;

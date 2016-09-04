@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Function;
 
+import com.aol.cyclops.control.StreamUtils;
 import com.aol.cyclops.internal.comprehensions.comprehenders.StreamableComprehender;
 import com.aol.cyclops.types.extensability.Comprehender;
-import com.aol.cyclops.util.stream.StreamUtils;
 import com.google.common.collect.FluentIterable;
 
 public class FluentIterableComprehender implements Comprehender<FluentIterable> {

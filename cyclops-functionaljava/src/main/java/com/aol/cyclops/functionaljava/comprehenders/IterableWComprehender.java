@@ -5,9 +5,7 @@ import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.BaseStream;
 
-import com.aol.cyclops.internal.comprehensions.comprehenders.StreamableComprehender;
 import com.aol.cyclops.types.extensability.Comprehender;
-import com.aol.cyclops.util.stream.StreamUtils;
 
 import fj.data.IterableW;
 

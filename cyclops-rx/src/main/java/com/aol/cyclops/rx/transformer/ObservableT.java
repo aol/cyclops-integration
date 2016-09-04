@@ -514,9 +514,9 @@ public interface ObservableT<T> extends FoldableTransformerSeq<T> {
      * groupedStatefullyWhile(java.util.function.BiPredicate)
      */
     @Override
-    default ObservableT<ListX<T>> groupedStatefullyWhile(BiPredicate<ListX<? super T>, ? super T> predicate) {
+    default ObservableT<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
 
-        return (ObservableT<ListX<T>>) FoldableTransformerSeq.super.groupedStatefullyWhile(predicate);
+        return (ObservableT<ListX<T>>) FoldableTransformerSeq.super.groupedStatefullyUntil(predicate);
     }
 
     /*

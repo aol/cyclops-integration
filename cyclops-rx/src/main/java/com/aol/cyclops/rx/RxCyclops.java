@@ -41,6 +41,9 @@ public interface RxCyclops {
     public static <T> ObservableTSeq<T> observableT(Publisher<Observable<T>> nested) {
         return ObservableT.fromPublisher(nested);
     }
+    public static <T> ObservableTSeq<T> observableT(Observable<Observable<T>> nested) {
+        return ObservableT.fromObservable(nested);
+    }
 
     public interface ForObservable {
 
