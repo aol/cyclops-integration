@@ -8,38 +8,37 @@ import com.aol.cyclops.types.extensability.ValueComprehender;
 import fj.data.Option;
 import fj.data.State;
 
+public class StateComprehender implements ValueComprehender<State> {
 
-public class StateComprehender implements ValueComprehender<State>{
-	
-	
-	@Override
-	public Object resolveForCrossTypeFlatMap(Comprehender comp, State apply) {
-		return comp.of(apply.run(null)._2());
-	}
+    @Override
+    public Object resolveForCrossTypeFlatMap(Comprehender comp, State apply) {
+        return comp.of(apply.run(null)
+                            ._2());
+    }
 
-	@Override
-	public Object map(State t, Function fn) {
-		return t.map(r->fn.apply(r));
-	}
+    @Override
+    public Object map(State t, Function fn) {
+        return t.map(r -> fn.apply(r));
+    }
 
-	@Override
-	public Object flatMap(State t, Function fn) {
-		return t.flatMap(r->fn.apply(r));
-	}
+    @Override
+    public Object flatMap(State t, Function fn) {
+        return t.flatMap(r -> fn.apply(r));
+    }
 
-	@Override
-	public State of(Object o) {
-		return State.constant(o);
-	}
+    @Override
+    public State of(Object o) {
+        return State.constant(o);
+    }
 
-	@Override
-	public State empty() {
-		return State.constant(Option.none());
-	}
+    @Override
+    public State empty() {
+        return State.constant(Option.none());
+    }
 
-	@Override
-	public Class getTargetClass() {
-		return State.class;
-	}
+    @Override
+    public Class getTargetClass() {
+        return State.class;
+    }
 
 }

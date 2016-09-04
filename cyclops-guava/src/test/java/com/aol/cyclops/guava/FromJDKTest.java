@@ -14,17 +14,24 @@ public class FromJDKTest {
 
     @Test
     public void testJDKf() {
-        assertThat(FromJDK.f1((Integer a)->a*100).apply(2),is(200));
+        assertThat(FromJDK.f1((Integer a) -> a * 100)
+                          .apply(2),
+                   is(200));
 
     }
-    
+
     @Test
-    public void testJDKOption(){
-        assertThat(FromJDK.option(Optional.of(1)).get(),is(1));
+    public void testJDKOption() {
+        assertThat(FromJDK.option(Optional.of(1))
+                          .get(),
+                   is(1));
     }
+
     @Test
-    public void testJDKOptionNull(){
-        assertThat(FromJDK.option(Optional.ofNullable(null)).or(100),is(100));
+    public void testJDKOptionNull() {
+        assertThat(FromJDK.option(Optional.ofNullable(null))
+                          .or(100),
+                   is(100));
     }
 
 }

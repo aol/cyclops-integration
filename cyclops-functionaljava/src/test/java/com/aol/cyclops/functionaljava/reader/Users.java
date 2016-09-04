@@ -4,15 +4,12 @@ import fj.data.Reader;
 
 public interface Users {
 
+    default Reader<UserRepository, User> getUser(Integer id) {
+        return Reader.unit(userRepository -> userRepository.get(id));
+    }
 
-	 default  Reader<UserRepository,User> getUser(Integer id){
-	    return Reader.unit( userRepository -> userRepository.get(id));
-	 }
+    default Reader<UserRepository, User> findUser(String username) {
+        return Reader.unit(userRepository -> userRepository.find(username));
+    }
 
-	 default Reader<UserRepository,User> findUser(String username) {
-		 return Reader.unit(userRepository ->  userRepository.find(username));
-	 }
-	   
-	  
-	 
 }

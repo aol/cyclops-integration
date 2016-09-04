@@ -10,44 +10,47 @@ import fj.data.Either;
 import fj.data.Either.LeftProjection;
 import fj.data.Option;
 
-public class LeftProjectionComprehender implements ValueComprehender<LeftProjection>{
+public class LeftProjectionComprehender implements ValueComprehender<LeftProjection> {
 
-	@Override
-	public Object filter(LeftProjection t, Predicate p){
-		return t.filter(x->p.test(x));
-	}
-	@Override
-	public Object map(LeftProjection t, Function fn) {
-		return t.map(x ->fn.apply(x));
-	}
-	
-	@Override
-	public Object flatMap(LeftProjection t, Function fn) {
-		return t.bind(x->fn.apply(x));
-	}
+    @Override
+    public Object filter(LeftProjection t, Predicate p) {
+        return t.filter(x -> p.test(x));
+    }
 
-	@Override
-	public LeftProjection of(Object o) {
-		return Either.left(o).left();
-	}
+    @Override
+    public Object map(LeftProjection t, Function fn) {
+        return t.map(x -> fn.apply(x));
+    }
 
-	@Override
-	public LeftProjection empty() {
-		return Either.left(Option.none()).left();
-	}
+    @Override
+    public Object flatMap(LeftProjection t, Function fn) {
+        return t.bind(x -> fn.apply(x));
+    }
 
-	@Override
-	public Class getTargetClass() {
-		return LeftProjection.class;
-	}
+    @Override
+    public LeftProjection of(Object o) {
+        return Either.left(o)
+                     .left();
+    }
 
-	public Object resolveForCrossTypeFlatMap(Comprehender comp,LeftProjection apply){
-		Option present =  apply.toOption();
-		if(present.isSome())
-			return comp.of(present.some());
-		else
-			return comp.empty();
-		
-	}
-	
+    @Override
+    public LeftProjection empty() {
+        return Either.left(Option.none())
+                     .left();
+    }
+
+    @Override
+    public Class getTargetClass() {
+        return LeftProjection.class;
+    }
+
+    public Object resolveForCrossTypeFlatMap(Comprehender comp, LeftProjection apply) {
+        Option present = apply.toOption();
+        if (present.isSome())
+            return comp.of(present.some());
+        else
+            return comp.empty();
+
+    }
+
 }

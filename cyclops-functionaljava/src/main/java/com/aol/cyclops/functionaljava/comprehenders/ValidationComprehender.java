@@ -1,4 +1,5 @@
 package com.aol.cyclops.functionaljava.comprehenders;
+
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -8,42 +9,42 @@ import com.aol.cyclops.types.extensability.ValueComprehender;
 import fj.data.Option;
 import fj.data.Validation;
 
-
 public class ValidationComprehender implements ValueComprehender<Validation> {
 
-	
-	public Object filter(Validation t, Predicate p){
-		return t.filter(x->p.test(x));
-	}
-	@Override
-	public Object map(Validation t, Function fn) {
-	  return t.map(i->fn.apply(i));
-     }
+    public Object filter(Validation t, Predicate p) {
+        return t.filter(x -> p.test(x));
+    }
 
-	@Override
-	public Object flatMap(Validation t, Function fn) {
-           return t.bind(i->fn.apply(i));
-	}
+    @Override
+    public Object map(Validation t, Function fn) {
+        return t.map(i -> fn.apply(i));
+    }
 
-	@Override
-	public Validation of(Object o) {
-	  return Validation.success(o);
-        }
+    @Override
+    public Object flatMap(Validation t, Function fn) {
+        return t.bind(i -> fn.apply(i));
+    }
 
-	@Override
-	public Validation empty() {
-           return Validation.success(Option.none());
-        }
+    @Override
+    public Validation of(Object o) {
+        return Validation.success(o);
+    }
 
-	@Override
-	public Class getTargetClass() {
-		return Validation.class;
-	}
-	public Object resolveForCrossTypeFlatMap(Comprehender comp,Validation apply){
-		if(apply.isSuccess())
-			return comp.of(apply.success());
-		else
-			return comp.empty();
-	}
+    @Override
+    public Validation empty() {
+        return Validation.success(Option.none());
+    }
+
+    @Override
+    public Class getTargetClass() {
+        return Validation.class;
+    }
+
+    public Object resolveForCrossTypeFlatMap(Comprehender comp, Validation apply) {
+        if (apply.isSuccess())
+            return comp.of(apply.success());
+        else
+            return comp.empty();
+    }
 
 }

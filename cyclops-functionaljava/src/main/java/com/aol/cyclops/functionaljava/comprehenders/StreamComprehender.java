@@ -13,124 +13,133 @@ import java.util.stream.BaseStream;
 import com.aol.cyclops.types.extensability.Comprehender;
 
 import fj.data.Stream;
+
 public class StreamComprehender implements Comprehender<Stream> {
 
-	@Override
-	public Object map(Stream t, Function fn) {
-		return t.map(s -> fn.apply(s));
-	}
-	@Override
-	public Object executeflatMap(Stream t, Function fn){
-		return flatMap(t,input -> unwrapOtherMonadTypes(this,fn.apply(input)));
-	}
-	@Override
-	public Object flatMap(Stream t, Function fn) {
-		return t.bind(s->fn.apply(s));
-	}
+    @Override
+    public Object map(Stream t, Function fn) {
+        return t.map(s -> fn.apply(s));
+    }
 
-	@Override
-	public Stream of(Object o) {
-		return Stream.single(o);
-	}
+    @Override
+    public Object executeflatMap(Stream t, Function fn) {
+        return flatMap(t, input -> unwrapOtherMonadTypes(this, fn.apply(input)));
+    }
 
-	@Override
-	public Stream empty() {
-		return Stream.nil();
-	}
+    @Override
+    public Object flatMap(Stream t, Function fn) {
+        return t.bind(s -> fn.apply(s));
+    }
 
-	@Override
-	public Class getTargetClass() {
-		return Stream.class;
-	}
-	static Stream unwrapOtherMonadTypes(Comprehender<Stream> comp,Object apply){
-		if (comp.instanceOfT(apply))
-			return (Stream) apply;
-		if(apply instanceof java.util.stream.Stream)
-			return Stream.iteratorStream( ((java.util.stream.Stream)apply).iterator());
-		if(apply instanceof Iterable)
-			return Stream.iterableStream( ((Iterable)apply));
-		
-		final Object finalApply = apply;
-		if(apply instanceof BaseStream){
-			return Stream.iterableStream( () -> ((BaseStream)finalApply).iterator());
-					
-		}
-		
-		return Comprehender.unwrapOtherMonadTypes(comp,apply);
-		
-	}
-	@Override
-	public Object resolveForCrossTypeFlatMap(Comprehender comp, Stream apply) {
-		return comp.fromIterator(apply.iterator());
-	}
-	
-	 /**
-	   * Projects an immutable collection of this stream.
-	   *
-	   * @return An immutable collection of this stream.
-	   */
-	  public final <A> Collection<A> toCollection(Stream stream) {
-	    return new AbstractCollection<A>() {
-	    @Override  
-	    public boolean equals(Object o){
-	    	  if(o==null)
-	    		  return false;
-	    	  if(! (o instanceof Collection))
-	    		  return false;
-	    	  Collection c = (Collection)o;
-	    	  Iterator it1 = iterator();
-	    	  Iterator it2 = c.iterator();
-	    	  while(it1.hasNext()){
-	    		  if(!it2.hasNext())
-	    			  return false;
-	    		  
-	    		  if(!Objects.equals(it1.next(),it2.next()))
-	    			  return false;
-	    	  }
-	    	  if(it2.hasNext())
-	    		  return false;
-	    	  return true;
-	      }
-	      @Override  
-	      public int hashCode(){
-	    	  Iterator it1 = iterator();
-	    	  List arrayList= new ArrayList();
-	    	  while(it1.hasNext()){
-	    		  arrayList.add(it1.next());
-	    	  }
-	    	  return Objects.hashCode(arrayList.toArray());
-	      }
-	      public Iterator iterator() {
-	        return new Iterator<A>() {
-	          private Stream<A> xs = stream;
+    @Override
+    public Stream of(Object o) {
+        return Stream.single(o);
+    }
 
-	          public boolean hasNext() {
-	            return xs.isNotEmpty();
-	          }
+    @Override
+    public Stream empty() {
+        return Stream.nil();
+    }
 
-	          public A next() {
-	            if (xs.isEmpty())
-	              throw new NoSuchElementException();
-	            else {
-	              final A a = xs.head();
-	              xs = xs.tail()._1();
-	              return a;
-	            }
-	          }
+    @Override
+    public Class getTargetClass() {
+        return Stream.class;
+    }
 
-	          public void remove() {
-	            throw new UnsupportedOperationException();
-	          }
-	        };
-	      }
+    static Stream unwrapOtherMonadTypes(Comprehender<Stream> comp, Object apply) {
+        if (comp.instanceOfT(apply))
+            return (Stream) apply;
+        if (apply instanceof java.util.stream.Stream)
+            return Stream.iteratorStream(((java.util.stream.Stream) apply).iterator());
+        if (apply instanceof Iterable)
+            return Stream.iterableStream(((Iterable) apply));
 
-	      public int size() {
-	        return stream.length();
-	      }
-	    };
-	  }
-	@Override
-	public Stream fromIterator(Iterator o) {
-		return Stream.iterableStream(()->o);
-	}
+        final Object finalApply = apply;
+        if (apply instanceof BaseStream) {
+            return Stream.iterableStream(() -> ((BaseStream) finalApply).iterator());
+
+        }
+
+        return Comprehender.unwrapOtherMonadTypes(comp, apply);
+
+    }
+
+    @Override
+    public Object resolveForCrossTypeFlatMap(Comprehender comp, Stream apply) {
+        return comp.fromIterator(apply.iterator());
+    }
+
+    /**
+      * Projects an immutable collection of this stream.
+      *
+      * @return An immutable collection of this stream.
+      */
+    public final <A> Collection<A> toCollection(Stream stream) {
+        return new AbstractCollection<A>() {
+            @Override
+            public boolean equals(Object o) {
+                if (o == null)
+                    return false;
+                if (!(o instanceof Collection))
+                    return false;
+                Collection c = (Collection) o;
+                Iterator it1 = iterator();
+                Iterator it2 = c.iterator();
+                while (it1.hasNext()) {
+                    if (!it2.hasNext())
+                        return false;
+
+                    if (!Objects.equals(it1.next(), it2.next()))
+                        return false;
+                }
+                if (it2.hasNext())
+                    return false;
+                return true;
+            }
+
+            @Override
+            public int hashCode() {
+                Iterator it1 = iterator();
+                List arrayList = new ArrayList();
+                while (it1.hasNext()) {
+                    arrayList.add(it1.next());
+                }
+                return Objects.hashCode(arrayList.toArray());
+            }
+
+            public Iterator iterator() {
+                return new Iterator<A>() {
+                    private Stream<A> xs = stream;
+
+                    public boolean hasNext() {
+                        return xs.isNotEmpty();
+                    }
+
+                    public A next() {
+                        if (xs.isEmpty())
+                            throw new NoSuchElementException();
+                        else {
+                            final A a = xs.head();
+                            xs = xs.tail()
+                                   ._1();
+                            return a;
+                        }
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+
+            public int size() {
+                return stream.length();
+            }
+        };
+    }
+
+    @Override
+    public Stream fromIterator(Iterator o) {
+        return Stream.iterableStream(() -> o);
+    }
 }

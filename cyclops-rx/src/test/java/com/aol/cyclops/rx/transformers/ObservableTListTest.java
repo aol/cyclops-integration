@@ -7,23 +7,24 @@ import com.aol.cyclops.rx.transformer.ObservableT;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 
 import rx.Observable;
-public class ObservableTListTest extends AbstractAnyMSeqOrderedDependentTest{
 
-	@Override
-	public <T> AnyMSeq<T> of(T... values) {
-		return AnyM.fromIterable(ObservableT.fromIterable(ListX.of(Observable.from(values))));
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#empty()
-	 */
-	@Override
-	public <T> AnyMSeq<T> empty() {
-		return AnyM.fromIterable(StreamTSeq.emptyStream());
-	}
-	
-	
+public class ObservableTListTest extends AbstractAnyMSeqOrderedDependentTest {
+
+    @Override
+    public <T> AnyMSeq<T> of(T... values) {
+        return AnyM.fromIterable(ObservableT.fromIterable(ListX.of(Observable.from(values))));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
+     * empty()
+     */
+    @Override
+    public <T> AnyMSeq<T> empty() {
+        return AnyM.fromIterable(StreamTSeq.emptyStream());
+    }
 
 }
-
-
