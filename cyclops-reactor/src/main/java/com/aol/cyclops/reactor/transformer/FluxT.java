@@ -512,9 +512,9 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
      * groupedStatefullyWhile(java.util.function.BiPredicate)
      */
     @Override
-    default FluxT<ListX<T>> groupedStatefullyWhile(BiPredicate<ListX<? super T>, ? super T> predicate) {
+    default FluxT<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
 
-        return (FluxT<ListX<T>>) FoldableTransformerSeq.super.groupedStatefullyWhile(predicate);
+        return (FluxT<ListX<T>>) FoldableTransformerSeq.super.groupedStatefullyUntil(predicate);
     }
 
     /*

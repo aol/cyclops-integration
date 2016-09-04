@@ -462,9 +462,9 @@ public class FluxTSeq<T> implements FluxT<T> {
      * groupedStatefullyWhile(java.util.function.BiPredicate)
      */
     @Override
-    public FluxTSeq<ListX<T>> groupedStatefullyWhile(BiPredicate<ListX<? super T>, ? super T> predicate) {
+    public FluxTSeq<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
 
-        return (FluxTSeq<ListX<T>>) FluxT.super.groupedStatefullyWhile(predicate);
+        return (FluxTSeq<ListX<T>>) FluxT.super.groupedStatefullyUntil(predicate);
     }
 
     /*

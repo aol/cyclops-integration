@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.aol.cyclops.control.StreamUtils;
 import com.aol.cyclops.types.extensability.Comprehender;
 import com.aol.cyclops.types.extensability.ValueComprehender;
-import com.aol.cyclops.util.stream.StreamUtils;
 
 import fj.Monoid;
 import fj.Semigroup;

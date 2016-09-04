@@ -465,9 +465,9 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * groupedStatefullyWhile(java.util.function.BiPredicate)
      */
     @Override
-    public ObservableTSeq<ListX<T>> groupedStatefullyWhile(BiPredicate<ListX<? super T>, ? super T> predicate) {
+    public ObservableTSeq<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
 
-        return (ObservableTSeq<ListX<T>>) ObservableT.super.groupedStatefullyWhile(predicate);
+        return (ObservableTSeq<ListX<T>>) ObservableT.super.groupedStatefullyUntil(predicate);
     }
 
     /*

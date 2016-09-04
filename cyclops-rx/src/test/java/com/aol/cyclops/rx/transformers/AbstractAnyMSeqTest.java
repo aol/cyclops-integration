@@ -59,8 +59,8 @@ import com.aol.cyclops.types.Traversable;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.util.SimpleTimer;
 import com.aol.cyclops.util.function.Predicates;
-import com.aol.cyclops.util.stream.StreamUtils;
-import com.aol.cyclops.util.stream.Streamable;
+import com.aol.cyclops.control.StreamUtils;
+import com.aol.cyclops.control.Streamable;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
