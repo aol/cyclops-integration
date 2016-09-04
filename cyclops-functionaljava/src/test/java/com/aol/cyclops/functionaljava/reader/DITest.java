@@ -12,16 +12,19 @@ import org.junit.Test;
 //http://blog.originate.com/blog/2013/10/21/reader-monad-for-dependency-injection/
 public class DITest {
 
-	@SuppressWarnings("serial")
-	Map<String,String> map = new HashMap<String,String> (){{
-									put("fullname","bob");
-									put("email","bob@user.com");
-									put("boss","boss");
-								}};
-	@Test
-	public void test(){
-		assertThat(new Application().userInfo("bob"), equalTo(map));
-	}
+    @SuppressWarnings("serial")
+    Map<String, String> map = new HashMap<String, String>() {
+        {
+            put("fullname", "bob");
+            put("email", "bob@user.com");
+            put("boss", "boss");
+        }
+    };
+
+    @Test
+    public void test() {
+        assertThat(new Application().userInfo("bob"), equalTo(map));
+    }
 }
 
 /** NOTES : See UserInfo class where current main compromise occurs.

@@ -11,17 +11,24 @@ import static org.junit.Assert.assertThat;
 public class FromGuavaTest {
     @Test
     public void testGuavaλ() {
-        assertThat(FromGuava.f1((Integer a)->a*100).f(2),is(200));
+        assertThat(FromGuava.f1((Integer a) -> a * 100)
+                            .f(2),
+                   is(200));
 
     }
+
     @Test
-    public void testGuavaOption(){
-        assertThat(FromGuava.option(com.google.common.base.Optional.of(1)).some(),is(1));
-    }
-    @Test
-    public void testJDKGuavaNull(){
-        assertThat(FromGuava.option(com.google.common.base.Optional.fromNullable(null)).orSome(100),is(100));
+    public void testGuavaOption() {
+        assertThat(FromGuava.option(com.google.common.base.Optional.of(1))
+                            .some(),
+                   is(1));
     }
 
+    @Test
+    public void testJDKGuavaNull() {
+        assertThat(FromGuava.option(com.google.common.base.Optional.fromNullable(null))
+                            .orSome(100),
+                   is(100));
+    }
 
 }
