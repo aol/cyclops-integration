@@ -9,7 +9,9 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.operators.GroupBySize;
+import com.aol.cyclops.reactor.operators.GroupedWhile;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
 
 import reactor.core.publisher.Flux;
@@ -118,4 +120,38 @@ public class FluxUtils {
         return stream.filter(type::isInstance)
                      .map(t -> (U) t);
     }
+    
+    public final static <T> Flux<ListX<T>> groupedWhile(final Flux<T> stream, final Predicate<? super T> predicate) {
+        return new GroupedWhile<T, ListX<T>>(
+                                                   stream).batchWhile(predicate);
+    }
+
+    public final static <T, C extends Collection<? super T>> Flux<C> groupedWhile(final Flux<T> stream, final Predicate<? super T> predicate,
+            final Supplier<C> factory) {
+        return new GroupedWhile<T, C>(
+                                            stream, factory).batchWhile(predicate);
+    }
+
+    public final static <T> Flux<ListX<T>> groupedUntil(final Flux<T> stream, final Predicate<? super T> predicate) {
+        return groupedWhile(stream, predicate.negate());
+    }
+    /**
+     * Create a Stream that finitely cycles the provided Streamable, provided number of times
+     * 
+     * <pre>
+     * {@code 
+     * assertThat(StreamUtils.cycle(3,Streamable.of(1,2,2))
+                                .collect(Collectors.toList()),
+                                    equalTo(Arrays.asList(1,2,2,1,2,2,1,2,2)));
+     * }
+     * </pre>
+     * @param s Streamable to cycle
+     * @return New cycling stream
+     */
+    public static <U> Stream<U> cycle(final int times, final Flux<U> s) {
+        return Stream.iterate(s.stream(), s1 -> s.stream())
+                     .limit(times)
+                     .flatMap(Function.identity());
+    }
 }
+

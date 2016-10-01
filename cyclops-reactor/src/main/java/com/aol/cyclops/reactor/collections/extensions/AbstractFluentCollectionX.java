@@ -15,6 +15,7 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import org.jooq.lambda.Seq;
+import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
@@ -24,6 +25,8 @@ import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.FluxUtils;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.control.StreamUtils;
+import com.aol.cyclops.control.Streamable;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.CollectionX;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
@@ -32,17 +35,18 @@ import com.aol.cyclops.data.collections.extensions.standard.SetX;
 
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 
 public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollectionX<T>{
     @AllArgsConstructor
     public static class LazyCollection<T,C extends Collection<T>> implements LazyFluentCollection<T,C>{
         private volatile C list;
-        private volatile Stream<T> seq;
+        private volatile Flux<T> seq;
         private final Collector<T,?,C> collector;
         public C get(){
             if( seq!=null){
-               list =  seq.collect(collector);
+               list =  seq.collect(collector).block();
                seq = null;
             }
               
@@ -50,33 +54,31 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
             
         }
         
-        public ReactiveSeq<T> stream(){
+        public Flux<T> stream(){
             if(seq!=null){
-               ReactiveSeq<T> result =  ReactiveSeq.fromStream(seq);
-               seq=null;
-               return result;
+              return seq;
             }
-            return ReactiveSeq.fromIterable(list);
+            return Flux.fromIterable(list);
         }
     }
     @AllArgsConstructor
     public static class PersistentLazyCollection<T,C extends Collection<T>>  implements LazyFluentCollection<T,C>{
         private volatile C list;
-        private volatile Stream<T> seq;
+        private volatile Flux<T> seq;
         private final Reducer<C> reducer;
         public C get(){
             if( seq!=null){
-               list =  reducer.mapReduce(seq);
+               list =  reducer.mapReduce(seq.toStream());
                seq = null;
             }
               
             return list;
             
         }
-        public ReactiveSeq<T> stream(){
+        public Flux<T> stream(){
             if(seq!=null)
-                return ReactiveSeq.fromStream(seq);
-            return ReactiveSeq.fromIterable(list);
+                return seq;
+            return Flux.fromIterable(list);
         }
     }
     abstract public Flux<T> streamInternal();
@@ -124,8 +126,8 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     }
     @Override
     public FluentCollectionX<T> minusAllLazy(Collection<?> list){
-        return stream(streamInternal().removeAll((Collection)list));
-      
+        Supplier<SetX<?>> set = ()->SetX.fromIterable(list);
+        return stream(streamInternal().filter(t-> !set.get().contains(t)));
     }
     
     @Override
@@ -222,7 +224,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      * @see org.jooq.lambda.Seq#slice(long, long)
      */
     public FluentCollectionX<T> slice(long from, long to){
-        return stream(streamInternal()..slice(from,to));  
+        return stream(streamInternal().slice(from,to));  
     }
     
     
@@ -231,13 +233,18 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return stream(streamInternal().window(groupSize).map(ListX::fromPublisher));     
     }
     public <K, A, D> FluentCollectionX<Tuple2<K, D>> grouped(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream){
-        return stream(streamInternal().window(maxSize).grouped(classifier,downstream));  
+        Flux<GroupedFlux<K, T>> f = streamInternal().groupBy(classifier);
+        Flux<Tuple2<K, Seq<T>>> k = f.map(g->Tuple.tuple(g.key(),ReactiveSeq.fromPublisher(g)));
+        Flux<Tuple2<K, D>> j = k.map(s->Tuple.tuple(s.v1,s.v2.collect(downstream)));
+        return stream(j);      
     }
     public <K> FluentCollectionX<Tuple2<K, Seq<T>>> grouped(Function<? super T, ? extends K> classifier){
-        return stream(streamInternal().grouped(classifier));     
+        Flux<GroupedFlux<K, T>> f = streamInternal().groupBy(classifier);
+        Flux<Tuple2<K, Seq<T>>> k = f.map(g->Tuple.tuple(g.key(),ReactiveSeq.fromPublisher(g)));
+        return stream(k);     
     }
     public <U> FluentCollectionX<Tuple2<T, U>> zip(Iterable<? extends U> other){
-        return stream(streamInternal().zip(other));
+        return (FluentCollectionX)stream(streamInternal().zipWithIterable(other, Tuple::tuple));
     }
     public <U, R> FluentCollectionX<R> zip(Iterable<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper){
         return stream(streamInternal().zipWith(ReactiveSeq.fromIterable(other),zipper));
@@ -292,7 +299,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<T> cycle(Monoid<T> m, int times) {
         
-        return stream(streamInternal().cycle(m, times));
+        return stream(Flux.fromStream(StreamUtils.cycle(times, Streamable.of(m.reduce(stream())))));
     }
 
     /* (non-Javadoc)
@@ -320,7 +327,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public <U> FluentCollectionX<Tuple2<T, U>> zip(Seq<? extends U> other) {
         
-        return stream(streamInternal().zip(other));
+        return (FluentCollectionX)stream(streamInternal().zipWithIterable(other,Tuple::tuple));
     }
 
     /* (non-Javadoc)
@@ -329,7 +336,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public <S, U> FluentCollectionX<Tuple3<T, S, U>> zip3(Stream<? extends S> second, Stream<? extends U> third) {
         
-        return stream(streamInternal().zip3(second, third));
+        return (FluentCollectionX)stream(Flux.zip(streamInternal(),Flux.fromStream(second), Flux.fromStream(third)).map(t->Tuple.tuple(t.t1,t.t2,t.t3)));
     }
 
     /* (non-Javadoc)
@@ -339,7 +346,8 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     public <T2, T3, T4> FluentCollectionX<Tuple4<T, T2, T3, T4>> zip4(Stream<? extends T2> second, Stream<? extends T3> third,
             Stream<? extends T4> fourth) {
        
-        return  stream(streamInternal().zip4(second, third, fourth));
+        return (FluentCollectionX)stream(Flux.zip(streamInternal(),Flux.fromStream(second), Flux.fromStream(third),Flux.fromStream(fourth)).map(t->Tuple.tuple(t.t1,t.t2,t.t3,t.t4)));
+
     }
 
     /* (non-Javadoc)
@@ -348,7 +356,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<Tuple2<T, Long>> zipWithIndex() {
         
-        return stream(streamInternal().zipWithIndex());
+        return (FluentCollectionX)stream(streamInternal().zipWith(ReactiveSeq.rangeLong(0,Long.MAX_VALUE),Tuple::tuple));
     }
 
     /* (non-Javadoc)
@@ -519,13 +527,14 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> removeAll(Stream<? extends T> stream) {
-        
-        return stream(streamInternal().removeAll(stream));
+        Supplier<Set<T>> set = ()->(SetX)stream.collect(SetX.setXCollector());
+        return stream(streamInternal().filter(e->!set.get().contains(e)));
     }
     @Override
     public FluentCollectionX<T> removeAll(Seq<? extends T> stream) {
-        
-        return stream(streamInternal().removeAll(stream));
+        Supplier<Set<T>> set = ()->(SetX)SetX.fromIterable(stream);
+        return stream(streamInternal().filter(e->!set.get().contains(e)));
+       
     }
 
     /* (non-Javadoc)
@@ -608,7 +617,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<ReactiveSeq<T>> permutations() {
-        return stream(streamInternal().permutations());
+        return stream(Flux.from(Streamable.fromPublisher(streamInternal()).permutations().map(s->s.stream())));
         
     }
     /* (non-Javadoc)
@@ -616,14 +625,16 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<ReactiveSeq<T>> combinations(int size) {
-        return stream(streamInternal().combinations(size));
+        return stream(Flux.from(Streamable.fromPublisher(streamInternal()).combinations(size).map(s->s.stream())));
+        
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.lambda.monads.ExtendedTraversable#combinations()
      */
     @Override
     public FluentCollectionX<ReactiveSeq<T>> combinations() {
-        return stream(streamInternal().combinations());
+        return stream(Flux.from(Streamable.fromPublisher(streamInternal()).combinations().map(s->s.stream())));
+        
     }
 
     @Override
@@ -635,27 +646,28 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<ListX<T>> groupedUntil(Predicate<? super T> predicate) {
         
-        return stream(streamInternal().groupedUntil(predicate));
+        return stream(FluxUtils.groupedUntil(streamInternal(), predicate));
     }
 
     @Override
     public FluentCollectionX<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
         
-        return stream(streamInternal().groupedWhile(predicate));
+        return stream(FluxUtils.groupedWhile(streamInternal(), predicate));
+        
     }
 
     @Override
     public <C extends Collection<? super T>> FluentCollectionX<C> groupedWhile(Predicate<? super T> predicate,
             Supplier<C> factory) {
+        return stream(FluxUtils.groupedWhile(streamInternal(), predicate,factory));
         
-        return stream(streamInternal().groupedWhile(predicate,factory));
     }
 
     @Override
     public <C extends Collection<? super T>> FluentCollectionX<C> groupedUntil(Predicate<? super T> predicate,
             Supplier<C> factory) {
+        return stream(FluxUtils.groupedWhile(streamInternal(), predicate.negate(),factory));
         
-        return stream(streamInternal().groupedUntil(predicate,factory));
     }
 
    

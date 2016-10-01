@@ -1,13 +1,13 @@
 package com.aol.cyclops.reactor.collections.extensions;
 
 import java.util.Collection;
-import java.util.stream.Stream;
 
-import com.aol.cyclops.data.collections.extensions.CollectionX;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 
+import reactor.core.publisher.Flux;
+
 public interface LazyFluentCollectionX<T> extends FluentCollectionX<T> {
-    <X> FluentCollectionX<X> stream(Stream<X> stream);
+    <X> FluentCollectionX<X> stream(Flux<X> stream);
     default FluentCollectionX<T> plusLazy(T e){
         add(e);
         return this;

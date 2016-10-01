@@ -298,6 +298,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
      * @see java.util.List#indexOf(java.lang.Object)
      */
     public int indexOf(Object o) {
+        // return stream().zipWithIndex().filter(t->Objects.equals(t.v1,o)).findFirst().get().v2.intValue();
         return getList().indexOf(o);
     }
     /**
