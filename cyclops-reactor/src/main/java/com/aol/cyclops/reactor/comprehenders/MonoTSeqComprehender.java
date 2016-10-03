@@ -1,4 +1,4 @@
-package com.aol.cyclops.internal.comprehensions.comprehenders.transformers.seq;
+package com.aol.cyclops.reactor.comprehenders;
 
 import java.util.Iterator;
 import java.util.function.Function;
@@ -37,7 +37,7 @@ public class MonoTSeqComprehender implements Comprehender<MonoTSeq>, Printable {
 
     @Override
     public MonoTSeq of(Object o) {
-        return MonoTSeq.of(Mono.ofResult(o));
+        return MonoTSeq.of(Mono.just(o));
     }
 
     @Override

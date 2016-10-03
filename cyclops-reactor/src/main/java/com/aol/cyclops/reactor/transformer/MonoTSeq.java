@@ -1,4 +1,4 @@
-package com.aol.cyclops.control.monads.transformers.seq;
+package com.aol.cyclops.reactor.transformer;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -67,7 +67,7 @@ public class MonoTSeq<A>
 
     @Override
     public <T> MonoTSeq<T> unitStream(ReactiveSeq<T> traversable) {
-        return MonoT.fromStream(traversable.map(Mono::ofResult));
+        return MonoT.fromStream(traversable.map(Mono::just));
 
     }
 
@@ -80,12 +80,12 @@ public class MonoTSeq<A>
     @Override
     public AnyMSeq<? extends Traversable<A>> transformerStream() {
 
-        return run.map(f -> f.toListX());
+        return run.map(f -> ListX.of(f.block()));
     }
 
     
-    public MaybeTSeq<A> filter(Predicate<? super A> test) {
-        return MaybeTSeq.of(run.map(opt -> opt.filter(test)));
+    public MonoTSeq<A> filter(Predicate<? super A> test) {
+        return MonoTSeq.of(run.map(opt -> opt.filter(test)));
     }
 
     /**
@@ -237,7 +237,7 @@ public class MonoTSeq<A>
      * @return MonoT
      */
     public static <A> MonoTSeq<A> fromAnyM(AnyMSeq<A> anyM) {
-        return of(anyM.map(Mono::ofResult));
+        return of(anyM.map(Mono::just));
     }
 
     /**
@@ -267,7 +267,7 @@ public class MonoTSeq<A>
     @Override
     public ReactiveSeq<A> stream() {
         return run.stream()
-                  .map(cf -> cf.get());
+                  .map(cf -> cf.block());
     }
 
     @Override
@@ -277,11 +277,11 @@ public class MonoTSeq<A>
 
     public <R> MonoTSeq<R> unitIterator(Iterator<R> it) {
         return of(run.unitIterator(it)
-                     .map(i -> Mono.ofResult(i)));
+                     .map(i -> Mono.just(i)));
     }
 
     public <R> MonoTSeq<R> unit(R value) {
-        return of(run.unit(Mono.ofResult(value)));
+        return of(run.unit(Mono.just(value)));
     }
 
     public <R> MonoTSeq<R> empty() {

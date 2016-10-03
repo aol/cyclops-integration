@@ -23,7 +23,6 @@ public class GroupedWhile<T, C extends Collection<? super T>> {
     }
 
     public GroupedWhile(Flux<T> stream, Supplier<C> factory) {
-        super();
         this.stream = stream;
         this.factory = factory;
     }

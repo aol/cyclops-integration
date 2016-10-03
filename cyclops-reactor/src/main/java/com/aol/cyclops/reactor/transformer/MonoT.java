@@ -14,7 +14,7 @@ import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.Matchables;
 import com.aol.cyclops.control.AnyM;
-import com.aol.cyclops.control.Mono;
+
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.monads.transformers.MaybeT;
@@ -32,13 +32,13 @@ import reactor.core.publisher.Mono;
 
 public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<A>, ToStream<A> {
 
-    MaybeT<A> filter(Predicate<? super A> test);
+    MonoT<A> filter(Predicate<? super A> test);
 
     public <R> MonoT<R> empty();
 
     default <B> MonoT<B> bind(Function<? super A, MonoT<? extends B>> f) {
-        return of(unwrap().bind(opt -> {
-            return f.apply(opt.get())
+        return of(unwrap().bind(mono-> {
+            return f.apply(mono.block())
                     .unwrap()
                     .unwrap();
         }));
@@ -242,27 +242,27 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
      * @see com.aol.cyclops.types.Filterable#ofType(java.lang.Class)
      */
     @Override
-    default <U> MaybeT<U> ofType(Class<? extends U> type) {
+    default <U> MonoT<U> ofType(Class<? extends U> type) {
 
-        return (MaybeT<U>) Filterable.super.ofType(type);
+        return (MonoT<U>) Filterable.super.ofType(type);
     }
 
     /* (non-Javadoc)
      * @see com.aol.cyclops.types.Filterable#filterNot(java.util.function.Predicate)
      */
     @Override
-    default MaybeT<A> filterNot(Predicate<? super A> fn) {
+    default MonoT<A> filterNot(Predicate<? super A> fn) {
 
-        return (MaybeT<A>) Filterable.super.filterNot(fn);
+        return (MonoT<A>) Filterable.super.filterNot(fn);
     }
 
     /* (non-Javadoc)
      * @see com.aol.cyclops.types.Filterable#notNull()
      */
     @Override
-    default MaybeT<A> notNull() {
+    default MonoT<A> notNull() {
 
-        return (MaybeT<A>) Filterable.super.notNull();
+        return (MonoT<A>) Filterable.super.notNull();
     }
 
 }

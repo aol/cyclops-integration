@@ -1,4 +1,4 @@
-package com.aol.cyclops.control.monads.transformers.values;
+package com.aol.cyclops.reactor.transformer;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -74,8 +74,9 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     *            Predicate to filter the wrapped Maybe
     * @return MaybeT that applies the provided filter
     */
-    public MaybeTValue<A> filter(Predicate<? super A> test) {
-        return MaybeTValue.of(run.map(opt -> opt.filter(test)));
+    public MonoTValue<A> filter(Predicate<? super A> test) {       
+        AnyMValue<Mono<A>> x = run.map(opt -> opt.filter(test));
+        return MonoTValue.of(x);
     }
 
     /**
@@ -130,7 +131,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      */
     @Override
     public <T2, R> MonoTValue<R> combine(Value<? extends T2> app, BiFunction<? super A, ? super T2, ? extends R> fn) {
-        return new MonoTValue<>(
+        return new MonoTValue<R>(
                                    run.map(o -> o.combine(app, fn)));
     }
 
@@ -143,7 +144,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public <T2, R> MonoTValue<R> zip(Iterable<? extends T2> app, BiFunction<? super A, ? super T2, ? extends R> fn) {
 
-        return new MonoTValue<>(
+        return new MonoTValue<R>(
                                    run.map(o -> o.zip(app, fn)));
     }
 
@@ -312,7 +313,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      * @return CompletableFutureT
      */
     public static <A> MonoTValue<A> fromAnyM(AnyMValue<A> anyM) {
-        return of(anyM.map(Mono::ofResult));
+        return of(anyM.map(Mono::just));
     }
 
     /**
@@ -346,7 +347,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public A get() {
         return run.get()
-                  .get();
+                  .block();
     }
 
     @Override
@@ -388,7 +389,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     }
 
     public <R> MonoTValue<R> unit(R value) {
-        return of(run.unit(Mono.ofResult(value)));
+        return of(run.unit(Mono.just(value)));
     }
 
     public <R> MonoTValue<R> empty() {
@@ -427,27 +428,27 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      * @see com.aol.cyclops.types.Filterable#ofType(java.lang.Class)
      */
     @Override
-    public <U> MaybeTValue<U> ofType(Class<? extends U> type) {
+    public <U> MonoTValue<U> ofType(Class<? extends U> type) {
 
-        return (MaybeTValue<U>) MonoT.super.ofType(type);
+        return (MonoTValue<U>) MonoT.super.ofType(type);
     }
 
     /* (non-Javadoc)
      * @see com.aol.cyclops.types.Filterable#filterNot(java.util.function.Predicate)
      */
     @Override
-    public MaybeTValue<A> filterNot(Predicate<? super A> fn) {
+    public MonoTValue<A> filterNot(Predicate<? super A> fn) {
 
-        return (MaybeTValue<A>) MonoT.super.filterNot(fn);
+        return (MonoTValue<A>) MonoT.super.filterNot(fn);
     }
 
     /* (non-Javadoc)
      * @see com.aol.cyclops.types.Filterable#notNull()
      */
     @Override
-    public MaybeTValue<A> notNull() {
+    public MonoTValue<A> notNull() {
 
-        return (MaybeTValue<A>) MonoT.super.notNull();
+        return (MonoTValue<A>) MonoT.super.notNull();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.aol.cyclops.internal.comprehensions.comprehenders.transformers;
+package com.aol.cyclops.reactor.comprehenders;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -36,7 +36,7 @@ public class MonoTValueComprehender implements ValueComprehender<MonoTValue>, Pr
 
     @Override
     public MonoTValue of(Object o) {
-        return MonoTValue.of(Mono.ofResult(o));
+        return MonoTValue.of(Mono.just(o));
     }
 
     @Override
