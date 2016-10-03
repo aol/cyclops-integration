@@ -14,7 +14,7 @@ import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.Matchables;
 import com.aol.cyclops.control.AnyM;
-import com.aol.cyclops.control.FutureW;
+import com.aol.cyclops.control.Mono;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.monads.transformers.MaybeT;
@@ -61,7 +61,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
     /**
      * @return The wrapped AnyM
      */
-    public AnyM<FutureW<A>> unwrap();
+    public AnyM<Mono<A>> unwrap();
 
     /**
      * Peek at the current value of the CompletableFuture
@@ -167,7 +167,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
     }
 
     public static <A> MonoT<A> fromAnyM(AnyM<A> anyM) {
-        return of(anyM.map(FutureW::ofResult));
+        return of(anyM.map(Mono::just));
     }
 
     public static <A> MonoTValue<A> fromAnyMValue(AnyMValue<A> anyM) {
@@ -178,31 +178,31 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return MonoTSeq.fromAnyM(anyM);
     }
 
-    public static <A> MonoTSeq<A> fromIterable(Iterable<FutureW<A>> iterableOfCompletableFutures) {
+    public static <A> MonoTSeq<A> fromIterable(Iterable<Mono<A>> iterableOfCompletableFutures) {
         return MonoTSeq.of(AnyM.fromIterable(iterableOfCompletableFutures));
     }
 
-    public static <A> MonoTSeq<A> fromStream(Stream<FutureW<A>> streamOfCompletableFutures) {
+    public static <A> MonoTSeq<A> fromStream(Stream<Mono<A>> streamOfCompletableFutures) {
         return MonoTSeq.of(AnyM.fromStream(streamOfCompletableFutures));
     }
 
-    public static <A> MonoTSeq<A> fromPublisher(Publisher<FutureW<A>> publisherOfCompletableFutures) {
+    public static <A> MonoTSeq<A> fromPublisher(Publisher<Mono<A>> publisherOfCompletableFutures) {
         return MonoTSeq.of(AnyM.fromPublisher(publisherOfCompletableFutures));
     }
 
-    public static <A, V extends MonadicValue<FutureW<A>>> MonoTValue<A> fromValue(V monadicValue) {
+    public static <A, V extends MonadicValue<Mono<A>>> MonoTValue<A> fromValue(V monadicValue) {
         return MonoTValue.fromValue(monadicValue);
     }
 
-    public static <A> MonoTValue<A> fromOptional(Optional<FutureW<A>> optional) {
+    public static <A> MonoTValue<A> fromOptional(Optional<Mono<A>> optional) {
         return MonoTValue.of(AnyM.fromOptional(optional));
     }
 
-    public static <A> MonoTValue<A> fromFuture(CompletableFuture<FutureW<A>> future) {
+    public static <A> MonoTValue<A> fromFuture(CompletableFuture<Mono<A>> future) {
         return MonoTValue.of(AnyM.fromCompletableFuture(future));
     }
 
-    public static <A> MonoTValue<A> fromIterableValue(Iterable<FutureW<A>> iterableOfCompletableFutures) {
+    public static <A> MonoTValue<A> fromIterableValue(Iterable<Mono<A>> iterableOfCompletableFutures) {
         return MonoTValue.of(AnyM.fromIterableValue(iterableOfCompletableFutures));
     }
 

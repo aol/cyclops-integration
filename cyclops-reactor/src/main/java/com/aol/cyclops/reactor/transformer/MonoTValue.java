@@ -16,6 +16,7 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Matchable;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
@@ -49,8 +50,8 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
         this.run = run;
     }
 
-    public Mono<A> value() {
-        return run.get();
+    public FutureW<A> value() {
+        return FutureW.of(run.get().toFuture());
     }
 
     public boolean isValuePresent() {

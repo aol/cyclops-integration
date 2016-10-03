@@ -16,19 +16,24 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jooq.lambda.Seq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
+import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Matchable.CheckValue1;
+import com.aol.cyclops.control.FluxUtils;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
+import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.ListXImpl;
+import com.aol.cyclops.types.Zippable;
 
 import lombok.Getter;
 import reactor.core.publisher.Flux;
@@ -48,7 +53,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         this.collector = ListX.defaultCollector();
         this.lazy = new LazyCollection<T,List<T>>(list,null,collector);
     }
-    public LazyListX(Stream<T> stream){
+    public LazyListX(Flux<T> stream){
         
         this.collector = ListX.defaultCollector();
         this.lazy = new LazyCollection<>(null,stream,collector);
@@ -376,7 +381,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return lazy.get();
     }
     @Override
-    public <X> ListX<X> stream(Stream<X> stream){
+    public <X> ListX<X> stream(Flux<X> stream){
         return new LazyListX<X>(stream);
     }
    
@@ -1026,7 +1031,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
      * @see com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(int, java.lang.Object)
      */
     public ListX<T> with(int i,T element){
-        return stream( streamInternal().deleteBetween(i, i+1).insertAt(i,element) ) ;
+        return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(streamInternal(),i, i+1),i,element)) ;
     }
     @Override
     public ListX<T> minus(int pos){
@@ -1062,6 +1067,53 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     public ListX<T> plusInOrder(T e) {
         
         return (ListX<T>)super.plusInOrder(e);
+    }
+    
+
+    @Override
+    public <T1> ListX<T1> from(Collection<T1> c) {
+        if(c instanceof List)
+            return new LazyListX<T1>((List)c,(Collector)collector);
+      return new LazyListX<T1>((List)c.stream().collect(Collectors.toList()),(Collector)this.collector);
+    }
+
+    @Override
+    public ListX<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
+        
+        return (ListX<ListX<T>>)super.groupedStatefullyUntil(predicate);
+    }
+
+    @Override
+    public ListX<T> peek(Consumer<? super T> c) {
+        
+        return (ListX)super.peek(c);
+    }
+
+    @Override
+    public <U, R> ListX<R> zip(Seq<? extends U> other,
+            BiFunction<? super T, ? super U, ? extends R> zipper) {
+        
+        return (ListX<R>)super.zip(other, zipper);
+    }
+
+    @Override
+    public <U, R> ListX<R> zip(Stream<? extends U> other,
+            BiFunction<? super T, ? super U, ? extends R> zipper) {
+      
+        return (ListX<R>)super.zip(other, zipper);
+    }
+
+    @Override
+    public <U> ListX<Tuple2<T, U>> zip(Stream<? extends U> other) {
+        
+        return (ListX)super.zip(other);
+    }
+
+    @Override
+    public <T2, R> ListX<R> zip(BiFunction<? super T, ? super T2, ? extends R> fn,
+            Publisher<? extends T2> publisher) {
+       
+        return (ListX<R>)super.zip(fn, publisher);
     }
 
     

@@ -274,10 +274,10 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return stream(streamInternal().scan(seed,(BiFunction)function));    
     }
     public FluentCollectionX<T> scanRight(Monoid<T> monoid){
-        return stream(streamInternal().scanRight(monoid));  
+        return stream(FluxUtils.scanRight(streamInternal(),monoid));  
     }
     public <U> FluentCollectionX<U> scanRight(U identity, BiFunction<? super T, ? super U, ? extends U> combiner){
-        return stream(streamInternal().scanRight(identity,combiner));
+        return stream(FluxUtils.scanRight(streamInternal(),identity,combiner));
     }
     
 
@@ -287,7 +287,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      * @see org.jooq.lambda.Seq#sorted(java.util.function.Function)
      */
     public <U extends Comparable<? super U>> FluentCollectionX<T> sorted(Function<? super T, ? extends U> function){
-        return stream(streamInternal().sorted(function));
+        return stream(FluxUtils.sorted(streamInternal(),function));
     }
    
 
@@ -386,7 +386,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<T> sorted() {
         
-        return stream(streamInternal().sorted());
+        return stream(FluxUtils.sorted(streamInternal()));
     }
 
     /* (non-Javadoc)
@@ -395,7 +395,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<T> sorted(Comparator<? super T> c) {
         
-        return stream(streamInternal().sorted(c));
+        return stream(FluxUtils.sorted(streamInternal()));
     }
 
     /* (non-Javadoc)
@@ -452,7 +452,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<T> shuffle() {
         
-        return stream(streamInternal().shuffle());
+        return stream(FluxUtils.shuffle(streamInternal()));
     }
 
     
@@ -480,7 +480,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> onEmpty(T value) {
-        return stream(streamInternal().onEmpty(value));
+        return stream(FluxUtils.onEmpty(streamInternal(),value));
     }
 
     /* (non-Javadoc)
@@ -488,7 +488,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> onEmptyGet(Supplier<? extends T> supplier) {
-        return stream(streamInternal().onEmptyGet(supplier));
+        return stream(FluxUtils.onEmptyGet(streamInternal(),supplier));
     }
 
     /* (non-Javadoc)
@@ -496,7 +496,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public <X extends Throwable> FluentCollectionX<T> onEmptyThrow(Supplier<? extends X> supplier) {
-        return stream(streamInternal().onEmptyThrow(supplier));
+        return stream(FluxUtils.onEmptyThrow(streamInternal(),supplier));
     }
 
     /* (non-Javadoc)
@@ -504,7 +504,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> shuffle(Random random) {
-        return stream(streamInternal().shuffle(random));
+        return stream(FluxUtils.shuffle(streamInternal(),random));
     }
 
     /* (non-Javadoc)
@@ -682,9 +682,8 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         
     }
     @Override
-    public CollectionX<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        // TODO Auto-generated method stub
-        return null;
+    public FluentCollectionX<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
+        return stream(FluxUtils.groupedStatefullyUntil(streamInternal(), predicate));
     }
   
     

@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -13,6 +14,10 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.jooq.lambda.tuple.Tuple;
+import org.jooq.lambda.tuple.Tuple2;
+
+import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.operators.GroupBySize;
@@ -320,6 +325,115 @@ public class FluxUtils {
        }
      );
    }
+
+    public static <T> Flux<T> onEmpty(Flux<T> flux, T value) {
+        return Flux.fromIterable(() -> new Iterator<T>() {
+
+            Iterator<T> it;
+
+            private void init() {
+                if (it == null) {
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                    it = seq.onEmpty(value)
+                            .iterator();
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public T next() {
+                init();
+                return it.next();
+            }
+
+        });
+    }
+    public static <T> Flux<T> onEmptyGet(Flux<T> flux, Supplier<? extends T> value) {
+        return Flux.fromIterable(() -> new Iterator<T>() {
+
+            Iterator<T> it;
+
+            private void init() {
+                if (it == null) {
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                    it = seq.onEmptyGet(value)
+                            .iterator();
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public T next() {
+                init();
+                return it.next();
+            }
+
+        });
+    }
+    public static <T,X extends Throwable> Flux<T> onEmptyThrow(Flux<T> flux, Supplier<? extends X> value) {
+        return Flux.fromIterable(() -> new Iterator<T>() {
+
+            Iterator<T> it;
+
+            private void init() {
+                if (it == null) {
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                    it = seq.onEmptyThrow(value)
+                            .iterator();
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public T next() {
+                init();
+                return it.next();
+            }
+
+        });
+    }
+
+   public static <T,U> Flux<T> sorted(Flux<T> flux,Function<? super T, ? extends U> function){
+       
+       return Flux.fromIterable(()-> new Iterator<T>(){
+           
+           Iterator<T> it;
+           private void init(){
+               if(it==null){
+                   ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                   it = seq.sorted((Function)function).iterator();
+               }
+           }
+           @Override
+           public boolean hasNext() {
+               init();
+               return it.hasNext();
+           }
+
+           @Override
+           public T next() {
+               init();
+               return it.next();
+           }
+              
+          }
+        );
+   }
    public static <T> Flux<T> sorted(Flux<T> flux,Comparator<? super T> c){
 
        return Flux.fromIterable(()-> new Iterator<T>(){
@@ -346,5 +460,135 @@ public class FluxUtils {
        }
      );
    }
+   public static <T,U> Flux<U> scanRight(Flux<T> flux, U identity, BiFunction<? super T, ? super U, ? extends U> combiner){
+
+       return Flux.fromIterable(()-> new Iterator<U>(){
+        
+        Iterator<U> it;
+        private void init(){
+            if(it==null){
+                ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                it = seq.scanRight(identity, combiner).iterator();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            init();
+            return it.hasNext();
+        }
+
+        @Override
+        public U next() {
+            init();
+            return it.next();
+        }
+           
+       }
+     );
+   }
+   public static <T> Flux<T> scanRight(Flux<T> flux, Monoid<T> monoid){
+
+       return Flux.fromIterable(()-> new Iterator<T>(){
+        
+        Iterator<T> it;
+        private void init(){
+            if(it==null){
+                ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                it = seq.scanRight(monoid).iterator();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            init();
+            return it.hasNext();
+        }
+
+        @Override
+        public T next() {
+            init();
+            return it.next();
+        }
+           
+       }
+     );
+   }
+   
+   public  static <T> Flux<Tuple2<T, Long>> zipWithIndex(Flux<T> stream) {
+       
+       return stream.zipWith(ReactiveSeq.rangeLong(0,Long.MAX_VALUE),Tuple::tuple);
+   }
+   /**
+    * Delete elements between given indexes in a Flux
+    * <pre>
+    * {@code 
+    * List<String> result =    FluxUtils.deleteBetween(Flux.just(1,2,3,4,5,6),2,4)
+                                           .map(it ->it+"!!")
+                                           .collect(Collectors.toList())
+                                           .block();
+   
+           assertThat(result,equalTo(Arrays.asList("1!!","2!!","5!!","6!!")));
+    * }
+    * </pre>
+    * @param start index
+    * @param end index
+    * @return Stream with elements removed
+    */
+   public static final <T> Flux<T> deleteBetween(final Flux<T> stream, final int start, final int end) {
+       return zipWithIndex(stream).filter(t->t.v2<start || t.v2>(end-1)).map(t->t.v1);
+       
+   }
+   
+  /**
+   * Insert data into a Flux at given position
+   * <pre>
+   * {@code  
+   * List<String> result =    FluxUtils.insertAt(Flux.just(1,2,3),1,100,200,300)
+                                       .map(it ->it+"!!")
+                                       .collect(Collectors.toList())
+                                       .block();
+  
+          assertThat(result,equalTo(Arrays.asList("1!!","100!!","200!!","300!!","2!!","3!!")));
+   * 
+   * }
+   * </pre>
+   * @param pos to insert data at
+   * @param values to insert
+   * @return Stream with new data inserted
+   */
+  public static final <T> Flux<T> insertAt(final Flux<T> stream, final int pos, final T... values) {
+      Flux<T> start = stream.take(pos);
+      Flux<T> end = zipWithIndex(stream).skipWhile(t->t.v2<pos).map(t->t.v1);
+      return start.concatWith(Flux.just(values)).concatWith(end);
+      
+  }
+
+  public final static <T> Flux<ListX<T>> groupedStatefullyUntil(final Flux<T> flux,
+          final BiPredicate<ListX<? super T>, ? super T> predicate) {
+      return Flux.fromIterable(()-> new Iterator<ListX<T>>(){
+          
+          Iterator<ListX<T>> it;
+          private void init(){
+              if(it==null){
+                  ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                  it = seq.groupedStatefullyUntil(predicate).iterator();
+              }
+          }
+          @Override
+          public boolean hasNext() {
+              init();
+              return it.hasNext();
+          }
+
+          @Override
+          public ListX<T> next() {
+              init();
+              return it.next();
+          }
+             
+         }
+       );
+    
+  }
+   
 }
 
