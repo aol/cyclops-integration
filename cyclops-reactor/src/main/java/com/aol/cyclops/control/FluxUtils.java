@@ -1,14 +1,19 @@
 package com.aol.cyclops.control;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
+import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.operators.GroupBySize;
 import com.aol.cyclops.reactor.operators.GroupedWhile;
@@ -135,23 +140,211 @@ public class FluxUtils {
     public final static <T> Flux<ListX<T>> groupedUntil(final Flux<T> stream, final Predicate<? super T> predicate) {
         return groupedWhile(stream, predicate.negate());
     }
+    
+    
     /**
-     * Create a Stream that finitely cycles the provided Streamable, provided number of times
-     * 
+     * Performs a map operation that can call a recursive method without running out of stack space
      * <pre>
-     * {@code 
-     * assertThat(StreamUtils.cycle(3,Streamable.of(1,2,2))
-                                .collect(Collectors.toList()),
-                                    equalTo(Arrays.asList(1,2,2,1,2,2,1,2,2)));
+     * {@code
+     * 
+       FluxUtils.trampoline(Flux.just(10,20,30,40),i-> fibonacci(i))
+                .forEach(System.out::println); 
+                
+       Trampoline<Long> fibonacci(int i){
+           return fibonacci(i,1,0);
+       }
+       Trampoline<Long> fibonacci(int n, long a, long b) {
+           return n == 0 ? Trampoline.done(b) : Trampoline.more( ()->fibonacci(n-1, a+b, a));
+       }        
+                
+     * 55
+       6765
+       832040
+       102334155
+     * 
+     * 
+     * 
+       FluxUtils.trampoline(Flux.just(10_000,200_000,3_000_000,40_000_000),i-> fibonacci(i))
+                .forEach(System.out::println);
+                
+                
+     * completes successfully
      * }
      * </pre>
-     * @param s Streamable to cycle
-     * @return New cycling stream
-     */
-    public static <U> Stream<U> cycle(final int times, final Flux<U> s) {
-        return Stream.iterate(s.stream(), s1 -> s.stream())
-                     .limit(times)
-                     .flatMap(Function.identity());
-    }
+     * 
+    * @param mapper TCO Transformation function
+    * @return Functor transformed by the supplied transformation function
+    */
+   public static <T,R> Flux<R> trampoline(Flux<T> flux,Function<? super T, ? extends Trampoline<? extends R>> mapper) {
+       return flux.map(in -> mapper.apply(in)
+                              .result());
+   }
+
+   /**
+   * Transform the elements of this Stream with a Pattern Matching case and default value
+   *
+   * <pre>
+   * {@code
+   * List<String> result = CollectionX.of(1,2,3,4)
+                                            .patternMatch(
+                                                      c->c.valuesWhere(i->"even", (Integer i)->i%2==0 )
+                                                    )
+   * }
+   * // CollectionX["odd","even","odd","even"]
+   * </pre>
+   *
+   *
+   * @param case1 Function to generate a case (or chain of cases as a single case)
+   * @param otherwise Value if supplied case doesn't match
+   * @return CollectionX where elements are transformed by pattern matching
+   */
+   public static <T,R> Flux<R> patternMatch(Flux<T> flux,Function<CheckValue1<T, R>, CheckValue1<T, R>> case1, Supplier<? extends R> otherwise) {
+
+       return flux.map(u -> Matchable.of(u)
+                                .matches(case1, otherwise)
+                                .get());
+
+   }
+   
+   
+   public static <T> Flux<T> reverse(Flux<T> flux){
+       
+      
+       return Flux.fromIterable(()-> new Iterator<T>(){
+        
+        Iterator<T> it;
+        private void init(){
+            if(it==null){
+                List<T> list = flux.collect(Collectors.toList()).block();
+                ReactiveSeq<T> seq = ReactiveSeq.fromList(list).reverse();
+                it = seq.iterator();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            init();
+            return it.hasNext();
+        }
+
+        @Override
+        public T next() {
+            init();
+            return it.next();
+        }
+           
+       }
+     );
+   }
+   public static <T> Flux<T> shuffle(Flux<T> flux){
+       
+       
+       return Flux.fromIterable(()-> new Iterator<T>(){
+        
+        Iterator<T> it;
+        private void init(){
+            if(it==null){
+                List<T> list = flux.collect(Collectors.toList()).block();
+                Collections.shuffle(list);
+               
+                it = list.iterator();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            init();
+            return it.hasNext();
+        }
+
+        @Override
+        public T next() {
+            init();
+            return it.next();
+        }
+           
+       }
+     );
+   }
+   public static <T> Flux<T> shuffle(Flux<T> flux,Random random){
+       
+       
+       return Flux.fromIterable(()-> new Iterator<T>(){
+        
+        Iterator<T> it;
+        private void init(){
+            if(it==null){
+                List<T> list = flux.collect(Collectors.toList()).block();
+                Collections.shuffle(list,random);
+               
+                it = list.iterator();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            init();
+            return it.hasNext();
+        }
+
+        @Override
+        public T next() {
+            init();
+            return it.next();
+        }
+           
+       }
+     );
+   }
+   public static <T> Flux<T> sorted(Flux<T> flux){
+       
+       
+       return Flux.fromIterable(()-> new Iterator<T>(){
+        
+        Iterator<T> it;
+        private void init(){
+            if(it==null){
+                ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                it = seq.sorted().iterator();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            init();
+            return it.hasNext();
+        }
+
+        @Override
+        public T next() {
+            init();
+            return it.next();
+        }
+           
+       }
+     );
+   }
+   public static <T> Flux<T> sorted(Flux<T> flux,Comparator<? super T> c){
+
+       return Flux.fromIterable(()-> new Iterator<T>(){
+        
+        Iterator<T> it;
+        private void init(){
+            if(it==null){
+                ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                it = seq.sorted(c).iterator();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            init();
+            return it.hasNext();
+        }
+
+        @Override
+        public T next() {
+            init();
+            return it.next();
+        }
+           
+       }
+     );
+   }
 }
 
