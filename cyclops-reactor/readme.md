@@ -36,6 +36,9 @@ LazyListX extends ListX from cyclops (and JDK java.util.List).
 	
 ```	
 
+Notes : 
+LazyListX can not contain nulls (extended operations will result in NullPointerException), use ListX from cyclops-react for an extended List that can contain nulls
+
 
 Use Reactor.<type> to create wrapped Reactor Monads.
 

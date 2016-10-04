@@ -242,18 +242,14 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     
 
     public FluentCollectionX<ListX<T>> grouped(int groupSize){
-        return stream(streamInternal().window(groupSize).map(ListX::fromPublisher));     
+        return stream(FluxUtils.grouped(streamInternal(),groupSize));     
     }
     public <K, A, D> FluentCollectionX<Tuple2<K, D>> grouped(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream){
-        Flux<GroupedFlux<K, T>> f = streamInternal().groupBy(classifier);
-        Flux<Tuple2<K, Seq<T>>> k = f.map(g->Tuple.tuple(g.key(),ReactiveSeq.fromPublisher(g)));
-        Flux<Tuple2<K, D>> j = k.map(s->Tuple.tuple(s.v1,s.v2.collect(downstream)));
-        return stream(j);      
+        return stream(FluxUtils.grouped(streamInternal(), classifier, downstream));
     }
     public <K> FluentCollectionX<Tuple2<K, Seq<T>>> grouped(Function<? super T, ? extends K> classifier){
-        Flux<GroupedFlux<K, T>> f = streamInternal().groupBy(classifier);
-        Flux<Tuple2<K, Seq<T>>> k = f.map(g->Tuple.tuple(g.key(),ReactiveSeq.fromPublisher(g)));
-        return stream(k);     
+        return stream(FluxUtils.grouped(streamInternal(), classifier));
+          
     }
     public <U> FluentCollectionX<Tuple2<T, U>> zip(Iterable<? extends U> other){
         return (FluentCollectionX)stream(streamInternal().zipWithIterable(other, Tuple::tuple));
@@ -395,7 +391,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<T> sorted(Comparator<? super T> c) {
         
-        return stream(FluxUtils.sorted(streamInternal()));
+        return stream(FluxUtils.sorted(streamInternal(),c));
     }
 
     /* (non-Javadoc)
@@ -443,7 +439,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<T> intersperse(T value) {
         
-        return stream(streamInternal().merge(Flux.just(value).repeat()));
+        return stream(FluxUtils.intersperse(streamInternal(),value));
     }
 
     /* (non-Javadoc)

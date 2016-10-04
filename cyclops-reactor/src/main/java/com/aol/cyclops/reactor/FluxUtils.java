@@ -12,6 +12,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.jooq.lambda.tuple.Tuple;
@@ -23,6 +24,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.reactor.collections.extensions.LazyListX;
 import com.aol.cyclops.reactor.operators.GroupBySize;
 import com.aol.cyclops.reactor.operators.GroupedWhile;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
@@ -39,8 +41,29 @@ public class FluxUtils {
     
     public final static <T, C extends Collection<? super T>> Flux<C> grouped(final Flux<T> stream, final int groupSize,
             final Supplier<C> factory) {
-        return new GroupBySize<T, C>(
-                                             stream, factory).grouped(groupSize);
+        return Flux.fromIterable(()-> new Iterator<C>(){
+            
+            Iterator<C> it;
+            private void init(){
+                if(it==null){
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(stream);
+                    it = seq.grouped(groupSize,factory).iterator();
+                }
+            }
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public C next() {
+                init();
+                return it.next();
+            }
+               
+           }
+         );
 
     }
     
@@ -515,6 +538,110 @@ public class FluxUtils {
 
         @Override
         public T next() {
+            init();
+            return it.next();
+        }
+           
+       }
+     );
+   }
+   
+   public static <T> Flux<T> intersperse(Flux<T> flux,T value){
+       return Flux.fromIterable(()-> new Iterator<T>(){
+           
+           Iterator<T> it;
+           private void init(){
+               if(it==null){
+                   ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                   it = seq.intersperse(value).iterator();
+               }
+           }
+           @Override
+           public boolean hasNext() {
+               init();
+               return it.hasNext();
+           }
+
+           @Override
+           public T next() {
+               init();
+               return it.next();
+           }
+              
+          }
+        );
+   }
+   
+   public static <T> Flux<ListX<T>> grouped(Flux<T> flux,int size){
+       return Flux.fromIterable(()-> new Iterator<ListX<T>>(){
+           
+           Iterator<ListX<T>> it;
+           private void init(){
+               if(it==null){
+                   ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                   it = seq.grouped(size).iterator();
+               }
+           }
+           @Override
+           public boolean hasNext() {
+               init();
+               return it.hasNext();
+           }
+
+           @Override
+           public ListX<T> next() {
+               init();
+               return it.next();
+           }
+              
+          }
+        );
+   }
+   public static <T,K, A, D> Flux<Tuple2<K, D>> grouped(Flux<T> flux, Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream){
+
+       return Flux.fromIterable(()-> new Iterator<Tuple2<K, D>>(){
+        
+        Iterator<Tuple2<K, D>> it;
+        private void init(){
+            if(it==null){
+                ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                it = (Iterator)seq.grouped(classifier,downstream).iterator();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            init();
+            return it.hasNext();
+        }
+
+        @Override
+        public Tuple2<K, D> next() {
+            init();
+            return it.next();
+        }
+           
+       }
+     );
+   }
+   public static <T,K, A, D> Flux<Tuple2<K, D>> grouped(Flux<T> flux, Function<? super T, ? extends K> classifier){
+
+       return Flux.fromIterable(()-> new Iterator<Tuple2<K, D>>(){
+        
+        Iterator<Tuple2<K, D>> it;
+        private void init(){
+            if(it==null){
+                ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                it = (Iterator)seq.grouped(classifier).iterator();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            init();
+            return it.hasNext();
+        }
+
+        @Override
+        public Tuple2<K, D> next() {
             init();
             return it.next();
         }
