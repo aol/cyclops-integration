@@ -37,6 +37,7 @@ import com.aol.cyclops.control.StreamUtils;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.Try;
 import com.aol.cyclops.control.Xor;
+import com.aol.cyclops.control.monads.transformers.values.MaybeTValue;
 import com.aol.cyclops.data.LazyImmutable;
 import com.aol.cyclops.data.Mutable;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
@@ -469,6 +470,18 @@ public class MonoTTest implements Printable {
         
     }
 
+    @Test
+    public void monoFilter(){
+        Mono<Integer> m = Mono.just(150).filter(i->i<100);
+        
+        System.out.println(m.block());
+        System.out.println(MonoTValue.of(m).isPresent());
+        
+        Maybe<Integer> mb = Maybe.just(150).filter(i->i<100);
+        
+ 
+        System.out.println(MaybeTValue.of(mb).isPresent());
+    }
     @Test
     public void testFilter() {
         assertFalse(just.filter(i->i<5).isPresent());

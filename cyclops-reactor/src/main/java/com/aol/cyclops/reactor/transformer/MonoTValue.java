@@ -18,6 +18,7 @@ import org.reactivestreams.Subscriber;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Matchable;
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.PublisherUtils;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
@@ -55,7 +56,16 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     public FutureW<A> value() {
         return FutureW.of(run.get().toFuture());
     }
-
+    /* 
+     * Blocking request that checks for the presence of a result
+     * 
+     * (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerValue#isPresent()
+     */
+    public boolean isPresent() {
+        Mono<A> val = run.orElse(Mono.empty());
+        return val.block()!=null;
+    }
     public boolean isValuePresent() {
         return !run.isEmpty();
     }
@@ -76,7 +86,8 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     *            Predicate to filter the wrapped Maybe
     * @return MaybeT that applies the provided filter
     */
-    public MonoTValue<A> filter(Predicate<? super A> test) {       
+    public MonoTValue<A> filter(Predicate<? super A> test) {  
+       
         AnyMValue<Mono<A>> x = run.map(opt -> opt.filter(test));
         return MonoTValue.of(x);
     }
