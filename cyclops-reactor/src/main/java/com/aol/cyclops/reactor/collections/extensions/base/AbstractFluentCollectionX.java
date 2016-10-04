@@ -1,4 +1,4 @@
-package com.aol.cyclops.reactor.collections.extensions;
+package com.aol.cyclops.reactor.collections.extensions.base;
 
 import java.util.Collection;
 import java.util.Comparator;

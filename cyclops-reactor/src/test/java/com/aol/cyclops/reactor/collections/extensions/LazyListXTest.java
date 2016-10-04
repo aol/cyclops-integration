@@ -10,7 +10,7 @@ public class LazyListXTest {
 
     @Test
     public void test(){
-      LazyListX<Integer> ll = new  LazyListX<Integer>(Arrays.asList(1,2,3));
+      LazyListX<Integer> ll = LazyListX.fromIterable(Arrays.asList(1,2,3));
       ListX<Integer> list = ll.map(i->i*2);
       list.printOut();
     }
