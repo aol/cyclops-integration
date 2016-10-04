@@ -74,7 +74,7 @@ public class MonoTSeq<A>
     @Override
     public <T> MonoTSeq<T> unitAnyM(AnyM<Traversable<T>> traversable) {
 
-        return of((AnyMSeq) traversable.map(t -> Mono.fromIterable(t)));
+        return of((AnyMSeq) traversable.map(t -> Mono.from(t)));
     }
 
     @Override
@@ -146,9 +146,9 @@ public class MonoTSeq<A>
      */
 
     public <B> MonoTSeq<B> flatMapT(Function<? super A, MonoTSeq<B>> f) {
-        return of(run.map(future -> future.flatMap(a -> f.apply(a).run.stream()
+        return of(run.map(future -> Mono.from(future.flatMap(a -> f.apply(a).run.stream()
                                                                       .toList()
-                                                                      .get(0))));
+                                                                      .get(0)))));
     }
 
     private static <B> AnyMSeq<Mono<B>> narrow(AnyMSeq<Mono<? extends B>> run) {
@@ -157,7 +157,7 @@ public class MonoTSeq<A>
 
     public <B> MonoTSeq<B> flatMap(Function<? super A, ? extends MonadicValue<? extends B>> f) {
 
-        AnyMSeq<Mono<? extends B>> mapped = run.map(o -> o.flatMap(f));
+        AnyMSeq<Mono<? extends B>> mapped = run.map(o -> Mono.from(o.flatMap(f)));
         return of(narrow(mapped));
 
     }

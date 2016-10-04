@@ -27,12 +27,12 @@ import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Matchable.CheckValue1;
-import com.aol.cyclops.control.FluxUtils;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.ListXImpl;
+import com.aol.cyclops.reactor.FluxUtils;
 import com.aol.cyclops.types.Zippable;
 
 import lombok.Getter;

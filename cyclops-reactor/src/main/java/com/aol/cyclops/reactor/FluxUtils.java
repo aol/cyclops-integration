@@ -1,4 +1,4 @@
-package com.aol.cyclops.control;
+package com.aol.cyclops.reactor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +18,9 @@ import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
 import com.aol.cyclops.Monoid;
+import com.aol.cyclops.control.Matchable;
+import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.operators.GroupBySize;

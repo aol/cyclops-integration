@@ -18,11 +18,13 @@ import org.reactivestreams.Subscriber;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Matchable;
+import com.aol.cyclops.control.PublisherUtils;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.monads.transformers.values.MaybeTValue;
 import com.aol.cyclops.control.monads.transformers.values.TransformerValue;
+import com.aol.cyclops.reactor.MonoUtils;
 import com.aol.cyclops.types.ConvertableFunctor;
 import com.aol.cyclops.types.Filterable;
 import com.aol.cyclops.types.MonadicValue;
@@ -132,7 +134,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public <T2, R> MonoTValue<R> combine(Value<? extends T2> app, BiFunction<? super A, ? super T2, ? extends R> fn) {
         return new MonoTValue<R>(
-                                   run.map(o -> o.combine(app, fn)));
+                                   run.map(o -> MonoUtils.combine(o,app, fn)));
     }
 
     /*
@@ -145,7 +147,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     public <T2, R> MonoTValue<R> zip(Iterable<? extends T2> app, BiFunction<? super A, ? super T2, ? extends R> fn) {
 
         return new MonoTValue<R>(
-                                   run.map(o -> o.zip(app, fn)));
+                                   run.map(o -> MonoUtils.zip(o,app, fn)));
     }
 
     /*
@@ -157,7 +159,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public <T2, R> MonoTValue<R> zip(BiFunction<? super A, ? super T2, ? extends R> fn, Publisher<? extends T2> app) {
         return new MonoTValue<>(
-                                   run.map(o -> o.zip(fn, app)));
+                                   run.map(o ->  MonoUtils.zip(o,fn, app)));
     }
 
     /* (non-Javadoc)
@@ -221,9 +223,9 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      */
 
     public <B> MonoTValue<B> flatMapT(Function<? super A, MonoTValue<B>> f) {
-        return of(run.map(future -> future.flatMap(a -> f.apply(a).run.stream()
+        return of(run.map(future -> Mono.from(future.flatMap(a -> f.apply(a).run.stream()
                                                                       .toList()
-                                                                      .get(0))));
+                                                                      .get(0)))));
     }
 
     private static <B> AnyMValue<Mono<B>> narrow(AnyMValue<Mono<? extends B>> run) {
@@ -232,7 +234,8 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
 
     public <B> MonoTValue<B> flatMap(Function<? super A, ? extends MonadicValue<? extends B>> f) {
 
-        AnyMValue<Mono<? extends B>> mapped = run.map(o -> o.flatMap(f));
+        
+        AnyMValue<Mono<? extends B>> mapped = run.map(o -> Mono.from(o.flatMap(f)));
         return of(narrow(mapped));
 
     }
@@ -353,16 +356,16 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public ReactiveSeq<A> stream() {
         val maybeEval = run.toMaybe();
-        return maybeEval.isPresent() ? maybeEval.get()
-                                                .stream()
+        return maybeEval.isPresent() ? PublisherUtils.stream(maybeEval.get())
+                                                
                 : ReactiveSeq.of();
     }
 
     @Override
     public Iterator<A> iterator() {
         val maybeEval = run.toMaybe();
-        return maybeEval.isPresent() ? maybeEval.get()
-                                                .iterator()
+        return maybeEval.isPresent() ? PublisherUtils.iterator(maybeEval.get())
+                                             
                 : Arrays.<A> asList()
                         .iterator();
     }
@@ -382,8 +385,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public boolean test(A t) {
         val maybeEval = run.toMaybe();
-        return maybeEval.isPresent() ? maybeEval.get()
-                                                .test(t)
+        return maybeEval.isPresent() ? MonoUtils.test(maybeEval.get(),t)
                 : false;
 
     }

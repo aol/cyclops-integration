@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.aol.cyclops.reactor.MonoUtils;
 import com.aol.cyclops.reactor.transformer.MonoTSeq;
 import com.aol.cyclops.types.extensability.Comprehender;
 import com.aol.cyclops.types.mixins.Printable;
@@ -52,7 +53,8 @@ public class MonoTSeqComprehender implements Comprehender<MonoTSeq>, Printable {
 
     @Override
     public MonoTSeq fromIterator(Iterator o) {
-        return MonoTSeq.of(Mono.fromIterable(() -> o));
+        
+        return MonoTSeq.of(MonoUtils.fromIterable(() -> o));
     }
 
 }
