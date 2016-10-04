@@ -24,7 +24,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.reactor.collections.extensions.LazyListX;
+import com.aol.cyclops.reactor.collections.extensions.standard.LazyListX;
 import com.aol.cyclops.reactor.operators.GroupBySize;
 import com.aol.cyclops.reactor.operators.GroupedWhile;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;

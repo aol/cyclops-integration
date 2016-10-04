@@ -471,7 +471,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     
         return stream(streamInternal().takeLast(num));
     }
-
+   
     /* (non-Javadoc)
      * @see com.aol.cyclops.lambda.monads.Traversable#onEmpty(java.lang.Object)
      */

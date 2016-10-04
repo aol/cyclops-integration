@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.reactor.collections.extensions.standard.LazyListX;
 
 public class LazyListXTest {
 
