@@ -10,6 +10,13 @@ import com.aol.cyclops.types.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Extension Methods for Mono
+ * 
+ * 
+ * @author johnmcclean
+ *
+ */
 public class MonoUtils {
 
     public static <T1,T2,R> Mono<R> combine(Mono<? extends T1> mono,Value<? extends T2> app, BiFunction<? super T1, ? super T2, ? extends R> fn){

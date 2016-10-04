@@ -21,6 +21,14 @@ import com.aol.cyclops.util.function.TriFunction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * For Comprehensions for Flux and Mono
+ * 
+ * AnyM creational methods for Flux and Mono
+ * 
+ * @author johnmcclean
+ *
+ */
 public interface Reactor {
 
     public static <T> AnyMSeq<T> fromFluxT(FluxT<T> flux) {

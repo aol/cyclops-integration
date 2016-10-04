@@ -29,7 +29,14 @@ import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
 
 import reactor.core.publisher.Flux;
 
+/**
+ * Extension methods for Flux
+ * 
+ * @author johnmcclean
+ *
+ */
 public class FluxUtils {
+    
     public final static <T, C extends Collection<? super T>> Flux<C> grouped(final Flux<T> stream, final int groupSize,
             final Supplier<C> factory) {
         return new GroupBySize<T, C>(

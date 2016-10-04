@@ -52,7 +52,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return stream.collect(lazyListXCollector());
     }
     /**
-     * Create a ListX that contains the Integers between start and end
+     * Create a LazyListX that contains the Integers between start and end
      * 
      * @param start
      *            Number of range to start from
@@ -65,7 +65,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     }
 
     /**
-     * Create a ListX that contains the Longs between start and end
+     * Create a LazyListX that contains the Longs between start and end
      * 
      * @param start
      *            Number of range to start from
@@ -82,7 +82,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
      * 
      * <pre>
      * {@code 
-     *  ListX.unfold(1,i->i<=6 ? Optional.of(Tuple.tuple(i,i+1)) : Optional.empty());
+     *  LazyListX.unfold(1,i->i<=6 ? Optional.of(Tuple.tuple(i,i+1)) : Optional.empty());
      * 
      * //(1,2,3,4,5)
      * 
@@ -97,7 +97,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     }
 
     /**
-     * Generate a ListX from the provided Supplier up to the provided limit number of times
+     * Generate a LazyListX from the provided Supplier up to the provided limit number of times
      * 
      * @param limit Max number of elements to generate
      * @param s Supplier to generate ListX elements
@@ -110,7 +110,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     }
 
     /**
-     * Create a ListX by iterative application of a function to an initial element up to the supplied limit number of times
+     * Create a LazyListX by iterative application of a function to an initial element up to the supplied limit number of times
      * 
      * @param limit Max number of elements to generate
      * @param seed Initial element
