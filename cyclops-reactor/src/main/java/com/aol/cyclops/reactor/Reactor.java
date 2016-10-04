@@ -8,11 +8,10 @@ import org.reactivestreams.Publisher;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.For;
 import com.aol.cyclops.control.FutureW;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.control.monads.transformers.FutureWT;
-import com.aol.cyclops.control.monads.transformers.seq.FutureWTSeq;
 import com.aol.cyclops.reactor.transformer.FluxT;
 import com.aol.cyclops.reactor.transformer.FluxTSeq;
+import com.aol.cyclops.reactor.transformer.MonoT;
+import com.aol.cyclops.reactor.transformer.MonoTSeq;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.util.function.QuadFunction;
@@ -47,9 +46,8 @@ public interface Reactor {
         return AnyM.ofValue(mono);
     }
 
-    public static <T> FutureWTSeq<T> monoT(Publisher<Mono<T>> nested) {
-        return FutureWT.fromPublisher(Flux.from(nested)
-                                          .map(f -> FutureW.of(f.toFuture())));
+    public static <T> MonoTSeq<T> monoT(Publisher<Mono<T>> nested) {
+        return MonoT.fromPublisher(Flux.from(nested));
     }
 
     public interface ForFlux {

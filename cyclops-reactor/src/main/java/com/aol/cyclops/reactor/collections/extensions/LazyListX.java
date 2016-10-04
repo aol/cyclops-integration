@@ -1,8 +1,6 @@
 package com.aol.cyclops.reactor.collections.extensions;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -31,10 +29,8 @@ import org.reactivestreams.Publisher;
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.control.StreamUtils;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.data.collections.extensions.standard.ListXImpl;
 import com.aol.cyclops.reactor.FluxUtils;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
@@ -49,7 +45,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     
     
     public static <T> LazyListX<T> fromStreamS(Stream<T> stream){
-        return stream.collect(lazyListXCollector());
+        return new LazyListX<T>(Flux.from(ReactiveSeq.fromStream(stream)));
     }
     /**
      * Create a LazyListX that contains the Integers between start and end
@@ -123,17 +119,39 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     }
 
 
+    /**
+     * @return A collector that generates a LazyListX
+     */
     static <T> Collector<T, ?, LazyListX<T>> lazyListXCollector() {
         return Collectors.toCollection(() -> LazyListX.of());
     }
 
    
 
+    /**
+     * @return An empty LazyListX
+     */
     public static <T> LazyListX<T> empty() {
         return fromIterable((List<T>) ListX.<T>defaultCollector().supplier()
                                                         .get());
     }
 
+    /**
+     * Create a LazyListX from the specified values
+     * <pre>
+     * {@code 
+     *     ListX<Integer> lazy = LazyListX.of(1,2,3,4,5);
+     *     
+     *     //lazily map List
+     *     ListX<String> mapped = lazy.map(i->"mapped " +i); 
+     *     
+     *     String value = mapped.get(0); //transformation triggered now
+     * }
+     * </pre>
+     * 
+     * @param values To populate LazyListX with
+     * @return LazyListX
+     */
     @SafeVarargs
     public static <T> LazyListX<T> of(T... values) {
         List<T> res = (List<T>) ListX.<T>defaultCollector().supplier()
@@ -143,25 +161,51 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return fromIterable(res);
     }
 
+    /**
+     * Construct a LazyListX with a single value
+     * <pre>
+     * {@code 
+     *    ListX<Integer> lazy = LazyListX.singleton(5);
+     *    
+     * }
+     * </pre>
+     * 
+     * 
+     * @param value To populate LazyListX with
+     * @return LazyListX with a single value
+     */
     public static <T> LazyListX<T> singleton(T value) {
         return LazyListX.<T> of(value);
     }
 
     /**
-     * Construct a ListX from an Publisher
+     * Construct a LazyListX from an Publisher
      * 
      * @param publisher
-     *            to construct ListX from
+     *            to construct LazyListX from
      * @return ListX
      */
     public static <T> LazyListX<T> fromPublisher(Publisher<? extends T> publisher) {
         return fromStreamS(ReactiveSeq.fromPublisher((Publisher<T>) publisher));
     }
 
+    /**
+     * Construct LazyListX from an Iterable
+     * 
+     * @param it to construct LazyListX from
+     * @return LazyListX from Iterable
+     */
     public static <T> LazyListX<T> fromIterable(Iterable<T> it) {
         return fromIterable(ListX.<T>defaultCollector(), it);
     }
 
+    /**
+     * Construct a LazyListX from an Iterable, using the specified Collector.
+     * 
+     * @param collector To generate Lists from, this can be used to create mutable vs immutable Lists (for example), or control List type (ArrayList, LinkedList)
+     * @param it Iterable to construct LazyListX from
+     * @return Newly constructed LazyListX
+     */
     public static <T> LazyListX<T> fromIterable(Collector<T, ?, List<T>> collector, Iterable<T> it) {
         if (it instanceof LazyListX)
             return (LazyListX<T>) it;
@@ -170,8 +214,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
             return new LazyListX<T>(
                                     (List<T>) it, collector);
         return new LazyListX<T>(
-                                StreamUtils.stream(it)
-                                           .collect(collector),
+                                Flux.fromIterable(it),
                                 collector);
     }
     private LazyListX(List<T> list,Collector<T,?,List<T>> collector){
@@ -183,6 +226,11 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         
         this.collector = ListX.defaultCollector();
         this.lazy = new LazyCollection<T,List<T>>(list,null,collector);
+    }
+    private LazyListX(Flux<T> stream,Collector<T,?,List<T>> collector){
+        
+        this.collector = collector;
+        this.lazy = new LazyCollection<>(null,stream,collector);
     }
     private LazyListX(Flux<T> stream){
         

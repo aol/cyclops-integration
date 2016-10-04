@@ -12,11 +12,29 @@ v8.0.0 of cyclops-reactor and above is built using v2.5.0-M4 of Project Reactor
 # cyclops-reactor features include
 
 1. Native for comprehensions for Reactor types
-2. Native Monad Tranformer for Flux. FluxT also has native for comprehensions
+2. Native Monad Tranformer for Flux and Mono. FluxT also has native for comprehensions
 3. Monad wrapping via AnyM / AnyMValue / AnyMSeq
 4. Compatible with cyclops-react pattern matching
 5. Ability to use Reactor types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
 
+
+# Lazy extended Collections
+
+LazyListX extends ListX from cyclops (and JDK java.util.List). 
+
+```java
+
+	ListX<Integer> lazy = LazyListX.fromIterable(myIterable);
+	
+	//lazily define operations
+	ListX<ListX<Integer>> transformed = lazy.map(i->i*2)
+											.filter(i->i<100)
+		 									.grouped(2);
+
+	//operations performed when data is accessed
+	transformed.get(0).reduce(0,(a,b)->a+b);
+	
+```	
 
 
 Use Reactor.<type> to create wrapped Reactor Monads.
@@ -65,7 +83,7 @@ FluxTSeq<Integer> mapped = nested.map(i->i*3);
 ```java
 import static com.aol.cyclops.reactor.Reactor.monoT;
 
-FutureWTSeq<Integer> nestedFuture = monoT(Flux.just(Mono.just(1),Mono.just(10)));
+MonoTSeq<Integer> nestedFuture = monoT(Flux.just(Mono.just(1),Mono.just(10)));
 mapped = nested.map(i->i*3);
 
 //mapped =  [Flux[FutureW[3],FutureW[30]]
