@@ -126,8 +126,79 @@ public class FluxUtils {
      * @return Repeating Stream
      */
     public final static <T> Flux<T> cycleWhile(final Flux<T> stream, final Predicate<? super T> predicate) {
-       
-        return stream.repeat().takeWhile(predicate);
+        return Flux.fromIterable(()-> new Iterator<T>(){
+            
+            Iterator<T> it;
+            private void init(){
+                if(it==null){
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(stream);
+                    it = seq.cycleWhile(predicate).iterator();
+                }
+            }
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public T next() {
+                init();
+                return it.next();
+            }
+               
+           }
+         );
+    }
+    public final static <T> Flux<T> takeUntil(final Flux<T> stream, final Predicate<? super T> predicate) {
+        return Flux.fromIterable(()-> new Iterator<T>(){
+            
+            Iterator<T> it;
+            private void init(){
+                if(it==null){
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(stream);
+                    it = seq.takeUntil(predicate).iterator();
+                }
+            }
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public T next() {
+                init();
+                return it.next();
+            }
+               
+           }
+         );
+    }
+    public final static <T> Flux<T> limitUntil(final Flux<T> stream, final Predicate<? super T> predicate) {
+        return Flux.fromIterable(()-> new Iterator<T>(){
+            
+            Iterator<T> it;
+            private void init(){
+                if(it==null){
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(stream);
+                    it = seq.limitUntil(predicate).iterator();
+                }
+            }
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public T next() {
+                init();
+                return it.next();
+            }
+               
+           }
+         );
     }
 
     /**
@@ -147,7 +218,29 @@ public class FluxUtils {
      * @return Repeating Stream
      */
     public final static <T> Flux<T> cycleUntil(final Flux<T> stream, final Predicate<? super T> predicate) {
-        return stream.repeat().takeUntil(predicate);
+        return Flux.fromIterable(()-> new Iterator<T>(){
+            
+            Iterator<T> it;
+            private void init(){
+                if(it==null){
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(stream);
+                    it = seq.cycleUntil(predicate).iterator();
+                }
+            }
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public T next() {
+                init();
+                return it.next();
+            }
+               
+           }
+         );
     }
     
     /**
@@ -545,6 +638,57 @@ public class FluxUtils {
        }
      );
    }
+
+   public static <T> Flux<T> removeAll(Flux<T> flux, Iterable<? extends T> iterable){
+       return Flux.fromIterable(()-> new Iterator<T>(){
+           
+           Iterator<T> it;
+           private void init(){
+               if(it==null){
+                   ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                   it = seq.removeAll(iterable).iterator();
+               }
+           }
+           @Override
+           public boolean hasNext() {
+               init();
+               return it.hasNext();
+           }
+
+           @Override
+           public T next() {
+               init();
+               return it.next();
+           }
+              
+          }
+        );
+   }
+   public static <T> Flux<T> retainAll(Flux<T> flux, Iterable<? extends T> iterable){
+       return Flux.fromIterable(()-> new Iterator<T>(){
+           
+           Iterator<T> it;
+           private void init(){
+               if(it==null){
+                   ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                   it = seq.retainAll(iterable).iterator();
+               }
+           }
+           @Override
+           public boolean hasNext() {
+               init();
+               return it.hasNext();
+           }
+
+           @Override
+           public T next() {
+               init();
+               return it.next();
+           }
+              
+          }
+        );
+   }
    
    public static <T> Flux<T> intersperse(Flux<T> flux,T value){
        return Flux.fromIterable(()-> new Iterator<T>(){
@@ -623,6 +767,7 @@ public class FluxUtils {
        }
      );
    }
+ 
    public static <T,K, A, D> Flux<Tuple2<K, D>> grouped(Flux<T> flux, Function<? super T, ? extends K> classifier){
 
        return Flux.fromIterable(()-> new Iterator<Tuple2<K, D>>(){

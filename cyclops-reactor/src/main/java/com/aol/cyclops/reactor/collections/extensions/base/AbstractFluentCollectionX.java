@@ -1,5 +1,6 @@
 package com.aol.cyclops.reactor.collections.extensions.base;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -188,7 +189,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     }
     @Override
     public FluentCollectionX<T> takeUntil(Predicate<? super T> p){
-        return stream(streamInternal().takeUntil(p));
+        return stream(FluxUtils.limitUntil(streamInternal(),p));
     }
     @Override
     public FluentCollectionX<T> dropUntil(Predicate<? super T> p){
@@ -427,7 +428,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<T> limitUntil(Predicate<? super T> p) {
         
-        return stream(streamInternal().takeUntil(p));
+        return stream(FluxUtils.limitUntil(streamInternal(),p));
     }
 
     
@@ -535,13 +536,12 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> removeAll(Stream<? extends T> stream) {
-        Supplier<Set<T>> set = ()->(SetX)stream.collect(SetX.setXCollector());
-        return stream(streamInternal().filter(e->!set.get().contains(e)));
+        return stream(FluxUtils.removeAll(streamInternal(),ReactiveSeq.fromStream(stream)));
     }
     @Override
     public FluentCollectionX<T> removeAll(Seq<? extends T> stream) {
-        Supplier<Set<T>> set = ()->(SetX)SetX.fromIterable(stream);
-        return stream(streamInternal().filter(e->!set.get().contains(e)));
+        
+        return stream(FluxUtils.removeAll(streamInternal(),stream));
        
     }
 
@@ -550,8 +550,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> removeAll(Iterable<? extends T> it) {
-        Supplier<Set<T>> set = ()->(SetX)SetX.fromIterable(it);
-        return stream(streamInternal().filter(e->!set.get().contains(e)));
+        return stream(FluxUtils.removeAll(streamInternal(),it));
         
     }
 
@@ -560,8 +559,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> removeAll(T... values) {
-        Supplier<Set<T>> set = ()->SetX.of(values);
-        return stream(streamInternal().filter(e->!set.get().contains(e)));
+        return stream(FluxUtils.removeAll(streamInternal(),Arrays.asList(values)));
         
     }
 
@@ -570,8 +568,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> retainAll(Iterable<? extends T> it) {
-        Supplier<Set<T>> set = ()->(SetX)SetX.fromIterable(it);
-        return stream(streamInternal().filter(e->set.get().contains(e)));
+        return stream(FluxUtils.retainAll(streamInternal(),it));
     }
 
     /* (non-Javadoc)
@@ -579,13 +576,11 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> retainAll(Stream<? extends T> stream) {
-        Supplier<Set<T>> set = ()->(SetX)ReactiveSeq.fromStream(stream).toSetX();
-        return stream(streamInternal().filter(e->set.get().contains(e)));
+        return stream(FluxUtils.retainAll(streamInternal(),Seq.seq(stream)));
     }
     @Override
     public FluentCollectionX<T> retainAll(Seq<? extends T> stream) {
-        Supplier<Set<T>> set = ()->(SetX)SetX.fromIterable(stream);
-        return stream(streamInternal().filter(e->set.get().contains(e)));
+        return stream(FluxUtils.retainAll(streamInternal(),stream));
     }
 
     /* (non-Javadoc)
@@ -593,8 +588,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> retainAll(T... values) {
-        Supplier<Set<T>> set = ()->SetX.of(values);
-        return stream(streamInternal().filter(e->set.get().contains(e)));
+        return stream(FluxUtils.retainAll(streamInternal(),Arrays.asList(values)));
     }
 
     
