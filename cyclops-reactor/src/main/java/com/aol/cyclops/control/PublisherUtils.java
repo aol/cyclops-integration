@@ -7,14 +7,18 @@ import java.util.stream.StreamSupport;
 import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
+import com.aol.cyclops.types.stream.reactive.ValueSubscriber;
+
 
 public class PublisherUtils {
 
     public static<T> Iterator<T> iterator(Publisher<T> pub){
-        SeqSubscriber<T> sub = SeqSubscriber.subscriber();
+        
+        ValueSubscriber<T> sub = ValueSubscriber.subscriber();
         pub.subscribe(sub);
         return sub.iterator();
     }
+   
     public static<T> ReactiveSeq<T> stream(Publisher<T> pub){
         return ReactiveSeq.fromStream(jdkStream(pub));
     }

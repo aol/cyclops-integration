@@ -96,11 +96,11 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      * @return CompletableFutureT with peek call
      */
     public MonoTValue<A> peek(Consumer<? super A> peek) {
-
-        return of(run.peek(future -> future.map(a -> {
-            peek.accept(a);
-            return a;
-        })));
+        return map(e->{
+           peek.accept(e);
+           return e;
+        });
+       
     }
 
     /**
