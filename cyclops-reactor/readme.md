@@ -20,6 +20,18 @@ v8.0.0 of cyclops-reactor and above is built using v2.5.0-M4 of Project Reactor
 
 # Lazy extended Collections
 
+1. LazyListX
+2. LazyDequeX
+
+
+### Notes : 
+
+1. Lazy collections can not contain nulls (extended operations will result in NullPointerException), use ListX from cyclops-react for an extended List that can contain nulls
+2. Data access / modifications operations are eager (transformations are lazy)
+3. A Lazy Collection is not a Stream, eager operations result in the materialization of the entire list (there is no short circuiting, for example)
+
+## LazyListX
+
 LazyListX extends ListX from cyclops (and JDK java.util.List). 
 
 ```java
@@ -36,9 +48,32 @@ LazyListX extends ListX from cyclops (and JDK java.util.List).
 	
 ```	
 
-Notes : 
-LazyListX can not contain nulls (extended operations will result in NullPointerException), use ListX from cyclops-react for an extended List that can contain nulls
+### Notes :  (repeated for LazyListX only - holds for all)
 
+1. LazyListX can not contain nulls (extended operations will result in NullPointerException), use ListX from cyclops-react for an extended List that can contain nulls
+2. Data access / modifications operations are eager (transformations are lazy)
+3. A LazyList is not a Stream, eager operations result in the materialization of the entire list (there is no short circuiting, for example)
+
+## LazyDequeX
+
+LazyDequeX extends DequeX from cyclops (and JDK java.util.Deque). 
+
+```java
+
+	DequeX<Integer> lazy = LazyDequeX.fromIterable(myIterable);
+	
+	//lazily define operations
+	DequeX<ListX<Integer>> transformed = lazy.map(i->i*2)
+											.filter(i->i<100)
+		 									.grouped(2);
+
+	//operations performed when data is accessed
+	transformed.get(0).reduce(0,(a,b)->a+b);
+	
+```	
+
+
+# Monad abstractions
 
 Use Reactor.<type> to create wrapped Reactor Monads.
 
