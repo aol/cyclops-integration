@@ -8,13 +8,14 @@ import java.util.function.UnaryOperator;
 import org.jooq.lambda.tuple.Tuple2;
 
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
+import com.aol.cyclops.data.collections.extensions.standard.DequeX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
 
-public class LazyDequeXTest extends AbstractCollectionXTest{
+public class LazyQueueXTest extends AbstractCollectionXTest{
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        return LazyDequeX.of(values);
+        return LazyQueueX.of(values);
     }
 
     /* (non-Javadoc)
@@ -22,7 +23,7 @@ public class LazyDequeXTest extends AbstractCollectionXTest{
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return LazyDequeX.empty();
+        return LazyQueueX.empty();
     }
 
     @Override

@@ -715,6 +715,32 @@ public class FluxUtils {
           }
         );
    }
+   public static <T> Flux<ListX<T>> sliding(Flux<T> flux, int windowSize, int increment) {
+       return Flux.fromIterable(()-> new Iterator<ListX<T>>(){
+           
+           Iterator<ListX<T>> it;
+           private void init(){
+               if(it==null){
+                   ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                   it = seq.sliding(windowSize, increment).iterator();
+               }
+           }
+           @Override
+           public boolean hasNext() {
+               init();
+               return it.hasNext();
+           }
+
+           @Override
+           public ListX<T> next() {
+               init();
+               return it.next();
+           }
+              
+          }
+        );
+   }
+      
    
    public static <T> Flux<ListX<T>> grouped(Flux<T> flux,int size){
        return Flux.fromIterable(()-> new Iterator<ListX<T>>(){
@@ -871,6 +897,7 @@ public class FluxUtils {
        );
     
   }
-   
+
+
 }
 

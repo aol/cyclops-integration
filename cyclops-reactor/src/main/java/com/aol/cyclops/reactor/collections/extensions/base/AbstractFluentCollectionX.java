@@ -251,10 +251,10 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return stream(flux().zipWith(ReactiveSeq.fromIterable(other),zipper));
     }
     public FluentCollectionX<ListX<T>> sliding(int windowSize){
-        return stream(flux().window(windowSize,1).map(ListX::fromPublisher));   
+        return stream(FluxUtils.sliding(flux(),windowSize,1).map(ListX::fromPublisher));   
     }
     public FluentCollectionX<ListX<T>> sliding(int windowSize, int increment){
-        return stream(flux().window(windowSize,increment).map(ListX::fromPublisher)); 
+        return stream(FluxUtils.sliding(flux(),windowSize,increment).map(ListX::fromPublisher));   
     }
     public FluentCollectionX<T> scanLeft(Monoid<T> monoid){
         return stream(flux().scan(monoid.zero(),(BiFunction)monoid.combiner()));   
