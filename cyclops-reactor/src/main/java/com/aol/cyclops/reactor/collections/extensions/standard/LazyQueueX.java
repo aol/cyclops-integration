@@ -1202,6 +1202,42 @@ public class LazyQueueX<T> extends AbstractFluentCollectionX<T> implements Queue
             return LazyQueueX.fromIterable(supplier.get());
         return this;
     }
+    
+   
+    /* (non-Javadoc)
+     * @see java.util.Queue#offer(java.lang.Object)
+     */
+    public boolean offer(T e) {
+        return getQueue().offer(e);
+    }
+    
+    /* (non-Javadoc)
+     * @see java.util.Queue#remove()
+     */
+    public T remove() {
+        return getQueue().remove();
+    }
+    
+    /* (non-Javadoc)
+     * @see java.util.Queue#poll()
+     */
+    public T poll() {
+        return getQueue().poll();
+    }
+    
+    /* (non-Javadoc)
+     * @see java.util.Queue#element()
+     */
+    public T element() {
+        return getQueue().element();
+    }
+    
+    /* (non-Javadoc)
+     * @see java.util.Queue#peek()
+     */
+    public T peek() {
+        return getQueue().peek();
+    }
 
     
 }

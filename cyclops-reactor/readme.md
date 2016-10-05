@@ -11,17 +11,20 @@ v8.0.0 of cyclops-reactor and above is built using v2.5.0-M4 of Project Reactor
 
 # cyclops-reactor features include
 
-1. Native for comprehensions for Reactor types
-2. Native Monad Tranformer for Flux and Mono. FluxT also has native for comprehensions
-3. Monad wrapping via AnyM / AnyMValue / AnyMSeq
-4. Compatible with cyclops-react pattern matching
-5. Ability to use Reactor types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
+1. Lazy eXtended collections (backed by Flux)
+2. FluxSource -> for pushing data into Flux and Mono types
+3. Native for comprehensions for Reactor types
+4. Native Monad Tranformer for Flux and Mono. FluxT also has native for comprehensions
+5. Monad wrapping via AnyM / AnyMValue / AnyMSeq
+6. Compatible with cyclops-react pattern matching
+7. Ability to use Reactor types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
 
 
 # Lazy extended Collections
 
 1. LazyListX
 2. LazyDequeX
+3. LazyQueueX
 
 
 ### Notes : 
