@@ -1,11 +1,13 @@
 package com.aol.cyclops.reactor;
 
+import java.util.Iterator;
 import java.util.function.BiFunction;
 
 import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.types.Value;
+import com.aol.cyclops.types.stream.reactive.ValueSubscriber;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -37,5 +39,11 @@ public class MonoUtils {
     
     public static <T> Mono<T> fromIterable(Iterable<T> t){
         return Mono.from(Flux.fromIterable(t));
+    }
+    public static<T> Iterator<T> iterator(Mono<T> pub){
+     
+        ValueSubscriber<T> sub = ValueSubscriber.subscriber();
+        pub.subscribe(sub);
+        return sub.iterator();
     }
 }

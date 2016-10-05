@@ -564,7 +564,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return ReactiveSeq.fromStream(lazy.get().stream());
     }
     @Override
-    public Flux<T> streamInternal() {
+    public Flux<T> flux() {
         return lazy.stream();
     }
     /* (non-Javadoc)
@@ -1202,7 +1202,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
      * @see com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(int, java.lang.Object)
      */
     public LazyListX<T> with(int i,T element){
-        return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(streamInternal(),i, i+1),i,element)) ;
+        return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(flux(),i, i+1),i,element)) ;
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minus(int)

@@ -1,4 +1,4 @@
-package com.aol.cyclops.reactor.collections.extensions;
+package com.aol.cyclops.reactor.collections.extensions.standard;
 
 import java.util.Arrays;
 

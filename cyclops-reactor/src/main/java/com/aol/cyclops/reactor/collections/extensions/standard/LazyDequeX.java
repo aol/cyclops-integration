@@ -31,6 +31,7 @@ import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.standard.DequeX;
+import com.aol.cyclops.data.collections.extensions.standard.DequeXImpl;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.FluxUtils;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
@@ -40,9 +41,9 @@ import lombok.Getter;
 import reactor.core.publisher.Flux;
 
 public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements DequeX<T> {
-    private final  LazyFluentCollection<T,List<T>> lazy;
+    private final  LazyFluentCollection<T,Deque<T>> lazy;
     @Getter
-    private final Collector<T,?,List<T>> collector;
+    private final Collector<T,?,Deque<T>> collector;
     
     
     public static <T> LazyDequeX<T> fromStreamS(Stream<T> stream){
@@ -197,7 +198,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      * @return LazyListX from Iterable
      */
     public static <T> LazyDequeX<T> fromIterable(Iterable<T> it) {
-        return fromIterable(ListX.<T>defaultCollector(), it);
+        return fromIterable(DequeX.<T>defaultCollector(), it);
     }
 
     /**
@@ -207,40 +208,40 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      * @param it Iterable to construct LazyListX from
      * @return Newly constructed LazyListX
      */
-    public static <T> LazyDequeX<T> fromIterable(Collector<T, ?, List<T>> collector, Iterable<T> it) {
+    public static <T> LazyDequeX<T> fromIterable(Collector<T, ?, Deque<T>> collector, Iterable<T> it) {
         if (it instanceof LazyDequeX)
             return (LazyDequeX<T>) it;
        
-        if (it instanceof List)
+        if (it instanceof Deque)
             return new LazyDequeX<T>(
-                                    (List<T>) it, collector);
+                                    (Deque<T>) it, collector);
         return new LazyDequeX<T>(
                                 Flux.fromIterable(it),
                                 collector);
     }
-    private LazyDequeX(List<T> list,Collector<T,?,List<T>> collector){
+    private LazyDequeX(Deque<T> list,Collector<T,?,Deque<T>> collector){
         this.lazy = new LazyCollection<>(list,null,collector);
         this.collector=  collector;
     }
     
-    private LazyDequeX(List<T> list){
+    private LazyDequeX(Deque<T> list){
         
-        this.collector = ListX.defaultCollector();
-        this.lazy = new LazyCollection<T,List<T>>(list,null,collector);
+        this.collector = DequeX.defaultCollector();
+        this.lazy = new LazyCollection<T,Deque<T>>(list,null,collector);
     }
-    private LazyDequeX(Flux<T> stream,Collector<T,?,List<T>> collector){
+    private LazyDequeX(Flux<T> stream,Collector<T,?,Deque<T>> collector){
         
         this.collector = collector;
         this.lazy = new LazyCollection<>(null,stream,collector);
     }
     private LazyDequeX(Flux<T> stream){
         
-        this.collector = ListX.defaultCollector();
+        this.collector = DequeX.defaultCollector();
         this.lazy = new LazyCollection<>(null,stream,collector);
     }
     private LazyDequeX(){
-        this.collector = ListX.defaultCollector();
-        this.lazy = new LazyCollection<>((List)this.collector.supplier().get(),null,collector);
+        this.collector = DequeX.defaultCollector();
+        this.lazy = new LazyCollection<>((Deque)this.collector.supplier().get(),null,collector);
     }
     
     /* (non-Javadoc)
@@ -248,7 +249,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public void forEach(Consumer<? super T> action) {
-        getList().forEach(action);
+        getDeque().forEach(action);
     }
 
     /* (non-Javadoc)
@@ -256,7 +257,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public Iterator<T> iterator() {
-        return getList().iterator();
+        return getDeque().iterator();
     }
 
     /* (non-Javadoc)
@@ -264,7 +265,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public int size() {
-        return getList().size();
+        return getDeque().size();
     }
 
     /* (non-Javadoc)
@@ -272,7 +273,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public boolean contains(Object e) {
-        return getList().contains(e);
+        return getDeque().contains(e);
     }
 
     /* (non-Javadoc)
@@ -280,7 +281,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public boolean equals(Object o) {
-        return getList().equals(o);
+        return getDeque().equals(o);
     }
 
 
@@ -290,7 +291,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public boolean isEmpty() {
-        return getList().isEmpty();
+        return getDeque().isEmpty();
     }
 
     /* (non-Javadoc)
@@ -298,7 +299,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public int hashCode() {
-        return getList().hashCode();
+        return getDeque().hashCode();
     }
 
     /* (non-Javadoc)
@@ -306,7 +307,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public Object[] toArray() {
-        return getList().toArray();
+        return getDeque().toArray();
     }
 
     /* (non-Javadoc)
@@ -314,7 +315,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public boolean removeAll(Collection<?> c) {
-        return getList().removeAll(c);
+        return getDeque().removeAll(c);
     }
 
     /* (non-Javadoc)
@@ -322,7 +323,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public <T> T[] toArray(T[] a) {
-        return getList().toArray(a);
+        return getDeque().toArray(a);
     }
 
     /* (non-Javadoc)
@@ -330,7 +331,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public boolean add(T e) {
-        return getList().add(e);
+        return getDeque().add(e);
     }
 
     /* (non-Javadoc)
@@ -338,7 +339,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public boolean remove(Object o) {
-        return getList().remove(o);
+        return getDeque().remove(o);
     }
 
     /* (non-Javadoc)
@@ -346,7 +347,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public boolean containsAll(Collection<?> c) {
-        return getList().containsAll(c);
+        return getDeque().containsAll(c);
     }
 
     /* (non-Javadoc)
@@ -354,7 +355,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public boolean addAll(Collection<? extends T> c) {
-        return getList().addAll(c);
+        return getDeque().addAll(c);
     }
 
     /* (non-Javadoc)
@@ -362,7 +363,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public boolean retainAll(Collection<?> c) {
-        return getList().retainAll(c);
+        return getDeque().retainAll(c);
     }
 
     /* (non-Javadoc)
@@ -370,7 +371,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public void clear() {
-        getList().clear();
+        getDeque().clear();
     }
 
     
@@ -379,7 +380,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public String toString() {
-        return getList().toString();
+        return getDeque().toString();
     }
 
     /* (non-Javadoc)
@@ -403,7 +404,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public  boolean removeIf(Predicate<? super T> filter) {
-        return getList().removeIf(filter);
+        return getDeque().removeIf(filter);
     }
     
     
@@ -413,7 +414,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public  Stream<T> parallelStream() {
-        return getList().parallelStream();
+        return getDeque().parallelStream();
     }
     
     
@@ -422,10 +423,10 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public Spliterator<T> spliterator() {
-        return getList().spliterator();
+        return getDeque().spliterator();
     }
    
-    private List<T> getList() {
+    private Deque<T> getDeque() {
         return lazy.get();
     }
     /* (non-Javadoc)
@@ -444,7 +445,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return ReactiveSeq.fromStream(lazy.get().stream());
     }
     @Override
-    public Flux<T> streamInternal() {
+    public Flux<T> flux() {
         return lazy.stream();
     }
     /* (non-Javadoc)
@@ -1082,7 +1083,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      * @see com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(int, java.lang.Object)
      */
     public LazyDequeX<T> with(int i,T element){
-        return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(streamInternal(),i, i+1),i,element)) ;
+        return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(flux(),i, i+1),i,element)) ;
     }
     
     /* (non-Javadoc)
@@ -1123,8 +1124,8 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     @Override
     public <T1> LazyDequeX<T1> from(Collection<T1> c) {
         if(c instanceof List)
-            return new LazyDequeX<T1>((List)c,(Collector)collector);
-      return new LazyDequeX<T1>((List)c.stream().collect(Collectors.toList()),(Collector)this.collector);
+            return new LazyDequeX<T1>((Deque)c,(Collector)collector);
+      return new LazyDequeX<T1>((Deque)c.stream().collect(Collectors.toList()),(Collector)this.collector);
     }
 
     /* (non-Javadoc)
@@ -1189,7 +1190,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public <X> LazyDequeX<X> fromStream(Stream<X> stream) {
-        List<X> list = (List<X>) stream.collect((Collector)getCollector());
+        Deque<X> list = (Deque<X>) stream.collect((Collector)getCollector());
         return new LazyDequeX<X>(list, (Collector)getCollector());
     }
     /* (non-Javadoc)
@@ -1202,5 +1203,165 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return this;
     }
     
+
+    /**
+     * @param e
+     * @see java.util.Deque#addFirst(java.lang.Object)
+     */
+    public void addFirst(T e) {
+        getDeque().addFirst(e);
+    }
+    /**
+     * @param e
+     * @see java.util.Deque#addLast(java.lang.Object)
+     */
+    public void addLast(T e) {
+        getDeque().addLast(e);
+    }
+    /**
+     * @param e
+     * @return
+     * @see java.util.Deque#offerFirst(java.lang.Object)
+     */
+    public boolean offerFirst(T e) {
+        return getDeque().offerFirst(e);
+    }
+    /**
+     * @param e
+     * @return
+     * @see java.util.Deque#offerLast(java.lang.Object)
+     */
+    public boolean offerLast(T e) {
+        return getDeque().offerLast(e);
+    }
+    /**
+     * @return
+     * @see java.util.Deque#removeFirst()
+     */
+    public T removeFirst() {
+        return getDeque().removeFirst();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#removeLast()
+     */
+    public T removeLast() {
+        return getDeque().removeLast();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#pollFirst()
+     */
+    public T pollFirst() {
+        return getDeque().pollFirst();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#pollLast()
+     */
+    public T pollLast() {
+        return getDeque().pollLast();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#getFirst()
+     */
+    public T getFirst() {
+        return getDeque().getFirst();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#getLast()
+     */
+    public T getLast() {
+        return getDeque().getLast();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#peekFirst()
+     */
+    public T peekFirst() {
+        return getDeque().peekFirst();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#peekLast()
+     */
+    public T peekLast() {
+        return getDeque().peekLast();
+    }
+    /**
+     * @param o
+     * @return
+     * @see java.util.Deque#removeFirstOccurrence(java.lang.Object)
+     */
+    public boolean removeFirstOccurrence(Object o) {
+        return getDeque().removeFirstOccurrence(o);
+    }
+    /**
+     * @param o
+     * @return
+     * @see java.util.Deque#removeLastOccurrence(java.lang.Object)
+     */
+    public boolean removeLastOccurrence(Object o) {
+        return getDeque().removeLastOccurrence(o);
+    }
+    /**
+     * @param e
+     * @return
+     * @see java.util.Deque#offer(java.lang.Object)
+     */
+    public boolean offer(T e) {
+        return getDeque().offer(e);
+    }
+    /**
+     * @return
+     * @see java.util.Deque#remove()
+     */
+    public T remove() {
+        return getDeque().remove();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#poll()
+     */
+    public T poll() {
+        return getDeque().poll();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#element()
+     */
+    public T element() {
+        return getDeque().element();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#peek()
+     */
+    public T peek() {
+        return getDeque().peek();
+    }
+    /**
+     * @param e
+     * @see java.util.Deque#push(java.lang.Object)
+     */
+    public void push(T e) {
+        getDeque().push(e);
+    }
+    /**
+     * @return
+     * @see java.util.Deque#pop()
+     */
+    public T pop() {
+        return getDeque().pop();
+    }
+    /**
+     * @return
+     * @see java.util.Deque#descendingIterator()
+     */
+    public Iterator<T> descendingIterator() {
+        return getDeque().descendingIterator();
+    }
     
 }

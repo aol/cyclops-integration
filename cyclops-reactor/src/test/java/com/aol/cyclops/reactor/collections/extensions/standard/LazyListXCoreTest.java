@@ -1,4 +1,4 @@
-package com.aol.cyclops.reactor.collections.extensions;
+package com.aol.cyclops.reactor.collections.extensions.standard;
 
 
 import static org.hamcrest.Matchers.equalTo;
@@ -21,6 +21,7 @@ import com.aol.cyclops.control.Validator;
 import com.aol.cyclops.data.async.QueueFactories;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
 import com.aol.cyclops.reactor.collections.extensions.standard.LazyListX;
 
 public class LazyListXCoreTest extends AbstractOrderDependentCollectionXTest {

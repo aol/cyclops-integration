@@ -18,12 +18,10 @@ import org.reactivestreams.Subscriber;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Matchable;
-import com.aol.cyclops.control.Maybe;
-import com.aol.cyclops.control.PublisherUtils;
 import com.aol.cyclops.control.Matchable.CheckValue1;
+import com.aol.cyclops.control.PublisherUtils;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
-import com.aol.cyclops.control.monads.transformers.values.MaybeTValue;
 import com.aol.cyclops.control.monads.transformers.values.TransformerValue;
 import com.aol.cyclops.reactor.MonoUtils;
 import com.aol.cyclops.types.ConvertableFunctor;
@@ -375,7 +373,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public Iterator<A> iterator() {
         val maybeEval = run.toMaybe();
-        return maybeEval.isPresent() ? PublisherUtils.iterator(maybeEval.get())
+        return maybeEval.isPresent() ? MonoUtils.iterator(maybeEval.get())
                                              
                 : Arrays.<A> asList()
                         .iterator();
