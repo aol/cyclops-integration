@@ -1,13 +1,11 @@
 package com.aol.cyclops.control;
 
-import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
-import com.aol.cyclops.types.stream.reactive.ValueSubscriber;
 
 
 public class PublisherUtils {
