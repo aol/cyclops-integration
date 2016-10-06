@@ -128,7 +128,33 @@ Documentation for working with Queues
 * [Agrona wait free Queues](https://github.com/aol/cyclops-react/wiki/Agrona-Wait-Free-Queues)
 * [Working with wait free Queues](https://github.com/aol/cyclops-react/wiki/Wait-Strategies-for-working-with-Wait-Free-Queues)
 
+# Joining Streams with ReactorPipes
 
+ReactorPipes provides an API for flexible joining of multple different Stream types.
+
+
+```java
+
+	ReactorPipes<String,Integer> pipes = ReactorPipes.of();
+	
+	//store a transfer Queue with a max size of 1,000 entries
+	pipes.register("transfer1",QueueFactories.boundedQueue(1_000));
+	
+	//connect a Flux to transfer1
+	Maybe<Flux<Integer>> connected = pipes.flux("transfer1");
+	Flux<Integer> stream = connected.get();
+	
+	//Setup a producing Stream
+	ReactiveSeq seq = ReactiveSeq.generate(this::loadData)
+			   					 .map(this::processData);
+			   
+    
+    pipes.publishToAsync("transfer1",seq);
+    
+    stream.map(e->handleNextElement(e))
+    	  .consume(this::save);
+	
+```
 
 # Monad abstractions
 
