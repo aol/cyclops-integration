@@ -105,7 +105,7 @@ For pushing data into Flux and Mono types
 	//on a separate thread
 	pushable.getFlux()
 	        .map(i->i*2)
-		    .consume(System.out::println);
+		    .subscribe(System.out::println);
 		    
 	//then push data into your Flux
 	pushable.getQueue()
@@ -152,7 +152,7 @@ ReactorPipes provides an API for flexible joining of multple different Stream ty
     pipes.publishToAsync("transfer1",seq);
     
     stream.map(e->handleNextElement(e))
-    	  .consume(this::save);
+    	  .subscribe(this::save);
 	
 ```
 

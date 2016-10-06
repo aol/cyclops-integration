@@ -41,6 +41,7 @@ public class ReactorPipes<K, V> {
 
     private final ConcurrentMap<K, Adapter<V>> registered = new ConcurrentHashMap<>();
 
+   
     /**
      * @return Size of registered pipes
      */
