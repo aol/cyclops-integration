@@ -300,7 +300,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<T> cycle(Monoid<T> m, int times) {
         
-        return stream(Flux.fromStream(StreamUtils.cycle(times, Streamable.of(m.reduce(stream())))));
+        return stream(FluxUtils.cycle(flux(), m, times));
     }
 
     /* (non-Javadoc)

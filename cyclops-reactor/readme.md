@@ -25,6 +25,8 @@ v8.0.0 of cyclops-reactor and above is built using v2.5.0-M4 of Project Reactor
 1. LazyListX
 2. LazyDequeX
 3. LazyQueueX
+4. LazySetX
+5. LazySortedX
 
 
 ### Notes : 

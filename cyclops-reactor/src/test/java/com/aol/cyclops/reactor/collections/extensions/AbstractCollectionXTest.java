@@ -65,6 +65,7 @@ import com.aol.cyclops.data.collections.extensions.CollectionX;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.ListXImpl;
+import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
 import com.aol.cyclops.util.SimpleTimer;
 import com.aol.cyclops.util.function.Predicates;
 
@@ -1666,6 +1667,7 @@ public abstract class AbstractCollectionXTest {
             }
             @Test
             public void groupedFunctionNoOrder(){
+                
                 assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").count(),equalTo((2L)));
                 assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").filter(t->t.v1.equals("a"))
                                 .map(t->t.v2).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).single(),
@@ -1813,7 +1815,7 @@ public abstract class AbstractCollectionXTest {
                
              @Test
             public void combinations2NoOrder() {
-                 
+                 of(1, 2, 3).combinations(2).toListX();
                     assertThat(of(1, 2, 3).combinations(2).map(s->s.toListX()).toListX().get(0).size(),
                             equalTo(2));
                 }

@@ -20,12 +20,11 @@ import org.jooq.lambda.tuple.Tuple2;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Matchable;
+import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
-import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.reactor.collections.extensions.standard.LazyListX;
-import com.aol.cyclops.reactor.operators.GroupBySize;
+import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
 import com.aol.cyclops.reactor.operators.GroupedWhile;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
 
@@ -66,6 +65,7 @@ public class FluxUtils {
          );
 
     }
+    
     
     public static <T> Iterator<T> iterator(Flux<T> stream){
         SeqSubscriber<T> sub = SeqSubscriber.subscriber();
@@ -109,6 +109,32 @@ public class FluxUtils {
             }
 
         }).flatMap(Function.identity());
+    }
+    
+    public final static <T> Flux<T> cycle(final Flux<T> stream,Monoid<T> m, int times){
+        return Flux.fromIterable(()-> new Iterator<T>(){
+            
+            Iterator<T> it;
+            private void init(){
+                if(it==null){
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(stream);
+                    it = seq.cycle(m, times).iterator();
+                }
+            }
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public T next() {
+                init();
+                return it.next();
+            }
+               
+           }
+         );
     }
     /**
      * Repeat in a Flux while specified predicate holds
@@ -775,6 +801,7 @@ public class FluxUtils {
         private void init(){
             if(it==null){
                 ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                
                 it = (Iterator)seq.grouped(classifier,downstream).iterator();
             }
         }
