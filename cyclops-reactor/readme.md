@@ -18,7 +18,7 @@ v8.0.0 of cyclops-reactor and above is built using v2.5.0-M4 of Project Reactor
 5. Monad wrapping via AnyM / AnyMValue / AnyMSeq
 6. Compatible with cyclops-react pattern matching
 7. Ability to use Reactor types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
-
+8. FluxUtils, MonoUtils and PublisherUtils for working with Flux, Mono and general Publishers
 
 # Lazy extended Collections
 
@@ -74,6 +74,60 @@ LazyDequeX extends DequeX from cyclops (and JDK java.util.Deque).
 	transformed.get(0).reduce(0,(a,b)->a+b);
 	
 ```	
+
+## LazyQueueX
+
+LazyQueueX extends QueueX from cyclops (and JDK java.util.Deque). 
+
+```java
+
+	QueueX<Integer> lazy = LazyQueueX.fromIterable(myIterable);
+	
+	//lazily define operations
+	LazyQueueX<ListX<Integer>> transformed = lazy.map(i->i*2)
+											 	 .filter(i->i<100)
+		 									 	 .sliding(2,1);
+
+	//operations performed when data is accessed
+	transformed.get(0).reduce(0,(a,b)->a+b);
+	
+```	
+
+# FluxSource
+
+For pushing data into Flux and Mono types
+
+```java
+	PushableFlux<Integer> pushable = FluxSource.ofUnbounded();
+	pushable.getQueue()
+	        .offer(1);
+	        
+	//on a separate thread
+	pushable.getFlux()
+	        .map(i->i*2)
+		    .consume(System.out::println);
+		    
+	//then push data into your Flux
+	pushable.getQueue()
+	        .offer(2);
+	        
+	//close the transfer Queue
+	 pushable.getQueue()
+	         .close();
+```
+
+Documentation for StreamSource (cyclops-react / extended JDK  analogue of FluxSource)
+
+* [StreamSource wiki](https://github.com/aol/cyclops-react/wiki/StreamSource)
+
+Blog post on [pushing data into Java 8 Streams](http://jroller.com/ie/entry/pushing_data_into_java_8)
+
+Documentation for working with Queues
+
+* [Queues explained](https://github.com/aol/cyclops-react/wiki/Queues-explained)
+* [Agrona wait free Queues](https://github.com/aol/cyclops-react/wiki/Agrona-Wait-Free-Queues)
+* [Working with wait free Queues](https://github.com/aol/cyclops-react/wiki/Wait-Strategies-for-working-with-Wait-Free-Queues)
+
 
 
 # Monad abstractions

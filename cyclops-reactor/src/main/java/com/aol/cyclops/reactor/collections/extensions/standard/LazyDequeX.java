@@ -39,13 +39,43 @@ import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
 import lombok.Getter;
 import reactor.core.publisher.Flux;
-
+/**
+ * An extended List type
+ * Extended List operations execute lazily e.g.
+ * <pre>
+ * {@code 
+ *    LazyDequeX<Integer> q = LazyDequeX.of(1,2,3)
+ *                                      .map(i->i*2);
+ * }
+ * </pre>
+ * The map operation above is not executed immediately. It will only be executed when (if) the data inside the
+ * queue is accessed. This allows lazy operations to be chained and executed more efficiently e.g.
+ * 
+ * <pre>
+ * {@code 
+ *    LazyDequeX<Integer> q = LazyDequeX.of(1,2,3)
+ *                                      .map(i->i*2);
+ *                                      .filter(i->i<5);
+ * }
+ * </pre>
+ * 
+ * The operation above is more efficient than the equivalent operation with a DequeX.
+ * 
+ * @author johnmcclean
+ *
+ * @param <T> the type of elements held in this collection
+ */
 public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements DequeX<T> {
     private final  LazyFluentCollection<T,Deque<T>> lazy;
     @Getter
     private final Collector<T,?,Deque<T>> collector;
     
-    
+    /**
+     * Create a LazyDequeX from a Stream
+     * 
+     * @param stream to construct a LazyQueueX from
+     * @return LazyDequeX
+     */
     public static <T> LazyDequeX<T> fromStreamS(Stream<T> stream){
         return new LazyDequeX<T>(Flux.from(ReactiveSeq.fromStream(stream)));
     }

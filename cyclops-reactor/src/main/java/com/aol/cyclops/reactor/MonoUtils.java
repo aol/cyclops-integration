@@ -21,9 +21,25 @@ import reactor.core.publisher.Mono;
  */
 public class MonoUtils {
 
+    /**
+     * Lazily combine this Mono with the supplied value via the supplied BiFunction
+     * 
+     * @param mono Mono to combine with another value
+     * @param app Value to combine with supplied mono
+     * @param fn Combiner function
+     * @return Combined Mono
+     */
     public static <T1,T2,R> Mono<R> combine(Mono<? extends T1> mono,Value<? extends T2> app, BiFunction<? super T1, ? super T2, ? extends R> fn){
         return  Mono.from(FutureW.of(mono.toFuture()).combine(app, fn));
     }
+    /**
+     * Lazily combine this Mono with the supplied Mono via the supplied BiFunction
+     * 
+     * @param mono Mono to combine with another value
+     * @param app Mono to combine with supplied mono
+     * @param fn Combiner function
+     * @return Combined Mono
+     */
     public static <T1,T2,R> Mono<R> combine(Mono<? extends T1> mono,Mono<? extends T2> app, BiFunction<? super T1, ? super T2, ? extends R> fn){
         return  Mono.from(FutureW.of(mono.toFuture()).combine(FutureW.of(app.toFuture()), fn));
     }
