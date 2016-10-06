@@ -1228,9 +1228,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @Override
     public LazyDequeX<T> onEmptySwitch(Supplier<? extends Deque<T>> supplier) {
-        if (this.isEmpty())
-            return LazyDequeX.fromIterable(supplier.get());
-        return this;
+        return stream(FluxUtils.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
     }
     
 

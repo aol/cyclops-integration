@@ -1230,9 +1230,7 @@ public class LazyQueueX<T> extends AbstractFluentCollectionX<T> implements Queue
      */
     @Override
     public LazyQueueX<T> onEmptySwitch(Supplier<? extends Queue<T>> supplier) {
-        if (this.isEmpty())
-            return LazyQueueX.fromIterable(supplier.get());
-        return this;
+        return stream(FluxUtils.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
     }
     
    

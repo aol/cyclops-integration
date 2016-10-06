@@ -505,6 +505,33 @@ public class FluxUtils {
 
         });
     }
+    public static <T> Flux<T> onEmptySwitch(Flux<T> flux, Supplier<? extends Flux<T>> value) {
+        return Flux.fromIterable(() -> new Iterator<T>() {
+
+            Iterator<T> it;
+
+            private void init() {
+                if (it == null) {
+                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(flux);
+                    it = seq.onEmptySwitch(()->ReactiveSeq.fromPublisher(value.get()))
+                            .iterator();
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                init();
+                return it.hasNext();
+            }
+
+            @Override
+            public T next() {
+                init();
+                return it.next();
+            }
+
+        });
+    }
     public static <T> Flux<T> onEmptyGet(Flux<T> flux, Supplier<? extends T> value) {
         return Flux.fromIterable(() -> new Iterator<T>() {
 

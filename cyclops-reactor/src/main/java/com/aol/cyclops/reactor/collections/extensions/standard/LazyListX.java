@@ -1373,9 +1373,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
      */
     @Override
     public LazyListX<T> onEmptySwitch(Supplier<? extends List<T>> supplier) {
-        if (this.isEmpty())
-            return LazyListX.fromIterable(supplier.get());
-        return this;
+        return stream(FluxUtils.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
     }
 
     

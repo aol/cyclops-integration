@@ -1207,9 +1207,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
      */
     @Override
     public LazySortedSetX<T> onEmptySwitch(Supplier<? extends SortedSet<T>> supplier) {
-        if (this.isEmpty())
-            return LazySortedSetX.fromIterable(supplier.get());
-        return this;
+        return stream(FluxUtils.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
     }
     
     /**
