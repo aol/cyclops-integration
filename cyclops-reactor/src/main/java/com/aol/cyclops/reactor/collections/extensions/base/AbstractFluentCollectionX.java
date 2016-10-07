@@ -90,8 +90,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     abstract public <X> FluentCollectionX<X> stream(Flux<X> stream);
     @Override
     public FluentCollectionX<T> plusLazy(T e){
-        Flux f;
-      
+       
         return stream(flux().concat(Mono.just(e)));
         
     }
@@ -131,8 +130,8 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     }
     @Override
     public FluentCollectionX<T> minusAllLazy(Collection<?> list){
-        Supplier<SetX<?>> set = ()->SetX.fromIterable(list);
-        return stream(flux().filter(t-> !set.get().contains(t)));
+        return this.removeAll((Iterable)list);
+       
     }
     
     @Override

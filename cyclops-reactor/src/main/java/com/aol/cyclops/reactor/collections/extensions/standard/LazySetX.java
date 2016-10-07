@@ -727,7 +727,7 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T> implements SetX<T>
     @Override
     public LazySetX<T> plusLazy(T e) {
        
-        return (LazySetX<T>)super.plus(e);
+        return (LazySetX<T>)super.plusLazy(e);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.SetX#plusAllLazy(java.util.Collection)
@@ -735,7 +735,7 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T> implements SetX<T>
     @Override
     public LazySetX<T> plusAllLazy(Collection<? extends T> list) {
        
-        return (LazySetX<T>)super.plusAll(list);
+        return (LazySetX<T>)super.plusAllLazy(list);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.SetX#minusLazy(java.lang.Object)
@@ -743,7 +743,7 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T> implements SetX<T>
     @Override
     public LazySetX<T> minusLazy(Object e) {
        
-        return (LazySetX<T>)super.minus(e);
+        return (LazySetX<T>)super.minusLazy(e);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.SetX#minusAllLazy(java.util.Collection)
@@ -751,7 +751,7 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T> implements SetX<T>
     @Override
     public LazySetX<T> minusAllLazy(Collection<?> list) {
        
-        return (LazySetX<T>)super.minusAll(list);
+        return (LazySetX<T>)super.minusAllLazy(list);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.SetX#cycle(int)

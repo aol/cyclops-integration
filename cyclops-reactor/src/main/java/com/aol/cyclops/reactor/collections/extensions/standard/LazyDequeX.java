@@ -727,7 +727,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     @Override
     public LazyDequeX<T> plusLazy(T e) {
        
-        return (LazyDequeX<T>)super.plus(e);
+        return (LazyDequeX<T>)super.plusLazy(e);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusAllLazy(java.util.Collection)
@@ -735,7 +735,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     @Override
     public LazyDequeX<T> plusAllLazy(Collection<? extends T> list) {
        
-        return (LazyDequeX<T>)super.plusAll(list);
+        return (LazyDequeX<T>)super.plusAllLazy(list);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusLazy(java.lang.Object)
@@ -743,7 +743,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     @Override
     public LazyDequeX<T> minusLazy(Object e) {
        
-        return (LazyDequeX<T>)super.minus(e);
+        return (LazyDequeX<T>)super.minusLazy(e);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusAllLazy(java.util.Collection)
@@ -751,7 +751,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     @Override
     public LazyDequeX<T> minusAllLazy(Collection<?> list) {
        
-        return (LazyDequeX<T>)super.minusAll(list);
+        return (LazyDequeX<T>)super.minusAllLazy(list);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(int)

@@ -842,7 +842,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     @Override
     public LazyListX<T> plusLazy(T e) {
        
-        return (LazyListX<T>)super.plus(e);
+        return (LazyListX<T>)super.plusLazy(e);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusAllLazy(java.util.Collection)
@@ -850,7 +850,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     @Override
     public LazyListX<T> plusAllLazy(Collection<? extends T> list) {
        
-        return (LazyListX<T>)super.plusAll(list);
+        return (LazyListX<T>)super.plusAllLazy(list);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusLazy(java.lang.Object)
@@ -858,7 +858,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     @Override
     public LazyListX<T> minusLazy(Object e) {
        
-        return (LazyListX<T>)super.minus(e);
+        return (LazyListX<T>)super.minusLazy(e);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusAllLazy(java.util.Collection)
@@ -866,7 +866,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     @Override
     public LazyListX<T> minusAllLazy(Collection<?> list) {
        
-        return (LazyListX<T>)super.minusAll(list);
+        return (LazyListX<T>)super.minusAllLazy(list);
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(int)
