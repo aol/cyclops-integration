@@ -22,11 +22,17 @@ v8.0.0 of cyclops-reactor and above is built using v2.5.0-M4 of Project Reactor
 
 # Lazy extended Collections
 
+Standard JDK collections
+
 1. LazyListX
 2. LazyDequeX
 3. LazyQueueX
 4. LazySetX
 5. LazySortedX
+
+Persistent collections
+
+1. LazyPStackX
 
 
 ### Notes : 

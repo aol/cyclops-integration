@@ -257,15 +257,21 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
         if (it instanceof LazyPStackX)
             return (LazyPStackX<T>) it;
        
-        if (it instanceof List)
+        if (it instanceof PStack)
             return new LazyPStackX<T>(
                                     (PStack<T>) it, collector);
+        
         return new LazyPStackX<T>(
                                 Flux.fromIterable(it),
                                 collector);
     }
     private LazyPStackX(PStack<T> list,Reducer<PStack<T>> collector){
         this.efficientOps=true;
+        this.lazy = new PersistentLazyCollection<T,PStack<T>>(list,null,collector);
+        this.collector=  collector;
+    }
+    private LazyPStackX(boolean efficientOps,PStack<T> list,Reducer<PStack<T>> collector){
+        this.efficientOps=efficientOps;
         this.lazy = new PersistentLazyCollection<T,PStack<T>>(list,null,collector);
         this.collector=  collector;
     }
@@ -296,7 +302,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public void forEach(Consumer<? super T> action) {
-        getList().forEach(action);
+        getStack().forEach(action);
     }
 
     /* (non-Javadoc)
@@ -304,7 +310,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public Iterator<T> iterator() {
-        return getList().iterator();
+        return getStack().iterator();
     }
 
     /* (non-Javadoc)
@@ -312,7 +318,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public int size() {
-        return getList().size();
+        return getStack().size();
     }
 
     /* (non-Javadoc)
@@ -320,7 +326,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean contains(Object e) {
-        return getList().contains(e);
+        return getStack().contains(e);
     }
 
     /* (non-Javadoc)
@@ -328,7 +334,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean equals(Object o) {
-        return getList().equals(o);
+        return getStack().equals(o);
     }
 
 
@@ -338,7 +344,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean isEmpty() {
-        return getList().isEmpty();
+        return getStack().isEmpty();
     }
 
     /* (non-Javadoc)
@@ -346,7 +352,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public int hashCode() {
-        return getList().hashCode();
+        return getStack().hashCode();
     }
 
     /* (non-Javadoc)
@@ -354,7 +360,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public Object[] toArray() {
-        return getList().toArray();
+        return getStack().toArray();
     }
 
     /* (non-Javadoc)
@@ -362,7 +368,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean removeAll(Collection<?> c) {
-        return getList().removeAll(c);
+        return getStack().removeAll(c);
     }
 
     /* (non-Javadoc)
@@ -370,7 +376,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public <T> T[] toArray(T[] a) {
-        return getList().toArray(a);
+        return getStack().toArray(a);
     }
 
     /* (non-Javadoc)
@@ -378,7 +384,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean add(T e) {
-        return getList().add(e);
+        return getStack().add(e);
     }
 
     /* (non-Javadoc)
@@ -386,7 +392,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean remove(Object o) {
-        return getList().remove(o);
+        return getStack().remove(o);
     }
 
     /* (non-Javadoc)
@@ -394,7 +400,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean containsAll(Collection<?> c) {
-        return getList().containsAll(c);
+        return getStack().containsAll(c);
     }
 
     /* (non-Javadoc)
@@ -402,7 +408,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean addAll(Collection<? extends T> c) {
-        return getList().addAll(c);
+        return getStack().addAll(c);
     }
 
     /* (non-Javadoc)
@@ -410,7 +416,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean retainAll(Collection<?> c) {
-        return getList().retainAll(c);
+        return getStack().retainAll(c);
     }
 
     /* (non-Javadoc)
@@ -418,7 +424,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public void clear() {
-        getList().clear();
+        getStack().clear();
     }
 
     
@@ -427,7 +433,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public String toString() {
-        return getList().toString();
+        return getStack().toString();
     }
 
     /* (non-Javadoc)
@@ -450,49 +456,49 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public boolean addAll(int index, Collection<? extends T> c) {
-        return getList().addAll(index, c);
+        return getStack().addAll(index, c);
     }
     /* (non-Javadoc)
      * @see java.util.List#replaceAll(java.util.function.UnaryOperator)
      */
     @Override
     public void replaceAll(UnaryOperator<T> operator) {
-        getList().replaceAll(operator);
+        getStack().replaceAll(operator);
     }
     /* (non-Javadoc)
      * @see java.util.Collection#removeIf(java.util.function.Predicate)
      */
     @Override
     public  boolean removeIf(Predicate<? super T> filter) {
-        return getList().removeIf(filter);
+        return getStack().removeIf(filter);
     }
     /* (non-Javadoc)
      * @see java.util.List#sort(java.util.Comparator)
      */
     @Override
     public  void sort(Comparator<? super T> c) {
-        getList().sort(c);
+        getStack().sort(c);
     }
     /* (non-Javadoc)
      * @see java.util.List#get(int)
      */
     @Override
     public T get(int index) {
-        return getList().get(index);
+        return getStack().get(index);
     }
     /* (non-Javadoc)
      * @see java.util.List#set(int, java.lang.Object)
      */
     @Override
     public T set(int index, T element) {
-        return getList().set(index, element);
+        return getStack().set(index, element);
     }
     /* (non-Javadoc)
      * @see java.util.List#add(int, java.lang.Object)
      */
     @Override
     public void add(int index, T element) {
-        getList().add(index, element);
+        getStack().add(index, element);
     }
     
     /* (non-Javadoc)
@@ -500,7 +506,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public T remove(int index) {
-        return getList().remove(index);
+        return getStack().remove(index);
     }
    
     /* (non-Javadoc)
@@ -508,7 +514,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public  Stream<T> parallelStream() {
-        return getList().parallelStream();
+        return getStack().parallelStream();
     }
     
     /* (non-Javadoc)
@@ -517,7 +523,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
     @Override
     public int indexOf(Object o) {
         // return stream().zipWithIndex().filter(t->Objects.equals(t.v1,o)).findFirst().get().v2.intValue();
-        return getList().indexOf(o);
+        return getStack().indexOf(o);
     }
    
     /* (non-Javadoc)
@@ -525,7 +531,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public int lastIndexOf(Object o) {
-        return getList().lastIndexOf(o);
+        return getStack().lastIndexOf(o);
     }
     
     /* (non-Javadoc)
@@ -533,7 +539,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public ListIterator<T> listIterator() {
-        return getList().listIterator();
+        return getStack().listIterator();
     }
     
     /* (non-Javadoc)
@@ -541,7 +547,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public ListIterator<T> listIterator(int index) {
-        return getList().listIterator(index);
+        return getStack().listIterator(index);
     }
    
     /* (non-Javadoc)
@@ -549,7 +555,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public LazyPStackX<T> subList(int fromIndex, int toIndex) {
-        return new LazyPStackX<T>(getList().subList(fromIndex, toIndex),getCollector());
+        return new LazyPStackX<T>(getStack().subList(fromIndex, toIndex),getCollector());
     }
   
     /* (non-Javadoc)
@@ -557,13 +563,13 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public Spliterator<T> spliterator() {
-        return getList().spliterator();
+        return getStack().spliterator();
     }
    
     /**
      * @return PStack
      */
-    private PStack<T> getList() {
+    private PStack<T> getStack() {
         return lazy.get();
     }
     
@@ -818,41 +824,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
         return (LazyPStackX<T>)super.sorted(function);
     }
     
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#plus(java.lang.Object)
-     */
-    @Override
-    public LazyPStackX<T> plus(T e) {
-       
-        return (LazyPStackX<T>)super.plus(e);
-    }
     
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#plusAll(java.util.Collection)
-     */
-    @Override
-    public LazyPStackX<T> plusAll(Collection<? extends T> list) {
-       
-        return (LazyPStackX<T>)super.plusAll(list);
-    }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minus(java.lang.Object)
-     */
-    @Override
-    public LazyPStackX<T> minus(Object e) {
-       
-        return (LazyPStackX<T>)super.minus(e);
-    }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minusAll(java.util.Collection)
-     */
-    @Override
-    public LazyPStackX<T> minusAll(Collection<?> list) {
-       
-        return (LazyPStackX<T>)super.minusAll(list);
-    }
     
     /* (non-Javadoc)
      * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#plusLazy(java.lang.Object)
@@ -860,7 +832,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
     @Override
     public LazyPStackX<T> plusLazy(T e) {
        
-        return (LazyPStackX<T>)super.plus(e);
+        return (LazyPStackX<T>)super.plusLazy(e);
     }
     
     /* (non-Javadoc)
@@ -869,7 +841,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
     @Override
     public LazyPStackX<T> plusAllLazy(Collection<? extends T> list) {
        
-        return (LazyPStackX<T>)super.plusAll(list);
+        return (LazyPStackX<T>)super.plusAllLazy(list);
     }
     
     /* (non-Javadoc)
@@ -878,7 +850,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
     @Override
     public LazyPStackX<T> minusLazy(Object e) {
        
-        return (LazyPStackX<T>)super.minus(e);
+        return (LazyPStackX<T>)super.minusLazy(e);
     }
     
     /* (non-Javadoc)
@@ -887,7 +859,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
     @Override
     public LazyPStackX<T> minusAllLazy(Collection<?> list) {
        
-        return (LazyPStackX<T>)super.minusAll(list);
+        return (LazyPStackX<T>)super.minusAllLazy(list);
     }
     
     /* (non-Javadoc)
@@ -1301,33 +1273,6 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
         return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(flux(),i, i+1),i,element)) ;
     }
     
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minus(int)
-     */
-    @Override
-    public LazyPStackX<T> minus(int pos){
-        remove(pos);
-        return this;
-    }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plus(int, java.lang.Object)
-     */
-    @Override
-    public LazyPStackX<T> plus(int i, T e){
-        add(i,e);
-        return this;
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusAll(int, java.util.Collection)
-     */
-    @Override
-    public LazyPStackX<T> plusAll(int i, Collection<? extends T> list){
-        addAll(i,list);
-        return this;
-    }
     
     
  
@@ -1479,6 +1424,52 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
         return Reducers.toPStack();
 
     }
+    /* (non-Javadoc)
+     * @see org.pcollections.MapPSet#plus(java.lang.Object)
+     */
+    public LazyPStackX<T> plus(T e) {
+        return new LazyPStackX<T>(efficientOps,getStack().plus(e),this.collector);
+    }
+    /* (non-Javadoc)
+     * @see org.pcollections.PStack#plus(int, java.lang.Object)
+     */
+    public LazyPStackX<T> plus(int i, T e) {
+        return new LazyPStackX<T>(efficientOps,getStack().plus(i,e),this.collector);
+    }
+
+    /* (non-Javadoc)
+     * @see org.pcollections.MapPSet#minus(java.lang.Object)
+     */
+    public  LazyPStackX<T> minus(Object e) {
+        return new LazyPStackX<T>(efficientOps,getStack().minus(e),this.collector);
+    }
+
+    /* (non-Javadoc)
+     * @see org.pcollections.MapPSet#plusAll(java.util.Collection)
+     */
+    public  LazyPStackX<T> plusAll(Collection<? extends T> list) {
+        return new LazyPStackX<T>(efficientOps,getStack().plusAll(list),this.collector);
+    }
+    /* (non-Javadoc)
+     * @see org.pcollections.PStack#plusAll(int, java.util.Collection)
+     */
+    public PStackX<T> plusAll(int i, Collection<? extends T> list) {
+        return new LazyPStackX<T>(efficientOps,getStack().plusAll(i,list),this.collector);
+    }
+
+    /* (non-Javadoc)
+     * @see org.pcollections.MapPSet#minusAll(java.util.Collection)
+     */
+    public LazyPStackX<T> minusAll(Collection<?> list) {
+        return new LazyPStackX<T>(efficientOps,getStack().minusAll(list),this.collector);
+    }
     
+    /* (non-Javadoc)
+     * @see org.pcollections.PStack#minus(int)
+     */
+    public PStackX<T> minus(int i) {
+        return new LazyPStackX<T>(efficientOps,getStack().minus(i),this.collector);
+    }
+
    
 }
