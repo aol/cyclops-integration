@@ -65,6 +65,11 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+/**
+ * @author johnmcclean
+ *
+ * @param <T>
+ */
 public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements DequeX<T> {
     private final  LazyFluentCollection<T,Deque<T>> lazy;
     @Getter
@@ -1215,8 +1220,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return (LazyDequeX<R>)super.zip(fn, publisher);
     }
 
+    
     /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#fromStream(java.util.stream.Stream)
+     * @see com.aol.cyclops.data.collections.extensions.standard.DequeX#fromStream(java.util.stream.Stream)
      */
     @Override
     public <X> LazyDequeX<X> fromStream(Stream<X> stream) {

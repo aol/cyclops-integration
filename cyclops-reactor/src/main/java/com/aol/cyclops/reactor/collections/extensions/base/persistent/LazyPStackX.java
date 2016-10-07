@@ -39,7 +39,10 @@ import com.aol.cyclops.reactor.FluxUtils;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 /**
  * An extended List type
@@ -67,11 +70,20 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PStackX<T> {
     private final  LazyFluentCollection<T,PStack<T>> lazy;
     @Getter
     private final Reducer<PStack<T>> collector;
-    
+    @Wither @Getter
+    private final boolean efficientOps;
+
+    public PStackX<T> efficientOpsOn(){
+        return this.withEfficientOps(true);
+    }
+    public PStackX<T> efficientOpsOff(){
+        return this.withEfficientOps(false);
+    }
     
     /**
      * Create a LazyPStackX from a Stream
@@ -253,26 +265,28 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
                                 collector);
     }
     private LazyPStackX(PStack<T> list,Reducer<PStack<T>> collector){
+        this.efficientOps=true;
         this.lazy = new PersistentLazyCollection<T,PStack<T>>(list,null,collector);
         this.collector=  collector;
     }
     
     private LazyPStackX(PStack<T> list){
-        
+        this.efficientOps=true;
         this.collector = Reducers.toPStack();
         this.lazy = new PersistentLazyCollection<T,PStack<T>>(list,null,Reducers.toPStack());
     }
     private LazyPStackX(Flux<T> stream,Reducer<PStack<T>> collector){
-        
+        this.efficientOps=true;
         this.collector = collector;
         this.lazy = new PersistentLazyCollection<>(null,stream,Reducers.toPStack());
     }
     private LazyPStackX(Flux<T> stream){
-        
+        this.efficientOps=true;
         this.collector = Reducers.toPStack();
         this.lazy = new PersistentLazyCollection<>(null,stream,collector);
     }
     private LazyPStackX(){
+        this.efficientOps=true;
         this.collector = Reducers.toPStack();
         this.lazy = new PersistentLazyCollection<>((PStack)this.collector.zero(),null,collector);
     }
@@ -545,38 +559,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
     public Spliterator<T> spliterator() {
         return getList().spliterator();
     }
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    @Override
-    public int compareTo(T o) {
-        if(o instanceof List){
-            List l = (List)o;
-            if(this.size()==l.size()){
-                Iterator i1 = iterator();
-                Iterator i2 = l.iterator();
-                if(i1.hasNext()){
-                    if(i2.hasNext()){
-                        int comp = Comparator.<Comparable>naturalOrder().compare((Comparable)i1.next(), (Comparable)i2.next());
-                        if(comp!=0)
-                            return comp;
-                    }
-                    return 1;
-                }
-                else{
-                    if(i2.hasNext())
-                        return -1;
-                    else
-                        return 0;
-                }
-            }
-            return this.size() - ((List)o).size();
-        }
-        else
-            return 1;
-            
-            
-    }
+   
     /**
      * @return PStack
      */
@@ -593,13 +576,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
     }
    
     
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#stream()
-     */
-    @Override
-    public ReactiveSeq<T> stream() {
-        return ReactiveSeq.fromStream(lazy.get().stream());
-    }
+   
     /* (non-Javadoc)
      * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#flux()
      */
@@ -1353,51 +1330,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
     }
     
     
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#unit(java.util.Collection)
-     */
-    @Override
-    public <R> LazyPStackX<R> unit(Collection<R> col){
-        return LazyPStackX.fromIterable(col);
-    }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.Unit#unit(java.lang.Object)
-     */
-    @Override
-    public  <R> LazyPStackX<R> unit(R value){
-        return LazyPStackX.singleton(value);
-    }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#unitIterator(java.util.Iterator)
-     */
-    @Override
-    public <R> LazyPStackX<R> unitIterator(Iterator<R> it){
-        return LazyPStackX.fromIterable(()->it);
-    }
-
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusInOrder(java.lang.Object)
-     */
-    @Override
-    public LazyPStackX<T> plusInOrder(T e) {
-        
-        return (LazyPStackX<T>)super.plusInOrder(e);
-    }
-    
-
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#from(java.util.Collection)
-     */
-    @Override
-    public <T1> LazyPStackX<T1> from(Collection<T1> c) {
-        if(c instanceof List)
-            return new LazyPStackX<T1>((PStack)c,(Reducer)collector);
-      return new LazyPStackX<T1>((PStack)Reducers.toPStack().mapReduce(c.stream()),(Reducer)this.collector);
-    }
+ 
 
     
     /* (non-Javadoc)
@@ -1463,23 +1396,89 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
     }
  
    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#fromStream(java.util.stream.Stream)
-     */
-    @Override
-    public <X> LazyPStackX<X> fromStream(Stream<X> stream) {
-        PStack<X> list = (PStack)getCollector().mapReduce(stream);
-        return new LazyPStackX<X>(list, (Reducer)getCollector());
-    }
+  
     
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptySwitch(java.util.function.Supplier)
      */
     @Override
-    public LazyPStackX<T> onEmptySwitch(Supplier<? extends List<T>> supplier) {
+    public LazyPStackX<T> onEmptySwitch(Supplier<? extends PStack<T>> supplier) {
         return stream(FluxUtils.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
        
     }
+    
+
+  
 
     
+    /* (non-Javadoc)
+     * @see org.pcollections.PStack#subList(int)
+     */
+    @Override
+    public PStackX<T> subList(int start) {
+        return stream(flux().take(start));
+    }
+   
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#unit(Collection)
+     */
+    @Override
+    public <R> PStackX<R> unit(Collection<R> col) {
+        if (isEfficientOps())
+            return fromIterable(col);
+        return fromIterable(col).efficientOpsOff();
+    }
+    
+    @Override
+    public <R> PStackX<R> unit(R value) {
+        return singleton(value);
+    }
+
+    @Override
+    public<R> PStackX<R> unitIterator(Iterator<R> it) {
+        return fromIterable(() -> it);
+    }
+
+    @Override
+    public <R> PStackX<R> emptyUnit() {
+        if (isEfficientOps())
+            return empty();
+        return PStackX.<R> empty()
+                      .efficientOpsOff();
+    }
+
+    /**
+     * @return This converted to PStack
+     */
+    public PStack<T> toPStack() {
+        return this;
+    }
+
+    @Override
+    public PStackX<T> plusInOrder(T e) {
+        if (isEfficientOps())
+            return plus(e);
+        return plus(size(), e);
+    }
+
+    @Override
+    public ReactiveSeq<T> stream() {
+
+        return ReactiveSeq.fromIterable(this);
+    }
+    @Override
+    public <X> PStackX<X> from(Collection<X> col) {
+        if (isEfficientOps())
+            return fromIterable(col);
+        return fromIterable(col).efficientOpsOff();
+    }
+    @Override
+    public <T> Reducer<PStack<T>> monoid() {
+        if (isEfficientOps())
+            return Reducers.toPStackReversed();
+        return Reducers.toPStack();
+
+    }
+    
+   
 }
