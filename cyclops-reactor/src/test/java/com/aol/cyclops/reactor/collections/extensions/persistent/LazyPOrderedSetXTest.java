@@ -13,20 +13,17 @@ import org.junit.Test;
 
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
-import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
-import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
+import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        LazyPVectorX<T> list = LazyPVectorX.empty();
+        LazyPOrderedSetX<T> list = LazyPOrderedSetX.empty();
         for (T next : values) {
-            list = list.plus(list.size(), next);
+            list = list.plus(next);
         }
         System.out.println("List " + list);
         return list;
@@ -35,9 +32,9 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Test
     public void onEmptySwitch() {
-        assertThat(LazyPVectorX.empty()
-                          .onEmptySwitch(() -> LazyPVectorX.of(1, 2, 3)),
-                   equalTo(PVectorX.of(1, 2, 3)));
+        assertThat(LazyPOrderedSetX.empty()
+                          .onEmptySwitch(() -> LazyPOrderedSetX.of(1, 2, 3)),
+                   equalTo(LazyPOrderedSetX.of(1, 2, 3)));
     }
 
     /*
@@ -49,7 +46,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return LazyPVectorX.empty();
+        return LazyPOrderedSetX.empty();
     }
 
     
@@ -57,7 +54,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
     @Test
     public void remove() {
 
-        LazyPVectorX.of(1, 2, 3)
+        LazyPOrderedSetX.of(1, 2, 3)
                .minusAll(PBagX.of(2, 3))
                .flatMapPublisher(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
@@ -65,26 +62,26 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return LazyPVectorX.range(start, end);
+        return LazyPOrderedSetX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return LazyPVectorX.rangeLong(start, end);
+        return LazyPOrderedSetX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return LazyPVectorX.iterate(times, seed, fn);
+        return LazyPOrderedSetX.iterate(times, seed, fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return LazyPVectorX.generate(times, fn);
+        return LazyPOrderedSetX.generate(times, fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return LazyPVectorX.unfold(seed, unfolder);
+        return LazyPOrderedSetX.unfold(seed, unfolder);
     }
 }
