@@ -252,7 +252,7 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         if (it instanceof LazyPQueueX)
             return (LazyPQueueX<T>) it;
        
-        if (it instanceof PVector)
+        if (it instanceof PQueue)
             return new LazyPQueueX<T>(
                                     (PQueue<T>) it, collector);
         

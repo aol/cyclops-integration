@@ -14,14 +14,11 @@ import org.junit.Test;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
-import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPQueueX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
+import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPQueueXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyPQueueXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
@@ -37,8 +34,8 @@ public class LazyPQueueXTest extends AbstractOrderDependentCollectionXTest  {
     @Test
     public void onEmptySwitch() {
         assertThat(LazyPQueueX.empty()
-                          .onEmptySwitch(() -> LazyPQueueX.of(1, 2, 3)),
-                   equalTo(PVectorX.of(1, 2, 3)));
+                          .onEmptySwitch(() -> LazyPQueueX.of(1, 2, 3)).toList(),
+                   equalTo(LazyPQueueX.of(1, 2, 3).toList()));
     }
 
     /*
