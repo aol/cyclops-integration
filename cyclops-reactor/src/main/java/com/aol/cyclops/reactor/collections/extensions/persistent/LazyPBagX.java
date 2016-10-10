@@ -45,26 +45,28 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
 /**
- * An extended List type
- * Extended List operations execute lazily e.g.
+ * An extended Bag type
+ * This makes use of PBag (@see org.pcollections.PBag) from PCollectons.
+ * 
+ * Extended Bag operations execute lazily e.g.
  * <pre>
  * {@code 
- *    LazyPStackX<Integer> q = LazyPStackX.of(1,2,3)
- *                                      .map(i->i*2);
+ *    LazyPBagX<Integer> q = LazyPBagX.of(1,2,3)
+ *                                    .map(i->i*2);
  * }
  * </pre>
  * The map operation above is not executed immediately. It will only be executed when (if) the data inside the
- * queue is accessed. This allows lazy operations to be chained and executed more efficiently e.g.
+ * PBag is accessed. This allows lazy operations to be chained and executed more efficiently e.g.
  * 
  * <pre>
  * {@code 
- *    LazyPStackX<Integer> q = LazyPStackX.of(1,2,3)
- *                                      .map(i->i*2);
- *                                      .filter(i->i<5);
+ *    LazyPBagX<Integer> q = LazyPBagX.of(1,2,3)
+ *                                    .map(i->i*2);
+ *                                    .filter(i->i<5);
  * }
  * </pre>
  * 
- * The operation above is more efficient than the equivalent operation with a ListX.
+ * The operation above is more efficient than the equivalent operation with a PBagX.
  * 
  * @author johnmcclean
  *

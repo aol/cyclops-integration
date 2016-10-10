@@ -57,7 +57,7 @@ import reactor.core.publisher.Flux;
  * }
  * </pre>
  * The map operation above is not executed immediately. It will only be executed when (if) the data inside the
- * queue is accessed. This allows lazy operations to be chained and executed more efficiently e.g.
+ * PVector is accessed. This allows lazy operations to be chained and executed more efficiently e.g.
  * 
  * <pre>
  * {@code 
