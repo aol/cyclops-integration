@@ -24,6 +24,7 @@ import org.jooq.lambda.Seq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
+import org.pcollections.PCollection;
 import org.pcollections.PQueue;
 import org.pcollections.PVector;
 import org.reactivestreams.Publisher;
@@ -1287,20 +1288,32 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return this;
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusInOrder(java.lang.Object)
+     */
     @Override
     public LazyPQueueX<T> plusInOrder(T e) {
-        return plus(size(), e);
+        return plus(e);
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.data.collections.extensions.CollectionX#stream()
+     */
     @Override
     public ReactiveSeq<T> stream() {
 
         return ReactiveSeq.fromIterable(this);
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#from(java.util.Collection)
+     */
     @Override
     public <X> LazyPQueueX<X> from(Collection<X> col) {
         return fromIterable(col);
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.data.collections.extensions.persistent.PQueueX#monoid()
+     */
     @Override
     public <T> Reducer<PQueue<T>> monoid() {
        
@@ -1327,4 +1340,71 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
     
 
    
+    
+    /* (non-Javadoc)
+     * @see org.pcollections.PQueue#minus()
+     */
+    public LazyPQueueX<T> minus() {
+        return LazyPQueueX.fromIterable(this.collector,getQueue().minus());
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.pcollections.PQueue#offer(java.lang.Object)
+     */
+    public boolean offer(T o) {
+        return getQueue().offer(o);
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.pcollections.PQueue#poll()
+     */
+    public T poll() {
+        return getQueue().poll();
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.pcollections.PQueue#remove()
+     */
+    public T remove() {
+        return getQueue().remove();
+    }
+
+   
+    /* (non-Javadoc)
+     * @see java.util.Queue#element()
+     */
+    public T element() {
+        return getQueue().element();
+    }
+
+    
+    /* (non-Javadoc)
+     * @see java.util.Queue#peek()
+     */
+    @Override
+    public T peek() {
+        return getQueue().peek();
+    }
+
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minus(java.lang.Object)
+     */
+    @Override
+    public  LazyPQueueX<T> minus(Object e) {
+        PCollection<T> res = getQueue().minus(e);
+        return LazyPQueueX.fromIterable(this.collector,res);
+        
+    }
+    
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minusAll(java.util.Collection)
+     */
+    public LazyPQueueX<T> minusAll(Collection<?> list) {
+        PCollection<T> res = getQueue().minusAll(list);
+        return LazyPQueueX.fromIterable(this.collector,res);
+    }
+
 }

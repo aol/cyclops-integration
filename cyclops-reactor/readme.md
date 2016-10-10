@@ -32,7 +32,9 @@ Standard JDK collections
 
 Persistent collections
 
-1. LazyPStackX
+1. LazyPStackX   (A persistent LinkedList)
+2. LazyPVectorX  (A persistent Vector - an ArrayList analogue)
+3. LazyPQueueX   (A persistent Queue)
 
 
 ### Notes : 

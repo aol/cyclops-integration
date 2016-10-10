@@ -1352,43 +1352,68 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T> implements PVe
         return fromIterable(col);
     }
     
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.Unit#unit(java.lang.Object)
+     */
     @Override
     public <R> LazyPVectorX<R> unit(R value) {
         return singleton(value);
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#unitIterator(java.util.Iterator)
+     */
     @Override
     public<R> LazyPVectorX<R> unitIterator(Iterator<R> it) {
         return fromIterable(() -> it);
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.data.collections.extensions.persistent.PVectorX#emptyUnit()
+     */
     @Override
     public <R> LazyPVectorX<R> emptyUnit() {
        
         return LazyPVectorX.<R> empty();
     }
 
-    /**
-     * @return This converted to PVector
+
+    /* 
+     * This converted to PVector
+     * 
+     * (non-Javadoc)
+     * @see com.aol.cyclops.data.collections.extensions.persistent.PVectorX#toPVector()
      */
     public LazyPVectorX<T> toPVector() {
         return this;
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusInOrder(java.lang.Object)
+     */
     @Override
     public LazyPVectorX<T> plusInOrder(T e) {
         return plus(size(), e);
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.data.collections.extensions.CollectionX#stream()
+     */
     @Override
     public ReactiveSeq<T> stream() {
 
         return ReactiveSeq.fromIterable(this);
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#from(java.util.Collection)
+     */
     @Override
     public <X> LazyPVectorX<X> from(Collection<X> col) {
         return fromIterable(col);
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.data.collections.extensions.persistent.PVectorX#monoid()
+     */
     @Override
     public <T> Reducer<PVector<T>> monoid() {
        
