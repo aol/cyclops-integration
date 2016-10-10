@@ -45,8 +45,10 @@ import lombok.Getter;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 /**
- * An extended List type
- * Extended List operations execute lazily e.g.
+ * An extended Persisent List type {@see java.util.List}
+ * This makes use of PStack (@see org.pcollections.PStack) from PCollectons. PStack is a persistent analogue of  the 
+ * imperative LinkedList type.
+ * Extended List operations execute lazily (compared with @see com.aol.cyclops.data.collections.extensions.persistent.PStackX)  e.g.
  * <pre>
  * {@code 
  *    LazyPStackX<Integer> q = LazyPStackX.of(1,2,3)
@@ -64,7 +66,7 @@ import reactor.core.publisher.Flux;
  * }
  * </pre>
  * 
- * The operation above is more efficient than the equivalent operation with a ListX.
+ * The operation above is more efficient than the equivalent operation with a PStackX.
  * 
  * @author johnmcclean
  *

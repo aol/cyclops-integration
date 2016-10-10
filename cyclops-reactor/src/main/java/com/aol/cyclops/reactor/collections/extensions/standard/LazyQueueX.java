@@ -41,7 +41,7 @@ import lombok.Getter;
 import reactor.core.publisher.Flux;
 
 /**
- * An extended Queue type
+ * An extended Queue type {@see java.util.Queue}
  * Extended Queue operations execute lazily e.g.
  * <pre>
  * {@code 

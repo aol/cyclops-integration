@@ -41,7 +41,7 @@ import lombok.Getter;
 import reactor.core.publisher.Flux;
 
 /**
- * An extended Set type
+ * An extended Set type {@see java.util.Set}
  * Extended Set operations execute lazily e.g.
  * <pre>
  * {@code 
@@ -50,7 +50,7 @@ import reactor.core.publisher.Flux;
  * }
  * </pre>
  * The map operation above is not executed immediately. It will only be executed when (if) the data inside the
- * queue is accessed. This allows lazy operations to be chained and executed more efficiently e.g.
+ * set is accessed. This allows lazy operations to be chained and executed more efficiently e.g.
  * 
  * <pre>
  * {@code 

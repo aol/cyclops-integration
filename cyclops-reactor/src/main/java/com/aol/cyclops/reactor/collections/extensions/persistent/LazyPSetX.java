@@ -45,12 +45,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
 /**
- * An extended List type
- * Extended List operations execute lazily e.g.
+ * An extended Set type {@see java.util.Set}
+ * This makes use of PSet (@see org.pcollections.PSet) from PCollectons.
+ * 
+ * Extended Set operations execute lazily e.g.
  * <pre>
  * {@code 
- *    LazyPStackX<Integer> q = LazyPStackX.of(1,2,3)
- *                                      .map(i->i*2);
+ *    LazyPSetX<Integer> q = LazyPSetX.of(1,2,3)
+ *                                    .map(i->i*2);
  * }
  * </pre>
  * The map operation above is not executed immediately. It will only be executed when (if) the data inside the
@@ -58,13 +60,17 @@ import reactor.core.publisher.Flux;
  * 
  * <pre>
  * {@code 
- *    LazyPStackX<Integer> q = LazyPStackX.of(1,2,3)
- *                                      .map(i->i*2);
- *                                      .filter(i->i<5);
+ *    LazyPSetX<Integer> q = LazyPSetX.of(1,2,3)
+ *                                    .map(i->i*2);
+ *                                    .filter(i->i<5);
  * }
  * </pre>
  * 
- * The operation above is more efficient than the equivalent operation with a ListX.
+ * The operation above is more efficient than the equivalent operation with a PSetX.
+
+ * NB. Because LazyPSetX transform operations are performed Lazily, they may result in a different result 
+ * than PSetX operations that are performed eagerly. For example a sequence of map operations that result in
+ * duplicate keys, may result in a different Set being produced.
  * 
  * @author johnmcclean
  *

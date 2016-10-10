@@ -41,7 +41,7 @@ import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
 /**
- * An extended List type
+ * An extended List type {@see java.util.List}
  * Extended List operations execute lazily e.g.
  * <pre>
  * {@code 

@@ -44,12 +44,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
 /**
- * An extended Persistent OrderedSet type
- * Extended List operations execute lazily e.g.
+ * An extended OrderedSet type {@see java.util.Set}
+ * This makes use of POrderedSet (@see org.pcollections.POrderedSet) from PCollectons.
+ * 
+ * Extended OrderedSet operations execute lazily e.g.
  * <pre>
  * {@code 
- *    LazyPStackX<Integer> q = LazyPStackX.of(1,2,3)
- *                                      .map(i->i*2);
+ *    LazyPOrderedSetX<Integer> q = LazyPOrderedSetX.of(1,2,3)
+ *                                    .map(i->i*2);
  * }
  * </pre>
  * The map operation above is not executed immediately. It will only be executed when (if) the data inside the
@@ -57,13 +59,17 @@ import reactor.core.publisher.Flux;
  * 
  * <pre>
  * {@code 
- *    LazyPStackX<Integer> q = LazyPStackX.of(1,2,3)
- *                                      .map(i->i*2);
- *                                      .filter(i->i<5);
+ *    LazyPOrderedSetX<Integer> q = LazyPOrderedSetX.of(1,2,3)
+ *                                    .map(i->i*2);
+ *                                    .filter(i->i<5);
  * }
  * </pre>
  * 
- * The operation above is more efficient than the equivalent operation with a ListX.
+ * The operation above is more efficient than the equivalent operation with a POrderedSetX.
+
+ * NB. Because LazyPOrderedSetX transform operations are performed Lazily, they may result in a different result 
+ * than POrderedSetX operations that are performed eagerly. For example a sequence of map operations that result in
+ * duplicate keys, may result in a different OrderedSet being produced.
  * 
  * @author johnmcclean
  *

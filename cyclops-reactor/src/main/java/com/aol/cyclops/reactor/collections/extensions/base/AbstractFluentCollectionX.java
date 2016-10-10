@@ -278,12 +278,6 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return stream(FluxUtils.sorted(flux(),function));
     }
    
-
-
-
-    
-
-
     /* (non-Javadoc)
      * @see com.aol.cyclops.lambda.monads.Traversable#cycle(int)
      */

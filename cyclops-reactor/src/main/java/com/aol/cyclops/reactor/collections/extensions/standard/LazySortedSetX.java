@@ -45,16 +45,16 @@ import lombok.Getter;
 import reactor.core.publisher.Flux;
 
 /**
- * An extended Set type
- * Extended Set operations execute lazily e.g.
+ * An extended SortedSet type {@see java.util.SortedSet}
+ * Extended SortedSet operations execute lazily e.g.
  * <pre>
  * {@code 
  *    LazySortedSetX<Integer> q = LazySortedSetX.of(1,2,3)
- *                                      .map(i->i*2);
+ *                                              .map(i->i*2);
  * }
  * </pre>
  * The map operation above is not executed immediately. It will only be executed when (if) the data inside the
- * queue is accessed. This allows lazy operations to be chained and executed more efficiently e.g.
+ * SortedSet is accessed. This allows lazy operations to be chained and executed more efficiently e.g.
  * 
  * <pre>
  * {@code 
@@ -64,11 +64,11 @@ import reactor.core.publisher.Flux;
  * }
  * </pre>
  * 
- * The operation above is more efficient than the equivalent operation with a SetX.
+ * The operation above is more efficient than the equivalent operation with a SortedSetX.
  * 
  * NB. Because LazySortedSetX transform operations are performed Lazily, they may result in a different result 
  * than SortedSetX operations that are performed eagerly. For example a sequence of map operations that result in
- * duplicate keys, may result in a different Set being produced.
+ * duplicate keys, may result in a different SortedSet being produced.
  * 
  * @author johnmcclean
  *

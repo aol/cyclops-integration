@@ -40,8 +40,8 @@ import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
 /**
- * An extended List type
- * Extended List operations execute lazily e.g.
+ * An extended Deque type {@see java.util.Deque}
+ * Extended Deque operations execute lazily e.g.
  * <pre>
  * {@code 
  *    LazyDequeX<Integer> q = LazyDequeX.of(1,2,3)
@@ -64,11 +64,6 @@ import reactor.core.publisher.Flux;
  * @author johnmcclean
  *
  * @param <T> the type of elements held in this collection
- */
-/**
- * @author johnmcclean
- *
- * @param <T>
  */
 public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements DequeX<T> {
     private final  LazyFluentCollection<T,Deque<T>> lazy;

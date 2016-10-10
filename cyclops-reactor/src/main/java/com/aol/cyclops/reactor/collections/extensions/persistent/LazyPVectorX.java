@@ -46,12 +46,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
 /**
- * An extended List type
+ * An extended List type {@see java.util.List}. 
+ * This makes use of PVector (@see org.pcollections.PStack) from PCollectons. PVector is a persistent analogue of  the 
+ * imperative ArrayList type.
  * Extended List operations execute lazily e.g.
  * <pre>
  * {@code 
- *    LazyPStackX<Integer> q = LazyPStackX.of(1,2,3)
- *                                      .map(i->i*2);
+ *    LazyPVectorX<Integer> q = LazyPVectorX.of(1,2,3)
+ *                                          .map(i->i*2);
  * }
  * </pre>
  * The map operation above is not executed immediately. It will only be executed when (if) the data inside the
@@ -59,13 +61,13 @@ import reactor.core.publisher.Flux;
  * 
  * <pre>
  * {@code 
- *    LazyPStackX<Integer> q = LazyPStackX.of(1,2,3)
- *                                      .map(i->i*2);
- *                                      .filter(i->i<5);
+ *    LazyPVectorX<Integer> q = LazyPVectorX.of(1,2,3)
+ *                                          .map(i->i*2);
+ *                                          .filter(i->i<5);
  * }
  * </pre>
  * 
- * The operation above is more efficient than the equivalent operation with a ListX.
+ * The operation above is more efficient than the equivalent operation with a PVectorX.
  * 
  * @author johnmcclean
  *
