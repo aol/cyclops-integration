@@ -36,7 +36,8 @@ Persistent collections
 2. LazyPVectorX         (A persistent Vector - an ArrayList analogue)
 3. LazyPQueueX          (A persistent Queue)
 4. LazyPSetX            (A persistent Set)
-4. LazyPOrderedSetX     (A persistent OrderedSet)
+5. LazyPOrderedSetX     (A persistent OrderedSet)
+6. LazyPBagX            (A persistent Bag)
 
 
 ### Notes : 
