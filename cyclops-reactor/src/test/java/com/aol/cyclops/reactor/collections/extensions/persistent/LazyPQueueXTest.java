@@ -13,30 +13,32 @@ import org.junit.Test;
 
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
-import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
+import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPQueueX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
+import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyPQueueXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        LazyPStackX<T> list = LazyPStackX.empty();
+        LazyPQueueX<T> list = LazyPQueueX.empty();
         for (T next : values) {
-            list = list.plus(list.size(), next);
+            list = list.plus(next);
         }
         System.out.println("List " + list);
-        return list.efficientOpsOff();
+        return list;
 
     }
 
     @Test
     public void onEmptySwitch() {
-        assertThat(PStackX.empty()
-                          .onEmptySwitch(() -> PStackX.of(1, 2, 3)),
-                   equalTo(PStackX.of(1, 2, 3)));
+        assertThat(LazyPQueueX.empty()
+                          .onEmptySwitch(() -> LazyPQueueX.of(1, 2, 3)),
+                   equalTo(PVectorX.of(1, 2, 3)));
     }
 
     /*
@@ -56,7 +58,7 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
     @Test
     public void remove() {
 
-        LazyPStackX.of(1, 2, 3)
+        LazyPQueueX.of(1, 2, 3)
                .minusAll(PBagX.of(2, 3))
                .flatMapPublisher(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
@@ -64,26 +66,26 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return LazyPStackX.range(start, end);
+        return LazyPQueueX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return LazyPStackX.rangeLong(start, end);
+        return LazyPQueueX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return LazyPStackX.iterate(times, seed, fn);
+        return LazyPQueueX.iterate(times, seed, fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return LazyPStackX.generate(times, fn);
+        return LazyPQueueX.generate(times, fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return LazyPStackX.unfold(seed, unfolder);
+        return LazyPQueueX.unfold(seed, unfolder);
     }
 }

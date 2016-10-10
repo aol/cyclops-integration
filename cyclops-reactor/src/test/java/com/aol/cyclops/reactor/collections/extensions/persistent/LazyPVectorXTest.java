@@ -15,8 +15,8 @@ import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.base.persistent.LazyPStackX;
-import com.aol.cyclops.reactor.collections.extensions.base.persistent.LazyPVectorX;
+import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
+import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
 
 import reactor.core.publisher.Flux;
 
