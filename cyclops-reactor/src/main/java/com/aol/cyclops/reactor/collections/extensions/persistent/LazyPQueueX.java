@@ -492,7 +492,7 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
      */
     @Override
     public Flux<T> flux() {
-        return lazy.stream();
+        return lazy.flux();
     }
     
     /* (non-Javadoc)

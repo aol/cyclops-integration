@@ -485,7 +485,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
     }
     @Override
     public Flux<T> flux() {
-        return lazy.stream();
+        return lazy.flux();
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)

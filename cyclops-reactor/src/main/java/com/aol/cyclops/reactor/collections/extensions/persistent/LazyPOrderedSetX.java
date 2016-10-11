@@ -494,7 +494,7 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
      */
     @Override
     public Flux<T> flux() {
-        return lazy.stream();
+        return lazy.flux();
     }
     
     /* (non-Javadoc)

@@ -579,7 +579,7 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T> implements PVe
      */
     @Override
     public Flux<T> flux() {
-        return lazy.stream();
+        return lazy.flux();
     }
     
     /* (non-Javadoc)

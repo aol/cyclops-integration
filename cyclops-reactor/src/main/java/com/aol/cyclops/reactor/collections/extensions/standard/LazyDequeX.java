@@ -476,7 +476,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     }
     @Override
     public Flux<T> flux() {
-        return lazy.stream();
+        return lazy.flux();
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)

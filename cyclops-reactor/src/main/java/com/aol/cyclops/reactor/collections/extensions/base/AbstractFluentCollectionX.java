@@ -41,6 +41,13 @@ import lombok.AllArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Abstract Class representing a Fluent, Lazy, extended Collection
+ * 
+ * @author johnmcclean
+ *
+ * @param <T>
+ */
 public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollectionX<T>, ReactorConvertable<T> {
     @AllArgsConstructor
     public static class LazyCollection<T, C extends Collection<T>> implements LazyFluentCollection<T, C> {
@@ -61,7 +68,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         }
 
         @Override
-        public Flux<T> stream() {
+        public Flux<T> flux() {
             if (seq != null) {
                 return seq;
             }
@@ -90,7 +97,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
          * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection#stream()
          */
         @Override
-        public Flux<T> stream() {
+        public Flux<T> flux() {
             if (seq != null)
                 return seq;
             return Flux.fromIterable(list);

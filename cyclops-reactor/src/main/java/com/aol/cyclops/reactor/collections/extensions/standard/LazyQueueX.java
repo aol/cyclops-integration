@@ -477,7 +477,7 @@ public class LazyQueueX<T> extends AbstractFluentCollectionX<T> implements Queue
     }
     @Override
     public Flux<T> flux() {
-        return lazy.stream();
+        return lazy.flux();
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.QueueX#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)

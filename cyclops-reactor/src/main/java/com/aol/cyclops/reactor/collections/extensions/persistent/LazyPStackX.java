@@ -45,7 +45,7 @@ import lombok.Getter;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 /**
- * An extended Persisent List type {@see java.util.List}
+ * An extended Persistent List type {@see java.util.List}
  * This makes use of PStack (@see org.pcollections.PStack) from PCollectons. PStack is a persistent analogue of  the 
  * imperative LinkedList type.
  * Extended List operations execute lazily (compared with @see com.aol.cyclops.data.collections.extensions.persistent.PStackX)  e.g.
@@ -590,7 +590,7 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T> implements PSta
      */
     @Override
     public Flux<T> flux() {
-        return lazy.stream();
+        return lazy.flux();
     }
     
     /* (non-Javadoc)

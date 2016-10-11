@@ -60,6 +60,29 @@ public class FluxSource {
                                                        .createQueue());
     }
 
+    /**
+     * Create a Pushable Flux source backed by a queue created by the supplied queue factory
+     * <pre>
+     * {@code 
+     *  //create a QueueFactory for Agrona OneToOneConcurrentArrayQueue with capacity for 1,000 elements
+     *  
+     *  QueueFactory<Integer> input = QueueFactories.singleWriterboundedNonBlockingQueue(1_000);
+     * 
+     *  FluxSource source = FluxSource.of(input);
+     *  
+     *  PushableFlux flux = source.flux();
+     *  flux.getInput().offer(1);
+     *  
+     *  //on a different thread
+     *  flux.getFlux()
+     *      .map(i->i*2)
+     *      .subscribe(System.out::println);
+     * 
+     * }</pre>
+     * 
+     * @param q Queue Factory used to provide data for the Flux stream
+     * @return FluxSource which manages the input queue and the stream
+     */
     public static FluxSource of(QueueFactory<?> q) {
         Objects.requireNonNull(q);
         return new FluxSource() {
@@ -72,10 +95,22 @@ public class FluxSource {
         };
     }
 
+    /**
+     * Create a Pushable Flux source backed by an unbounded ConcurrentLinkedQueue
+     * 
+     * @return FluxSource that allows data to be pushed into a Flux
+     */
     public static FluxSource ofUnbounded() {
         return new FluxSource();
     }
 
+    /**
+     * Create a Pushable Flux soure backed by a bounded BlockingQueue. 
+     * Queue size is determined by the backPressureAfter parameter
+     * 
+     * @param backPressureAfter Max queue size - once queue is full, producers adding to the Queue will be blocked
+     * @return FluxSource for pushable stream source
+     */
     public static FluxSource of(int backPressureAfter) {
         if (backPressureAfter < 1)
             throw new IllegalArgumentException(

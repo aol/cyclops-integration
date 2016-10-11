@@ -491,7 +491,7 @@ public class LazyPBagX<T> extends AbstractFluentCollectionX<T> implements PBagX<
      */
     @Override
     public Flux<T> flux() {
-        return lazy.stream();
+        return lazy.flux();
     }
     
     /* (non-Javadoc)

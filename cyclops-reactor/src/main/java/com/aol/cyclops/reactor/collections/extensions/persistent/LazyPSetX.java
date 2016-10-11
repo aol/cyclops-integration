@@ -495,7 +495,7 @@ public class LazyPSetX<T> extends AbstractFluentCollectionX<T> implements PSetX<
      */
     @Override
     public Flux<T> flux() {
-        return lazy.stream();
+        return lazy.flux();
     }
     
     /* (non-Javadoc)
