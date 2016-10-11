@@ -1,6 +1,9 @@
 package com.aol.cyclops.control;
 
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -15,6 +18,7 @@ import org.reactivestreams.Subscriber;
 
 import com.aol.cyclops.data.LazyImmutable;
 import com.aol.cyclops.data.async.Adapter;
+import com.aol.cyclops.data.async.Queue;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
 import com.aol.cyclops.react.threads.SequentialElasticPools;
 import com.aol.cyclops.reactor.collections.extensions.standard.LazyListX;
@@ -70,6 +74,24 @@ public class ReactorPipes<K, V> {
         return pipes;
     }
 
+    /**
+     * Push the supplied value through the Adapter identified by the supplied key
+     * <pre>
+     * {@code 
+     * 
+     *  Queue<String> q = new Queue<>();
+        pipes.register("hello", q);
+        pipes.push("hello", "world");
+        pipes.push("hello", "world2");
+        q.close();
+        pipes.oneOrErrorAsync("hello", ex).block(); //"world"
+               
+     * }</pre>
+     * 
+     * 
+     * @param key Adapter key
+     * @param value Value to push 
+     */
     public void push(final K key, final V value) {
         Optional.ofNullable(registered.get(key))
                 .ifPresent(a -> a.offer(value));
