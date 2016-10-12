@@ -7,20 +7,23 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
+import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.control.FutureW;
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.control.monads.transformers.ListT;
-import com.aol.cyclops.control.monads.transformers.seq.ListTSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.SetX;
 import com.aol.cyclops.reactor.Reactor.ForFluxTransformer;
 import com.aol.cyclops.reactor.transformer.FluxT;
+import com.aol.cyclops.util.function.TriFunction;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,6 +38,30 @@ public class ReactorTest {
         SetX.fromPublisher(Flux.firstEmitting(ReactiveSeq.of(1, 2, 3), Flux.just(10, 20, 30)));
     }
 
+    @Test
+    public void fluxTFor(){
+       
+            FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.range(10,2),Flux.range(100,2)));
+            
+            Reactor.ForFluxTransformer.forEach(fluxT, 
+                                               a-> ReactiveSeq.iterate(a,i->i+1).limit(2),
+                                               (a,b)-> ReactiveSeq.iterate(a,i->i+1).limit(2),
+                                               (a,b,c)-> ReactiveSeq.iterate(a,i->i+1).limit(2),
+                    Tuple::tuple).forEach(System.out::println);
+    }
+    @Test
+    public void fluxTForFilter(){
+       
+            FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.range(10,2),Flux.range(100,2)));
+            
+            Reactor.ForFluxTransformer.forEach(fluxT, 
+                                               a-> ReactiveSeq.iterate(a,i->i+1).limit(2),
+                                               (a,b)-> ReactiveSeq.iterate(a,i->i+1).limit(2),
+                                               (a,b,c)-> ReactiveSeq.iterate(a,i->i+1).limit(2),
+                                               (a,b,c,d)->a+b+c+d<102,
+                    Tuple::tuple).forEach(System.out::println);
+    }
+   
     @Test
     public void fluxEx() {
 
@@ -88,7 +115,7 @@ public class ReactorTest {
 
     @Test
     public void mono() {
-        assertThat(Reactor.mono(Mono.just(1))
+        assertThat(Monos.mono(Mono.just(1))
                           .toListX(),
                    equalTo(ListX.of(1)));
     }
@@ -131,7 +158,7 @@ public class ReactorTest {
     @Test
     public void fluxTComp() {
 
-        FluxT<Tuple2<Integer, Integer>> stream = ForFluxTransformer.each2(FluxT.fromIterable(ListX.of(Flux.range(1,
+        FluxT<Tuple2<Integer, Integer>> stream = ForFluxTransformer.forEach(FluxT.fromIterable(ListX.of(Flux.range(1,
                                                                                                                  10))),
                                                                           i -> FluxT.fromIterable(ListX.of(Flux.range(i,
                                                                                                                       10))),
@@ -144,7 +171,7 @@ public class ReactorTest {
 
     @Test
     public void monoComp() {
-        Mono<Integer> result = Reactor.ForMono.each2(Mono.just(10), a -> Mono.<Integer> just(a + 10), (a, b) -> a + b);
+        Mono<Integer> result = Monos.forEach(Mono.just(10), a -> Mono.<Integer> just(a + 10), (a, b) -> a + b);
         assertThat(result.block(), equalTo(30));
     }
 }

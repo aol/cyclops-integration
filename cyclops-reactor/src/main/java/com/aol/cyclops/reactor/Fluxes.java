@@ -34,6 +34,7 @@ import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
 import com.aol.cyclops.util.function.QuadFunction;
 import com.aol.cyclops.util.function.TriFunction;
 
+import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 
 /**
@@ -42,6 +43,7 @@ import reactor.core.publisher.Flux;
  * @author johnmcclean
  *
  */
+@UtilityClass
 public class Fluxes {
 
     /**
@@ -116,7 +118,7 @@ public class Fluxes {
      *   
      *  forEach(Flux.range(1,10), 
                             a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
-                            (a,b) -> Maybe.<Integer>of(a+b),
+                            (a,b) -> Maybe.<Integer>just(a+b),
                             (a,b,c) -> Mono.<Integer>just(a+b+c),
                             (a,b,c,d) -> a+b+c+d <100,
                             Tuple::tuple);

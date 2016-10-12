@@ -38,13 +38,11 @@ import com.aol.cyclops.types.anyM.AnyMValue;
 import reactor.core.publisher.Flux;
 
 /**
- * Monad Transformer for RxJava Fluxs
+ * Monad Transformer for Reactor Flux types.
  * 
- * FluxT consists of an AnyM instance that in turns wraps anoter Monad type that contains an Flux
+ * It allows users to manipulated Flux instances contained inside other monad types
  * 
- * FluxT<AnyM<*SOME_MONAD_TYPE*<Flux<T>>>>
  * 
- * FluxT allows the deeply wrapped Flux to be manipulating within it's nested /contained context
  * @author johnmcclean
  *
  * @param <T>
