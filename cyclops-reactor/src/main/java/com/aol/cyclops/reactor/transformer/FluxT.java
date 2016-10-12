@@ -50,14 +50,65 @@ import reactor.core.publisher.Flux;
 public interface FluxT<T> extends FoldableTransformerSeq<T> {
 
    
+    /**
+     * Create an instance of the same FluxTransformer type from the provided Iterator over raw values.
+     * 
+     * <pre>
+     * {@code 
+     *    FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.just(1,2,3),Flux.just(4,5,6));
+     *    FluxT<String> fluxTStrings = fluxT.unitIterator(Arrays.asList("hello","world").iterator());
+     *    //List[Flux["hello","world"]]
+     * 
+     * }
+     * </pre>
+     * 
+     * 
+     * 
+     * @param it Iterator over raw values to add to a new Flux Transformer
+     * @return Flux Transformer of the same type over the raw value in the Iterator provided
+     */
     public <R> FluxT<R> unitIterator(Iterator<R> it);
 
+    /**
+     * Create an instance of the same FluxTransformer that contains a Flux with just the value provided
+     * <pre>
+     * {@code 
+     *    FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.just(1,2,3),Flux.just(4,5,6));
+     *    FluxT<String> fluxTStrings = fluxT.unit("hello");
+     *    //List[Flux["hello"]]
+     * 
+     * }
+     * </pre>
+     * @param t Value to embed in new Flux Transformer
+     * @return Flux Transformer of the same type over the raw value provided
+     */
     public <R> FluxT<R> unit(R t);
 
+    /**
+     * @return An empty Flux Transformer of the same type
+     */
     public <R> FluxT<R> empty();
 
+    /**
+     * Perform a flatMap operation on each nested Flux
+     * 
+     * @param f FlatMapping function
+     * @return FluxTransformer containing flatMapped Fluxes
+     */
     public <B> FluxT<B> flatMap(Function<? super T, ? extends Flux<? extends B>> f);
 
+    /**
+     * Convert this FluxTransformer into a Flux of Fluxes
+     * <pre>
+     * {@code 
+     *    FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.just(1,2,3),Flux.just(4,5,6));
+     *    Flux<Flux<Integer>> fluxes = fluxT.fluxOfFlux();
+     *    //Flux[Flux[1,2,3],Flux[4,5,6]]
+     * 
+     * }
+     * </pre>
+     * @return Flux of Fluxes
+     */
     default Flux<Flux<T>> fluxOfFlux() {
         return Flux.from(this.unwrap()
                              .stream());
