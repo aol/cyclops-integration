@@ -28,6 +28,7 @@ import com.aol.cyclops.reactor.Monos;
 import com.aol.cyclops.types.ConvertableFunctor;
 import com.aol.cyclops.types.Filterable;
 import com.aol.cyclops.types.MonadicValue;
+import com.aol.cyclops.types.MonadicValue1;
 import com.aol.cyclops.types.Value;
 import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.types.applicative.ApplicativeFunctor;
@@ -36,7 +37,7 @@ import lombok.val;
 import reactor.core.publisher.Mono;
 
 
-public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValue<A>, Supplier<A>, ConvertableFunctor<A>, Filterable<A>,
+public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValue1<A>, Supplier<A>, ConvertableFunctor<A>, Filterable<A>,
         ApplicativeFunctor<A>, Matchable.ValueAndOptionalMatcher<A> {
 
     private final AnyMValue<Mono<A>> run;

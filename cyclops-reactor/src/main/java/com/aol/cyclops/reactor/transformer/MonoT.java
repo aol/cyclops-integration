@@ -41,7 +41,7 @@ import reactor.core.publisher.Mono;
  *
  * @param <A>
  */
-public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<A>, ToStream<A>, MonadicValue1<A> {
+public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<A>, ToStream<A> {
 
     /* (non-Javadoc)
      * @see com.aol.cyclops.types.Filterable#filter(java.util.function.Predicate)
@@ -116,7 +116,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
      * <pre>
      * {@code 
      *   MonoT.of(AnyM.fromIterable(ListX.of(Mono.just(10)))
-     *             .map(t->t=t+1);
+     *             .map(t->t+1);
      *  
      *  
      * }
@@ -128,10 +128,22 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
     @Override
     public <B> MonoT<B> map(Function<? super A, ? extends B> f);
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.MonadicValue1#flatMap(java.util.function.Function)
+ 
+    /**
+     * flatMap operation
+     * 
+     * <pre>
+     * {@code 
+     *   MonoT.of(AnyM.fromIterable(ListX.of(Mono.just(10)))
+     *             .flatMap(t-> Maybe.just(t+1));
+     *  
+     *  
+     * }
+     * </pre>
+     * 
+     * @param f Mapping function
+     * @return flatMapped MonoT
      */
-    @Override
     public <B> MonoT<B> flatMap(Function<? super A, ? extends MonadicValue<? extends B>> f);
 
     /**
@@ -214,7 +226,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
      */
     @Override
     default <U> MonoT<U> cast(Class<? extends U> type) {
-        return (MonoT<U>) MonadicValue1.super.cast(type);
+        return (MonoT<U>) Functor.super.cast(type);
     }
 
     /* (non-Javadoc)
@@ -222,7 +234,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
      */
     @Override
     default <R> MonoT<R> trampoline(Function<? super A, ? extends Trampoline<? extends R>> mapper) {
-        return (MonoT<R>) MonadicValue1.super.trampoline(mapper);
+        return (MonoT<R>) Functor.super.trampoline(mapper);
     }
 
     /* (non-Javadoc)
@@ -230,7 +242,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
      */
     @Override
     default <R> MonoT<R> patternMatch(Function<CheckValue1<A, R>, CheckValue1<A, R>> case1, Supplier<? extends R> otherwise) {
-        return (MonoT<R>) MonadicValue1.super.patternMatch(case1, otherwise);
+        return (MonoT<R>) Functor.super.patternMatch(case1, otherwise);
     }
 
     /* (non-Javadoc)
@@ -260,47 +272,8 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return (MonoT<A>) Filterable.super.notNull();
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.stream.ToStream#iterator()
-     */
-    @Override
-    default Iterator<A> iterator() {
-        return MonadicValue1.super.iterator();
-    }
-
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.stream.ToStream#stream()
-     */
-    @Override
-    default ReactiveSeq<A> stream() {
-        return MonadicValue1.super.stream();
-    }
-
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.MonadicValue#nest()
-     */
-    @Override
-    default MonoT<MonadicValue<A>> nest() {
-        
-        return (MonoT<MonadicValue<A>>)MonadicValue1.super.nest();
-    }
-
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.MonadicValue1#coflatMap(java.util.function.Function)
-     */
-    @Override
-    default <R> MonoT<R> coflatMap(Function<? super MonadicValue<A>, R> mapper) {
-        return (MonoT<R>)MonadicValue1.super.coflatMap(mapper);
-    }
-
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.MonadicValue1#combineEager(com.aol.cyclops.Monoid, com.aol.cyclops.types.MonadicValue)
-     */
-    @Override
-    default MonoT<A> combineEager(Monoid<A> monoid, MonadicValue<? extends A> v2) {
-       
-        return (MonoT<A>)MonadicValue1.super.combineEager(monoid, v2);
-    }
     
+
+   
 
 }

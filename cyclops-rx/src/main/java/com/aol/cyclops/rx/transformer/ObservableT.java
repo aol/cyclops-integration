@@ -40,14 +40,11 @@ import rx.Observable;
 /**
  * Monad Transformer for RxJava Observables
  * 
- * ObservableT consists of an AnyM instance that in turns wraps anoter Monad type that contains an Observable
- * 
- * ObservableT<AnyM<*SOME_MONAD_TYPE*<Observable<T>>>>
- * 
- * ObservableT allows the deeply wrapped Observable to be manipulating within it's nested /contained context
+ * It allows users to manipulated Flux instances contained inside other Observable types
+
  * @author johnmcclean
  *
- * @param <T>
+ * @param <T> the type of elements held in the nested Observable
  */
 public interface ObservableT<T> extends FoldableTransformerSeq<T> {
 

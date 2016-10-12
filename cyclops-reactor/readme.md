@@ -18,7 +18,7 @@ v8.0.0 of cyclops-reactor and above is built using v2.5.0-M4 of Project Reactor
 5. Monad wrapping via AnyM / AnyMValue / AnyMSeq
 6. Compatible with cyclops-react pattern matching
 7. Ability to use Reactor types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
-8. FluxUtils, MonoUtils and PublisherUtils for working with Flux, Mono and general Publishers
+8. Fluxes, Monos and Publishers companion classes for working with Flux, Mono and general Publishers
 
 # Lazy extended Collections
 
@@ -171,7 +171,7 @@ ReactorPipes provides an API for flexible joining of multple different Stream ty
 
 # Monad abstractions
 
-Use Reactor.<type> to create wrapped Reactor Monads.
+Use Fluxes.anyM or Mono.anyM to create wrapped Reactor Monads.
 
 
 Supported Reactor Monads include
@@ -183,9 +183,9 @@ Supported Reactor Monads include
 ## Example for comprehensions with Flux
 
 ```java
-import static com.aol.cyclops.reactor.Reactor.ForFlux;
+import static com.aol.cyclops.reactor.Fluxes.forEach;
 
-Flux<Integer> result = each2(Flux.just(10,20),a->Flux.<Integer>just(a+10)
+Flux<Integer> result = forEach(Flux.just(10,20),a->Flux.<Integer>just(a+10)
                                              ,(a,b)->a+b);
 	
 //Flux[30,50]
@@ -194,9 +194,9 @@ Flux<Integer> result = each2(Flux.just(10,20),a->Flux.<Integer>just(a+10)
 ## Example for comprehensions with Mono
 
 ```java
-import static com.aol.cyclops.reactor.Reactor.ForMono;
+import static com.aol.cyclops.reactor.Monos.forEach;
 
-Mono<Integer> result = each2(Mono.just(10),a->Mono.<Integer>just(a+10)
+Mono<Integer> result = forEach(Mono.just(10),a->Mono.<Integer>just(a+10)
                                           ,(a,b)->a+b);
 
 //Mono[30]
@@ -205,7 +205,7 @@ Mono<Integer> result = each2(Mono.just(10),a->Mono.<Integer>just(a+10)
 ## FluxT monad transformer
  
 ```java
-import static com.aol.cyclops.reactor.Reactor.fluxT;
+import static com.aol.cyclops.reactor.FluxTs.fluxT;
 
 FluxTSeq<Integer> nested = fluxT(Flux.just(Flux.just(1,2,3),Flux.just(10,20,30)));
 FluxTSeq<Integer> mapped = nested.map(i->i*3);
@@ -215,7 +215,7 @@ FluxTSeq<Integer> mapped = nested.map(i->i*3);
 ## MonoT monad transformer
 
 ```java
-import static com.aol.cyclops.reactor.Reactor.monoT;
+import static com.aol.cyclops.reactor.MonoTs.monoT;
 
 MonoTSeq<Integer> nestedFuture = monoT(Flux.just(Mono.just(1),Mono.just(10)));
 mapped = nested.map(i->i*3);

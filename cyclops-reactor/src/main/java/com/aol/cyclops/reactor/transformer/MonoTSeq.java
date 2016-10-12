@@ -36,18 +36,13 @@ import com.aol.cyclops.types.stream.CyclopsCollectable;
 
 import reactor.core.publisher.Mono;
 
+
 /**
- * Monad Transformer for Java  Monos
+ * Monad Transformer for Reactor Monos nested inside Sequential data types
  * 
- * MonoT consists of an AnyM instance that in turns wraps anoter Monad type that contains an Mono
- * <pre>
- * {@code 
- * MonoT<AnyMSeq<*SOME_MONAD_TYPE*<Mono<T>>>>
- * }</pre>
- * MonoT allows the deeply wrapped Mono to be manipulating within it's nested /contained context
  * @author johnmcclean
  *
- * @param <A>
+ * @param <A> the type of elements held in the nested Monos
  */
 public class MonoTSeq<A>
         implements MonoT<A>, ValueTransformerSeq<A>, IterableFoldable<A>, ConvertableSequence<A>, CyclopsCollectable<A>, Sequential<A> {
