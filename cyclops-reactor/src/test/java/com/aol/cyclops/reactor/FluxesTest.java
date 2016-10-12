@@ -33,4 +33,13 @@ public class FluxesTest {
         Fluxes.forEach(Flux.range(1, 10), i -> Flux.range(i, 10),(a,b) -> a>2 && b<10,Tuple::tuple)
               .subscribe(System.out::println);
     }
+    
+    @Test
+    public void groupedWhile(){
+        Fluxes.groupedWhile(Flux.just(1,2,3,4,5,6),i->i%3!=0).subscribe(System.out::println);
+    }
+    @Test
+    public void groupedUntil(){
+        Fluxes.groupedUntil(Flux.just(1,2,3,4,5,6),i->i%3!=0).subscribe(System.out::println);
+    }
 }
