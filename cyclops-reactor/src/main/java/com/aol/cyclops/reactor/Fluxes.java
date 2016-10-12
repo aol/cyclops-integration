@@ -232,7 +232,9 @@ public class Fluxes {
      * 
      * <pre>
      * {@code 
-     *  Fluxes.forEach(Flux.range(1, 10), i -> Flux.range(i, 10), Tuple::tuple)
+     * 
+     *  import static com.aol.cyclops.reactor.Fluxes.forEach;
+     *  forEach(Flux.range(1, 10), i -> Flux.range(i, 10), Tuple::tuple)
               .subscribe(System.out::println);
               
        //(1, 1)
@@ -243,9 +245,9 @@ public class Fluxes {
      * 
      * }</pre>
      * 
-     * @param value1
-     * @param value2
-     * @param yieldingFunction
+     * @param value1 top level Flux
+     * @param value2 Nested publisher
+     * @param yieldingFunction Generates a result per combination
      * @return
      */
     public static <T, R1, R> Flux<R> forEach(Flux<? extends T> value1, Function<? super T, Publisher<R1>> value2,
@@ -259,6 +261,35 @@ public class Fluxes {
 
     }
 
+    /**
+     * 
+     * <pre>
+     * {@code 
+     * 
+     *   import static com.aol.cyclops.reactor.Fluxes.forEach;
+     * 
+     *   forEach(Flux.range(1, 10), i -> Flux.range(i, 10),(a,b) -> a>2 && b<10,Tuple::tuple)
+               .subscribe(System.out::println);
+               
+       //(3, 3)
+         (3, 4)
+         (3, 5)
+         (3, 6)
+         (3, 7)
+         (3, 8)
+         (3, 9)
+         ...
+     
+     * 
+     * }</pre>
+     * 
+     * 
+     * @param value1 top level Flux
+     * @param value2 Nested publisher
+     * @param filterFunction A filtering function, keeps values where the predicate holds
+     * @param yieldingFunction Generates a result per combination
+     * @return
+     */
     public static <T, R1, R> Flux<R> forEach(Flux<? extends T> value1, Function<? super T, ? extends Publisher<R1>> value2,
             BiFunction<? super T, ? super R1, Boolean> filterFunction,
             BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
@@ -389,6 +420,23 @@ public class Fluxes {
         }).flatMap(Function.identity());
     }
     
+    /**
+     * Convert to a Flux with the result of a reduction operation repeated
+     * specified times
+     * 
+     * <pre>
+     * {@code 
+     *   List<Integer> list = Fluexs.cycle(Flux.just(1,2,2)),Reducers.toCountInt(),3)
+     *                                 .collect(Collectors.toList());
+     *   //List[3,3,3];
+     *   }
+     * </pre>
+     * 
+     * @param stream Flux to cycle
+     * @param m Monoid to be used in reduction
+     * @param times number of times to cycle
+     * @return Stream with reduced values repeated
+     */
     public final static <T> Flux<T> cycle(final Flux<T> stream,Monoid<T> m, int times){
         return Flux.fromIterable(()-> new Iterator<T>(){
             
