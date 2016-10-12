@@ -8,10 +8,11 @@ import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.data.async.Adapter;
 
-public abstract class AbstractPushablePublisher<T, X extends Adapter<T>, R  extends Publisher<T>> extends Tuple2<X, R> {
+public abstract class AbstractPushablePublisher<T, X extends Adapter<T>, R extends Publisher<T>> extends Tuple2<X, R> {
 
     public AbstractPushablePublisher(X v1, R v2) {
-        super(v1, v2);
+        super(
+              v1, v2);
     }
 
     public X getInput() {

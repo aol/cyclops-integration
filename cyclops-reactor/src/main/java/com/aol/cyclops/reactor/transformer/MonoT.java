@@ -1,6 +1,5 @@
 package com.aol.cyclops.reactor.transformer;
 
-
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -31,7 +30,6 @@ import com.aol.cyclops.types.stream.ToStream;
 
 import reactor.core.publisher.Mono;
 
-
 /**
  * Monad Transformer for Reactor Mono types.
  * 
@@ -43,8 +41,11 @@ import reactor.core.publisher.Mono;
  */
 public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<A>, ToStream<A> {
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.Filterable#filter(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.types.Filterable#filter(java.util.function.Predicate)
      */
     MonoT<A> filter(Predicate<? super A> test);
 
@@ -60,7 +61,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
      * @return Mapped and flattened MonoT
      */
     default <B> MonoT<B> bind(Function<? super A, MonoT<? extends B>> f) {
-        return of(unwrap().bind(mono-> {
+        return of(unwrap().bind(mono -> {
             return f.apply(mono.block())
                     .unwrap()
                     .unwrap();
@@ -128,7 +129,6 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
     @Override
     public <B> MonoT<B> map(Function<? super A, ? extends B> f);
 
- 
     /**
      * flatMap operation
      * 
@@ -169,7 +169,8 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
      * @param fn BiFunction to enhance with functionality from CompletableFuture and another monad type
      * @return Function that accepts and returns an CompletableFutureT
      */
-    public static <U1, U2, R> BiFunction<MonoT<U1>, MonoT<U2>, MonoT<R>> lift2(BiFunction<? super U1, ? super U2, ? extends R> fn) {
+    public static <U1, U2, R> BiFunction<MonoT<U1>, MonoT<U2>, MonoT<R>> lift2(
+            BiFunction<? super U1, ? super U2, ? extends R> fn) {
         return (optTu1, optTu2) -> optTu1.bind(input1 -> optTu2.map(input2 -> fn.apply(input1, input2)));
     }
 
@@ -183,6 +184,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
     public static <A> MonoT<A> fromAnyM(AnyM<A> anyM) {
         return of(anyM.map(Mono::just));
     }
+
     /**
      * Create a MonoT from an AnyMValue by wrapping the element stored in the AnyMValue in a Mono
      * 
@@ -192,6 +194,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
     public static <A> MonoTValue<A> fromAnyMValue(AnyMValue<A> anyM) {
         return MonoTValue.fromAnyM(anyM);
     }
+
     /**
      * Create a MonoT from an AnyMSeq by wrapping the elements stored in the AnyMSeq in a Mono
      * 
@@ -201,6 +204,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
     public static <A> MonoTSeq<A> fromAnyMSeq(AnyMSeq<A> anyM) {
         return MonoTSeq.fromAnyM(anyM);
     }
+
     /**
      * Create a MonoTSeq from an Iterable that contains nested Monos
      * <pre>
@@ -247,7 +251,9 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return MonoT.fromIterable(ListX.of());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.Functor#cast(java.lang.Class)
      */
     @Override
@@ -255,23 +261,33 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return (MonoT<U>) Functor.super.cast(type);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.Functor#trampoline(java.util.function.Function)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.types.Functor#trampoline(java.util.function.Function)
      */
     @Override
     default <R> MonoT<R> trampoline(Function<? super A, ? extends Trampoline<? extends R>> mapper) {
         return (MonoT<R>) Functor.super.trampoline(mapper);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.Functor#patternMatch(java.util.function.Function, java.util.function.Supplier)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.types.Functor#patternMatch(java.util.function.Function,
+     * java.util.function.Supplier)
      */
     @Override
-    default <R> MonoT<R> patternMatch(Function<CheckValue1<A, R>, CheckValue1<A, R>> case1, Supplier<? extends R> otherwise) {
+    default <R> MonoT<R> patternMatch(Function<CheckValue1<A, R>, CheckValue1<A, R>> case1,
+            Supplier<? extends R> otherwise) {
         return (MonoT<R>) Functor.super.patternMatch(case1, otherwise);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.Filterable#ofType(java.lang.Class)
      */
     @Override
@@ -280,8 +296,11 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return (MonoT<U>) Filterable.super.ofType(type);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.types.Filterable#filterNot(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.types.Filterable#filterNot(java.util.function.Predicate)
      */
     @Override
     default MonoT<A> filterNot(Predicate<? super A> fn) {
@@ -289,7 +308,9 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return (MonoT<A>) Filterable.super.filterNot(fn);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.Filterable#notNull()
      */
     @Override
@@ -297,9 +318,5 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
 
         return (MonoT<A>) Filterable.super.notNull();
     }
-
-    
-
-   
 
 }

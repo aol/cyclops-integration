@@ -12,13 +12,13 @@ import reactor.core.publisher.Flux;
  * @param <T>  the type of elements held in the wrapped collection
  * @param <C> The wrapped Collection type
  */
-public interface LazyFluentCollection<T,C extends Collection<T>> {
-    
+public interface LazyFluentCollection<T, C extends Collection<T>> {
+
     /**
      * @return Wrapped Collection
      */
     C get();
-    
+
     /**
      * @return Collection data inside a stream - a Reactor Flux
      */

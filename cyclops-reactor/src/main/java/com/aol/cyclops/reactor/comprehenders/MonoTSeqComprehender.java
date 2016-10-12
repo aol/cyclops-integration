@@ -53,7 +53,7 @@ public class MonoTSeqComprehender implements Comprehender<MonoTSeq>, Printable {
 
     @Override
     public MonoTSeq fromIterator(Iterator o) {
-        
+
         return MonoTSeq.of(Monos.fromIterable(() -> o));
     }
 

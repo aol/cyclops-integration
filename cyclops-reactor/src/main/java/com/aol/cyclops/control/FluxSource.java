@@ -1,6 +1,5 @@
 package com.aol.cyclops.control;
 
-
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -37,8 +36,8 @@ public class FluxSource {
      */
     public static <T> MultipleFluxSource<T> ofMultiple() {
         return new MultipleFluxSource<T>(
-                                           FluxSource.ofUnbounded()
-                                                       .createQueue());
+                                         FluxSource.ofUnbounded()
+                                                   .createQueue());
     }
 
     /**
@@ -46,8 +45,8 @@ public class FluxSource {
      */
     public static <T> MultipleFluxSource<T> ofMultiple(int backPressureAfter) {
         return new MultipleFluxSource<T>(
-                                           FluxSource.of(backPressureAfter)
-                                                       .createQueue());
+                                         FluxSource.of(backPressureAfter)
+                                                   .createQueue());
     }
 
     /**
@@ -56,8 +55,8 @@ public class FluxSource {
     public static <T> MultipleFluxSource<T> ofMultiple(QueueFactory<?> q) {
         Objects.requireNonNull(q);
         return new MultipleFluxSource<T>(
-                                           FluxSource.of(q)
-                                                       .createQueue());
+                                         FluxSource.of(q)
+                                                   .createQueue());
     }
 
     /**
@@ -116,7 +115,7 @@ public class FluxSource {
             throw new IllegalArgumentException(
                                                "Can't apply back pressure after less than 1 event");
         return new FluxSource(
-                                backPressureAfter, true);
+                              backPressureAfter, true);
     }
 
     <T> Queue<T> createQueue() {
@@ -176,6 +175,7 @@ public class FluxSource {
                                      q, (Stream) q.stream());
 
     }
+
     /**
      * Create a pushable Flux
      * 
@@ -185,8 +185,9 @@ public class FluxSource {
     public <T> PushableFlux<T> flux() {
         Queue<T> q = createQueue();
         return new PushableFlux<T>(
-                                          q, Flux.from(q.stream()));
+                                   q, Flux.from(q.stream()));
     }
+
     /**
      * Create a pushable ReactiveSeq
      * 
@@ -220,6 +221,7 @@ public class FluxSource {
 
         return adapter.stream();
     }
+
     /**
      * Create a pushable ReactiveSeq
      * 

@@ -43,6 +43,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
+
 /**
  * An extended OrderedSet type {@see java.util.Set}
  * This makes use of POrderedSet (@see org.pcollections.POrderedSet) from PCollectons.
@@ -75,24 +76,23 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
-@AllArgsConstructor(access=AccessLevel.PRIVATE)
-public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements POrderedSetX<T> {
-    private final  LazyFluentCollection<T,POrderedSet<T>> lazy;
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T>implements POrderedSetX<T> {
+    private final LazyFluentCollection<T, POrderedSet<T>> lazy;
     @Getter
     private final Reducer<POrderedSet<T>> collector;
-   
 
-  
-    
     /**
      * Create a LazyPStackX from a Stream
      * 
      * @param stream to construct a LazyQueueX from
      * @return LazyPStackX
      */
-    public static <T> LazyPOrderedSetX<T> fromStreamS(Stream<T> stream){
-        return new LazyPOrderedSetX<T>(Flux.from(ReactiveSeq.fromStream(stream)));
+    public static <T> LazyPOrderedSetX<T> fromStreamS(Stream<T> stream) {
+        return new LazyPOrderedSetX<T>(
+                                       Flux.from(ReactiveSeq.fromStream(stream)));
     }
+
     /**
      * Create a LazyPStackX that contains the Integers between start and end
      * 
@@ -148,7 +148,7 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
     public static <T> LazyPOrderedSetX<T> generate(long limit, Supplier<T> s) {
 
         return fromStreamS(ReactiveSeq.generate(s)
-                          .limit(limit));
+                                      .limit(limit));
     }
 
     /**
@@ -161,9 +161,8 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
      */
     public static <T> LazyPOrderedSetX<T> iterate(long limit, final T seed, final UnaryOperator<T> f) {
         return fromStreamS(ReactiveSeq.iterate(seed, f)
-                          .limit(limit));
+                                      .limit(limit));
     }
-
 
     /**
      * @return A collector that generates a LazyPStackX
@@ -172,14 +171,13 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return Collectors.toCollection(() -> LazyPOrderedSetX.of());
     }
 
-   
-
     /**
      * @return An empty LazyPStackX
      */
     public static <T> LazyPOrderedSetX<T> empty() {
-        return fromIterable((List<T>) ListX.<T>defaultCollector().supplier()
-                                                        .get());
+        return fromIterable((List<T>) ListX.<T> defaultCollector()
+                                           .supplier()
+                                           .get());
     }
 
     /**
@@ -200,8 +198,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
      */
     @SafeVarargs
     public static <T> LazyPOrderedSetX<T> of(T... values) {
-        List<T> res = (List<T>) ListX.<T>defaultCollector().supplier()
-                                                  .get();
+        List<T> res = (List<T>) ListX.<T> defaultCollector()
+                                     .supplier()
+                                     .get();
         for (T v : values)
             res.add(v);
         return fromIterable(res);
@@ -255,42 +254,54 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
     public static <T> LazyPOrderedSetX<T> fromIterable(Reducer<POrderedSet<T>> collector, Iterable<T> it) {
         if (it instanceof LazyPOrderedSetX)
             return (LazyPOrderedSetX<T>) it;
-       
+
         if (it instanceof POrderedSet)
             return new LazyPOrderedSetX<T>(
-                                    (POrderedSet<T>) it, collector);
-        
+                                           (POrderedSet<T>) it, collector);
+
         return new LazyPOrderedSetX<T>(
-                                Flux.fromIterable(it),
-                                collector);
+                                       Flux.fromIterable(it), collector);
     }
-    private LazyPOrderedSetX(POrderedSet<T> list,Reducer<POrderedSet<T>> collector){
-        this.lazy = new PersistentLazyCollection<T,POrderedSet<T>>(list,null,collector);
-        this.collector=  collector;
-    }
-    private LazyPOrderedSetX(boolean efficientOps,POrderedSet<T> list,Reducer<POrderedSet<T>> collector){
-        this.lazy = new PersistentLazyCollection<T,POrderedSet<T>>(list,null,collector);
-        this.collector=  collector;
-    }
-    
-    private LazyPOrderedSetX(POrderedSet<T> list){
-        this.collector = Reducers.toPOrderedSet();
-        this.lazy = new PersistentLazyCollection<T,POrderedSet<T>>(list,null,Reducers.toPOrderedSet());
-    }
-    private LazyPOrderedSetX(Flux<T> stream,Reducer<POrderedSet<T>> collector){
+
+    private LazyPOrderedSetX(POrderedSet<T> list, Reducer<POrderedSet<T>> collector) {
+        this.lazy = new PersistentLazyCollection<T, POrderedSet<T>>(
+                                                                    list, null, collector);
         this.collector = collector;
-        this.lazy = new PersistentLazyCollection<>(null,stream,Reducers.toPOrderedSet());
     }
-    private LazyPOrderedSetX(Flux<T> stream){
+
+    private LazyPOrderedSetX(boolean efficientOps, POrderedSet<T> list, Reducer<POrderedSet<T>> collector) {
+        this.lazy = new PersistentLazyCollection<T, POrderedSet<T>>(
+                                                                    list, null, collector);
+        this.collector = collector;
+    }
+
+    private LazyPOrderedSetX(POrderedSet<T> list) {
         this.collector = Reducers.toPOrderedSet();
-        this.lazy = new PersistentLazyCollection<>(null,stream,collector);
+        this.lazy = new PersistentLazyCollection<T, POrderedSet<T>>(
+                                                                    list, null, Reducers.toPOrderedSet());
     }
-    private LazyPOrderedSetX(){
+
+    private LazyPOrderedSetX(Flux<T> stream, Reducer<POrderedSet<T>> collector) {
+        this.collector = collector;
+        this.lazy = new PersistentLazyCollection<>(
+                                                   null, stream, Reducers.toPOrderedSet());
+    }
+
+    private LazyPOrderedSetX(Flux<T> stream) {
         this.collector = Reducers.toPOrderedSet();
-        this.lazy = new PersistentLazyCollection<>((POrderedSet)this.collector.zero(),null,collector);
+        this.lazy = new PersistentLazyCollection<>(
+                                                   null, stream, collector);
     }
-    
-    /* (non-Javadoc)
+
+    private LazyPOrderedSetX() {
+        this.collector = Reducers.toPOrderedSet();
+        this.lazy = new PersistentLazyCollection<>(
+                                                   (POrderedSet) this.collector.zero(), null, collector);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#forEach(java.util.function.Consumer)
      */
     @Override
@@ -298,7 +309,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         getSet().forEach(action);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#iterator()
      */
     @Override
@@ -306,7 +319,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().iterator();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#size()
      */
     @Override
@@ -314,7 +329,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().size();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#contains(java.lang.Object)
      */
     @Override
@@ -322,7 +339,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().contains(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -330,9 +349,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().equals(o);
     }
 
-
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#isEmpty()
      */
     @Override
@@ -340,7 +359,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().isEmpty();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -348,7 +369,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().hashCode();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray()
      */
     @Override
@@ -356,7 +379,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().toArray();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeAll(java.util.Collection)
      */
     @Override
@@ -364,7 +389,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().removeAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray(java.lang.Object[])
      */
     @Override
@@ -372,7 +399,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().toArray(a);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#add(java.lang.Object)
      */
     @Override
@@ -380,7 +409,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().add(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#remove(java.lang.Object)
      */
     @Override
@@ -388,7 +419,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().remove(o);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#containsAll(java.util.Collection)
      */
     @Override
@@ -396,7 +429,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().containsAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#addAll(java.util.Collection)
      */
     @Override
@@ -404,7 +439,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().addAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#retainAll(java.util.Collection)
      */
     @Override
@@ -412,7 +449,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().retainAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#clear()
      */
     @Override
@@ -420,8 +459,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         getSet().clear();
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -429,7 +469,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().toString();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#collect(java.util.stream.Collector)
      */
     @Override
@@ -437,847 +479,1110 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return stream().collect(collector);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#count()
      */
     @Override
     public long count() {
         return this.size();
     }
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeIf(java.util.function.Predicate)
      */
     @Override
-    public  boolean removeIf(Predicate<? super T> filter) {
+    public boolean removeIf(Predicate<? super T> filter) {
         return getSet().removeIf(filter);
     }
-    
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#parallelStream()
      */
     @Override
-    public  Stream<T> parallelStream() {
+    public Stream<T> parallelStream() {
         return getSet().parallelStream();
     }
-    
-    
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#spliterator()
      */
     @Override
     public Spliterator<T> spliterator() {
         return getSet().spliterator();
     }
-   
+
     /**
      * @return POrderedSet
      */
     private POrderedSet<T> getSet() {
         return lazy.get();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
      */
     @Override
-    public <X> LazyPOrderedSetX<X> stream(Flux<X> stream){
-        return new LazyPOrderedSetX<X>(stream);
+    public <X> LazyPOrderedSetX<X> stream(Flux<X> stream) {
+        return new LazyPOrderedSetX<X>(
+                                       stream);
     }
-   
-    
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#flux()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#flux()
      */
     @Override
     public Flux<T> flux() {
         return lazy.flux();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#combine(java.util.function.BiPredicate,
+     * java.util.function.BinaryOperator)
      */
     @Override
     public LazyPOrderedSetX<T> combine(BiPredicate<? super T, ? super T> predicate, BinaryOperator<T> op) {
-       
-        return (LazyPOrderedSetX<T>)super.combine(predicate, op);
+
+        return (LazyPOrderedSetX<T>) super.combine(predicate, op);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#reverse()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#reverse()
      */
     @Override
     public LazyPOrderedSetX<T> reverse() {
-       
-        return(LazyPOrderedSetX<T>)super.reverse();
+
+        return (LazyPOrderedSetX<T>) super.reverse();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#filter(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#filter(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> filter(Predicate<? super T> pred) {
-       
-        return (LazyPOrderedSetX<T>)super.filter(pred);
+
+        return (LazyPOrderedSetX<T>) super.filter(pred);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#map(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#map(java.util.function.Function)
      */
     @Override
     public <R> LazyPOrderedSetX<R> map(Function<? super T, ? extends R> mapper) {
-       
-        return (LazyPOrderedSetX<R>)super.map(mapper);
+
+        return (LazyPOrderedSetX<R>) super.map(mapper);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#flatMap(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#flatMap(java.util.function.Function)
      */
     @Override
     public <R> LazyPOrderedSetX<R> flatMap(Function<? super T, ? extends Iterable<? extends R>> mapper) {
-       return (LazyPOrderedSetX<R>)super.flatMap(mapper);
+        return (LazyPOrderedSetX<R>) super.flatMap(mapper);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#limit(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#limit(long)
      */
     @Override
     public LazyPOrderedSetX<T> limit(long num) {
-       return (LazyPOrderedSetX<T>)super.limit(num);
+        return (LazyPOrderedSetX<T>) super.limit(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#skip(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#skip(long)
      */
     @Override
     public LazyPOrderedSetX<T> skip(long num) {
-       return (LazyPOrderedSetX<T>)super.skip(num);
+        return (LazyPOrderedSetX<T>) super.skip(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#takeRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#takeRight(int)
      */
     @Override
     public LazyPOrderedSetX<T> takeRight(int num) {
-       return (LazyPOrderedSetX<T>)super.takeRight(num);
+        return (LazyPOrderedSetX<T>) super.takeRight(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#dropRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#dropRight(int)
      */
     @Override
     public LazyPOrderedSetX<T> dropRight(int num) {
-       return (LazyPOrderedSetX<T>)super.dropRight(num);
+        return (LazyPOrderedSetX<T>) super.dropRight(num);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#takeWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#takeWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> takeWhile(Predicate<? super T> p) {
-       return (LazyPOrderedSetX<T>)super.takeWhile(p);
+        return (LazyPOrderedSetX<T>) super.takeWhile(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#dropWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#dropWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> dropWhile(Predicate<? super T> p) {
-       return (LazyPOrderedSetX<T>)super.dropWhile(p);
+        return (LazyPOrderedSetX<T>) super.dropWhile(p);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#takeUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#takeUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> takeUntil(Predicate<? super T> p) {
-       return (LazyPOrderedSetX<T>)super.takeUntil(p);
+        return (LazyPOrderedSetX<T>) super.takeUntil(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#dropUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#dropUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> dropUntil(Predicate<? super T> p) {
-       return(LazyPOrderedSetX<T>)super.dropUntil(p);
+        return (LazyPOrderedSetX<T>) super.dropUntil(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#trampoline(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#trampoline(java.util.function.Function)
      */
     @Override
     public <R> LazyPOrderedSetX<R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
-       return (LazyPOrderedSetX<R>)super.trampoline(mapper);
+        return (LazyPOrderedSetX<R>) super.trampoline(mapper);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#slice(long, long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#slice(long, long)
      */
     @Override
     public LazyPOrderedSetX<T> slice(long from, long to) {
-       return (LazyPOrderedSetX<T>)super.slice(from, to);
+        return (LazyPOrderedSetX<T>) super.slice(from, to);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#grouped(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#grouped(int)
      */
     @Override
     public LazyPOrderedSetX<ListX<T>> grouped(int groupSize) {
-       
-        return (LazyPOrderedSetX<ListX<T>>)super.grouped(groupSize);
+
+        return (LazyPOrderedSetX<ListX<T>>) super.grouped(groupSize);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#grouped(java.util.function.Function, java.util.stream.Collector)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#grouped(java.util.function.Function,
+     * java.util.stream.Collector)
      */
     @Override
     public <K, A, D> LazyPOrderedSetX<Tuple2<K, D>> grouped(Function<? super T, ? extends K> classifier,
             Collector<? super T, A, D> downstream) {
-       
-        return (LazyPOrderedSetX)super.grouped(classifier, downstream);
+
+        return (LazyPOrderedSetX) super.grouped(classifier, downstream);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#grouped(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#grouped(java.util.function.Function)
      */
     @Override
     public <K> LazyPOrderedSetX<Tuple2<K, Seq<T>>> grouped(Function<? super T, ? extends K> classifier) {
-       
-        return (LazyPOrderedSetX)super.grouped(classifier);
+
+        return (LazyPOrderedSetX) super.grouped(classifier);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.lang.Iterable)
      */
     @Override
     public <U> LazyPOrderedSetX<Tuple2<T, U>> zip(Iterable<? extends U> other) {
-       
-        return (LazyPOrderedSetX)super.zip(other);
+
+        return (LazyPOrderedSetX) super.zip(other);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.lang.Iterable, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.lang.Iterable,
+     * java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazyPOrderedSetX<R> zip(Iterable<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-       
-        return (LazyPOrderedSetX<R>)super.zip(other, zipper);
+    public <U, R> LazyPOrderedSetX<R> zip(Iterable<? extends U> other,
+            BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazyPOrderedSetX<R>) super.zip(other, zipper);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sliding(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sliding(int)
      */
     @Override
     public LazyPOrderedSetX<ListX<T>> sliding(int windowSize) {
-       
-        return (LazyPOrderedSetX<ListX<T>>)super.sliding(windowSize);
+
+        return (LazyPOrderedSetX<ListX<T>>) super.sliding(windowSize);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sliding(int, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sliding(int, int)
      */
     @Override
     public LazyPOrderedSetX<ListX<T>> sliding(int windowSize, int increment) {
-       
-        return (LazyPOrderedSetX<ListX<T>>)super.sliding(windowSize, increment);
+
+        return (LazyPOrderedSetX<ListX<T>>) super.sliding(windowSize, increment);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#scanLeft(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#scanLeft(com.aol.cyclops.Monoid)
      */
     @Override
     public LazyPOrderedSetX<T> scanLeft(Monoid<T> monoid) {
-       
-        return (LazyPOrderedSetX<T>)super.scanLeft(monoid);
+
+        return (LazyPOrderedSetX<T>) super.scanLeft(monoid);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#scanLeft(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#scanLeft(java.lang.Object,
+     * java.util.function.BiFunction)
      */
     @Override
     public <U> LazyPOrderedSetX<U> scanLeft(U seed, BiFunction<? super U, ? super T, ? extends U> function) {
-       
+
         return (LazyPOrderedSetX<U>) super.scanLeft(seed, function);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#scanRight(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#scanRight(com.aol.cyclops.Monoid)
      */
     @Override
     public LazyPOrderedSetX<T> scanRight(Monoid<T> monoid) {
-       
-        return (LazyPOrderedSetX<T>)super.scanRight(monoid);
+
+        return (LazyPOrderedSetX<T>) super.scanRight(monoid);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#scanRight(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#scanRight(java.lang.Object,
+     * java.util.function.BiFunction)
      */
     @Override
     public <U> LazyPOrderedSetX<U> scanRight(U identity, BiFunction<? super T, ? super U, ? extends U> combiner) {
-       
-        return (LazyPOrderedSetX<U>)super.scanRight(identity, combiner);
+
+        return (LazyPOrderedSetX<U>) super.scanRight(identity, combiner);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sorted(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sorted(java.util.function.Function)
      */
     @Override
     public <U extends Comparable<? super U>> LazyPOrderedSetX<T> sorted(Function<? super T, ? extends U> function) {
-       
-        return (LazyPOrderedSetX<T>)super.sorted(function);
+
+        return (LazyPOrderedSetX<T>) super.sorted(function);
     }
-    
-    
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#plusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#plusLazy(java.lang.Object)
      */
     @Override
     public LazyPOrderedSetX<T> plusLazy(T e) {
-       
-        return (LazyPOrderedSetX<T>)super.plusLazy(e);
+
+        return (LazyPOrderedSetX<T>) super.plusLazy(e);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#plusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#plusAllLazy(java.util.Collection)
      */
     @Override
     public LazyPOrderedSetX<T> plusAllLazy(Collection<? extends T> list) {
-       
-        return (LazyPOrderedSetX<T>)super.plusAllLazy(list);
+
+        return (LazyPOrderedSetX<T>) super.plusAllLazy(list);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#minusLazy(java.lang.Object)
      */
     @Override
     public LazyPOrderedSetX<T> minusLazy(Object e) {
-       
-        return (LazyPOrderedSetX<T>)super.minusLazy(e);
+
+        return (LazyPOrderedSetX<T>) super.minusLazy(e);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#minusAllLazy(java.util.Collection)
      */
     @Override
     public LazyPOrderedSetX<T> minusAllLazy(Collection<?> list) {
-       
-        return (LazyPOrderedSetX<T>)super.minusAllLazy(list);
+
+        return (LazyPOrderedSetX<T>) super.minusAllLazy(list);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cycle(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cycle(int)
      */
     @Override
     public LazyPStackX<T> cycle(int times) {
-       return LazyPStackX.fromPublisher(Flux.from(this.stream().cycle(times)));
+        return LazyPStackX.fromPublisher(Flux.from(this.stream()
+                                                       .cycle(times)));
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cycle(com.aol.cyclops.Monoid, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cycle(com.aol.cyclops.Monoid, int)
      */
     @Override
     public LazyPStackX<T> cycle(Monoid<T> m, int times) {
-        return LazyPStackX.fromPublisher(Flux.from(this.stream().cycle(m,times)));
+        return LazyPStackX.fromPublisher(Flux.from(this.stream()
+                                                       .cycle(m, times)));
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cycleWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cycleWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPStackX<T> cycleWhile(Predicate<? super T> predicate) {
-       return LazyPStackX.fromPublisher(Flux.from(this.stream().cycleWhile(predicate)));
+        return LazyPStackX.fromPublisher(Flux.from(this.stream()
+                                                       .cycleWhile(predicate)));
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cycleUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cycleUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPStackX<T> cycleUntil(Predicate<? super T> predicate) {
-        return LazyPStackX.fromPublisher(Flux.from(this.stream().cycleUntil(predicate)));
+        return LazyPStackX.fromPublisher(Flux.from(this.stream()
+                                                       .cycleUntil(predicate)));
     }
-    
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(org.jooq.lambda.Seq)
      */
     @Override
     public <U> LazyPOrderedSetX<Tuple2<T, U>> zip(Seq<? extends U> other) {
-       
-        return (LazyPOrderedSetX)super.zip(other);
+
+        return (LazyPOrderedSetX) super.zip(other);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip3(java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip3(java.util.stream.Stream,
+     * java.util.stream.Stream)
      */
     @Override
     public <S, U> LazyPOrderedSetX<Tuple3<T, S, U>> zip3(Stream<? extends S> second, Stream<? extends U> third) {
-       
-        return (LazyPOrderedSetX)super.zip3(second, third);
+
+        return (LazyPOrderedSetX) super.zip3(second, third);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip4(java.util.stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip4(java.util.stream.Stream,
+     * java.util.stream.Stream, java.util.stream.Stream)
      */
     @Override
-    public <T2, T3, T4> LazyPOrderedSetX<Tuple4<T, T2, T3, T4>> zip4(Stream<? extends T2> second, Stream<? extends T3> third,
-            Stream<? extends T4> fourth) {
-       
-        return (LazyPOrderedSetX)super.zip4(second, third, fourth);
+    public <T2, T3, T4> LazyPOrderedSetX<Tuple4<T, T2, T3, T4>> zip4(Stream<? extends T2> second,
+            Stream<? extends T3> third, Stream<? extends T4> fourth) {
+
+        return (LazyPOrderedSetX) super.zip4(second, third, fourth);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zipWithIndex()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zipWithIndex()
      */
     @Override
     public LazyPOrderedSetX<Tuple2<T, Long>> zipWithIndex() {
-       
-        return (LazyPOrderedSetX<Tuple2<T, Long>>)super.zipWithIndex();
+
+        return (LazyPOrderedSetX<Tuple2<T, Long>>) super.zipWithIndex();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#distinct()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#distinct()
      */
     @Override
     public LazyPOrderedSetX<T> distinct() {
-       
-        return (LazyPOrderedSetX<T>)super.distinct();
+
+        return (LazyPOrderedSetX<T>) super.distinct();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sorted()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sorted()
      */
     @Override
     public LazyPOrderedSetX<T> sorted() {
-       
-        return (LazyPOrderedSetX<T>)super.sorted();
+
+        return (LazyPOrderedSetX<T>) super.sorted();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sorted(java.util.Comparator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sorted(java.util.Comparator)
      */
     @Override
     public LazyPOrderedSetX<T> sorted(Comparator<? super T> c) {
-       
-        return (LazyPOrderedSetX<T>)super.sorted(c);
+
+        return (LazyPOrderedSetX<T>) super.sorted(c);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#skipWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#skipWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> skipWhile(Predicate<? super T> p) {
-       
-        return (LazyPOrderedSetX<T>)super.skipWhile(p);
+
+        return (LazyPOrderedSetX<T>) super.skipWhile(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#skipUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#skipUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> skipUntil(Predicate<? super T> p) {
-       
-        return (LazyPOrderedSetX<T>)super.skipUntil(p);
+
+        return (LazyPOrderedSetX<T>) super.skipUntil(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#limitWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#limitWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> limitWhile(Predicate<? super T> p) {
-       
-        return (LazyPOrderedSetX<T>)super.limitWhile(p);
+
+        return (LazyPOrderedSetX<T>) super.limitWhile(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#limitUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#limitUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> limitUntil(Predicate<? super T> p) {
-       
-        return (LazyPOrderedSetX<T>)super.limitUntil(p);
+
+        return (LazyPOrderedSetX<T>) super.limitUntil(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#intersperse(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#intersperse(java.lang.Object)
      */
     @Override
     public LazyPOrderedSetX<T> intersperse(T value) {
-       
-        return (LazyPOrderedSetX<T>)super.intersperse(value);
+
+        return (LazyPOrderedSetX<T>) super.intersperse(value);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#shuffle()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#shuffle()
      */
     @Override
     public LazyPOrderedSetX<T> shuffle() {
-       
-        return (LazyPOrderedSetX<T>)super.shuffle();
+
+        return (LazyPOrderedSetX<T>) super.shuffle();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#skipLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#skipLast(int)
      */
     @Override
     public LazyPOrderedSetX<T> skipLast(int num) {
-       
-        return (LazyPOrderedSetX<T>)super.skipLast(num);
+
+        return (LazyPOrderedSetX<T>) super.skipLast(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#limitLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#limitLast(int)
      */
     @Override
     public LazyPOrderedSetX<T> limitLast(int num) {
-       
-        return (LazyPOrderedSetX<T>)super.limitLast(num);
+
+        return (LazyPOrderedSetX<T>) super.limitLast(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#onEmpty(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#onEmpty(java.lang.Object)
      */
     @Override
     public LazyPOrderedSetX<T> onEmpty(T value) {
-       
-        return (LazyPOrderedSetX<T>)super.onEmpty(value);
+
+        return (LazyPOrderedSetX<T>) super.onEmpty(value);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#onEmptyGet(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#onEmptyGet(java.util.function.Supplier)
      */
     @Override
     public LazyPOrderedSetX<T> onEmptyGet(Supplier<? extends T> supplier) {
-       
-        return (LazyPOrderedSetX<T>)super.onEmptyGet(supplier);
+
+        return (LazyPOrderedSetX<T>) super.onEmptyGet(supplier);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#onEmptyThrow(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#onEmptyThrow(java.util.function.Supplier)
      */
     @Override
     public <X extends Throwable> LazyPOrderedSetX<T> onEmptyThrow(Supplier<? extends X> supplier) {
-       
-        return (LazyPOrderedSetX<T>)super.onEmptyThrow(supplier);
+
+        return (LazyPOrderedSetX<T>) super.onEmptyThrow(supplier);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#shuffle(java.util.Random)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#shuffle(java.util.Random)
      */
     @Override
     public LazyPOrderedSetX<T> shuffle(Random random) {
-       
-        return (LazyPOrderedSetX<T>)super.shuffle(random);
+
+        return (LazyPOrderedSetX<T>) super.shuffle(random);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#ofType(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#ofType(java.lang.Class)
      */
     @Override
     public <U> LazyPOrderedSetX<U> ofType(Class<? extends U> type) {
-       
-        return (LazyPOrderedSetX<U>)super.ofType(type);
+
+        return (LazyPOrderedSetX<U>) super.ofType(type);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#filterNot(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#filterNot(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<T> filterNot(Predicate<? super T> fn) {
-       
-        return (LazyPOrderedSetX<T>)super.filterNot(fn);
+
+        return (LazyPOrderedSetX<T>) super.filterNot(fn);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#notNull()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#notNull()
      */
     @Override
     public LazyPOrderedSetX<T> notNull() {
-       
-        return (LazyPOrderedSetX<T>)super.notNull();
+
+        return (LazyPOrderedSetX<T>) super.notNull();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#removeAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#removeAll(java.util.stream.Stream)
      */
     @Override
     public LazyPOrderedSetX<T> removeAll(Stream<? extends T> stream) {
-       
-        return (LazyPOrderedSetX<T>)(super.removeAll(stream));
+
+        return (LazyPOrderedSetX<T>) (super.removeAll(stream));
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#removeAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#removeAll(org.jooq.lambda.Seq)
      */
     @Override
     public LazyPOrderedSetX<T> removeAll(Seq<? extends T> stream) {
-       
-        return (LazyPOrderedSetX<T>)super.removeAll(stream);
+
+        return (LazyPOrderedSetX<T>) super.removeAll(stream);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#removeAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#removeAll(java.lang.Iterable)
      */
     @Override
     public LazyPOrderedSetX<T> removeAll(Iterable<? extends T> it) {
-       
-        return (LazyPOrderedSetX<T>)super.removeAll(it);
+
+        return (LazyPOrderedSetX<T>) super.removeAll(it);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#removeAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#removeAll(java.lang.Object[])
      */
     @Override
     public LazyPOrderedSetX<T> removeAll(T... values) {
-       
-        return (LazyPOrderedSetX<T>)super.removeAll(values);
+
+        return (LazyPOrderedSetX<T>) super.removeAll(values);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#retainAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#retainAll(java.lang.Iterable)
      */
     @Override
     public LazyPOrderedSetX<T> retainAll(Iterable<? extends T> it) {
-       
-        return (LazyPOrderedSetX<T>)super.retainAll(it);
+
+        return (LazyPOrderedSetX<T>) super.retainAll(it);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#retainAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#retainAll(java.util.stream.Stream)
      */
     @Override
     public LazyPOrderedSetX<T> retainAll(Stream<? extends T> stream) {
-       
-        return (LazyPOrderedSetX<T>)super.retainAll(stream);
+
+        return (LazyPOrderedSetX<T>) super.retainAll(stream);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#retainAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#retainAll(org.jooq.lambda.Seq)
      */
     @Override
     public LazyPOrderedSetX<T> retainAll(Seq<? extends T> stream) {
-       
-        return (LazyPOrderedSetX<T>)super.retainAll(stream);
+
+        return (LazyPOrderedSetX<T>) super.retainAll(stream);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#retainAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#retainAll(java.lang.Object[])
      */
     @Override
     public LazyPOrderedSetX<T> retainAll(T... values) {
-       
-        return (LazyPOrderedSetX<T>)super.retainAll(values);
+
+        return (LazyPOrderedSetX<T>) super.retainAll(values);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cast(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cast(java.lang.Class)
      */
     @Override
     public <U> LazyPOrderedSetX<U> cast(Class<? extends U> type) {
-       
-        return (LazyPOrderedSetX<U>)super.cast(type);
+
+        return (LazyPOrderedSetX<U>) super.cast(type);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#patternMatch(java.util.function.Function, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#patternMatch(java.util.function.Function,
+     * java.util.function.Supplier)
      */
     @Override
     public <R> LazyPOrderedSetX<R> patternMatch(Function<CheckValue1<T, R>, CheckValue1<T, R>> case1,
             Supplier<? extends R> otherwise) {
-       
-        return (LazyPOrderedSetX<R>)super.patternMatch(case1, otherwise);
+
+        return (LazyPOrderedSetX<R>) super.patternMatch(case1, otherwise);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#permutations()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#permutations()
      */
     @Override
     public LazyPOrderedSetX<ReactiveSeq<T>> permutations() {
-       
-        return (LazyPOrderedSetX<ReactiveSeq<T>>)super.permutations();
+
+        return (LazyPOrderedSetX<ReactiveSeq<T>>) super.permutations();
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#combinations(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#combinations(int)
      */
     @Override
     public LazyPOrderedSetX<ReactiveSeq<T>> combinations(int size) {
-       
-        return (LazyPOrderedSetX<ReactiveSeq<T>>)super.combinations(size);
+
+        return (LazyPOrderedSetX<ReactiveSeq<T>>) super.combinations(size);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#combinations()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#combinations()
      */
     @Override
     public LazyPOrderedSetX<ReactiveSeq<T>> combinations() {
-       
-        return (LazyPOrderedSetX<ReactiveSeq<T>>)super.combinations();
+
+        return (LazyPOrderedSetX<ReactiveSeq<T>>) super.combinations();
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#grouped(int, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#grouped(int, java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyPOrderedSetX<C> grouped(int size, Supplier<C> supplier) {
-       
-        return (LazyPOrderedSetX<C>)super.grouped(size, supplier);
+
+        return (LazyPOrderedSetX<C>) super.grouped(size, supplier);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<ListX<T>> groupedUntil(Predicate<? super T> predicate) {
-       
-        return (LazyPOrderedSetX<ListX<T>>)super.groupedUntil(predicate);
+
+        return (LazyPOrderedSetX<ListX<T>>) super.groupedUntil(predicate);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPOrderedSetX<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
-       
-        return (LazyPOrderedSetX<ListX<T>>)super.groupedWhile(predicate);
+
+        return (LazyPOrderedSetX<ListX<T>>) super.groupedWhile(predicate);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedWhile(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedWhile(java.util.function.Predicate,
+     * java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyPOrderedSetX<C> groupedWhile(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazyPOrderedSetX<C>)super.groupedWhile(predicate, factory);
+
+        return (LazyPOrderedSetX<C>) super.groupedWhile(predicate, factory);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedUntil(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedUntil(java.util.function.Predicate,
+     * java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyPOrderedSetX<C> groupedUntil(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazyPOrderedSetX<C>)super.groupedUntil(predicate, factory);
+
+        return (LazyPOrderedSetX<C>) super.groupedUntil(predicate, factory);
     }
-   
+
     /** PStackX methods **/
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#with(int, java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#with(int,
+     * java.lang.Object)
      */
-    public LazyPOrderedSetX<T> with(int i,T element){
-        return stream( Fluxes.insertAt(Fluxes.deleteBetween(flux(),i, i+1),i,element)) ;
+    public LazyPOrderedSetX<T> with(int i, T element) {
+        return stream(Fluxes.insertAt(Fluxes.deleteBetween(flux(), i, i + 1), i, element));
     }
-    
-    
-    
- 
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.BiPredicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.
+     * BiPredicate)
      */
     @Override
     public LazyPOrderedSetX<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        
-        return (LazyPOrderedSetX<ListX<T>>)super.groupedStatefullyUntil(predicate);
+
+        return (LazyPOrderedSetX<ListX<T>>) super.groupedStatefullyUntil(predicate);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#peek(java.util.function.Consumer)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#peek(java.util.function.Consumer)
      */
     @Override
     public LazyPOrderedSetX<T> peek(Consumer<? super T> c) {
-        
-        return (LazyPOrderedSetX)super.peek(c);
+
+        return (LazyPOrderedSetX) super.peek(c);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(org.jooq.lambda.Seq, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(org.jooq.lambda.Seq,
+     * java.util.function.BiFunction)
      */
     @Override
     public <U, R> LazyPOrderedSetX<R> zip(Seq<? extends U> other,
             BiFunction<? super T, ? super U, ? extends R> zipper) {
-        
-        return (LazyPOrderedSetX<R>)super.zip(other, zipper);
+
+        return (LazyPOrderedSetX<R>) super.zip(other, zipper);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream,
+     * java.util.function.BiFunction)
      */
     @Override
     public <U, R> LazyPOrderedSetX<R> zip(Stream<? extends U> other,
             BiFunction<? super T, ? super U, ? extends R> zipper) {
-      
-        return (LazyPOrderedSetX<R>)super.zip(other, zipper);
+
+        return (LazyPOrderedSetX<R>) super.zip(other, zipper);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream)
      */
     @Override
     public <U> LazyPOrderedSetX<Tuple2<T, U>> zip(Stream<? extends U> other) {
-        
-        return (LazyPOrderedSetX)super.zip(other);
+
+        return (LazyPOrderedSetX) super.zip(other);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.function.BiFunction, org.reactivestreams.Publisher)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.function.BiFunction,
+     * org.reactivestreams.Publisher)
      */
     @Override
     public <T2, R> LazyPOrderedSetX<R> zip(BiFunction<? super T, ? super T2, ? extends R> fn,
             Publisher<? extends T2> publisher) {
-       
-        return (LazyPOrderedSetX<R>)super.zip(fn, publisher);
+
+        return (LazyPOrderedSetX<R>) super.zip(fn, publisher);
     }
- 
-   
-  
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptySwitch(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptySwitch(
+     * java.util.function.Supplier)
      */
     @Override
     public LazyPOrderedSetX<T> onEmptySwitch(Supplier<? extends POrderedSet<T>> supplier) {
-        return stream(Fluxes.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
-       
-    }
-    
+        return stream(Fluxes.onEmptySwitch(flux(), () -> Flux.fromIterable(supplier.get())));
 
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#unit(Collection)
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#unit(
+     * Collection)
      */
     @Override
     public <R> LazyPOrderedSetX<R> unit(Collection<R> col) {
-       
+
         return fromIterable(col);
     }
-    
+
     @Override
     public <R> LazyPOrderedSetX<R> unit(R value) {
         return singleton(value);
     }
 
     @Override
-    public<R> LazyPOrderedSetX<R> unitIterator(Iterator<R> it) {
+    public <R> LazyPOrderedSetX<R> unitIterator(Iterator<R> it) {
         return fromIterable(() -> it);
     }
 
     @Override
     public <R> LazyPOrderedSetX<R> emptyUnit() {
-       
+
         return LazyPOrderedSetX.<R> empty();
     }
 
@@ -1288,15 +1593,21 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusInOrder(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #plusInOrder(java.lang.Object)
      */
     @Override
     public LazyPOrderedSetX<T> plusInOrder(T e) {
         return plus(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.CollectionX#stream()
      */
     @Override
@@ -1304,43 +1615,56 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
 
         return ReactiveSeq.fromIterable(this);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#from(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#from(java.util.Collection)
      */
     @Override
     public <X> LazyPOrderedSetX<X> from(Collection<X> col) {
         return fromIterable(col);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.persistent.PQueueX#monoid()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.persistent.PQueueX#monoid()
      */
     @Override
     public <T> Reducer<POrderedSet<T>> monoid() {
-       
+
         return Reducers.toPOrderedSet();
 
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.MapPSet#plus(java.lang.Object)
      */
     @Override
     public LazyPOrderedSetX<T> plus(T e) {
-        return new LazyPOrderedSetX<T>(getSet().plus(e),this.collector);
+        return new LazyPOrderedSetX<T>(
+                                       getSet().plus(e), this.collector);
     }
-    
-  
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.MapPSet#plusAll(java.util.Collection)
      */
     @Override
-    public  LazyPOrderedSetX<T> plusAll(Collection<? extends T> list) {
-        return new LazyPOrderedSetX<T>(getSet().plusAll(list),this.collector);
+    public LazyPOrderedSetX<T> plusAll(Collection<? extends T> list) {
+        return new LazyPOrderedSetX<T>(
+                                       getSet().plusAll(list), this.collector);
     }
-    
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.POrderedSet#get(int)
      */
     @Override
@@ -1348,35 +1672,38 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
         return getSet().get(index);
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.POrderedSet#indexOf(java.lang.Object)
      */
     @Override
     public int indexOf(Object o) {
         return getSet().indexOf(o);
     }
-    
-    
-    
-    
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minus(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#minus(java.lang.Object)
      */
     @Override
-    public  LazyPOrderedSetX<T> minus(Object e) {
+    public LazyPOrderedSetX<T> minus(Object e) {
         PCollection<T> res = getSet().minus(e);
-        return LazyPOrderedSetX.fromIterable(this.collector,res);
-        
+        return LazyPOrderedSetX.fromIterable(this.collector, res);
+
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minusAll(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#minusAll(java.util.Collection)
      */
     public LazyPOrderedSetX<T> minusAll(Collection<?> list) {
         PCollection<T> res = getSet().minusAll(list);
-        return LazyPOrderedSetX.fromIterable(this.collector,res);
+        return LazyPOrderedSetX.fromIterable(this.collector, res);
     }
 
 }

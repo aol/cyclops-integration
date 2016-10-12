@@ -1,6 +1,5 @@
 package com.aol.cyclops.control;
 
-
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -45,7 +44,6 @@ public class ReactorPipes<K, V> {
 
     private final ConcurrentMap<K, Adapter<V>> registered = new ConcurrentHashMap<>();
 
-   
     /**
      * @return Size of registered pipes
      */
@@ -133,6 +131,7 @@ public class ReactorPipes<K, V> {
     public Maybe<ReactiveSeq<V>> reactiveSeq(final K key) {
         return get(key).map(a -> a.stream());
     }
+
     /**
      * @param key : Adapter identifier
      * @return LazyFutureStream from selected Queue
@@ -147,8 +146,7 @@ public class ReactorPipes<K, V> {
         return get(key).peek(a -> a.stream()
                                    .subscribe(sub))
                        .map(a -> LazyListX.fromStreamS(sub.stream()
-                                    .limit(x))
-                                    )
+                                                          .limit(x)))
                        .orElse(LazyListX.empty());
     }
 

@@ -31,9 +31,10 @@ public class GroupBySize<T, C extends Collection<? super T>> {
             throw new IllegalArgumentException(
                                                "Batch size must be 1 or more");
         SeqSubscriber<T> sub = SeqSubscriber.subscriber();
-        Iterator<T> it = stream.subscribeWith(sub).iterator();
-        
-        return Flux.fromIterable(()->new Iterator<C>() {
+        Iterator<T> it = stream.subscribeWith(sub)
+                               .iterator();
+
+        return Flux.fromIterable(() -> new Iterator<C>() {
 
             @Override
             public boolean hasNext() {

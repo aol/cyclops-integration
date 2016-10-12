@@ -74,21 +74,22 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
-public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements SortedSetX<T> {
-    private final  LazyFluentCollection<T,SortedSet<T>> lazy;
+public class LazySortedSetX<T> extends AbstractFluentCollectionX<T>implements SortedSetX<T> {
+    private final LazyFluentCollection<T, SortedSet<T>> lazy;
     @Getter
-    private final Collector<T,?,SortedSet<T>> collector;
-    
-    
+    private final Collector<T, ?, SortedSet<T>> collector;
+
     /**
      * Create a LazySortedSetX from a Stream
      * 
      * @param stream to construct a LazySortedSetX from
      * @return LazySortedSetX
      */
-    public static <T> LazySortedSetX<T> fromStreamS(Stream<T> stream){
-        return new LazySortedSetX<T>(Flux.from(ReactiveSeq.fromStream(stream)));
+    public static <T> LazySortedSetX<T> fromStreamS(Stream<T> stream) {
+        return new LazySortedSetX<T>(
+                                     Flux.from(ReactiveSeq.fromStream(stream)));
     }
+
     /**
      * Create a LazySortedSetX that contains the Integers between start and end
      * 
@@ -144,7 +145,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
     public static <T> LazySortedSetX<T> generate(long limit, Supplier<T> s) {
 
         return fromStreamS(ReactiveSeq.generate(s)
-                          .limit(limit));
+                                      .limit(limit));
     }
 
     /**
@@ -157,9 +158,8 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
      */
     public static <T> LazySortedSetX<T> iterate(long limit, final T seed, final UnaryOperator<T> f) {
         return fromStreamS(ReactiveSeq.iterate(seed, f)
-                          .limit(limit));
+                                      .limit(limit));
     }
-
 
     /**
      * @return A collector that generates a LazySortedSetX
@@ -168,14 +168,13 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return Collectors.toCollection(() -> LazySortedSetX.of());
     }
 
-   
-
     /**
      * @return An empty LazySortedSetX
      */
     public static <T> LazySortedSetX<T> empty() {
-        return fromIterable((List<T>) ListX.<T>defaultCollector().supplier()
-                                                        .get());
+        return fromIterable((List<T>) ListX.<T> defaultCollector()
+                                           .supplier()
+                                           .get());
     }
 
     /**
@@ -196,8 +195,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
      */
     @SafeVarargs
     public static <T> LazySortedSetX<T> of(T... values) {
-        List<T> res = (List<T>) ListX.<T>defaultCollector().supplier()
-                                                  .get();
+        List<T> res = (List<T>) ListX.<T> defaultCollector()
+                                     .supplier()
+                                     .get();
         for (T v : values)
             res.add(v);
         return fromIterable(res);
@@ -238,7 +238,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
      * @return LazySortedSetX from Iterable
      */
     public static <T> LazySortedSetX<T> fromIterable(Iterable<T> it) {
-        return fromIterable(SortedSetX.<T>defaultCollector(), it);
+        return fromIterable(SortedSetX.<T> defaultCollector(), it);
     }
 
     /**
@@ -251,39 +251,51 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
     public static <T> LazySortedSetX<T> fromIterable(Collector<T, ?, SortedSet<T>> collector, Iterable<T> it) {
         if (it instanceof LazySortedSetX)
             return (LazySortedSetX<T>) it;
-       
+
         if (it instanceof SortedSet)
             return new LazySortedSetX<T>(
-                                    (SortedSet<T>) it, collector);
+                                         (SortedSet<T>) it, collector);
         return new LazySortedSetX<T>(
-                                Flux.fromIterable(it),
-                                collector);
+                                     Flux.fromIterable(it), collector);
     }
-    private LazySortedSetX(SortedSet<T> list,Collector<T,?,SortedSet<T>> collector){
-        this.lazy = new LazyCollection<>(list,null,collector);
-        this.collector=  collector;
-    }
-    
-    private LazySortedSetX(SortedSet<T> list){
-        this.collector = SortedSetX.defaultCollector();
-        this.lazy = new LazyCollection<T,SortedSet<T>>(list,null,collector);
-    }
-    private LazySortedSetX(Flux<T> stream,Collector<T,?,SortedSet<T>> collector){
-        
+
+    private LazySortedSetX(SortedSet<T> list, Collector<T, ?, SortedSet<T>> collector) {
+        this.lazy = new LazyCollection<>(
+                                         list, null, collector);
         this.collector = collector;
-        this.lazy = new LazyCollection<>(null,stream,collector);
     }
-    private LazySortedSetX(Flux<T> stream){
-        
+
+    private LazySortedSetX(SortedSet<T> list) {
         this.collector = SortedSetX.defaultCollector();
-        this.lazy = new LazyCollection<>(null,stream,collector);
+        this.lazy = new LazyCollection<T, SortedSet<T>>(
+                                                        list, null, collector);
     }
-    private LazySortedSetX(){
+
+    private LazySortedSetX(Flux<T> stream, Collector<T, ?, SortedSet<T>> collector) {
+
+        this.collector = collector;
+        this.lazy = new LazyCollection<>(
+                                         null, stream, collector);
+    }
+
+    private LazySortedSetX(Flux<T> stream) {
+
         this.collector = SortedSetX.defaultCollector();
-        this.lazy = new LazyCollection<>((SortedSet)this.collector.supplier().get(),null,collector);
+        this.lazy = new LazyCollection<>(
+                                         null, stream, collector);
     }
-    
-    /* (non-Javadoc)
+
+    private LazySortedSetX() {
+        this.collector = SortedSetX.defaultCollector();
+        this.lazy = new LazyCollection<>(
+                                         (SortedSet) this.collector.supplier()
+                                                                   .get(),
+                                         null, collector);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#forEach(java.util.function.Consumer)
      */
     @Override
@@ -291,7 +303,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         getSortedSet().forEach(action);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#iterator()
      */
     @Override
@@ -299,7 +313,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().iterator();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#size()
      */
     @Override
@@ -307,7 +323,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().size();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#contains(java.lang.Object)
      */
     @Override
@@ -315,7 +333,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().contains(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -323,9 +343,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().equals(o);
     }
 
-
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#isEmpty()
      */
     @Override
@@ -333,7 +353,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().isEmpty();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -341,7 +363,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().hashCode();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray()
      */
     @Override
@@ -349,7 +373,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().toArray();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeAll(java.util.Collection)
      */
     @Override
@@ -357,7 +383,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().removeAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray(java.lang.Object[])
      */
     @Override
@@ -365,7 +393,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().toArray(a);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#add(java.lang.Object)
      */
     @Override
@@ -373,7 +403,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().add(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#remove(java.lang.Object)
      */
     @Override
@@ -381,7 +413,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().remove(o);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#containsAll(java.util.Collection)
      */
     @Override
@@ -389,7 +423,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().containsAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#addAll(java.util.Collection)
      */
     @Override
@@ -397,7 +433,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().addAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#retainAll(java.util.Collection)
      */
     @Override
@@ -405,7 +443,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().retainAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#clear()
      */
     @Override
@@ -413,8 +453,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         getSortedSet().clear();
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -422,7 +463,9 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return getSortedSet().toString();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#collect(java.util.stream.Collector)
      */
     @Override
@@ -430,786 +473,1207 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         return stream().collect(collector);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#count()
      */
     @Override
     public long count() {
         return this.size();
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeIf(java.util.function.Predicate)
      */
     @Override
-    public  boolean removeIf(Predicate<? super T> filter) {
+    public boolean removeIf(Predicate<? super T> filter) {
         return getSortedSet().removeIf(filter);
     }
-   
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#parallelStream()
      */
     @Override
-    public  Stream<T> parallelStream() {
+    public Stream<T> parallelStream() {
         return getSortedSet().parallelStream();
     }
-    
-    
-  
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#spliterator()
      */
     @Override
     public Spliterator<T> spliterator() {
         return getSortedSet().spliterator();
     }
-    
+
     private SortedSet<T> getSortedSet() {
         return lazy.get();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
      */
     @Override
-    public <X> LazySortedSetX<X> stream(Flux<X> stream){
-        return new LazySortedSetX<X>(stream);
+    public <X> LazySortedSetX<X> stream(Flux<X> stream) {
+        return new LazySortedSetX<X>(
+                                     stream);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.persistent.PBagX#stream()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.persistent.PBagX#stream()
      */
     @Override
     public ReactiveSeq<T> stream() {
-        return ReactiveSeq.fromStream(lazy.get().stream());
+        return ReactiveSeq.fromStream(lazy.get()
+                                          .stream());
     }
+
     @Override
     public Flux<T> flux() {
         return lazy.flux();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#combine(
+     * java.util.function.BiPredicate, java.util.function.BinaryOperator)
      */
     @Override
     public LazySortedSetX<T> combine(BiPredicate<? super T, ? super T> predicate, BinaryOperator<T> op) {
-       
-        return (LazySortedSetX<T>)super.combine(predicate, op);
+
+        return (LazySortedSetX<T>) super.combine(predicate, op);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#reverse()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#reverse()
      */
     @Override
     public LazySortedSetX<T> reverse() {
-       
-        return(LazySortedSetX<T>)super.reverse();
+
+        return (LazySortedSetX<T>) super.reverse();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#filter(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#filter(
+     * java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> filter(Predicate<? super T> pred) {
-       
-        return (LazySortedSetX<T>)super.filter(pred);
+
+        return (LazySortedSetX<T>) super.filter(pred);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#map(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#map(java.
+     * util.function.Function)
      */
     @Override
     public <R> LazySortedSetX<R> map(Function<? super T, ? extends R> mapper) {
-       
-        return (LazySortedSetX<R>)super.map(mapper);
+
+        return (LazySortedSetX<R>) super.map(mapper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#flatMap(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#flatMap(
+     * java.util.function.Function)
      */
     @Override
     public <R> LazySortedSetX<R> flatMap(Function<? super T, ? extends Iterable<? extends R>> mapper) {
-       return (LazySortedSetX<R>)super.flatMap(mapper);
+        return (LazySortedSetX<R>) super.flatMap(mapper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#limit(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#limit(
+     * long)
      */
     @Override
     public LazySortedSetX<T> limit(long num) {
-       return (LazySortedSetX<T>)super.limit(num);
+        return (LazySortedSetX<T>) super.limit(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#skip(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#skip(
+     * long)
      */
     @Override
     public LazySortedSetX<T> skip(long num) {
-       return (LazySortedSetX<T>)super.skip(num);
+        return (LazySortedSetX<T>) super.skip(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#takeRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#takeRight
+     * (int)
      */
     @Override
     public LazySortedSetX<T> takeRight(int num) {
-       return (LazySortedSetX<T>)super.takeRight(num);
+        return (LazySortedSetX<T>) super.takeRight(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#dropRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#dropRight
+     * (int)
      */
     @Override
     public LazySortedSetX<T> dropRight(int num) {
-       return (LazySortedSetX<T>)super.dropRight(num);
+        return (LazySortedSetX<T>) super.dropRight(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#takeWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#takeWhile
+     * (java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> takeWhile(Predicate<? super T> p) {
-       return (LazySortedSetX<T>)super.takeWhile(p);
+        return (LazySortedSetX<T>) super.takeWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#dropWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#dropWhile
+     * (java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> dropWhile(Predicate<? super T> p) {
-       return (LazySortedSetX<T>)super.dropWhile(p);
+        return (LazySortedSetX<T>) super.dropWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#takeUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#takeUntil
+     * (java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> takeUntil(Predicate<? super T> p) {
-       return (LazySortedSetX<T>)super.takeUntil(p);
+        return (LazySortedSetX<T>) super.takeUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#dropUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#dropUntil
+     * (java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> dropUntil(Predicate<? super T> p) {
-       return(LazySortedSetX<T>)super.dropUntil(p);
+        return (LazySortedSetX<T>) super.dropUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#trampoline(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * trampoline(java.util.function.Function)
      */
     @Override
     public <R> LazySortedSetX<R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
-       return (LazySortedSetX<R>)super.trampoline(mapper);
+        return (LazySortedSetX<R>) super.trampoline(mapper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#slice(long, long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#slice(
+     * long, long)
      */
     @Override
     public LazySortedSetX<T> slice(long from, long to) {
-       return (LazySortedSetX<T>)super.slice(from, to);
+        return (LazySortedSetX<T>) super.slice(from, to);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#grouped(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#grouped(
+     * int)
      */
     @Override
     public LazySortedSetX<ListX<T>> grouped(int groupSize) {
-       
-        return (LazySortedSetX<ListX<T>>)super.grouped(groupSize);
+
+        return (LazySortedSetX<ListX<T>>) super.grouped(groupSize);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#grouped(java.util.function.Function, java.util.stream.Collector)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#grouped(
+     * java.util.function.Function, java.util.stream.Collector)
      */
     @Override
     public <K, A, D> LazySortedSetX<Tuple2<K, D>> grouped(Function<? super T, ? extends K> classifier,
             Collector<? super T, A, D> downstream) {
-       
-        return (LazySortedSetX)super.grouped(classifier, downstream);
+
+        return (LazySortedSetX) super.grouped(classifier, downstream);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip(java.
+     * lang.Iterable)
      */
     @Override
     public <U> LazySortedSetX<Tuple2<T, U>> zip(Iterable<? extends U> other) {
-       
-        return (LazySortedSetX)super.zip(other);
+
+        return (LazySortedSetX) super.zip(other);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip(java.lang.Iterable, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip(java.
+     * lang.Iterable, java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazySortedSetX<R> zip(Iterable<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-       
-        return (LazySortedSetX<R>)super.zip(other, zipper);
+    public <U, R> LazySortedSetX<R> zip(Iterable<? extends U> other,
+            BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazySortedSetX<R>) super.zip(other, zipper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sliding(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sliding(
+     * int)
      */
     @Override
     public LazySortedSetX<ListX<T>> sliding(int windowSize) {
-       
-        return (LazySortedSetX<ListX<T>>)super.sliding(windowSize);
+
+        return (LazySortedSetX<ListX<T>>) super.sliding(windowSize);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sliding(int, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sliding(
+     * int, int)
      */
     @Override
     public LazySortedSetX<ListX<T>> sliding(int windowSize, int increment) {
-       
-        return (LazySortedSetX<ListX<T>>)super.sliding(windowSize, increment);
+
+        return (LazySortedSetX<ListX<T>>) super.sliding(windowSize, increment);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#scanLeft(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#scanLeft(
+     * com.aol.cyclops.Monoid)
      */
     @Override
     public LazySortedSetX<T> scanLeft(Monoid<T> monoid) {
-       
-        return (LazySortedSetX<T>)super.scanLeft(monoid);
+
+        return (LazySortedSetX<T>) super.scanLeft(monoid);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#scanLeft(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#scanLeft(
+     * java.lang.Object, java.util.function.BiFunction)
      */
     @Override
     public <U> LazySortedSetX<U> scanLeft(U seed, BiFunction<? super U, ? super T, ? extends U> function) {
-       
+
         return (LazySortedSetX<U>) super.scanLeft(seed, function);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#scanRight(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#scanRight
+     * (com.aol.cyclops.Monoid)
      */
     @Override
     public LazySortedSetX<T> scanRight(Monoid<T> monoid) {
-       
-        return (LazySortedSetX<T>)super.scanRight(monoid);
+
+        return (LazySortedSetX<T>) super.scanRight(monoid);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#scanRight(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#scanRight
+     * (java.lang.Object, java.util.function.BiFunction)
      */
     @Override
     public <U> LazySortedSetX<U> scanRight(U identity, BiFunction<? super T, ? super U, ? extends U> combiner) {
-       
-        return (LazySortedSetX<U>)super.scanRight(identity, combiner);
+
+        return (LazySortedSetX<U>) super.scanRight(identity, combiner);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sorted(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sorted(
+     * java.util.function.Function)
      */
     @Override
     public <U extends Comparable<? super U>> LazySortedSetX<T> sorted(Function<? super T, ? extends U> function) {
-       
-        return (LazySortedSetX<T>)super.sorted(function);
+
+        return (LazySortedSetX<T>) super.sorted(function);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#plus(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#plus(java
+     * .lang.Object)
      */
     @Override
     public LazySortedSetX<T> plus(T e) {
-       
-        return (LazySortedSetX<T>)super.plus(e);
+
+        return (LazySortedSetX<T>) super.plus(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#plusAll(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#plusAll(
+     * java.util.Collection)
      */
     @Override
     public LazySortedSetX<T> plusAll(Collection<? extends T> list) {
-       
-        return (LazySortedSetX<T>)super.plusAll(list);
+
+        return (LazySortedSetX<T>) super.plusAll(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#minus(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#minus(
+     * java.lang.Object)
      */
     @Override
     public LazySortedSetX<T> minus(Object e) {
-       
-        return (LazySortedSetX<T>)super.minus(e);
+
+        return (LazySortedSetX<T>) super.minus(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#minusAll(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#minusAll(
+     * java.util.Collection)
      */
     @Override
     public LazySortedSetX<T> minusAll(Collection<?> list) {
-       
-        return (LazySortedSetX<T>)super.minusAll(list);
+
+        return (LazySortedSetX<T>) super.minusAll(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#plusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#plusLazy(
+     * java.lang.Object)
      */
     @Override
     public LazySortedSetX<T> plusLazy(T e) {
-       
-        return (LazySortedSetX<T>)super.plus(e);
+
+        return (LazySortedSetX<T>) super.plus(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#plusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * plusAllLazy(java.util.Collection)
      */
     @Override
     public LazySortedSetX<T> plusAllLazy(Collection<? extends T> list) {
-       
-        return (LazySortedSetX<T>)super.plusAll(list);
+
+        return (LazySortedSetX<T>) super.plusAll(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#minusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#minusLazy
+     * (java.lang.Object)
      */
     @Override
     public LazySortedSetX<T> minusLazy(Object e) {
-       
-        return (LazySortedSetX<T>)super.minus(e);
+
+        return (LazySortedSetX<T>) super.minus(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#minusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * minusAllLazy(java.util.Collection)
      */
     @Override
     public LazySortedSetX<T> minusAllLazy(Collection<?> list) {
-       
-        return (LazySortedSetX<T>)super.minusAll(list);
+
+        return (LazySortedSetX<T>) super.minusAll(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cycle(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cycle(
+     * int)
      */
     @Override
     public LazyListX<T> cycle(int times) {
         return LazyListX.fromPublisher(this.flux()
-                                       .repeat(times));
+                                           .repeat(times));
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cycle(com.aol.cyclops.Monoid, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cycle(com
+     * .aol.cyclops.Monoid, int)
      */
     @Override
     public LazyListX<T> cycle(Monoid<T> m, int times) {
         return LazyListX.fromPublisher(Fluxes.cycle(flux(), m, times));
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cycleWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * cycleWhile(java.util.function.Predicate)
      */
     @Override
     public LazyListX<T> cycleWhile(Predicate<? super T> predicate) {
-       
-        return LazyListX.fromPublisher(Fluxes.cycleWhile(flux(),predicate));
+
+        return LazyListX.fromPublisher(Fluxes.cycleWhile(flux(), predicate));
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cycleUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * cycleUntil(java.util.function.Predicate)
      */
     @Override
     public LazyListX<T> cycleUntil(Predicate<? super T> predicate) {
-       
-        return LazyListX.fromPublisher(Fluxes.cycleUntil(flux(),predicate));
+
+        return LazyListX.fromPublisher(Fluxes.cycleUntil(flux(), predicate));
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip(org.
+     * jooq.lambda.Seq)
      */
     @Override
     public <U> LazySortedSetX<Tuple2<T, U>> zip(Seq<? extends U> other) {
-       
-        return (LazySortedSetX)super.zip(other);
+
+        return (LazySortedSetX) super.zip(other);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip3(java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip3(java
+     * .util.stream.Stream, java.util.stream.Stream)
      */
     @Override
     public <S, U> LazySortedSetX<Tuple3<T, S, U>> zip3(Stream<? extends S> second, Stream<? extends U> third) {
-       
-        return (LazySortedSetX)super.zip3(second, third);
+
+        return (LazySortedSetX) super.zip3(second, third);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip4(java.util.stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zip4(java
+     * .util.stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
      */
     @Override
-    public <T2, T3, T4> LazySortedSetX<Tuple4<T, T2, T3, T4>> zip4(Stream<? extends T2> second, Stream<? extends T3> third,
-            Stream<? extends T4> fourth) {
-       
-        return (LazySortedSetX)super.zip4(second, third, fourth);
+    public <T2, T3, T4> LazySortedSetX<Tuple4<T, T2, T3, T4>> zip4(Stream<? extends T2> second,
+            Stream<? extends T3> third, Stream<? extends T4> fourth) {
+
+        return (LazySortedSetX) super.zip4(second, third, fourth);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#zipWithIndex()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * zipWithIndex()
      */
     @Override
     public LazySortedSetX<Tuple2<T, Long>> zipWithIndex() {
-       
-        return (LazySortedSetX<Tuple2<T, Long>>)super.zipWithIndex();
+
+        return (LazySortedSetX<Tuple2<T, Long>>) super.zipWithIndex();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#distinct()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#distinct(
+     * )
      */
     @Override
     public LazySortedSetX<T> distinct() {
-       
-        return (LazySortedSetX<T>)super.distinct();
+
+        return (LazySortedSetX<T>) super.distinct();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sorted()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sorted()
      */
     @Override
     public LazySortedSetX<T> sorted() {
-       
-        return (LazySortedSetX<T>)super.sorted();
+
+        return (LazySortedSetX<T>) super.sorted();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sorted(java.util.Comparator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#sorted(
+     * java.util.Comparator)
      */
     @Override
     public LazySortedSetX<T> sorted(Comparator<? super T> c) {
-       
-        return (LazySortedSetX<T>)super.sorted(c);
+
+        return (LazySortedSetX<T>) super.sorted(c);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#skipWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#skipWhile
+     * (java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> skipWhile(Predicate<? super T> p) {
-       
-        return (LazySortedSetX<T>)super.skipWhile(p);
+
+        return (LazySortedSetX<T>) super.skipWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#skipUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#skipUntil
+     * (java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> skipUntil(Predicate<? super T> p) {
-       
-        return (LazySortedSetX<T>)super.skipUntil(p);
+
+        return (LazySortedSetX<T>) super.skipUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#limitWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * limitWhile(java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> limitWhile(Predicate<? super T> p) {
-       
-        return (LazySortedSetX<T>)super.limitWhile(p);
+
+        return (LazySortedSetX<T>) super.limitWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#limitUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * limitUntil(java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> limitUntil(Predicate<? super T> p) {
-       
-        return (LazySortedSetX<T>)super.limitUntil(p);
+
+        return (LazySortedSetX<T>) super.limitUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#intersperse(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * intersperse(java.lang.Object)
      */
     @Override
     public LazySortedSetX<T> intersperse(T value) {
-       
-        return (LazySortedSetX<T>)super.intersperse(value);
+
+        return (LazySortedSetX<T>) super.intersperse(value);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#shuffle()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#shuffle()
      */
     @Override
     public LazySortedSetX<T> shuffle() {
-       
-        return (LazySortedSetX<T>)super.shuffle();
+
+        return (LazySortedSetX<T>) super.shuffle();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#skipLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#skipLast(
+     * int)
      */
     @Override
     public LazySortedSetX<T> skipLast(int num) {
-       
-        return (LazySortedSetX<T>)super.skipLast(num);
+
+        return (LazySortedSetX<T>) super.skipLast(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#limitLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#limitLast
+     * (int)
      */
     @Override
     public LazySortedSetX<T> limitLast(int num) {
-       
-        return (LazySortedSetX<T>)super.limitLast(num);
+
+        return (LazySortedSetX<T>) super.limitLast(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#onEmpty(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#onEmpty(
+     * java.lang.Object)
      */
     @Override
     public LazySortedSetX<T> onEmpty(T value) {
-       
-        return (LazySortedSetX<T>)super.onEmpty(value);
+
+        return (LazySortedSetX<T>) super.onEmpty(value);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#onEmptyGet(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * onEmptyGet(java.util.function.Supplier)
      */
     @Override
     public LazySortedSetX<T> onEmptyGet(Supplier<? extends T> supplier) {
-       
-        return (LazySortedSetX<T>)super.onEmptyGet(supplier);
+
+        return (LazySortedSetX<T>) super.onEmptyGet(supplier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#onEmptyThrow(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * onEmptyThrow(java.util.function.Supplier)
      */
     @Override
     public <X extends Throwable> LazySortedSetX<T> onEmptyThrow(Supplier<? extends X> supplier) {
-       
-        return (LazySortedSetX<T>)super.onEmptyThrow(supplier);
+
+        return (LazySortedSetX<T>) super.onEmptyThrow(supplier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#shuffle(java.util.Random)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#shuffle(
+     * java.util.Random)
      */
     @Override
     public LazySortedSetX<T> shuffle(Random random) {
-       
-        return (LazySortedSetX<T>)super.shuffle(random);
+
+        return (LazySortedSetX<T>) super.shuffle(random);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#ofType(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#ofType(
+     * java.lang.Class)
      */
     @Override
     public <U> LazySortedSetX<U> ofType(Class<? extends U> type) {
-       
-        return (LazySortedSetX<U>)super.ofType(type);
+
+        return (LazySortedSetX<U>) super.ofType(type);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#filterNot(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#filterNot
+     * (java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<T> filterNot(Predicate<? super T> fn) {
-       
-        return (LazySortedSetX<T>)super.filterNot(fn);
+
+        return (LazySortedSetX<T>) super.filterNot(fn);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#notNull()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#notNull()
      */
     @Override
     public LazySortedSetX<T> notNull() {
-       
-        return (LazySortedSetX<T>)super.notNull();
+
+        return (LazySortedSetX<T>) super.notNull();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#removeAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#removeAll
+     * (java.util.stream.Stream)
      */
     @Override
     public LazySortedSetX<T> removeAll(Stream<? extends T> stream) {
-       
-        return (LazySortedSetX<T>)(super.removeAll(stream));
+
+        return (LazySortedSetX<T>) (super.removeAll(stream));
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#removeAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#removeAll
+     * (org.jooq.lambda.Seq)
      */
     @Override
     public LazySortedSetX<T> removeAll(Seq<? extends T> stream) {
-       
-        return (LazySortedSetX<T>)super.removeAll(stream);
+
+        return (LazySortedSetX<T>) super.removeAll(stream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#removeAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#removeAll
+     * (java.lang.Iterable)
      */
     @Override
     public LazySortedSetX<T> removeAll(Iterable<? extends T> it) {
-       
-        return (LazySortedSetX<T>)super.removeAll(it);
+
+        return (LazySortedSetX<T>) super.removeAll(it);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#removeAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#removeAll
+     * (java.lang.Object[])
      */
     @Override
     public LazySortedSetX<T> removeAll(T... values) {
-       
-        return (LazySortedSetX<T>)super.removeAll(values);
+
+        return (LazySortedSetX<T>) super.removeAll(values);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#retainAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#retainAll
+     * (java.lang.Iterable)
      */
     @Override
     public LazySortedSetX<T> retainAll(Iterable<? extends T> it) {
-       
-        return (LazySortedSetX<T>)super.retainAll(it);
+
+        return (LazySortedSetX<T>) super.retainAll(it);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#retainAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#retainAll
+     * (java.util.stream.Stream)
      */
     @Override
     public LazySortedSetX<T> retainAll(Stream<? extends T> stream) {
-       
-        return (LazySortedSetX<T>)super.retainAll(stream);
+
+        return (LazySortedSetX<T>) super.retainAll(stream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#retainAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#retainAll
+     * (org.jooq.lambda.Seq)
      */
     @Override
     public LazySortedSetX<T> retainAll(Seq<? extends T> stream) {
-       
-        return (LazySortedSetX<T>)super.retainAll(stream);
+
+        return (LazySortedSetX<T>) super.retainAll(stream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#retainAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#retainAll
+     * (java.lang.Object[])
      */
     @Override
     public LazySortedSetX<T> retainAll(T... values) {
-       
-        return (LazySortedSetX<T>)super.retainAll(values);
+
+        return (LazySortedSetX<T>) super.retainAll(values);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cast(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cast(java
+     * .lang.Class)
      */
     @Override
     public <U> LazySortedSetX<U> cast(Class<? extends U> type) {
-       
-        return (LazySortedSetX<U>)super.cast(type);
+
+        return (LazySortedSetX<U>) super.cast(type);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#patternMatch(java.util.function.Function, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * patternMatch(java.util.function.Function, java.util.function.Supplier)
      */
     @Override
     public <R> LazySortedSetX<R> patternMatch(Function<CheckValue1<T, R>, CheckValue1<T, R>> case1,
             Supplier<? extends R> otherwise) {
-       
-        return (LazySortedSetX<R>)super.patternMatch(case1, otherwise);
+
+        return (LazySortedSetX<R>) super.patternMatch(case1, otherwise);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#grouped(int, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.SortedSetX#grouped(
+     * int, java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazySortedSetX<C> grouped(int size, Supplier<C> supplier) {
-       
-        return (LazySortedSetX<C>)super.grouped(size, supplier);
+
+        return (LazySortedSetX<C>) super.grouped(size, supplier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#groupedUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * groupedUntil(java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<ListX<T>> groupedUntil(Predicate<? super T> predicate) {
-       
-        return (LazySortedSetX<ListX<T>>)super.groupedUntil(predicate);
+
+        return (LazySortedSetX<ListX<T>>) super.groupedUntil(predicate);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#groupedWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * groupedWhile(java.util.function.Predicate)
      */
     @Override
     public LazySortedSetX<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
-       
-        return (LazySortedSetX<ListX<T>>)super.groupedWhile(predicate);
+
+        return (LazySortedSetX<ListX<T>>) super.groupedWhile(predicate);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#groupedWhile(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * groupedWhile(java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazySortedSetX<C> groupedWhile(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazySortedSetX<C>)super.groupedWhile(predicate, factory);
+
+        return (LazySortedSetX<C>) super.groupedWhile(predicate, factory);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#groupedUntil(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * groupedUntil(java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazySortedSetX<C> groupedUntil(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazySortedSetX<C>)super.groupedUntil(predicate, factory);
+
+        return (LazySortedSetX<C>) super.groupedUntil(predicate, factory);
     }
-   
+
     /** SortedSetX methods **/
 
-    /* Makes a defensive copy of this SortedSetX replacing the value at i with the specified element
-     *  (non-Javadoc)
-     * @see com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(int, java.lang.Object)
+    /*
+     * Makes a defensive copy of this SortedSetX replacing the value at i with
+     * the specified element (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(
+     * int, java.lang.Object)
      */
-    public LazySortedSetX<T> with(int i,T element){
-        return stream( Fluxes.insertAt(Fluxes.deleteBetween(flux(),i, i+1),i,element)) ;
+    public LazySortedSetX<T> with(int i, T element) {
+        return stream(Fluxes.insertAt(Fluxes.deleteBetween(flux(), i, i + 1), i, element));
     }
-    
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#unit(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #unit(java.util.Collection)
      */
     @Override
-    public <R> LazySortedSetX<R> unit(Collection<R> col){
+    public <R> LazySortedSetX<R> unit(Collection<R> col) {
         return LazySortedSetX.fromIterable(col);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.Unit#unit(java.lang.Object)
      */
     @Override
-    public  <R> LazySortedSetX<R> unit(R value){
+    public <R> LazySortedSetX<R> unit(R value) {
         return LazySortedSetX.singleton(value);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#unitIterator(java.util.Iterator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#unitIterator(java.util.Iterator)
      */
     @Override
-    public <R> LazySortedSetX<R> unitIterator(Iterator<R> it){
-        return LazySortedSetX.fromIterable(()->it);
+    public <R> LazySortedSetX<R> unitIterator(Iterator<R> it) {
+        return LazySortedSetX.fromIterable(() -> it);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusInOrder(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #plusInOrder(java.lang.Object)
      */
     @Override
     public LazySortedSetX<T> plusInOrder(T e) {
-        
-        return (LazySortedSetX<T>)super.plusInOrder(e);
-    }
-    
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#from(java.util.Collection)
+        return (LazySortedSetX<T>) super.plusInOrder(e);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#from(java.util.Collection)
      */
     @Override
     public <T1> LazySortedSetX<T1> from(Collection<T1> c) {
-        if(c instanceof List)
-            return new LazySortedSetX<T1>((SortedSet)c,(Collector)collector);
-      return new LazySortedSetX<T1>((SortedSet)c.stream().collect(SortedSetX.defaultCollector()),(Collector)this.collector);
+        if (c instanceof List)
+            return new LazySortedSetX<T1>(
+                                          (SortedSet) c, (Collector) collector);
+        return new LazySortedSetX<T1>(
+                                      (SortedSet) c.stream()
+                                                   .collect(SortedSetX.defaultCollector()),
+                                      (Collector) this.collector);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.BiPredicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.
+     * BiPredicate)
      */
     @Override
     public LazySortedSetX<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        
-        return (LazySortedSetX<ListX<T>>)super.groupedStatefullyUntil(predicate);
+
+        return (LazySortedSetX<ListX<T>>) super.groupedStatefullyUntil(predicate);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#peek(java.util.function.Consumer)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#peek(java.util.function.Consumer)
      */
     @Override
     public LazySortedSetX<T> peek(Consumer<? super T> c) {
-        
-        return (LazySortedSetX)super.peek(c);
+
+        return (LazySortedSetX) super.peek(c);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(org.jooq.lambda.Seq, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(org.jooq.lambda.Seq,
+     * java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazySortedSetX<R> zip(Seq<? extends U> other,
-            BiFunction<? super T, ? super U, ? extends R> zipper) {
-        
-        return (LazySortedSetX<R>)super.zip(other, zipper);
+    public <U, R> LazySortedSetX<R> zip(Seq<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazySortedSetX<R>) super.zip(other, zipper);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream,
+     * java.util.function.BiFunction)
      */
     @Override
     public <U, R> LazySortedSetX<R> zip(Stream<? extends U> other,
             BiFunction<? super T, ? super U, ? extends R> zipper) {
-      
-        return (LazySortedSetX<R>)super.zip(other, zipper);
+
+        return (LazySortedSetX<R>) super.zip(other, zipper);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream)
      */
     @Override
     public <U> LazySortedSetX<Tuple2<T, U>> zip(Stream<? extends U> other) {
-        
-        return (LazySortedSetX)super.zip(other);
+
+        return (LazySortedSetX) super.zip(other);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.function.BiFunction, org.reactivestreams.Publisher)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.function.BiFunction,
+     * org.reactivestreams.Publisher)
      */
     @Override
     public <T2, R> LazySortedSetX<R> zip(BiFunction<? super T, ? super T2, ? extends R> fn,
             Publisher<? extends T2> publisher) {
-       
-        return (LazySortedSetX<R>)super.zip(fn, publisher);
+
+        return (LazySortedSetX<R>) super.zip(fn, publisher);
     }
- 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#fromStream(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * fromStream(java.util.stream.Stream)
      */
     @Override
     public <X> LazySortedSetX<X> fromStream(Stream<X> stream) {
-        SortedSet<X> list = (SortedSet<X>) stream.collect((Collector)getCollector());
-        return new LazySortedSetX<X>(list, (Collector)getCollector());
+        SortedSet<X> list = (SortedSet<X>) stream.collect((Collector) getCollector());
+        return new LazySortedSetX<X>(
+                                     list, (Collector) getCollector());
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#onEmptySwitch(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#
+     * onEmptySwitch(java.util.function.Supplier)
      */
     @Override
     public LazySortedSetX<T> onEmptySwitch(Supplier<? extends SortedSet<T>> supplier) {
-        return stream(Fluxes.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
+        return stream(Fluxes.onEmptySwitch(flux(), () -> Flux.fromIterable(supplier.get())));
     }
-    
+
     /**
      * @return
      * @see java.util.SortedSet#comparator()
@@ -1217,6 +1681,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
     public Comparator<? super T> comparator() {
         return getSortedSet().comparator();
     }
+
     /**
      * @param fromElement
      * @param toElement
@@ -1224,24 +1689,30 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
      * @see java.util.SortedSet#subSet(java.lang.Object, java.lang.Object)
      */
     public SortedSetX<T> subSet(T fromElement, T toElement) {
-        return new LazySortedSetX<>(getSortedSet().subSet(fromElement, toElement),this.collector);
+        return new LazySortedSetX<>(
+                                    getSortedSet().subSet(fromElement, toElement), this.collector);
     }
+
     /**
      * @param toElement
      * @return
      * @see java.util.SortedSet#headSet(java.lang.Object)
      */
     public SortedSetX<T> headSet(T toElement) {
-        return new LazySortedSetX<>(getSortedSet().headSet(toElement),this.collector);
+        return new LazySortedSetX<>(
+                                    getSortedSet().headSet(toElement), this.collector);
     }
+
     /**
      * @param fromElement
      * @return
      * @see java.util.SortedSet#tailSet(java.lang.Object)
      */
     public SortedSet<T> tailSet(T fromElement) {
-        return new LazySortedSetX<>(getSortedSet().tailSet(fromElement),this.collector);
+        return new LazySortedSetX<>(
+                                    getSortedSet().tailSet(fromElement), this.collector);
     }
+
     /**
      * @return
      * @see java.util.SortedSet#first()
@@ -1249,6 +1720,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
     public T first() {
         return getSortedSet().first();
     }
+
     /**
      * @return
      * @see java.util.SortedSet#last()
@@ -1256,36 +1728,56 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
     public T last() {
         return getSortedSet().last();
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#permutations()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#permutations()
      */
     @Override
     public LazySortedSetX<ReactiveSeq<T>> permutations() {
-        return stream(Flux.from(Streamable.fromPublisher(flux()).permutations().map(s->s.stream())).map(Comparables::comparable));
+        return stream(Flux.from(Streamable.fromPublisher(flux())
+                                          .permutations()
+                                          .map(s -> s.stream()))
+                          .map(Comparables::comparable));
 
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#combinations(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#combinations(int)
      */
     @Override
     public SortedSetX<ReactiveSeq<T>> combinations(int size) {
-        return stream(Flux.from(Streamable.fromPublisher(flux()).combinations(size).map(s->s.stream())).map(Comparables::comparable));
-       
+        return stream(Flux.from(Streamable.fromPublisher(flux())
+                                          .combinations(size)
+                                          .map(s -> s.stream()))
+                          .map(Comparables::comparable));
+
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#combinations()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#combinations()
      */
     @Override
-   public SortedSetX<ReactiveSeq<T>> combinations() {
-        return stream(Flux.from(Streamable.fromPublisher(flux()).combinations().map(s->s.stream())).map(Comparables::comparable));
+    public SortedSetX<ReactiveSeq<T>> combinations() {
+        return stream(Flux.from(Streamable.fromPublisher(flux())
+                                          .combinations()
+                                          .map(s -> s.stream()))
+                          .map(Comparables::comparable));
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#grouped(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#grouped(java.util.function.Function)
      */
     @Override
     public <K> LazySortedSetX<Tuple2<K, Seq<T>>> grouped(Function<? super T, ? extends K> classifier) {
@@ -1293,6 +1785,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
         Flux f = flux.map(t -> t.map2(Comparables::comparable));
         return (LazySortedSetX) stream(f);
     }
+
     static class Comparables {
 
         static <T, R extends ReactiveSeq<T> & Comparable<T>> R comparable(Seq<T> seq) {
@@ -1308,10 +1801,12 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
                                      .findFirst()
                                      .get();
 
-            return (R) Proxy.newProxyInstance(SortedSetX.class.getClassLoader(), new Class[] { ReactiveSeq.class, Comparable.class },
+            return (R) Proxy.newProxyInstance(SortedSetX.class.getClassLoader(),
+                                              new Class[] { ReactiveSeq.class, Comparable.class },
                                               (proxy, method, args) -> {
                                                   if (compareTo.equals(method))
-                                                      return Objects.compare(System.identityHashCode(seq), System.identityHashCode(args[0]),
+                                                      return Objects.compare(System.identityHashCode(seq),
+                                                                             System.identityHashCode(args[0]),
                                                                              Comparator.naturalOrder());
                                                   else
                                                       return method.invoke(seq, args);

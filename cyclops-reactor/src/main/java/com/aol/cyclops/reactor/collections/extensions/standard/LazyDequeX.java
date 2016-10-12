@@ -39,6 +39,7 @@ import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
 import lombok.Getter;
 import reactor.core.publisher.Flux;
+
 /**
  * An extended Deque type {@see java.util.Deque}
  * Extended Deque operations execute lazily e.g.
@@ -65,20 +66,22 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
-public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements DequeX<T> {
-    private final  LazyFluentCollection<T,Deque<T>> lazy;
+public class LazyDequeX<T> extends AbstractFluentCollectionX<T>implements DequeX<T> {
+    private final LazyFluentCollection<T, Deque<T>> lazy;
     @Getter
-    private final Collector<T,?,Deque<T>> collector;
-    
+    private final Collector<T, ?, Deque<T>> collector;
+
     /**
      * Create a LazyDequeX from a Stream
      * 
      * @param stream to construct a LazyQueueX from
      * @return LazyDequeX
      */
-    public static <T> LazyDequeX<T> fromStreamS(Stream<T> stream){
-        return new LazyDequeX<T>(Flux.from(ReactiveSeq.fromStream(stream)));
+    public static <T> LazyDequeX<T> fromStreamS(Stream<T> stream) {
+        return new LazyDequeX<T>(
+                                 Flux.from(ReactiveSeq.fromStream(stream)));
     }
+
     /**
      * Create a LazyListX that contains the Integers between start and end
      * 
@@ -134,7 +137,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public static <T> LazyDequeX<T> generate(long limit, Supplier<T> s) {
 
         return fromStreamS(ReactiveSeq.generate(s)
-                          .limit(limit));
+                                      .limit(limit));
     }
 
     /**
@@ -147,9 +150,8 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     public static <T> LazyDequeX<T> iterate(long limit, final T seed, final UnaryOperator<T> f) {
         return fromStreamS(ReactiveSeq.iterate(seed, f)
-                          .limit(limit));
+                                      .limit(limit));
     }
-
 
     /**
      * @return A collector that generates a LazyListX
@@ -158,14 +160,13 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return Collectors.toCollection(() -> LazyDequeX.of());
     }
 
-   
-
     /**
      * @return An empty LazyListX
      */
     public static <T> LazyDequeX<T> empty() {
-        return fromIterable((List<T>) ListX.<T>defaultCollector().supplier()
-                                                        .get());
+        return fromIterable((List<T>) ListX.<T> defaultCollector()
+                                           .supplier()
+                                           .get());
     }
 
     /**
@@ -186,8 +187,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      */
     @SafeVarargs
     public static <T> LazyDequeX<T> of(T... values) {
-        List<T> res = (List<T>) ListX.<T>defaultCollector().supplier()
-                                                  .get();
+        List<T> res = (List<T>) ListX.<T> defaultCollector()
+                                     .supplier()
+                                     .get();
         for (T v : values)
             res.add(v);
         return fromIterable(res);
@@ -228,7 +230,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
      * @return LazyListX from Iterable
      */
     public static <T> LazyDequeX<T> fromIterable(Iterable<T> it) {
-        return fromIterable(DequeX.<T>defaultCollector(), it);
+        return fromIterable(DequeX.<T> defaultCollector(), it);
     }
 
     /**
@@ -241,40 +243,52 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public static <T> LazyDequeX<T> fromIterable(Collector<T, ?, Deque<T>> collector, Iterable<T> it) {
         if (it instanceof LazyDequeX)
             return (LazyDequeX<T>) it;
-       
+
         if (it instanceof Deque)
             return new LazyDequeX<T>(
-                                    (Deque<T>) it, collector);
+                                     (Deque<T>) it, collector);
         return new LazyDequeX<T>(
-                                Flux.fromIterable(it),
-                                collector);
+                                 Flux.fromIterable(it), collector);
     }
-    private LazyDequeX(Deque<T> list,Collector<T,?,Deque<T>> collector){
-        this.lazy = new LazyCollection<>(list,null,collector);
-        this.collector=  collector;
-    }
-    
-    private LazyDequeX(Deque<T> list){
-        
-        this.collector = DequeX.defaultCollector();
-        this.lazy = new LazyCollection<T,Deque<T>>(list,null,collector);
-    }
-    private LazyDequeX(Flux<T> stream,Collector<T,?,Deque<T>> collector){
-        
+
+    private LazyDequeX(Deque<T> list, Collector<T, ?, Deque<T>> collector) {
+        this.lazy = new LazyCollection<>(
+                                         list, null, collector);
         this.collector = collector;
-        this.lazy = new LazyCollection<>(null,stream,collector);
     }
-    private LazyDequeX(Flux<T> stream){
-        
+
+    private LazyDequeX(Deque<T> list) {
+
         this.collector = DequeX.defaultCollector();
-        this.lazy = new LazyCollection<>(null,stream,collector);
+        this.lazy = new LazyCollection<T, Deque<T>>(
+                                                    list, null, collector);
     }
-    private LazyDequeX(){
+
+    private LazyDequeX(Flux<T> stream, Collector<T, ?, Deque<T>> collector) {
+
+        this.collector = collector;
+        this.lazy = new LazyCollection<>(
+                                         null, stream, collector);
+    }
+
+    private LazyDequeX(Flux<T> stream) {
+
         this.collector = DequeX.defaultCollector();
-        this.lazy = new LazyCollection<>((Deque)this.collector.supplier().get(),null,collector);
+        this.lazy = new LazyCollection<>(
+                                         null, stream, collector);
     }
-    
-    /* (non-Javadoc)
+
+    private LazyDequeX() {
+        this.collector = DequeX.defaultCollector();
+        this.lazy = new LazyCollection<>(
+                                         (Deque) this.collector.supplier()
+                                                               .get(),
+                                         null, collector);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#forEach(java.util.function.Consumer)
      */
     @Override
@@ -282,7 +296,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         getDeque().forEach(action);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#iterator()
      */
     @Override
@@ -290,7 +306,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().iterator();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#size()
      */
     @Override
@@ -298,7 +316,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().size();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#contains(java.lang.Object)
      */
     @Override
@@ -306,7 +326,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().contains(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -314,9 +336,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().equals(o);
     }
 
-
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#isEmpty()
      */
     @Override
@@ -324,7 +346,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().isEmpty();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -332,7 +356,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().hashCode();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray()
      */
     @Override
@@ -340,7 +366,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().toArray();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeAll(java.util.Collection)
      */
     @Override
@@ -348,7 +376,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().removeAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray(java.lang.Object[])
      */
     @Override
@@ -356,7 +386,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().toArray(a);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#add(java.lang.Object)
      */
     @Override
@@ -364,7 +396,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().add(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#remove(java.lang.Object)
      */
     @Override
@@ -372,7 +406,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().remove(o);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#containsAll(java.util.Collection)
      */
     @Override
@@ -380,7 +416,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().containsAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#addAll(java.util.Collection)
      */
     @Override
@@ -388,7 +426,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().addAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#retainAll(java.util.Collection)
      */
     @Override
@@ -396,7 +436,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().retainAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#clear()
      */
     @Override
@@ -404,8 +446,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         getDeque().clear();
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -413,7 +456,9 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return getDeque().toString();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#collect(java.util.stream.Collector)
      */
     @Override
@@ -421,817 +466,1258 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
         return stream().collect(collector);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#count()
      */
     @Override
     public long count() {
         return this.size();
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeIf(java.util.function.Predicate)
      */
     @Override
-    public  boolean removeIf(Predicate<? super T> filter) {
+    public boolean removeIf(Predicate<? super T> filter) {
         return getDeque().removeIf(filter);
     }
-    
-    
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#parallelStream()
      */
     @Override
-    public  Stream<T> parallelStream() {
+    public Stream<T> parallelStream() {
         return getDeque().parallelStream();
     }
-    
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#spliterator()
      */
     @Override
     public Spliterator<T> spliterator() {
         return getDeque().spliterator();
     }
-   
+
     private Deque<T> getDeque() {
         return lazy.get();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
      */
     @Override
-    public <X> LazyDequeX<X> stream(Flux<X> stream){
-        return new LazyDequeX<X>(stream);
+    public <X> LazyDequeX<X> stream(Flux<X> stream) {
+        return new LazyDequeX<X>(
+                                 stream);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.persistent.PBagX#stream()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.persistent.PBagX#stream()
      */
     @Override
     public ReactiveSeq<T> stream() {
-        return ReactiveSeq.fromStream(lazy.get().stream());
+        return ReactiveSeq.fromStream(lazy.get()
+                                          .stream());
     }
+
     @Override
     public Flux<T> flux() {
         return lazy.flux();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#combine(java.
+     * util.function.BiPredicate, java.util.function.BinaryOperator)
      */
     @Override
     public LazyDequeX<T> combine(BiPredicate<? super T, ? super T> predicate, BinaryOperator<T> op) {
-       
-        return (LazyDequeX<T>)super.combine(predicate, op);
+
+        return (LazyDequeX<T>) super.combine(predicate, op);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#reverse()
      */
     @Override
     public LazyDequeX<T> reverse() {
-       
-        return(LazyDequeX<T>)super.reverse();
+
+        return (LazyDequeX<T>) super.reverse();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#filter(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#filter(java.
+     * util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> filter(Predicate<? super T> pred) {
-       
-        return (LazyDequeX<T>)super.filter(pred);
+
+        return (LazyDequeX<T>) super.filter(pred);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#map(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#map(java.util.
+     * function.Function)
      */
     @Override
     public <R> LazyDequeX<R> map(Function<? super T, ? extends R> mapper) {
-       
-        return (LazyDequeX<R>)super.map(mapper);
+
+        return (LazyDequeX<R>) super.map(mapper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#flatMap(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#flatMap(java.
+     * util.function.Function)
      */
     @Override
     public <R> LazyDequeX<R> flatMap(Function<? super T, ? extends Iterable<? extends R>> mapper) {
-       return (LazyDequeX<R>)super.flatMap(mapper);
+        return (LazyDequeX<R>) super.flatMap(mapper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#limit(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#limit(long)
      */
     @Override
     public LazyDequeX<T> limit(long num) {
-       return (LazyDequeX<T>)super.limit(num);
+        return (LazyDequeX<T>) super.limit(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#skip(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#skip(long)
      */
     @Override
     public LazyDequeX<T> skip(long num) {
-       return (LazyDequeX<T>)super.skip(num);
+        return (LazyDequeX<T>) super.skip(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#takeRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#takeRight(int)
      */
     @Override
     public LazyDequeX<T> takeRight(int num) {
-       return (LazyDequeX<T>)super.takeRight(num);
+        return (LazyDequeX<T>) super.takeRight(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#dropRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#dropRight(int)
      */
     @Override
     public LazyDequeX<T> dropRight(int num) {
-       return (LazyDequeX<T>)super.dropRight(num);
+        return (LazyDequeX<T>) super.dropRight(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#takeWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#takeWhile(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> takeWhile(Predicate<? super T> p) {
-       return (LazyDequeX<T>)super.takeWhile(p);
+        return (LazyDequeX<T>) super.takeWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#dropWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#dropWhile(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> dropWhile(Predicate<? super T> p) {
-       return (LazyDequeX<T>)super.dropWhile(p);
+        return (LazyDequeX<T>) super.dropWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#takeUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#takeUntil(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> takeUntil(Predicate<? super T> p) {
-       return (LazyDequeX<T>)super.takeUntil(p);
+        return (LazyDequeX<T>) super.takeUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#dropUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#dropUntil(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> dropUntil(Predicate<? super T> p) {
-       return(LazyDequeX<T>)super.dropUntil(p);
+        return (LazyDequeX<T>) super.dropUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#trampoline(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#trampoline(
+     * java.util.function.Function)
      */
     @Override
     public <R> LazyDequeX<R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
-       return (LazyDequeX<R>)super.trampoline(mapper);
+        return (LazyDequeX<R>) super.trampoline(mapper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#slice(long, long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#slice(long,
+     * long)
      */
     @Override
     public LazyDequeX<T> slice(long from, long to) {
-       return (LazyDequeX<T>)super.slice(from, to);
+        return (LazyDequeX<T>) super.slice(from, to);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(int)
      */
     @Override
     public LazyDequeX<ListX<T>> grouped(int groupSize) {
-       
-        return (LazyDequeX<ListX<T>>)super.grouped(groupSize);
+
+        return (LazyDequeX<ListX<T>>) super.grouped(groupSize);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(java.util.function.Function, java.util.stream.Collector)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(java.
+     * util.function.Function, java.util.stream.Collector)
      */
     @Override
     public <K, A, D> LazyDequeX<Tuple2<K, D>> grouped(Function<? super T, ? extends K> classifier,
             Collector<? super T, A, D> downstream) {
-       
-        return (LazyDequeX)super.grouped(classifier, downstream);
+
+        return (LazyDequeX) super.grouped(classifier, downstream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(java.
+     * util.function.Function)
      */
     @Override
     public <K> LazyDequeX<Tuple2<K, Seq<T>>> grouped(Function<? super T, ? extends K> classifier) {
-       
-        return (LazyDequeX)super.grouped(classifier);
+
+        return (LazyDequeX) super.grouped(classifier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip(java.lang.
+     * Iterable)
      */
     @Override
     public <U> LazyDequeX<Tuple2<T, U>> zip(Iterable<? extends U> other) {
-       
-        return (LazyDequeX)super.zip(other);
+
+        return (LazyDequeX) super.zip(other);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip(java.lang.Iterable, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip(java.lang.
+     * Iterable, java.util.function.BiFunction)
      */
     @Override
     public <U, R> LazyDequeX<R> zip(Iterable<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-       
-        return (LazyDequeX<R>)super.zip(other, zipper);
+
+        return (LazyDequeX<R>) super.zip(other, zipper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sliding(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#sliding(int)
      */
     @Override
     public LazyDequeX<ListX<T>> sliding(int windowSize) {
-       
-        return (LazyDequeX<ListX<T>>)super.sliding(windowSize);
+
+        return (LazyDequeX<ListX<T>>) super.sliding(windowSize);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sliding(int, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#sliding(int,
+     * int)
      */
     @Override
     public LazyDequeX<ListX<T>> sliding(int windowSize, int increment) {
-       
-        return (LazyDequeX<ListX<T>>)super.sliding(windowSize, increment);
+
+        return (LazyDequeX<ListX<T>>) super.sliding(windowSize, increment);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#scanLeft(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#scanLeft(com.
+     * aol.cyclops.Monoid)
      */
     @Override
     public LazyDequeX<T> scanLeft(Monoid<T> monoid) {
-       
-        return (LazyDequeX<T>)super.scanLeft(monoid);
+
+        return (LazyDequeX<T>) super.scanLeft(monoid);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#scanLeft(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#scanLeft(java.
+     * lang.Object, java.util.function.BiFunction)
      */
     @Override
     public <U> LazyDequeX<U> scanLeft(U seed, BiFunction<? super U, ? super T, ? extends U> function) {
-       
+
         return (LazyDequeX<U>) super.scanLeft(seed, function);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#scanRight(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#scanRight(com.
+     * aol.cyclops.Monoid)
      */
     @Override
     public LazyDequeX<T> scanRight(Monoid<T> monoid) {
-       
-        return (LazyDequeX<T>)super.scanRight(monoid);
+
+        return (LazyDequeX<T>) super.scanRight(monoid);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#scanRight(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#scanRight(java
+     * .lang.Object, java.util.function.BiFunction)
      */
     @Override
     public <U> LazyDequeX<U> scanRight(U identity, BiFunction<? super T, ? super U, ? extends U> combiner) {
-       
-        return (LazyDequeX<U>)super.scanRight(identity, combiner);
+
+        return (LazyDequeX<U>) super.scanRight(identity, combiner);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sorted(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#sorted(java.
+     * util.function.Function)
      */
     @Override
     public <U extends Comparable<? super U>> LazyDequeX<T> sorted(Function<? super T, ? extends U> function) {
-       
-        return (LazyDequeX<T>)super.sorted(function);
+
+        return (LazyDequeX<T>) super.sorted(function);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plus(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#plus(java.lang
+     * .Object)
      */
     @Override
     public LazyDequeX<T> plus(T e) {
-       
-        return (LazyDequeX<T>)super.plus(e);
+
+        return (LazyDequeX<T>) super.plus(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusAll(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#plusAll(java.
+     * util.Collection)
      */
     @Override
     public LazyDequeX<T> plusAll(Collection<? extends T> list) {
-       
-        return (LazyDequeX<T>)super.plusAll(list);
+
+        return (LazyDequeX<T>) super.plusAll(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minus(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#minus(java.
+     * lang.Object)
      */
     @Override
     public LazyDequeX<T> minus(Object e) {
-       
-        return (LazyDequeX<T>)super.minus(e);
+
+        return (LazyDequeX<T>) super.minus(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusAll(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#minusAll(java.
+     * util.Collection)
      */
     @Override
     public LazyDequeX<T> minusAll(Collection<?> list) {
-       
-        return (LazyDequeX<T>)super.minusAll(list);
+
+        return (LazyDequeX<T>) super.minusAll(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#plusLazy(java.
+     * lang.Object)
      */
     @Override
     public LazyDequeX<T> plusLazy(T e) {
-       
-        return (LazyDequeX<T>)super.plusLazy(e);
+
+        return (LazyDequeX<T>) super.plusLazy(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#plusAllLazy(
+     * java.util.Collection)
      */
     @Override
     public LazyDequeX<T> plusAllLazy(Collection<? extends T> list) {
-       
-        return (LazyDequeX<T>)super.plusAllLazy(list);
+
+        return (LazyDequeX<T>) super.plusAllLazy(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#minusLazy(java
+     * .lang.Object)
      */
     @Override
     public LazyDequeX<T> minusLazy(Object e) {
-       
-        return (LazyDequeX<T>)super.minusLazy(e);
+
+        return (LazyDequeX<T>) super.minusLazy(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#minusAllLazy(
+     * java.util.Collection)
      */
     @Override
     public LazyDequeX<T> minusAllLazy(Collection<?> list) {
-       
-        return (LazyDequeX<T>)super.minusAllLazy(list);
+
+        return (LazyDequeX<T>) super.minusAllLazy(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(int)
      */
     @Override
     public LazyDequeX<T> cycle(int times) {
-       
-        return (LazyDequeX<T>)super.cycle(times);
+
+        return (LazyDequeX<T>) super.cycle(times);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(com.aol.cyclops.Monoid, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(com.aol.
+     * cyclops.Monoid, int)
      */
     @Override
     public LazyDequeX<T> cycle(Monoid<T> m, int times) {
-       
-        return (LazyDequeX<T>)super.cycle(m, times);
+
+        return (LazyDequeX<T>) super.cycle(m, times);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycleWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cycleWhile(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> cycleWhile(Predicate<? super T> predicate) {
-       
-        return (LazyDequeX<T>)super.cycleWhile(predicate);
+
+        return (LazyDequeX<T>) super.cycleWhile(predicate);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycleUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cycleUntil(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> cycleUntil(Predicate<? super T> predicate) {
-       
-        return (LazyDequeX<T>)super.cycleUntil(predicate);
+
+        return (LazyDequeX<T>) super.cycleUntil(predicate);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip(org.jooq.
+     * lambda.Seq)
      */
     @Override
     public <U> LazyDequeX<Tuple2<T, U>> zip(Seq<? extends U> other) {
-       
-        return (LazyDequeX)super.zip(other);
+
+        return (LazyDequeX) super.zip(other);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip3(java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip3(java.util
+     * .stream.Stream, java.util.stream.Stream)
      */
     @Override
     public <S, U> LazyDequeX<Tuple3<T, S, U>> zip3(Stream<? extends S> second, Stream<? extends U> third) {
-       
-        return (LazyDequeX)super.zip3(second, third);
+
+        return (LazyDequeX) super.zip3(second, third);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip4(java.util.stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip4(java.util
+     * .stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
      */
     @Override
     public <T2, T3, T4> LazyDequeX<Tuple4<T, T2, T3, T4>> zip4(Stream<? extends T2> second, Stream<? extends T3> third,
             Stream<? extends T4> fourth) {
-       
-        return (LazyDequeX)super.zip4(second, third, fourth);
+
+        return (LazyDequeX) super.zip4(second, third, fourth);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zipWithIndex()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zipWithIndex()
      */
     @Override
     public LazyDequeX<Tuple2<T, Long>> zipWithIndex() {
-       
-        return (LazyDequeX<Tuple2<T, Long>>)super.zipWithIndex();
+
+        return (LazyDequeX<Tuple2<T, Long>>) super.zipWithIndex();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#distinct()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#distinct()
      */
     @Override
     public LazyDequeX<T> distinct() {
-       
-        return (LazyDequeX<T>)super.distinct();
+
+        return (LazyDequeX<T>) super.distinct();
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sorted()
      */
     @Override
     public LazyDequeX<T> sorted() {
-       
-        return (LazyDequeX<T>)super.sorted();
+
+        return (LazyDequeX<T>) super.sorted();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sorted(java.util.Comparator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#sorted(java.
+     * util.Comparator)
      */
     @Override
     public LazyDequeX<T> sorted(Comparator<? super T> c) {
-       
-        return (LazyDequeX<T>)super.sorted(c);
+
+        return (LazyDequeX<T>) super.sorted(c);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#skipWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#skipWhile(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> skipWhile(Predicate<? super T> p) {
-       
-        return (LazyDequeX<T>)super.skipWhile(p);
+
+        return (LazyDequeX<T>) super.skipWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#skipUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#skipUntil(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> skipUntil(Predicate<? super T> p) {
-       
-        return (LazyDequeX<T>)super.skipUntil(p);
+
+        return (LazyDequeX<T>) super.skipUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#limitWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#limitWhile(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> limitWhile(Predicate<? super T> p) {
-       
-        return (LazyDequeX<T>)super.limitWhile(p);
+
+        return (LazyDequeX<T>) super.limitWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#limitUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#limitUntil(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> limitUntil(Predicate<? super T> p) {
-       
-        return (LazyDequeX<T>)super.limitUntil(p);
+
+        return (LazyDequeX<T>) super.limitUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#intersperse(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#intersperse(
+     * java.lang.Object)
      */
     @Override
     public LazyDequeX<T> intersperse(T value) {
-       
-        return (LazyDequeX<T>)super.intersperse(value);
+
+        return (LazyDequeX<T>) super.intersperse(value);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#shuffle()
      */
     @Override
     public LazyDequeX<T> shuffle() {
-       
-        return (LazyDequeX<T>)super.shuffle();
+
+        return (LazyDequeX<T>) super.shuffle();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#skipLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#skipLast(int)
      */
     @Override
     public LazyDequeX<T> skipLast(int num) {
-       
-        return (LazyDequeX<T>)super.skipLast(num);
+
+        return (LazyDequeX<T>) super.skipLast(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#limitLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#limitLast(int)
      */
     @Override
     public LazyDequeX<T> limitLast(int num) {
-       
-        return (LazyDequeX<T>)super.limitLast(num);
+
+        return (LazyDequeX<T>) super.limitLast(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmpty(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmpty(java.
+     * lang.Object)
      */
     @Override
     public LazyDequeX<T> onEmpty(T value) {
-       
-        return (LazyDequeX<T>)super.onEmpty(value);
+
+        return (LazyDequeX<T>) super.onEmpty(value);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptyGet(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptyGet(
+     * java.util.function.Supplier)
      */
     @Override
     public LazyDequeX<T> onEmptyGet(Supplier<? extends T> supplier) {
-       
-        return (LazyDequeX<T>)super.onEmptyGet(supplier);
+
+        return (LazyDequeX<T>) super.onEmptyGet(supplier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptyThrow(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptyThrow(
+     * java.util.function.Supplier)
      */
     @Override
     public <X extends Throwable> LazyDequeX<T> onEmptyThrow(Supplier<? extends X> supplier) {
-       
-        return (LazyDequeX<T>)super.onEmptyThrow(supplier);
+
+        return (LazyDequeX<T>) super.onEmptyThrow(supplier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#shuffle(java.util.Random)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#shuffle(java.
+     * util.Random)
      */
     @Override
     public LazyDequeX<T> shuffle(Random random) {
-       
-        return (LazyDequeX<T>)super.shuffle(random);
+
+        return (LazyDequeX<T>) super.shuffle(random);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#ofType(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#ofType(java.
+     * lang.Class)
      */
     @Override
     public <U> LazyDequeX<U> ofType(Class<? extends U> type) {
-       
-        return (LazyDequeX<U>)super.ofType(type);
+
+        return (LazyDequeX<U>) super.ofType(type);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#filterNot(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#filterNot(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyDequeX<T> filterNot(Predicate<? super T> fn) {
-       
-        return (LazyDequeX<T>)super.filterNot(fn);
+
+        return (LazyDequeX<T>) super.filterNot(fn);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#notNull()
      */
     @Override
     public LazyDequeX<T> notNull() {
-       
-        return (LazyDequeX<T>)super.notNull();
+
+        return (LazyDequeX<T>) super.notNull();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java
+     * .util.stream.Stream)
      */
     @Override
     public LazyDequeX<T> removeAll(Stream<? extends T> stream) {
-       
-        return (LazyDequeX<T>)(super.removeAll(stream));
+
+        return (LazyDequeX<T>) (super.removeAll(stream));
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(org.
+     * jooq.lambda.Seq)
      */
     @Override
     public LazyDequeX<T> removeAll(Seq<? extends T> stream) {
-       
-        return (LazyDequeX<T>)super.removeAll(stream);
+
+        return (LazyDequeX<T>) super.removeAll(stream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java
+     * .lang.Iterable)
      */
     @Override
     public LazyDequeX<T> removeAll(Iterable<? extends T> it) {
-       
-        return (LazyDequeX<T>)super.removeAll(it);
+
+        return (LazyDequeX<T>) super.removeAll(it);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java
+     * .lang.Object[])
      */
     @Override
     public LazyDequeX<T> removeAll(T... values) {
-       
-        return (LazyDequeX<T>)super.removeAll(values);
+
+        return (LazyDequeX<T>) super.removeAll(values);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java
+     * .lang.Iterable)
      */
     @Override
     public LazyDequeX<T> retainAll(Iterable<? extends T> it) {
-       
-        return (LazyDequeX<T>)super.retainAll(it);
+
+        return (LazyDequeX<T>) super.retainAll(it);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java
+     * .util.stream.Stream)
      */
     @Override
     public LazyDequeX<T> retainAll(Stream<? extends T> stream) {
-       
-        return (LazyDequeX<T>)super.retainAll(stream);
+
+        return (LazyDequeX<T>) super.retainAll(stream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(org.
+     * jooq.lambda.Seq)
      */
     @Override
     public LazyDequeX<T> retainAll(Seq<? extends T> stream) {
-       
-        return (LazyDequeX<T>)super.retainAll(stream);
+
+        return (LazyDequeX<T>) super.retainAll(stream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java
+     * .lang.Object[])
      */
     @Override
     public LazyDequeX<T> retainAll(T... values) {
-       
-        return (LazyDequeX<T>)super.retainAll(values);
+
+        return (LazyDequeX<T>) super.retainAll(values);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cast(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cast(java.lang
+     * .Class)
      */
     @Override
     public <U> LazyDequeX<U> cast(Class<? extends U> type) {
-       
-        return (LazyDequeX<U>)super.cast(type);
+
+        return (LazyDequeX<U>) super.cast(type);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#patternMatch(java.util.function.Function, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#patternMatch(
+     * java.util.function.Function, java.util.function.Supplier)
      */
     @Override
     public <R> LazyDequeX<R> patternMatch(Function<CheckValue1<T, R>, CheckValue1<T, R>> case1,
             Supplier<? extends R> otherwise) {
-       
-        return (LazyDequeX<R>)super.patternMatch(case1, otherwise);
+
+        return (LazyDequeX<R>) super.patternMatch(case1, otherwise);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#permutations()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#permutations()
      */
     @Override
     public LazyDequeX<ReactiveSeq<T>> permutations() {
-       
-        return (LazyDequeX<ReactiveSeq<T>>)super.permutations();
+
+        return (LazyDequeX<ReactiveSeq<T>>) super.permutations();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#combinations(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#combinations(
+     * int)
      */
     @Override
     public LazyDequeX<ReactiveSeq<T>> combinations(int size) {
-       
-        return (LazyDequeX<ReactiveSeq<T>>)super.combinations(size);
+
+        return (LazyDequeX<ReactiveSeq<T>>) super.combinations(size);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#combinations()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#combinations()
      */
     @Override
     public LazyDequeX<ReactiveSeq<T>> combinations() {
-       
-        return (LazyDequeX<ReactiveSeq<T>>)super.combinations();
+
+        return (LazyDequeX<ReactiveSeq<T>>) super.combinations();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(int, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(int,
+     * java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyDequeX<C> grouped(int size, Supplier<C> supplier) {
-       
-        return (LazyDequeX<C>)super.grouped(size, supplier);
+
+        return (LazyDequeX<C>) super.grouped(size, supplier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#groupedUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#groupedUntil(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyDequeX<ListX<T>> groupedUntil(Predicate<? super T> predicate) {
-       
-        return (LazyDequeX<ListX<T>>)super.groupedUntil(predicate);
+
+        return (LazyDequeX<ListX<T>>) super.groupedUntil(predicate);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#groupedWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#groupedWhile(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyDequeX<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
-       
-        return (LazyDequeX<ListX<T>>)super.groupedWhile(predicate);
+
+        return (LazyDequeX<ListX<T>>) super.groupedWhile(predicate);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#groupedWhile(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#groupedWhile(
+     * java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyDequeX<C> groupedWhile(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazyDequeX<C>)super.groupedWhile(predicate, factory);
+
+        return (LazyDequeX<C>) super.groupedWhile(predicate, factory);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#groupedUntil(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#groupedUntil(
+     * java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyDequeX<C> groupedUntil(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazyDequeX<C>)super.groupedUntil(predicate, factory);
+
+        return (LazyDequeX<C>) super.groupedUntil(predicate, factory);
     }
-   
+
     /** ListX methods **/
 
-    /* Makes a defensive copy of this ListX replacing the value at i with the specified element
-     *  (non-Javadoc)
-     * @see com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(int, java.lang.Object)
+    /*
+     * Makes a defensive copy of this ListX replacing the value at i with the
+     * specified element (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(
+     * int, java.lang.Object)
      */
-    public LazyDequeX<T> with(int i,T element){
-        return stream( Fluxes.insertAt(Fluxes.deleteBetween(flux(),i, i+1),i,element)) ;
+    public LazyDequeX<T> with(int i, T element) {
+        return stream(Fluxes.insertAt(Fluxes.deleteBetween(flux(), i, i + 1), i, element));
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#unit(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #unit(java.util.Collection)
      */
     @Override
-    public <R> LazyDequeX<R> unit(Collection<R> col){
+    public <R> LazyDequeX<R> unit(Collection<R> col) {
         return LazyDequeX.fromIterable(col);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.Unit#unit(java.lang.Object)
      */
     @Override
-    public  <R> LazyDequeX<R> unit(R value){
+    public <R> LazyDequeX<R> unit(R value) {
         return LazyDequeX.singleton(value);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#unitIterator(java.util.Iterator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#unitIterator(java.util.Iterator)
      */
     @Override
-    public <R> LazyDequeX<R> unitIterator(Iterator<R> it){
-        return LazyDequeX.fromIterable(()->it);
+    public <R> LazyDequeX<R> unitIterator(Iterator<R> it) {
+        return LazyDequeX.fromIterable(() -> it);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusInOrder(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #plusInOrder(java.lang.Object)
      */
     @Override
     public LazyDequeX<T> plusInOrder(T e) {
-        
-        return (LazyDequeX<T>)super.plusInOrder(e);
-    }
-    
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#from(java.util.Collection)
+        return (LazyDequeX<T>) super.plusInOrder(e);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#from(java.util.Collection)
      */
     @Override
     public <T1> LazyDequeX<T1> from(Collection<T1> c) {
-        if(c instanceof List)
-            return new LazyDequeX<T1>((Deque)c,(Collector)collector);
-      return new LazyDequeX<T1>((Deque)c.stream().collect(DequeX.defaultCollector()),(Collector)this.collector);
+        if (c instanceof List)
+            return new LazyDequeX<T1>(
+                                      (Deque) c, (Collector) collector);
+        return new LazyDequeX<T1>(
+                                  (Deque) c.stream()
+                                           .collect(DequeX.defaultCollector()),
+                                  (Collector) this.collector);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.BiPredicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.
+     * BiPredicate)
      */
     @Override
     public LazyDequeX<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        
-        return (LazyDequeX<ListX<T>>)super.groupedStatefullyUntil(predicate);
+
+        return (LazyDequeX<ListX<T>>) super.groupedStatefullyUntil(predicate);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#peek(java.util.function.Consumer)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#peek(java.util.function.Consumer)
      */
     @Override
     public LazyDequeX<T> peek(Consumer<? super T> c) {
-        
-        return (LazyDequeX)super.peek(c);
+
+        return (LazyDequeX) super.peek(c);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(org.jooq.lambda.Seq, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(org.jooq.lambda.Seq,
+     * java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazyDequeX<R> zip(Seq<? extends U> other,
-            BiFunction<? super T, ? super U, ? extends R> zipper) {
-        
-        return (LazyDequeX<R>)super.zip(other, zipper);
+    public <U, R> LazyDequeX<R> zip(Seq<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazyDequeX<R>) super.zip(other, zipper);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream,
+     * java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazyDequeX<R> zip(Stream<? extends U> other,
-            BiFunction<? super T, ? super U, ? extends R> zipper) {
-      
-        return (LazyDequeX<R>)super.zip(other, zipper);
+    public <U, R> LazyDequeX<R> zip(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazyDequeX<R>) super.zip(other, zipper);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream)
      */
     @Override
     public <U> LazyDequeX<Tuple2<T, U>> zip(Stream<? extends U> other) {
-        
-        return (LazyDequeX)super.zip(other);
+
+        return (LazyDequeX) super.zip(other);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.function.BiFunction, org.reactivestreams.Publisher)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.function.BiFunction,
+     * org.reactivestreams.Publisher)
      */
     @Override
     public <T2, R> LazyDequeX<R> zip(BiFunction<? super T, ? super T2, ? extends R> fn,
             Publisher<? extends T2> publisher) {
-       
-        return (LazyDequeX<R>)super.zip(fn, publisher);
+
+        return (LazyDequeX<R>) super.zip(fn, publisher);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.DequeX#fromStream(java.util.stream.Stream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.DequeX#fromStream(
+     * java.util.stream.Stream)
      */
     @Override
     public <X> LazyDequeX<X> fromStream(Stream<X> stream) {
-        Deque<X> list = (Deque<X>) stream.collect((Collector)getCollector());
-        return new LazyDequeX<X>(list, (Collector)getCollector());
+        Deque<X> list = (Deque<X>) stream.collect((Collector) getCollector());
+        return new LazyDequeX<X>(
+                                 list, (Collector) getCollector());
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptySwitch(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptySwitch(
+     * java.util.function.Supplier)
      */
     @Override
     public LazyDequeX<T> onEmptySwitch(Supplier<? extends Deque<T>> supplier) {
-        return stream(Fluxes.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
+        return stream(Fluxes.onEmptySwitch(flux(), () -> Flux.fromIterable(supplier.get())));
     }
-    
 
     /**
      * @param e
@@ -1240,6 +1726,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public void addFirst(T e) {
         getDeque().addFirst(e);
     }
+
     /**
      * @param e
      * @see java.util.Deque#addLast(java.lang.Object)
@@ -1247,6 +1734,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public void addLast(T e) {
         getDeque().addLast(e);
     }
+
     /**
      * @param e
      * @return
@@ -1255,6 +1743,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public boolean offerFirst(T e) {
         return getDeque().offerFirst(e);
     }
+
     /**
      * @param e
      * @return
@@ -1263,6 +1752,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public boolean offerLast(T e) {
         return getDeque().offerLast(e);
     }
+
     /**
      * @return
      * @see java.util.Deque#removeFirst()
@@ -1270,6 +1760,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T removeFirst() {
         return getDeque().removeFirst();
     }
+
     /**
      * @return
      * @see java.util.Deque#removeLast()
@@ -1277,6 +1768,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T removeLast() {
         return getDeque().removeLast();
     }
+
     /**
      * @return
      * @see java.util.Deque#pollFirst()
@@ -1284,6 +1776,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T pollFirst() {
         return getDeque().pollFirst();
     }
+
     /**
      * @return
      * @see java.util.Deque#pollLast()
@@ -1291,6 +1784,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T pollLast() {
         return getDeque().pollLast();
     }
+
     /**
      * @return
      * @see java.util.Deque#getFirst()
@@ -1298,6 +1792,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T getFirst() {
         return getDeque().getFirst();
     }
+
     /**
      * @return
      * @see java.util.Deque#getLast()
@@ -1305,6 +1800,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T getLast() {
         return getDeque().getLast();
     }
+
     /**
      * @return
      * @see java.util.Deque#peekFirst()
@@ -1312,6 +1808,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T peekFirst() {
         return getDeque().peekFirst();
     }
+
     /**
      * @return
      * @see java.util.Deque#peekLast()
@@ -1319,6 +1816,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T peekLast() {
         return getDeque().peekLast();
     }
+
     /**
      * @param o
      * @return
@@ -1327,6 +1825,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public boolean removeFirstOccurrence(Object o) {
         return getDeque().removeFirstOccurrence(o);
     }
+
     /**
      * @param o
      * @return
@@ -1335,6 +1834,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public boolean removeLastOccurrence(Object o) {
         return getDeque().removeLastOccurrence(o);
     }
+
     /**
      * @param e
      * @return
@@ -1343,6 +1843,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public boolean offer(T e) {
         return getDeque().offer(e);
     }
+
     /**
      * @return
      * @see java.util.Deque#remove()
@@ -1350,6 +1851,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T remove() {
         return getDeque().remove();
     }
+
     /**
      * @return
      * @see java.util.Deque#poll()
@@ -1357,6 +1859,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T poll() {
         return getDeque().poll();
     }
+
     /**
      * @return
      * @see java.util.Deque#element()
@@ -1364,6 +1867,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T element() {
         return getDeque().element();
     }
+
     /**
      * @return
      * @see java.util.Deque#peek()
@@ -1371,6 +1875,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T peek() {
         return getDeque().peek();
     }
+
     /**
      * @param e
      * @see java.util.Deque#push(java.lang.Object)
@@ -1378,6 +1883,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public void push(T e) {
         getDeque().push(e);
     }
+
     /**
      * @return
      * @see java.util.Deque#pop()
@@ -1385,6 +1891,7 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public T pop() {
         return getDeque().pop();
     }
+
     /**
      * @return
      * @see java.util.Deque#descendingIterator()
@@ -1392,5 +1899,5 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T> implements Deque
     public Iterator<T> descendingIterator() {
         return getDeque().descendingIterator();
     }
-    
+
 }

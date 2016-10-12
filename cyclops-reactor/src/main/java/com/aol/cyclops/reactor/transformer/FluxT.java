@@ -49,7 +49,6 @@ import reactor.core.publisher.Flux;
  */
 public interface FluxT<T> extends FoldableTransformerSeq<T> {
 
-   
     /**
      * Create an instance of the same FluxTransformer type from the provided Iterator over raw values.
      * 
@@ -339,7 +338,6 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
         return FluxTValue.of(AnyM.fromCompletableFuture(future));
     }
 
-    
     /**
      * Create a FluxTValue from an Iterable that contains nested Fluxes
      * <pre>
@@ -511,8 +509,12 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
         return (FluxT<R>) FoldableTransformerSeq.super.zip(other, zipper);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(org.jooq.lambda.Seq, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(org
+     * .jooq.lambda.Seq, java.util.function.BiFunction)
      */
     @Override
     default <U, R> FluxT<R> zip(Seq<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
@@ -539,8 +541,12 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
         return (FluxT) FoldableTransformerSeq.super.zip(other);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(org.jooq.lambda.Seq)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(org
+     * .jooq.lambda.Seq)
      */
     @Override
     default <U> FluxT<Tuple2<T, U>> zip(Seq<? extends U> other) {
@@ -548,8 +554,12 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
         return (FluxT) FoldableTransformerSeq.super.zip(other);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(java.lang.Iterable)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(
+     * java.lang.Iterable)
      */
     @Override
     default <U> FluxT<Tuple2<T, U>> zip(Iterable<? extends U> other) {

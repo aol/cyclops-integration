@@ -914,7 +914,7 @@ public class Fluxes {
      * @return Non-empty Flux
      */
     public static <T> Flux<T> onEmpty(Flux<T> flux, T value) {
-       
+
         return Flux.fromIterable(() -> new Iterator<T>() {
 
             Iterator<T> it;

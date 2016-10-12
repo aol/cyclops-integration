@@ -38,8 +38,11 @@ public class FluxTValue<T> implements FluxT<T> {
         return run;
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#isSeqPresent()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#
+     * isSeqPresent()
      */
     @Override
     public boolean isSeqPresent() {
@@ -122,8 +125,12 @@ public class FluxTValue<T> implements FluxT<T> {
                                           .<B> flatMap(a -> a)));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.transformer.FluxT#flatMap(java.util.function.Function)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.transformer.FluxT#flatMap(java.util.function.
+     * Function)
      */
     public <B> FluxTValue<B> flatMap(Function<? super T, ? extends Flux<? extends B>> f) {
 
@@ -137,7 +144,7 @@ public class FluxTValue<T> implements FluxT<T> {
      * This allows multiple monad types to add functionality to existing functions and methods
      * 
      * e.g. to add iteration handling (via Stream) and nullhandling (via Optional) to an existing function
-  
+    
      * 
      * 
      * @param fn Function to enhance with functionality from Stream and another monad type
@@ -168,7 +175,6 @@ public class FluxTValue<T> implements FluxT<T> {
         return new FluxTValue<>(
                                 monads);
     }
-    
 
     /**
      * @return True if Flux is present
@@ -224,8 +230,12 @@ public class FluxTValue<T> implements FluxT<T> {
         return of(run.unit(Flux.just(unit)));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq#stream()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq
+     * #stream()
      */
     @Override
     public ReactiveSeq<T> stream() {
@@ -234,7 +244,9 @@ public class FluxTValue<T> implements FluxT<T> {
                   .flatMap(e -> e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.reactor.transformer.FluxT#flux()
      */
     @Override
@@ -242,7 +254,9 @@ public class FluxTValue<T> implements FluxT<T> {
         return Flux.from(stream());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.reactor.transformer.FluxT#empty()
      */
     @Override
@@ -250,8 +264,9 @@ public class FluxTValue<T> implements FluxT<T> {
         return of(run.empty());
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.anyM.NestedFoldable#nestedFoldables()
      */
     @Override
@@ -260,7 +275,9 @@ public class FluxTValue<T> implements FluxT<T> {
 
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.anyM.NestedCollectable#nestedCollectables()
      */
     @Override
@@ -269,8 +286,11 @@ public class FluxTValue<T> implements FluxT<T> {
 
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#unitAnyM(com.aol.cyclops.control.AnyM)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#
+     * unitAnyM(com.aol.cyclops.control.AnyM)
      */
     @Override
     public <T> FluxTValue<T> unitAnyM(AnyM<Traversable<T>> traversable) {
@@ -278,15 +298,20 @@ public class FluxTValue<T> implements FluxT<T> {
         return of((AnyMValue) traversable.map(t -> Flux.fromIterable(t)));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#transformerStream()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#
+     * transformerStream()
      */
     @Override
     public AnyM<? extends Traversable<T>> transformerStream() {
         return run.map(i -> ReactiveSeq.fromPublisher(i));
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -294,7 +319,9 @@ public class FluxTValue<T> implements FluxT<T> {
         return run.hashCode();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

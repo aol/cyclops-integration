@@ -1,7 +1,5 @@
 package com.aol.cyclops.reactor.operators;
 
-
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Predicate;
@@ -29,9 +27,10 @@ public class GroupedWhile<T, C extends Collection<? super T>> {
 
     public Flux<C> batchWhile(Predicate<? super T> predicate) {
         SeqSubscriber<T> sub = SeqSubscriber.subscriber();
-        Iterator<T> it = stream.subscribeWith(sub).iterator();
-       
-        return Flux.fromIterable(()->new Iterator<C>() {
+        Iterator<T> it = stream.subscribeWith(sub)
+                               .iterator();
+
+        return Flux.fromIterable(() -> new Iterator<C>() {
             T value = (T) UNSET;
 
             @Override
@@ -62,7 +61,7 @@ public class GroupedWhile<T, C extends Collection<? super T>> {
             }
 
         })
-                          .filter(l -> l.size() > 0);
+                   .filter(l -> l.size() > 0);
     }
 
 }

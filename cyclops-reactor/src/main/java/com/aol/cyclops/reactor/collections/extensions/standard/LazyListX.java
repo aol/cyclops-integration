@@ -40,6 +40,7 @@ import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
 import lombok.Getter;
 import reactor.core.publisher.Flux;
+
 /**
  * An extended List type {@see java.util.List}
  * Extended List operations execute lazily e.g.
@@ -66,21 +67,22 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
-public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<T> {
-    private final  LazyFluentCollection<T,List<T>> lazy;
+public class LazyListX<T> extends AbstractFluentCollectionX<T>implements ListX<T> {
+    private final LazyFluentCollection<T, List<T>> lazy;
     @Getter
-    private final Collector<T,?,List<T>> collector;
-    
-    
+    private final Collector<T, ?, List<T>> collector;
+
     /**
      * Create a LazyListX from a Stream
      * 
      * @param stream to construct a LazyQueueX from
      * @return LazyListX
      */
-    public static <T> LazyListX<T> fromStreamS(Stream<T> stream){
-        return new LazyListX<T>(Flux.from(ReactiveSeq.fromStream(stream)));
+    public static <T> LazyListX<T> fromStreamS(Stream<T> stream) {
+        return new LazyListX<T>(
+                                Flux.from(ReactiveSeq.fromStream(stream)));
     }
+
     /**
      * Create a LazyListX that contains the Integers between start and end
      * 
@@ -136,7 +138,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     public static <T> LazyListX<T> generate(long limit, Supplier<T> s) {
 
         return fromStreamS(ReactiveSeq.generate(s)
-                          .limit(limit));
+                                      .limit(limit));
     }
 
     /**
@@ -149,9 +151,8 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
      */
     public static <T> LazyListX<T> iterate(long limit, final T seed, final UnaryOperator<T> f) {
         return fromStreamS(ReactiveSeq.iterate(seed, f)
-                          .limit(limit));
+                                      .limit(limit));
     }
-
 
     /**
      * @return A collector that generates a LazyListX
@@ -160,14 +161,13 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return Collectors.toCollection(() -> LazyListX.of());
     }
 
-   
-
     /**
      * @return An empty LazyListX
      */
     public static <T> LazyListX<T> empty() {
-        return fromIterable((List<T>) ListX.<T>defaultCollector().supplier()
-                                                        .get());
+        return fromIterable((List<T>) ListX.<T> defaultCollector()
+                                           .supplier()
+                                           .get());
     }
 
     /**
@@ -188,8 +188,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
      */
     @SafeVarargs
     public static <T> LazyListX<T> of(T... values) {
-        List<T> res = (List<T>) ListX.<T>defaultCollector().supplier()
-                                                  .get();
+        List<T> res = (List<T>) ListX.<T> defaultCollector()
+                                     .supplier()
+                                     .get();
         for (T v : values)
             res.add(v);
         return fromIterable(res);
@@ -230,7 +231,7 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
      * @return LazyListX from Iterable
      */
     public static <T> LazyListX<T> fromIterable(Iterable<T> it) {
-        return fromIterable(ListX.<T>defaultCollector(), it);
+        return fromIterable(ListX.<T> defaultCollector(), it);
     }
 
     /**
@@ -243,40 +244,52 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
     public static <T> LazyListX<T> fromIterable(Collector<T, ?, List<T>> collector, Iterable<T> it) {
         if (it instanceof LazyListX)
             return (LazyListX<T>) it;
-       
+
         if (it instanceof List)
             return new LazyListX<T>(
                                     (List<T>) it, collector);
         return new LazyListX<T>(
-                                Flux.fromIterable(it),
-                                collector);
+                                Flux.fromIterable(it), collector);
     }
-    private LazyListX(List<T> list,Collector<T,?,List<T>> collector){
-        this.lazy = new LazyCollection<>(list,null,collector);
-        this.collector=  collector;
-    }
-    
-    private LazyListX(List<T> list){
-        
-        this.collector = ListX.defaultCollector();
-        this.lazy = new LazyCollection<T,List<T>>(list,null,collector);
-    }
-    private LazyListX(Flux<T> stream,Collector<T,?,List<T>> collector){
-        
+
+    private LazyListX(List<T> list, Collector<T, ?, List<T>> collector) {
+        this.lazy = new LazyCollection<>(
+                                         list, null, collector);
         this.collector = collector;
-        this.lazy = new LazyCollection<>(null,stream,collector);
     }
-    private LazyListX(Flux<T> stream){
-        
+
+    private LazyListX(List<T> list) {
+
         this.collector = ListX.defaultCollector();
-        this.lazy = new LazyCollection<>(null,stream,collector);
+        this.lazy = new LazyCollection<T, List<T>>(
+                                                   list, null, collector);
     }
-    private LazyListX(){
+
+    private LazyListX(Flux<T> stream, Collector<T, ?, List<T>> collector) {
+
+        this.collector = collector;
+        this.lazy = new LazyCollection<>(
+                                         null, stream, collector);
+    }
+
+    private LazyListX(Flux<T> stream) {
+
         this.collector = ListX.defaultCollector();
-        this.lazy = new LazyCollection<>((List)this.collector.supplier().get(),null,collector);
+        this.lazy = new LazyCollection<>(
+                                         null, stream, collector);
     }
-    
-    /* (non-Javadoc)
+
+    private LazyListX() {
+        this.collector = ListX.defaultCollector();
+        this.lazy = new LazyCollection<>(
+                                         (List) this.collector.supplier()
+                                                              .get(),
+                                         null, collector);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#forEach(java.util.function.Consumer)
      */
     @Override
@@ -284,7 +297,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         getList().forEach(action);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#iterator()
      */
     @Override
@@ -292,7 +307,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().iterator();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#size()
      */
     @Override
@@ -300,7 +317,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().size();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#contains(java.lang.Object)
      */
     @Override
@@ -308,7 +327,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().contains(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -316,9 +337,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().equals(o);
     }
 
-
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#isEmpty()
      */
     @Override
@@ -326,7 +347,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().isEmpty();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -334,7 +357,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().hashCode();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray()
      */
     @Override
@@ -342,7 +367,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().toArray();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeAll(java.util.Collection)
      */
     @Override
@@ -350,7 +377,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().removeAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray(java.lang.Object[])
      */
     @Override
@@ -358,7 +387,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().toArray(a);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#add(java.lang.Object)
      */
     @Override
@@ -366,7 +397,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().add(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#remove(java.lang.Object)
      */
     @Override
@@ -374,7 +407,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().remove(o);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#containsAll(java.util.Collection)
      */
     @Override
@@ -382,7 +417,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().containsAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#addAll(java.util.Collection)
      */
     @Override
@@ -390,7 +427,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().addAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#retainAll(java.util.Collection)
      */
     @Override
@@ -398,7 +437,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().retainAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#clear()
      */
     @Override
@@ -406,8 +447,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         getList().clear();
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -415,7 +457,9 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return getList().toString();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#collect(java.util.stream.Collector)
      */
     @Override
@@ -423,958 +467,1452 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T> implements ListX<
         return stream().collect(collector);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#count()
      */
     @Override
     public long count() {
         return this.size();
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#addAll(int, java.util.Collection)
      */
     @Override
     public boolean addAll(int index, Collection<? extends T> c) {
         return getList().addAll(index, c);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#replaceAll(java.util.function.UnaryOperator)
      */
     @Override
     public void replaceAll(UnaryOperator<T> operator) {
         getList().replaceAll(operator);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeIf(java.util.function.Predicate)
      */
     @Override
-    public  boolean removeIf(Predicate<? super T> filter) {
+    public boolean removeIf(Predicate<? super T> filter) {
         return getList().removeIf(filter);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#sort(java.util.Comparator)
      */
     @Override
-    public  void sort(Comparator<? super T> c) {
+    public void sort(Comparator<? super T> c) {
         getList().sort(c);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#get(int)
      */
     @Override
     public T get(int index) {
         return getList().get(index);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#set(int, java.lang.Object)
      */
     @Override
     public T set(int index, T element) {
         return getList().set(index, element);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#add(int, java.lang.Object)
      */
     @Override
     public void add(int index, T element) {
         getList().add(index, element);
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#remove(int)
      */
     @Override
     public T remove(int index) {
         return getList().remove(index);
     }
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#parallelStream()
      */
     @Override
-    public  Stream<T> parallelStream() {
+    public Stream<T> parallelStream() {
         return getList().parallelStream();
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#indexOf(java.lang.Object)
      */
     @Override
     public int indexOf(Object o) {
-        // return stream().zipWithIndex().filter(t->Objects.equals(t.v1,o)).findFirst().get().v2.intValue();
+        // return
+        // stream().zipWithIndex().filter(t->Objects.equals(t.v1,o)).findFirst().get().v2.intValue();
         return getList().indexOf(o);
     }
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#lastIndexOf(java.lang.Object)
      */
     @Override
     public int lastIndexOf(Object o) {
         return getList().lastIndexOf(o);
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#listIterator()
      */
     @Override
     public ListIterator<T> listIterator() {
         return getList().listIterator();
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.List#listIterator(int)
      */
     @Override
     public ListIterator<T> listIterator(int index) {
         return getList().listIterator(index);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#subList(int, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#subList(int,
+     * int)
      */
     @Override
     public LazyListX<T> subList(int fromIndex, int toIndex) {
-        return new LazyListX<T>(getList().subList(fromIndex, toIndex),getCollector());
+        return new LazyListX<T>(
+                                getList().subList(fromIndex, toIndex), getCollector());
     }
-  
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#spliterator()
      */
     @Override
     public Spliterator<T> spliterator() {
         return getList().spliterator();
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     @Override
     public int compareTo(T o) {
-        if(o instanceof List){
-            List l = (List)o;
-            if(this.size()==l.size()){
+        if (o instanceof List) {
+            List l = (List) o;
+            if (this.size() == l.size()) {
                 Iterator i1 = iterator();
                 Iterator i2 = l.iterator();
-                if(i1.hasNext()){
-                    if(i2.hasNext()){
-                        int comp = Comparator.<Comparable>naturalOrder().compare((Comparable)i1.next(), (Comparable)i2.next());
-                        if(comp!=0)
+                if (i1.hasNext()) {
+                    if (i2.hasNext()) {
+                        int comp = Comparator.<Comparable> naturalOrder()
+                                             .compare((Comparable) i1.next(), (Comparable) i2.next());
+                        if (comp != 0)
                             return comp;
                     }
                     return 1;
-                }
-                else{
-                    if(i2.hasNext())
+                } else {
+                    if (i2.hasNext())
                         return -1;
                     else
                         return 0;
                 }
             }
-            return this.size() - ((List)o).size();
-        }
-        else
+            return this.size() - ((List) o).size();
+        } else
             return 1;
-            
-            
+
     }
+
     private List<T> getList() {
         return lazy.get();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
      */
     @Override
-    public <X> LazyListX<X> stream(Flux<X> stream){
-        return new LazyListX<X>(stream);
+    public <X> LazyListX<X> stream(Flux<X> stream) {
+        return new LazyListX<X>(
+                                stream);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.persistent.PBagX#stream()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.persistent.PBagX#stream()
      */
     @Override
     public ReactiveSeq<T> stream() {
-        return ReactiveSeq.fromStream(lazy.get().stream());
+        return ReactiveSeq.fromStream(lazy.get()
+                                          .stream());
     }
+
     @Override
     public Flux<T> flux() {
         return lazy.flux();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#combine(java.
+     * util.function.BiPredicate, java.util.function.BinaryOperator)
      */
     @Override
     public LazyListX<T> combine(BiPredicate<? super T, ? super T> predicate, BinaryOperator<T> op) {
-       
-        return (LazyListX<T>)super.combine(predicate, op);
+
+        return (LazyListX<T>) super.combine(predicate, op);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#reverse()
      */
     @Override
     public LazyListX<T> reverse() {
-       
-        return(LazyListX<T>)super.reverse();
+
+        return (LazyListX<T>) super.reverse();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#filter(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#filter(java.
+     * util.function.Predicate)
      */
     @Override
     public LazyListX<T> filter(Predicate<? super T> pred) {
-       
-        return (LazyListX<T>)super.filter(pred);
+
+        return (LazyListX<T>) super.filter(pred);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#map(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#map(java.util.
+     * function.Function)
      */
     @Override
     public <R> LazyListX<R> map(Function<? super T, ? extends R> mapper) {
-       
-        return (LazyListX<R>)super.map(mapper);
+
+        return (LazyListX<R>) super.map(mapper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#flatMap(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#flatMap(java.
+     * util.function.Function)
      */
     @Override
     public <R> LazyListX<R> flatMap(Function<? super T, ? extends Iterable<? extends R>> mapper) {
-       return (LazyListX<R>)super.flatMap(mapper);
+        return (LazyListX<R>) super.flatMap(mapper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#limit(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#limit(long)
      */
     @Override
     public LazyListX<T> limit(long num) {
-       return (LazyListX<T>)super.limit(num);
+        return (LazyListX<T>) super.limit(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#skip(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#skip(long)
      */
     @Override
     public LazyListX<T> skip(long num) {
-       return (LazyListX<T>)super.skip(num);
+        return (LazyListX<T>) super.skip(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#takeRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#takeRight(int)
      */
     @Override
     public LazyListX<T> takeRight(int num) {
-       return (LazyListX<T>)super.takeRight(num);
+        return (LazyListX<T>) super.takeRight(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#dropRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#dropRight(int)
      */
     @Override
     public LazyListX<T> dropRight(int num) {
-       return (LazyListX<T>)super.dropRight(num);
+        return (LazyListX<T>) super.dropRight(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#takeWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#takeWhile(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyListX<T> takeWhile(Predicate<? super T> p) {
-       return (LazyListX<T>)super.takeWhile(p);
+        return (LazyListX<T>) super.takeWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#dropWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#dropWhile(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyListX<T> dropWhile(Predicate<? super T> p) {
-       return (LazyListX<T>)super.dropWhile(p);
+        return (LazyListX<T>) super.dropWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#takeUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#takeUntil(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyListX<T> takeUntil(Predicate<? super T> p) {
-       return (LazyListX<T>)super.takeUntil(p);
+        return (LazyListX<T>) super.takeUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#dropUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#dropUntil(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyListX<T> dropUntil(Predicate<? super T> p) {
-       return(LazyListX<T>)super.dropUntil(p);
+        return (LazyListX<T>) super.dropUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#trampoline(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#trampoline(
+     * java.util.function.Function)
      */
     @Override
     public <R> LazyListX<R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
-       return (LazyListX<R>)super.trampoline(mapper);
+        return (LazyListX<R>) super.trampoline(mapper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#slice(long, long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#slice(long,
+     * long)
      */
     @Override
     public LazyListX<T> slice(long from, long to) {
-       return (LazyListX<T>)super.slice(from, to);
+        return (LazyListX<T>) super.slice(from, to);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(int)
      */
     @Override
     public LazyListX<ListX<T>> grouped(int groupSize) {
-       
-        return (LazyListX<ListX<T>>)super.grouped(groupSize);
+
+        return (LazyListX<ListX<T>>) super.grouped(groupSize);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(java.util.function.Function, java.util.stream.Collector)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(java.
+     * util.function.Function, java.util.stream.Collector)
      */
     @Override
     public <K, A, D> LazyListX<Tuple2<K, D>> grouped(Function<? super T, ? extends K> classifier,
             Collector<? super T, A, D> downstream) {
-       
-        return (LazyListX)super.grouped(classifier, downstream);
+
+        return (LazyListX) super.grouped(classifier, downstream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(java.
+     * util.function.Function)
      */
     @Override
     public <K> LazyListX<Tuple2<K, Seq<T>>> grouped(Function<? super T, ? extends K> classifier) {
-       
-        return (LazyListX)super.grouped(classifier);
+
+        return (LazyListX) super.grouped(classifier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip(java.lang.
+     * Iterable)
      */
     @Override
     public <U> LazyListX<Tuple2<T, U>> zip(Iterable<? extends U> other) {
-       
-        return (LazyListX)super.zip(other);
+
+        return (LazyListX) super.zip(other);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip(java.lang.Iterable, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip(java.lang.
+     * Iterable, java.util.function.BiFunction)
      */
     @Override
     public <U, R> LazyListX<R> zip(Iterable<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-       
-        return (LazyListX<R>)super.zip(other, zipper);
+
+        return (LazyListX<R>) super.zip(other, zipper);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sliding(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#sliding(int)
      */
     @Override
     public LazyListX<ListX<T>> sliding(int windowSize) {
-       
-        return (LazyListX<ListX<T>>)super.sliding(windowSize);
+
+        return (LazyListX<ListX<T>>) super.sliding(windowSize);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sliding(int, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#sliding(int,
+     * int)
      */
     @Override
     public LazyListX<ListX<T>> sliding(int windowSize, int increment) {
-       
-        return (LazyListX<ListX<T>>)super.sliding(windowSize, increment);
+
+        return (LazyListX<ListX<T>>) super.sliding(windowSize, increment);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#scanLeft(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#scanLeft(com.
+     * aol.cyclops.Monoid)
      */
     @Override
     public LazyListX<T> scanLeft(Monoid<T> monoid) {
-       
-        return (LazyListX<T>)super.scanLeft(monoid);
+
+        return (LazyListX<T>) super.scanLeft(monoid);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#scanLeft(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#scanLeft(java.
+     * lang.Object, java.util.function.BiFunction)
      */
     @Override
     public <U> LazyListX<U> scanLeft(U seed, BiFunction<? super U, ? super T, ? extends U> function) {
-       
+
         return (LazyListX<U>) super.scanLeft(seed, function);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#scanRight(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#scanRight(com.
+     * aol.cyclops.Monoid)
      */
     @Override
     public LazyListX<T> scanRight(Monoid<T> monoid) {
-       
-        return (LazyListX<T>)super.scanRight(monoid);
+
+        return (LazyListX<T>) super.scanRight(monoid);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#scanRight(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#scanRight(java
+     * .lang.Object, java.util.function.BiFunction)
      */
     @Override
     public <U> LazyListX<U> scanRight(U identity, BiFunction<? super T, ? super U, ? extends U> combiner) {
-       
-        return (LazyListX<U>)super.scanRight(identity, combiner);
+
+        return (LazyListX<U>) super.scanRight(identity, combiner);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sorted(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#sorted(java.
+     * util.function.Function)
      */
     @Override
     public <U extends Comparable<? super U>> LazyListX<T> sorted(Function<? super T, ? extends U> function) {
-       
-        return (LazyListX<T>)super.sorted(function);
+
+        return (LazyListX<T>) super.sorted(function);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plus(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#plus(java.lang
+     * .Object)
      */
     @Override
     public LazyListX<T> plus(T e) {
-       
-        return (LazyListX<T>)super.plus(e);
+
+        return (LazyListX<T>) super.plus(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusAll(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#plusAll(java.
+     * util.Collection)
      */
     @Override
     public LazyListX<T> plusAll(Collection<? extends T> list) {
-       
-        return (LazyListX<T>)super.plusAll(list);
+
+        return (LazyListX<T>) super.plusAll(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minus(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#minus(java.
+     * lang.Object)
      */
     @Override
     public LazyListX<T> minus(Object e) {
-       
-        return (LazyListX<T>)super.minus(e);
+
+        return (LazyListX<T>) super.minus(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusAll(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#minusAll(java.
+     * util.Collection)
      */
     @Override
     public LazyListX<T> minusAll(Collection<?> list) {
-       
-        return (LazyListX<T>)super.minusAll(list);
+
+        return (LazyListX<T>) super.minusAll(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#plusLazy(java.
+     * lang.Object)
      */
     @Override
     public LazyListX<T> plusLazy(T e) {
-       
-        return (LazyListX<T>)super.plusLazy(e);
+
+        return (LazyListX<T>) super.plusLazy(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#plusAllLazy(
+     * java.util.Collection)
      */
     @Override
     public LazyListX<T> plusAllLazy(Collection<? extends T> list) {
-       
-        return (LazyListX<T>)super.plusAllLazy(list);
+
+        return (LazyListX<T>) super.plusAllLazy(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#minusLazy(java
+     * .lang.Object)
      */
     @Override
     public LazyListX<T> minusLazy(Object e) {
-       
-        return (LazyListX<T>)super.minusLazy(e);
+
+        return (LazyListX<T>) super.minusLazy(e);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#minusAllLazy(
+     * java.util.Collection)
      */
     @Override
     public LazyListX<T> minusAllLazy(Collection<?> list) {
-       
-        return (LazyListX<T>)super.minusAllLazy(list);
+
+        return (LazyListX<T>) super.minusAllLazy(list);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(int)
      */
     @Override
     public LazyListX<T> cycle(int times) {
-       
-        return (LazyListX<T>)super.cycle(times);
+
+        return (LazyListX<T>) super.cycle(times);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(com.aol.cyclops.Monoid, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cycle(com.aol.
+     * cyclops.Monoid, int)
      */
     @Override
     public LazyListX<T> cycle(Monoid<T> m, int times) {
-       
-        return (LazyListX<T>)super.cycle(m, times);
+
+        return (LazyListX<T>) super.cycle(m, times);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycleWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cycleWhile(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyListX<T> cycleWhile(Predicate<? super T> predicate) {
-       
-        return (LazyListX<T>)super.cycleWhile(predicate);
+
+        return (LazyListX<T>) super.cycleWhile(predicate);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cycleUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cycleUntil(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyListX<T> cycleUntil(Predicate<? super T> predicate) {
-       
-        return (LazyListX<T>)super.cycleUntil(predicate);
+
+        return (LazyListX<T>) super.cycleUntil(predicate);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip(org.jooq.
+     * lambda.Seq)
      */
     @Override
     public <U> LazyListX<Tuple2<T, U>> zip(Seq<? extends U> other) {
-       
-        return (LazyListX)super.zip(other);
+
+        return (LazyListX) super.zip(other);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip3(java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip3(java.util
+     * .stream.Stream, java.util.stream.Stream)
      */
     @Override
     public <S, U> LazyListX<Tuple3<T, S, U>> zip3(Stream<? extends S> second, Stream<? extends U> third) {
-       
-        return (LazyListX)super.zip3(second, third);
+
+        return (LazyListX) super.zip3(second, third);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zip4(java.util.stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zip4(java.util
+     * .stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
      */
     @Override
     public <T2, T3, T4> LazyListX<Tuple4<T, T2, T3, T4>> zip4(Stream<? extends T2> second, Stream<? extends T3> third,
             Stream<? extends T4> fourth) {
-       
-        return (LazyListX)super.zip4(second, third, fourth);
+
+        return (LazyListX) super.zip4(second, third, fourth);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#zipWithIndex()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#zipWithIndex()
      */
     @Override
     public LazyListX<Tuple2<T, Long>> zipWithIndex() {
-       
-        return (LazyListX<Tuple2<T, Long>>)super.zipWithIndex();
+
+        return (LazyListX<Tuple2<T, Long>>) super.zipWithIndex();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#distinct()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#distinct()
      */
     @Override
     public LazyListX<T> distinct() {
-       
-        return (LazyListX<T>)super.distinct();
+
+        return (LazyListX<T>) super.distinct();
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sorted()
      */
     @Override
     public LazyListX<T> sorted() {
-       
-        return (LazyListX<T>)super.sorted();
+
+        return (LazyListX<T>) super.sorted();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#sorted(java.util.Comparator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#sorted(java.
+     * util.Comparator)
      */
     @Override
     public LazyListX<T> sorted(Comparator<? super T> c) {
-       
-        return (LazyListX<T>)super.sorted(c);
+
+        return (LazyListX<T>) super.sorted(c);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#skipWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#skipWhile(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyListX<T> skipWhile(Predicate<? super T> p) {
-       
-        return (LazyListX<T>)super.skipWhile(p);
+
+        return (LazyListX<T>) super.skipWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#skipUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#skipUntil(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyListX<T> skipUntil(Predicate<? super T> p) {
-       
-        return (LazyListX<T>)super.skipUntil(p);
+
+        return (LazyListX<T>) super.skipUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#limitWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#limitWhile(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyListX<T> limitWhile(Predicate<? super T> p) {
-       
-        return (LazyListX<T>)super.limitWhile(p);
+
+        return (LazyListX<T>) super.limitWhile(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#limitUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#limitUntil(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyListX<T> limitUntil(Predicate<? super T> p) {
-       
-        return (LazyListX<T>)super.limitUntil(p);
+
+        return (LazyListX<T>) super.limitUntil(p);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#intersperse(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#intersperse(
+     * java.lang.Object)
      */
     @Override
     public LazyListX<T> intersperse(T value) {
-       
-        return (LazyListX<T>)super.intersperse(value);
+
+        return (LazyListX<T>) super.intersperse(value);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#shuffle()
      */
     @Override
     public LazyListX<T> shuffle() {
-       
-        return (LazyListX<T>)super.shuffle();
+
+        return (LazyListX<T>) super.shuffle();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#skipLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#skipLast(int)
      */
     @Override
     public LazyListX<T> skipLast(int num) {
-       
-        return (LazyListX<T>)super.skipLast(num);
+
+        return (LazyListX<T>) super.skipLast(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#limitLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#limitLast(int)
      */
     @Override
     public LazyListX<T> limitLast(int num) {
-       
-        return (LazyListX<T>)super.limitLast(num);
+
+        return (LazyListX<T>) super.limitLast(num);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmpty(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmpty(java.
+     * lang.Object)
      */
     @Override
     public LazyListX<T> onEmpty(T value) {
-       
-        return (LazyListX<T>)super.onEmpty(value);
+
+        return (LazyListX<T>) super.onEmpty(value);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptyGet(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptyGet(
+     * java.util.function.Supplier)
      */
     @Override
     public LazyListX<T> onEmptyGet(Supplier<? extends T> supplier) {
-       
-        return (LazyListX<T>)super.onEmptyGet(supplier);
+
+        return (LazyListX<T>) super.onEmptyGet(supplier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptyThrow(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptyThrow(
+     * java.util.function.Supplier)
      */
     @Override
     public <X extends Throwable> LazyListX<T> onEmptyThrow(Supplier<? extends X> supplier) {
-       
-        return (LazyListX<T>)super.onEmptyThrow(supplier);
+
+        return (LazyListX<T>) super.onEmptyThrow(supplier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#shuffle(java.util.Random)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#shuffle(java.
+     * util.Random)
      */
     @Override
     public LazyListX<T> shuffle(Random random) {
-       
-        return (LazyListX<T>)super.shuffle(random);
+
+        return (LazyListX<T>) super.shuffle(random);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#ofType(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#ofType(java.
+     * lang.Class)
      */
     @Override
     public <U> LazyListX<U> ofType(Class<? extends U> type) {
-       
-        return (LazyListX<U>)super.ofType(type);
+
+        return (LazyListX<U>) super.ofType(type);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#filterNot(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#filterNot(java
+     * .util.function.Predicate)
      */
     @Override
     public LazyListX<T> filterNot(Predicate<? super T> fn) {
-       
-        return (LazyListX<T>)super.filterNot(fn);
+
+        return (LazyListX<T>) super.filterNot(fn);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#notNull()
      */
     @Override
     public LazyListX<T> notNull() {
-       
-        return (LazyListX<T>)super.notNull();
+
+        return (LazyListX<T>) super.notNull();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java
+     * .util.stream.Stream)
      */
     @Override
     public LazyListX<T> removeAll(Stream<? extends T> stream) {
-       
-        return (LazyListX<T>)(super.removeAll(stream));
+
+        return (LazyListX<T>) (super.removeAll(stream));
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(org.
+     * jooq.lambda.Seq)
      */
     @Override
     public LazyListX<T> removeAll(Seq<? extends T> stream) {
-       
-        return (LazyListX<T>)super.removeAll(stream);
+
+        return (LazyListX<T>) super.removeAll(stream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java
+     * .lang.Iterable)
      */
     @Override
     public LazyListX<T> removeAll(Iterable<? extends T> it) {
-       
-        return (LazyListX<T>)super.removeAll(it);
+
+        return (LazyListX<T>) super.removeAll(it);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#removeAll(java
+     * .lang.Object[])
      */
     @Override
     public LazyListX<T> removeAll(T... values) {
-       
-        return (LazyListX<T>)super.removeAll(values);
+
+        return (LazyListX<T>) super.removeAll(values);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java
+     * .lang.Iterable)
      */
     @Override
     public LazyListX<T> retainAll(Iterable<? extends T> it) {
-       
-        return (LazyListX<T>)super.retainAll(it);
+
+        return (LazyListX<T>) super.retainAll(it);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java
+     * .util.stream.Stream)
      */
     @Override
     public LazyListX<T> retainAll(Stream<? extends T> stream) {
-       
-        return (LazyListX<T>)super.retainAll(stream);
+
+        return (LazyListX<T>) super.retainAll(stream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(org.
+     * jooq.lambda.Seq)
      */
     @Override
     public LazyListX<T> retainAll(Seq<? extends T> stream) {
-       
-        return (LazyListX<T>)super.retainAll(stream);
+
+        return (LazyListX<T>) super.retainAll(stream);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#retainAll(java
+     * .lang.Object[])
      */
     @Override
     public LazyListX<T> retainAll(T... values) {
-       
-        return (LazyListX<T>)super.retainAll(values);
+
+        return (LazyListX<T>) super.retainAll(values);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#cast(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#cast(java.lang
+     * .Class)
      */
     @Override
     public <U> LazyListX<U> cast(Class<? extends U> type) {
-       
-        return (LazyListX<U>)super.cast(type);
+
+        return (LazyListX<U>) super.cast(type);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#patternMatch(java.util.function.Function, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#patternMatch(
+     * java.util.function.Function, java.util.function.Supplier)
      */
     @Override
     public <R> LazyListX<R> patternMatch(Function<CheckValue1<T, R>, CheckValue1<T, R>> case1,
             Supplier<? extends R> otherwise) {
-       
-        return (LazyListX<R>)super.patternMatch(case1, otherwise);
+
+        return (LazyListX<R>) super.patternMatch(case1, otherwise);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#permutations()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#permutations()
      */
     @Override
     public LazyListX<ReactiveSeq<T>> permutations() {
-       
-        return (LazyListX<ReactiveSeq<T>>)super.permutations();
+
+        return (LazyListX<ReactiveSeq<T>>) super.permutations();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#combinations(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#combinations(
+     * int)
      */
     @Override
     public LazyListX<ReactiveSeq<T>> combinations(int size) {
-       
-        return (LazyListX<ReactiveSeq<T>>)super.combinations(size);
+
+        return (LazyListX<ReactiveSeq<T>>) super.combinations(size);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#combinations()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#combinations()
      */
     @Override
     public LazyListX<ReactiveSeq<T>> combinations() {
-       
-        return (LazyListX<ReactiveSeq<T>>)super.combinations();
+
+        return (LazyListX<ReactiveSeq<T>>) super.combinations();
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(int, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#grouped(int,
+     * java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyListX<C> grouped(int size, Supplier<C> supplier) {
-       
-        return (LazyListX<C>)super.grouped(size, supplier);
+
+        return (LazyListX<C>) super.grouped(size, supplier);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#groupedUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#groupedUntil(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyListX<ListX<T>> groupedUntil(Predicate<? super T> predicate) {
-       
-        return (LazyListX<ListX<T>>)super.groupedUntil(predicate);
+
+        return (LazyListX<ListX<T>>) super.groupedUntil(predicate);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#groupedWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#groupedWhile(
+     * java.util.function.Predicate)
      */
     @Override
     public LazyListX<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
-       
-        return (LazyListX<ListX<T>>)super.groupedWhile(predicate);
+
+        return (LazyListX<ListX<T>>) super.groupedWhile(predicate);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#groupedWhile(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#groupedWhile(
+     * java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyListX<C> groupedWhile(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazyListX<C>)super.groupedWhile(predicate, factory);
+
+        return (LazyListX<C>) super.groupedWhile(predicate, factory);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#groupedUntil(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#groupedUntil(
+     * java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyListX<C> groupedUntil(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazyListX<C>)super.groupedUntil(predicate, factory);
+
+        return (LazyListX<C>) super.groupedUntil(predicate, factory);
     }
-   
+
     /** ListX methods **/
 
-    /* Makes a defensive copy of this ListX replacing the value at i with the specified element
-     *  (non-Javadoc)
-     * @see com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(int, java.lang.Object)
+    /*
+     * Makes a defensive copy of this ListX replacing the value at i with the
+     * specified element (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(
+     * int, java.lang.Object)
      */
-    public LazyListX<T> with(int i,T element){
-        return stream( Fluxes.insertAt(Fluxes.deleteBetween(flux(),i, i+1),i,element)) ;
+    public LazyListX<T> with(int i, T element) {
+        return stream(Fluxes.insertAt(Fluxes.deleteBetween(flux(), i, i + 1), i, element));
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#minus(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#minus(int)
      */
     @Override
-    public LazyListX<T> minus(int pos){
+    public LazyListX<T> minus(int pos) {
         remove(pos);
         return this;
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plus(int, java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plus(int,
+     * java.lang.Object)
      */
     @Override
-    public LazyListX<T> plus(int i, T e){
-        add(i,e);
+    public LazyListX<T> plus(int i, T e) {
+        add(i, e);
         return this;
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#plusAll(int, java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#plusAll(int,
+     * java.util.Collection)
      */
     @Override
-    public LazyListX<T> plusAll(int i, Collection<? extends T> list){
-        addAll(i,list);
+    public LazyListX<T> plusAll(int i, Collection<? extends T> list) {
+        addAll(i, list);
         return this;
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#unit(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #unit(java.util.Collection)
      */
     @Override
-    public <R> LazyListX<R> unit(Collection<R> col){
+    public <R> LazyListX<R> unit(Collection<R> col) {
         return LazyListX.fromIterable(col);
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.Unit#unit(java.lang.Object)
      */
     @Override
-    public  <R> LazyListX<R> unit(R value){
+    public <R> LazyListX<R> unit(R value) {
         return LazyListX.singleton(value);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#unitIterator(java.util.Iterator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#unitIterator(java.util.Iterator)
      */
     @Override
-    public <R> LazyListX<R> unitIterator(Iterator<R> it){
-        return LazyListX.fromIterable(()->it);
+    public <R> LazyListX<R> unitIterator(Iterator<R> it) {
+        return LazyListX.fromIterable(() -> it);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusInOrder(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #plusInOrder(java.lang.Object)
      */
     @Override
     public LazyListX<T> plusInOrder(T e) {
-        
-        return (LazyListX<T>)super.plusInOrder(e);
-    }
-    
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#from(java.util.Collection)
+        return (LazyListX<T>) super.plusInOrder(e);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#from(java.util.Collection)
      */
     @Override
     public <T1> LazyListX<T1> from(Collection<T1> c) {
-        if(c instanceof List)
-            return new LazyListX<T1>((List)c,(Collector)collector);
-      return new LazyListX<T1>((List)c.stream().collect(Collectors.toList()),(Collector)this.collector);
+        if (c instanceof List)
+            return new LazyListX<T1>(
+                                     (List) c, (Collector) collector);
+        return new LazyListX<T1>(
+                                 (List) c.stream()
+                                         .collect(Collectors.toList()),
+                                 (Collector) this.collector);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.BiPredicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.
+     * BiPredicate)
      */
     @Override
     public LazyListX<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        
-        return (LazyListX<ListX<T>>)super.groupedStatefullyUntil(predicate);
+
+        return (LazyListX<ListX<T>>) super.groupedStatefullyUntil(predicate);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#peek(java.util.function.Consumer)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#peek(java.util.function.Consumer)
      */
     @Override
     public LazyListX<T> peek(Consumer<? super T> c) {
-        
-        return (LazyListX)super.peek(c);
+
+        return (LazyListX) super.peek(c);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(org.jooq.lambda.Seq, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(org.jooq.lambda.Seq,
+     * java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazyListX<R> zip(Seq<? extends U> other,
-            BiFunction<? super T, ? super U, ? extends R> zipper) {
-        
-        return (LazyListX<R>)super.zip(other, zipper);
+    public <U, R> LazyListX<R> zip(Seq<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazyListX<R>) super.zip(other, zipper);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream,
+     * java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazyListX<R> zip(Stream<? extends U> other,
-            BiFunction<? super T, ? super U, ? extends R> zipper) {
-      
-        return (LazyListX<R>)super.zip(other, zipper);
+    public <U, R> LazyListX<R> zip(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazyListX<R>) super.zip(other, zipper);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream)
      */
     @Override
     public <U> LazyListX<Tuple2<T, U>> zip(Stream<? extends U> other) {
-        
-        return (LazyListX)super.zip(other);
+
+        return (LazyListX) super.zip(other);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.function.BiFunction, org.reactivestreams.Publisher)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.function.BiFunction,
+     * org.reactivestreams.Publisher)
      */
     @Override
     public <T2, R> LazyListX<R> zip(BiFunction<? super T, ? super T2, ? extends R> fn,
             Publisher<? extends T2> publisher) {
-       
-        return (LazyListX<R>)super.zip(fn, publisher);
+
+        return (LazyListX<R>) super.zip(fn, publisher);
     }
- 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#fromStream(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#fromStream(
+     * java.util.stream.Stream)
      */
     @Override
     public <X> LazyListX<X> fromStream(Stream<X> stream) {
-        List<X> list = (List<X>) stream.collect((Collector)getCollector());
-        return new LazyListX<X>(list, (Collector)getCollector());
+        List<X> list = (List<X>) stream.collect((Collector) getCollector());
+        return new LazyListX<X>(
+                                list, (Collector) getCollector());
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptySwitch(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptySwitch(
+     * java.util.function.Supplier)
      */
     @Override
     public LazyListX<T> onEmptySwitch(Supplier<? extends List<T>> supplier) {
-        return stream(Fluxes.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
+        return stream(Fluxes.onEmptySwitch(flux(), () -> Flux.fromIterable(supplier.get())));
     }
 
-    
 }

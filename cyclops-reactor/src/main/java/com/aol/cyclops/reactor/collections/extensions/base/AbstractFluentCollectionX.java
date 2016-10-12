@@ -93,8 +93,11 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
 
         }
 
-        /* (non-Javadoc)
-         * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection#stream()
+        /*
+         * (non-Javadoc)
+         * 
+         * @see com.aol.cyclops.reactor.collections.extensions.base.
+         * LazyFluentCollection#stream()
          */
         @Override
         public Flux<T> flux() {
@@ -104,20 +107,30 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.reactor.types.ReactorConvertable#flux()
      */
     @Override
     abstract public Flux<T> flux();
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#stream(reactor.core.publisher.Flux)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #stream(reactor.core.publisher.Flux)
      */
     @Override
     abstract public <X> FluentCollectionX<X> stream(Flux<X> stream);
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusLazy(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #plusLazy(java.lang.Object)
      */
     @Override
     public LazyFluentCollectionX<T> plusLazy(final T e) {
@@ -126,8 +139,12 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
 
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plus(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #plus(java.lang.Object)
      */
     @Override
     public FluentCollectionX<T> plus(final T e) {
@@ -135,8 +152,12 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusAll(java.util.Collection)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #plusAll(java.util.Collection)
      */
     @Override
     public FluentCollectionX<T> plusAll(final Collection<? extends T> list) {
@@ -144,8 +165,12 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#minus(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #minus(java.lang.Object)
      */
     @Override
     public FluentCollectionX<T> minus(final Object e) {
@@ -153,8 +178,12 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#minusAll(java.util.Collection)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #minusAll(java.util.Collection)
      */
     @Override
     public FluentCollectionX<T> minusAll(final Collection<?> list) {
@@ -197,19 +226,25 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public LazyFluentCollectionX<T> minusAllLazy(final Collection<?> list) {
-        return(LazyFluentCollectionX<T>) this.removeAll((Iterable) list);
+        return (LazyFluentCollectionX<T>) this.removeAll((Iterable) list);
 
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#combine(java.util
+     * .function.BiPredicate, java.util.function.BinaryOperator)
      */
     @Override
     public FluentCollectionX<T> combine(final BiPredicate<? super T, ? super T> predicate, final BinaryOperator<T> op) {
         return stream(Fluxes.combine(flux(), predicate, op));
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.CollectionX#reverse()
      */
     @Override
@@ -217,31 +252,45 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return stream(Fluxes.reverse(flux()));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#filter(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#filter(java.util.
+     * function.Predicate)
      */
     @Override
     public FluentCollectionX<T> filter(final Predicate<? super T> pred) {
         return stream(flux().filter(pred));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#map(java.util.function.Function)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#map(java.util.
+     * function.Function)
      */
     @Override
     public <R> CollectionX<R> map(final Function<? super T, ? extends R> mapper) {
         return stream(flux().map(mapper));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#flatMap(java.util.function.Function)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#flatMap(java.util
+     * .function.Function)
      */
     @Override
     public <R> CollectionX<R> flatMap(final Function<? super T, ? extends Iterable<? extends R>> mapper) {
         return stream(flux().flatMap(mapper.andThen(ReactiveSeq::fromIterable)));
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.CollectionX#limit(long)
      */
     @Override
@@ -249,7 +298,9 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return stream(flux().take(num));
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.CollectionX#skip(long)
      */
     @Override
@@ -257,48 +308,70 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
         return stream(flux().skip(num));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#takeRight(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#takeRight(int)
      */
     @Override
     public FluentCollectionX<T> takeRight(final int num) {
         return stream(flux().takeLast(num));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#dropRight(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#dropRight(int)
      */
     @Override
     public FluentCollectionX<T> dropRight(final int num) {
         return stream(flux().skipLast(num));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#takeWhile(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#takeWhile(java.
+     * util.function.Predicate)
      */
     @Override
     public FluentCollectionX<T> takeWhile(final Predicate<? super T> p) {
         return stream(flux().takeWhile(p));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#dropWhile(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#dropWhile(java.
+     * util.function.Predicate)
      */
     @Override
     public FluentCollectionX<T> dropWhile(final Predicate<? super T> p) {
         return stream(flux().skipWhile(p));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#takeUntil(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#takeUntil(java.
+     * util.function.Predicate)
      */
     @Override
     public FluentCollectionX<T> takeUntil(final Predicate<? super T> p) {
         return stream(Fluxes.takeUntil(flux(), p));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#dropUntil(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#dropUntil(java.
+     * util.function.Predicate)
      */
     @Override
     public FluentCollectionX<T> dropUntil(final Predicate<? super T> p) {
@@ -307,7 +380,10 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
 
     /*
      * (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.CollectionX#trampoline(java.util.function.Function)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.CollectionX#trampoline(java.
+     * util.function.Function)
      */
     @Override
     public <R> FluentCollectionX<R> trampoline(final Function<? super T, ? extends Trampoline<? extends R>> mapper) {
@@ -396,7 +472,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<ListX<T>> sliding(final int windowSize) {
         return stream(Fluxes.sliding(flux(), windowSize, 1)
-                               .map(ListX::fromPublisher));
+                            .map(ListX::fromPublisher));
     }
 
     /*
@@ -408,7 +484,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<ListX<T>> sliding(final int windowSize, final int increment) {
         return stream(Fluxes.sliding(flux(), windowSize, increment)
-                               .map(ListX::fromPublisher));
+                            .map(ListX::fromPublisher));
     }
 
     /*

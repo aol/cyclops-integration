@@ -45,6 +45,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
+
 /**
  * An extended Queue type {@see java.util.Queue}
  * This makes use of PQueue (@see org.pcollections.PQueue) from PCollectons.
@@ -73,24 +74,23 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
-@AllArgsConstructor(access=AccessLevel.PRIVATE)
-public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQueueX<T> {
-    private final  LazyFluentCollection<T,PQueue<T>> lazy;
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class LazyPQueueX<T> extends AbstractFluentCollectionX<T>implements PQueueX<T> {
+    private final LazyFluentCollection<T, PQueue<T>> lazy;
     @Getter
     private final Reducer<PQueue<T>> collector;
-   
 
-  
-    
     /**
      * Create a LazyPStackX from a Stream
      * 
      * @param stream to construct a LazyQueueX from
      * @return LazyPStackX
      */
-    public static <T> LazyPQueueX<T> fromStreamS(Stream<T> stream){
-        return new LazyPQueueX<T>(Flux.from(ReactiveSeq.fromStream(stream)));
+    public static <T> LazyPQueueX<T> fromStreamS(Stream<T> stream) {
+        return new LazyPQueueX<T>(
+                                  Flux.from(ReactiveSeq.fromStream(stream)));
     }
+
     /**
      * Create a LazyPStackX that contains the Integers between start and end
      * 
@@ -146,7 +146,7 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
     public static <T> LazyPQueueX<T> generate(long limit, Supplier<T> s) {
 
         return fromStreamS(ReactiveSeq.generate(s)
-                          .limit(limit));
+                                      .limit(limit));
     }
 
     /**
@@ -159,9 +159,8 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
      */
     public static <T> LazyPQueueX<T> iterate(long limit, final T seed, final UnaryOperator<T> f) {
         return fromStreamS(ReactiveSeq.iterate(seed, f)
-                          .limit(limit));
+                                      .limit(limit));
     }
-
 
     /**
      * @return A collector that generates a LazyPStackX
@@ -170,14 +169,13 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return Collectors.toCollection(() -> LazyPQueueX.of());
     }
 
-   
-
     /**
      * @return An empty LazyPStackX
      */
     public static <T> LazyPQueueX<T> empty() {
-        return fromIterable((List<T>) ListX.<T>defaultCollector().supplier()
-                                                        .get());
+        return fromIterable((List<T>) ListX.<T> defaultCollector()
+                                           .supplier()
+                                           .get());
     }
 
     /**
@@ -198,8 +196,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
      */
     @SafeVarargs
     public static <T> LazyPQueueX<T> of(T... values) {
-        List<T> res = (List<T>) ListX.<T>defaultCollector().supplier()
-                                                  .get();
+        List<T> res = (List<T>) ListX.<T> defaultCollector()
+                                     .supplier()
+                                     .get();
         for (T v : values)
             res.add(v);
         return fromIterable(res);
@@ -253,42 +252,54 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
     public static <T> LazyPQueueX<T> fromIterable(Reducer<PQueue<T>> collector, Iterable<T> it) {
         if (it instanceof LazyPQueueX)
             return (LazyPQueueX<T>) it;
-       
+
         if (it instanceof PQueue)
             return new LazyPQueueX<T>(
-                                    (PQueue<T>) it, collector);
-        
+                                      (PQueue<T>) it, collector);
+
         return new LazyPQueueX<T>(
-                                Flux.fromIterable(it),
-                                collector);
+                                  Flux.fromIterable(it), collector);
     }
-    private LazyPQueueX(PQueue<T> list,Reducer<PQueue<T>> collector){
-        this.lazy = new PersistentLazyCollection<T,PQueue<T>>(list,null,collector);
-        this.collector=  collector;
-    }
-    private LazyPQueueX(boolean efficientOps,PQueue<T> list,Reducer<PQueue<T>> collector){
-        this.lazy = new PersistentLazyCollection<T,PQueue<T>>(list,null,collector);
-        this.collector=  collector;
-    }
-    
-    private LazyPQueueX(PQueue<T> list){
-        this.collector = Reducers.toPQueue();
-        this.lazy = new PersistentLazyCollection<T,PQueue<T>>(list,null,Reducers.toPQueue());
-    }
-    private LazyPQueueX(Flux<T> stream,Reducer<PQueue<T>> collector){
+
+    private LazyPQueueX(PQueue<T> list, Reducer<PQueue<T>> collector) {
+        this.lazy = new PersistentLazyCollection<T, PQueue<T>>(
+                                                               list, null, collector);
         this.collector = collector;
-        this.lazy = new PersistentLazyCollection<>(null,stream,Reducers.toPQueue());
     }
-    private LazyPQueueX(Flux<T> stream){
+
+    private LazyPQueueX(boolean efficientOps, PQueue<T> list, Reducer<PQueue<T>> collector) {
+        this.lazy = new PersistentLazyCollection<T, PQueue<T>>(
+                                                               list, null, collector);
+        this.collector = collector;
+    }
+
+    private LazyPQueueX(PQueue<T> list) {
         this.collector = Reducers.toPQueue();
-        this.lazy = new PersistentLazyCollection<>(null,stream,collector);
+        this.lazy = new PersistentLazyCollection<T, PQueue<T>>(
+                                                               list, null, Reducers.toPQueue());
     }
-    private LazyPQueueX(){
+
+    private LazyPQueueX(Flux<T> stream, Reducer<PQueue<T>> collector) {
+        this.collector = collector;
+        this.lazy = new PersistentLazyCollection<>(
+                                                   null, stream, Reducers.toPQueue());
+    }
+
+    private LazyPQueueX(Flux<T> stream) {
         this.collector = Reducers.toPQueue();
-        this.lazy = new PersistentLazyCollection<>((PQueue)this.collector.zero(),null,collector);
+        this.lazy = new PersistentLazyCollection<>(
+                                                   null, stream, collector);
     }
-    
-    /* (non-Javadoc)
+
+    private LazyPQueueX() {
+        this.collector = Reducers.toPQueue();
+        this.lazy = new PersistentLazyCollection<>(
+                                                   (PQueue) this.collector.zero(), null, collector);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#forEach(java.util.function.Consumer)
      */
     @Override
@@ -296,7 +307,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         getQueue().forEach(action);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#iterator()
      */
     @Override
@@ -304,7 +317,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().iterator();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#size()
      */
     @Override
@@ -312,7 +327,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().size();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#contains(java.lang.Object)
      */
     @Override
@@ -320,7 +337,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().contains(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -328,9 +347,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().equals(o);
     }
 
-
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#isEmpty()
      */
     @Override
@@ -338,7 +357,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().isEmpty();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -346,7 +367,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().hashCode();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray()
      */
     @Override
@@ -354,7 +377,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().toArray();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeAll(java.util.Collection)
      */
     @Override
@@ -362,7 +387,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().removeAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray(java.lang.Object[])
      */
     @Override
@@ -370,7 +397,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().toArray(a);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#add(java.lang.Object)
      */
     @Override
@@ -378,7 +407,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().add(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#remove(java.lang.Object)
      */
     @Override
@@ -386,7 +417,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().remove(o);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#containsAll(java.util.Collection)
      */
     @Override
@@ -394,7 +427,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().containsAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#addAll(java.util.Collection)
      */
     @Override
@@ -402,7 +437,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().addAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#retainAll(java.util.Collection)
      */
     @Override
@@ -410,7 +447,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().retainAll(c);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#clear()
      */
     @Override
@@ -418,8 +457,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         getQueue().clear();
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -427,7 +467,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().toString();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#collect(java.util.stream.Collector)
      */
     @Override
@@ -435,851 +477,1108 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return stream().collect(collector);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jooq.lambda.Collectable#count()
      */
     @Override
     public long count() {
         return this.size();
     }
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeIf(java.util.function.Predicate)
      */
     @Override
-    public  boolean removeIf(Predicate<? super T> filter) {
+    public boolean removeIf(Predicate<? super T> filter) {
         return getQueue().removeIf(filter);
     }
-    
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#parallelStream()
      */
     @Override
-    public  Stream<T> parallelStream() {
+    public Stream<T> parallelStream() {
         return getQueue().parallelStream();
     }
-    
-    
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#spliterator()
      */
     @Override
     public Spliterator<T> spliterator() {
         return getQueue().spliterator();
     }
-   
+
     /**
      * @return PQueue
      */
     private PQueue<T> getQueue() {
         return lazy.get();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#stream(reactor.core.publisher.Flux)
      */
     @Override
-    public <X> LazyPQueueX<X> stream(Flux<X> stream){
-        return new LazyPQueueX<X>(stream);
+    public <X> LazyPQueueX<X> stream(Flux<X> stream) {
+        return new LazyPQueueX<X>(
+                                  stream);
     }
-   
-    
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#flux()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#flux()
      */
     @Override
     public Flux<T> flux() {
         return lazy.flux();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#combine(java.util.function.BiPredicate,
+     * java.util.function.BinaryOperator)
      */
     @Override
     public LazyPQueueX<T> combine(BiPredicate<? super T, ? super T> predicate, BinaryOperator<T> op) {
-       
-        return (LazyPQueueX<T>)super.combine(predicate, op);
+
+        return (LazyPQueueX<T>) super.combine(predicate, op);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#reverse()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#reverse()
      */
     @Override
     public LazyPQueueX<T> reverse() {
-       
-        return(LazyPQueueX<T>)super.reverse();
+
+        return (LazyPQueueX<T>) super.reverse();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#filter(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#filter(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> filter(Predicate<? super T> pred) {
-       
-        return (LazyPQueueX<T>)super.filter(pred);
+
+        return (LazyPQueueX<T>) super.filter(pred);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#map(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#map(java.util.function.Function)
      */
     @Override
     public <R> LazyPQueueX<R> map(Function<? super T, ? extends R> mapper) {
-       
-        return (LazyPQueueX<R>)super.map(mapper);
+
+        return (LazyPQueueX<R>) super.map(mapper);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#flatMap(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#flatMap(java.util.function.Function)
      */
     @Override
     public <R> LazyPQueueX<R> flatMap(Function<? super T, ? extends Iterable<? extends R>> mapper) {
-       return (LazyPQueueX<R>)super.flatMap(mapper);
+        return (LazyPQueueX<R>) super.flatMap(mapper);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#limit(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#limit(long)
      */
     @Override
     public LazyPQueueX<T> limit(long num) {
-       return (LazyPQueueX<T>)super.limit(num);
+        return (LazyPQueueX<T>) super.limit(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#skip(long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#skip(long)
      */
     @Override
     public LazyPQueueX<T> skip(long num) {
-       return (LazyPQueueX<T>)super.skip(num);
+        return (LazyPQueueX<T>) super.skip(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#takeRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#takeRight(int)
      */
     @Override
     public LazyPQueueX<T> takeRight(int num) {
-       return (LazyPQueueX<T>)super.takeRight(num);
+        return (LazyPQueueX<T>) super.takeRight(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#dropRight(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#dropRight(int)
      */
     @Override
     public LazyPQueueX<T> dropRight(int num) {
-       return (LazyPQueueX<T>)super.dropRight(num);
+        return (LazyPQueueX<T>) super.dropRight(num);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#takeWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#takeWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> takeWhile(Predicate<? super T> p) {
-       return (LazyPQueueX<T>)super.takeWhile(p);
+        return (LazyPQueueX<T>) super.takeWhile(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#dropWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#dropWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> dropWhile(Predicate<? super T> p) {
-       return (LazyPQueueX<T>)super.dropWhile(p);
+        return (LazyPQueueX<T>) super.dropWhile(p);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#takeUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#takeUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> takeUntil(Predicate<? super T> p) {
-       return (LazyPQueueX<T>)super.takeUntil(p);
+        return (LazyPQueueX<T>) super.takeUntil(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#dropUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#dropUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> dropUntil(Predicate<? super T> p) {
-       return(LazyPQueueX<T>)super.dropUntil(p);
+        return (LazyPQueueX<T>) super.dropUntil(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#trampoline(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#trampoline(java.util.function.Function)
      */
     @Override
     public <R> LazyPQueueX<R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
-       return (LazyPQueueX<R>)super.trampoline(mapper);
+        return (LazyPQueueX<R>) super.trampoline(mapper);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#slice(long, long)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#slice(long, long)
      */
     @Override
     public LazyPQueueX<T> slice(long from, long to) {
-       return (LazyPQueueX<T>)super.slice(from, to);
+        return (LazyPQueueX<T>) super.slice(from, to);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#grouped(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#grouped(int)
      */
     @Override
     public LazyPQueueX<ListX<T>> grouped(int groupSize) {
-       
-        return (LazyPQueueX<ListX<T>>)super.grouped(groupSize);
+
+        return (LazyPQueueX<ListX<T>>) super.grouped(groupSize);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#grouped(java.util.function.Function, java.util.stream.Collector)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#grouped(java.util.function.Function,
+     * java.util.stream.Collector)
      */
     @Override
     public <K, A, D> LazyPQueueX<Tuple2<K, D>> grouped(Function<? super T, ? extends K> classifier,
             Collector<? super T, A, D> downstream) {
-       
-        return (LazyPQueueX)super.grouped(classifier, downstream);
+
+        return (LazyPQueueX) super.grouped(classifier, downstream);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#grouped(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#grouped(java.util.function.Function)
      */
     @Override
     public <K> LazyPQueueX<Tuple2<K, Seq<T>>> grouped(Function<? super T, ? extends K> classifier) {
-       
-        return (LazyPQueueX)super.grouped(classifier);
+
+        return (LazyPQueueX) super.grouped(classifier);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.lang.Iterable)
      */
     @Override
     public <U> LazyPQueueX<Tuple2<T, U>> zip(Iterable<? extends U> other) {
-       
-        return (LazyPQueueX)super.zip(other);
+
+        return (LazyPQueueX) super.zip(other);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.lang.Iterable, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.lang.Iterable,
+     * java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazyPQueueX<R> zip(Iterable<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-       
-        return (LazyPQueueX<R>)super.zip(other, zipper);
+    public <U, R> LazyPQueueX<R> zip(Iterable<? extends U> other,
+            BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazyPQueueX<R>) super.zip(other, zipper);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sliding(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sliding(int)
      */
     @Override
     public LazyPQueueX<ListX<T>> sliding(int windowSize) {
-       
-        return (LazyPQueueX<ListX<T>>)super.sliding(windowSize);
+
+        return (LazyPQueueX<ListX<T>>) super.sliding(windowSize);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sliding(int, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sliding(int, int)
      */
     @Override
     public LazyPQueueX<ListX<T>> sliding(int windowSize, int increment) {
-       
-        return (LazyPQueueX<ListX<T>>)super.sliding(windowSize, increment);
+
+        return (LazyPQueueX<ListX<T>>) super.sliding(windowSize, increment);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#scanLeft(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#scanLeft(com.aol.cyclops.Monoid)
      */
     @Override
     public LazyPQueueX<T> scanLeft(Monoid<T> monoid) {
-       
-        return (LazyPQueueX<T>)super.scanLeft(monoid);
+
+        return (LazyPQueueX<T>) super.scanLeft(monoid);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#scanLeft(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#scanLeft(java.lang.Object,
+     * java.util.function.BiFunction)
      */
     @Override
     public <U> LazyPQueueX<U> scanLeft(U seed, BiFunction<? super U, ? super T, ? extends U> function) {
-       
+
         return (LazyPQueueX<U>) super.scanLeft(seed, function);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#scanRight(com.aol.cyclops.Monoid)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#scanRight(com.aol.cyclops.Monoid)
      */
     @Override
     public LazyPQueueX<T> scanRight(Monoid<T> monoid) {
-       
-        return (LazyPQueueX<T>)super.scanRight(monoid);
+
+        return (LazyPQueueX<T>) super.scanRight(monoid);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#scanRight(java.lang.Object, java.util.function.BiFunction)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#scanRight(java.lang.Object,
+     * java.util.function.BiFunction)
      */
     @Override
     public <U> LazyPQueueX<U> scanRight(U identity, BiFunction<? super T, ? super U, ? extends U> combiner) {
-       
-        return (LazyPQueueX<U>)super.scanRight(identity, combiner);
+
+        return (LazyPQueueX<U>) super.scanRight(identity, combiner);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sorted(java.util.function.Function)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sorted(java.util.function.Function)
      */
     @Override
     public <U extends Comparable<? super U>> LazyPQueueX<T> sorted(Function<? super T, ? extends U> function) {
-       
-        return (LazyPQueueX<T>)super.sorted(function);
+
+        return (LazyPQueueX<T>) super.sorted(function);
     }
-    
-    
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#plusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#plusLazy(java.lang.Object)
      */
     @Override
     public LazyPQueueX<T> plusLazy(T e) {
-       
-        return (LazyPQueueX<T>)super.plusLazy(e);
+
+        return (LazyPQueueX<T>) super.plusLazy(e);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#plusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#plusAllLazy(java.util.Collection)
      */
     @Override
     public LazyPQueueX<T> plusAllLazy(Collection<? extends T> list) {
-       
-        return (LazyPQueueX<T>)super.plusAllLazy(list);
+
+        return (LazyPQueueX<T>) super.plusAllLazy(list);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minusLazy(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#minusLazy(java.lang.Object)
      */
     @Override
     public LazyPQueueX<T> minusLazy(Object e) {
-       
-        return (LazyPQueueX<T>)super.minusLazy(e);
+
+        return (LazyPQueueX<T>) super.minusLazy(e);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minusAllLazy(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#minusAllLazy(java.util.Collection)
      */
     @Override
     public LazyPQueueX<T> minusAllLazy(Collection<?> list) {
-       
-        return (LazyPQueueX<T>)super.minusAllLazy(list);
+
+        return (LazyPQueueX<T>) super.minusAllLazy(list);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cycle(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cycle(int)
      */
     @Override
     public LazyPQueueX<T> cycle(int times) {
-       
-        return (LazyPQueueX<T>)super.cycle(times);
+
+        return (LazyPQueueX<T>) super.cycle(times);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cycle(com.aol.cyclops.Monoid, int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cycle(com.aol.cyclops.Monoid, int)
      */
     @Override
     public LazyPQueueX<T> cycle(Monoid<T> m, int times) {
-       
-        return (LazyPQueueX<T>)super.cycle(m, times);
+
+        return (LazyPQueueX<T>) super.cycle(m, times);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cycleWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cycleWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> cycleWhile(Predicate<? super T> predicate) {
-       
-        return (LazyPQueueX<T>)super.cycleWhile(predicate);
+
+        return (LazyPQueueX<T>) super.cycleWhile(predicate);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cycleUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cycleUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> cycleUntil(Predicate<? super T> predicate) {
-       
-        return (LazyPQueueX<T>)super.cycleUntil(predicate);
+
+        return (LazyPQueueX<T>) super.cycleUntil(predicate);
     }
-    
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(org.jooq.lambda.Seq)
      */
     @Override
     public <U> LazyPQueueX<Tuple2<T, U>> zip(Seq<? extends U> other) {
-       
-        return (LazyPQueueX)super.zip(other);
+
+        return (LazyPQueueX) super.zip(other);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip3(java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip3(java.util.stream.Stream,
+     * java.util.stream.Stream)
      */
     @Override
     public <S, U> LazyPQueueX<Tuple3<T, S, U>> zip3(Stream<? extends S> second, Stream<? extends U> third) {
-       
-        return (LazyPQueueX)super.zip3(second, third);
+
+        return (LazyPQueueX) super.zip3(second, third);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip4(java.util.stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip4(java.util.stream.Stream,
+     * java.util.stream.Stream, java.util.stream.Stream)
      */
     @Override
     public <T2, T3, T4> LazyPQueueX<Tuple4<T, T2, T3, T4>> zip4(Stream<? extends T2> second, Stream<? extends T3> third,
             Stream<? extends T4> fourth) {
-       
-        return (LazyPQueueX)super.zip4(second, third, fourth);
+
+        return (LazyPQueueX) super.zip4(second, third, fourth);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zipWithIndex()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zipWithIndex()
      */
     @Override
     public LazyPQueueX<Tuple2<T, Long>> zipWithIndex() {
-       
-        return (LazyPQueueX<Tuple2<T, Long>>)super.zipWithIndex();
+
+        return (LazyPQueueX<Tuple2<T, Long>>) super.zipWithIndex();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#distinct()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#distinct()
      */
     @Override
     public LazyPQueueX<T> distinct() {
-       
-        return (LazyPQueueX<T>)super.distinct();
+
+        return (LazyPQueueX<T>) super.distinct();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sorted()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sorted()
      */
     @Override
     public LazyPQueueX<T> sorted() {
-       
-        return (LazyPQueueX<T>)super.sorted();
+
+        return (LazyPQueueX<T>) super.sorted();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#sorted(java.util.Comparator)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#sorted(java.util.Comparator)
      */
     @Override
     public LazyPQueueX<T> sorted(Comparator<? super T> c) {
-       
-        return (LazyPQueueX<T>)super.sorted(c);
+
+        return (LazyPQueueX<T>) super.sorted(c);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#skipWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#skipWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> skipWhile(Predicate<? super T> p) {
-       
-        return (LazyPQueueX<T>)super.skipWhile(p);
+
+        return (LazyPQueueX<T>) super.skipWhile(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#skipUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#skipUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> skipUntil(Predicate<? super T> p) {
-       
-        return (LazyPQueueX<T>)super.skipUntil(p);
+
+        return (LazyPQueueX<T>) super.skipUntil(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#limitWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#limitWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> limitWhile(Predicate<? super T> p) {
-       
-        return (LazyPQueueX<T>)super.limitWhile(p);
+
+        return (LazyPQueueX<T>) super.limitWhile(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#limitUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#limitUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> limitUntil(Predicate<? super T> p) {
-       
-        return (LazyPQueueX<T>)super.limitUntil(p);
+
+        return (LazyPQueueX<T>) super.limitUntil(p);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#intersperse(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#intersperse(java.lang.Object)
      */
     @Override
     public LazyPQueueX<T> intersperse(T value) {
-       
-        return (LazyPQueueX<T>)super.intersperse(value);
+
+        return (LazyPQueueX<T>) super.intersperse(value);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#shuffle()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#shuffle()
      */
     @Override
     public LazyPQueueX<T> shuffle() {
-       
-        return (LazyPQueueX<T>)super.shuffle();
+
+        return (LazyPQueueX<T>) super.shuffle();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#skipLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#skipLast(int)
      */
     @Override
     public LazyPQueueX<T> skipLast(int num) {
-       
-        return (LazyPQueueX<T>)super.skipLast(num);
+
+        return (LazyPQueueX<T>) super.skipLast(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#limitLast(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#limitLast(int)
      */
     @Override
     public LazyPQueueX<T> limitLast(int num) {
-       
-        return (LazyPQueueX<T>)super.limitLast(num);
+
+        return (LazyPQueueX<T>) super.limitLast(num);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#onEmpty(java.lang.Object)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#onEmpty(java.lang.Object)
      */
     @Override
     public LazyPQueueX<T> onEmpty(T value) {
-       
-        return (LazyPQueueX<T>)super.onEmpty(value);
+
+        return (LazyPQueueX<T>) super.onEmpty(value);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#onEmptyGet(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#onEmptyGet(java.util.function.Supplier)
      */
     @Override
     public LazyPQueueX<T> onEmptyGet(Supplier<? extends T> supplier) {
-       
-        return (LazyPQueueX<T>)super.onEmptyGet(supplier);
+
+        return (LazyPQueueX<T>) super.onEmptyGet(supplier);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#onEmptyThrow(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#onEmptyThrow(java.util.function.Supplier)
      */
     @Override
     public <X extends Throwable> LazyPQueueX<T> onEmptyThrow(Supplier<? extends X> supplier) {
-       
-        return (LazyPQueueX<T>)super.onEmptyThrow(supplier);
+
+        return (LazyPQueueX<T>) super.onEmptyThrow(supplier);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#shuffle(java.util.Random)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#shuffle(java.util.Random)
      */
     @Override
     public LazyPQueueX<T> shuffle(Random random) {
-       
-        return (LazyPQueueX<T>)super.shuffle(random);
+
+        return (LazyPQueueX<T>) super.shuffle(random);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#ofType(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#ofType(java.lang.Class)
      */
     @Override
     public <U> LazyPQueueX<U> ofType(Class<? extends U> type) {
-       
-        return (LazyPQueueX<U>)super.ofType(type);
+
+        return (LazyPQueueX<U>) super.ofType(type);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#filterNot(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#filterNot(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<T> filterNot(Predicate<? super T> fn) {
-       
-        return (LazyPQueueX<T>)super.filterNot(fn);
+
+        return (LazyPQueueX<T>) super.filterNot(fn);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#notNull()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#notNull()
      */
     @Override
     public LazyPQueueX<T> notNull() {
-       
-        return (LazyPQueueX<T>)super.notNull();
+
+        return (LazyPQueueX<T>) super.notNull();
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#removeAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#removeAll(java.util.stream.Stream)
      */
     @Override
     public LazyPQueueX<T> removeAll(Stream<? extends T> stream) {
-       
-        return (LazyPQueueX<T>)(super.removeAll(stream));
+
+        return (LazyPQueueX<T>) (super.removeAll(stream));
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#removeAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#removeAll(org.jooq.lambda.Seq)
      */
     @Override
     public LazyPQueueX<T> removeAll(Seq<? extends T> stream) {
-       
-        return (LazyPQueueX<T>)super.removeAll(stream);
+
+        return (LazyPQueueX<T>) super.removeAll(stream);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#removeAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#removeAll(java.lang.Iterable)
      */
     @Override
     public LazyPQueueX<T> removeAll(Iterable<? extends T> it) {
-       
-        return (LazyPQueueX<T>)super.removeAll(it);
+
+        return (LazyPQueueX<T>) super.removeAll(it);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#removeAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#removeAll(java.lang.Object[])
      */
     @Override
     public LazyPQueueX<T> removeAll(T... values) {
-       
-        return (LazyPQueueX<T>)super.removeAll(values);
+
+        return (LazyPQueueX<T>) super.removeAll(values);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#retainAll(java.lang.Iterable)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#retainAll(java.lang.Iterable)
      */
     @Override
     public LazyPQueueX<T> retainAll(Iterable<? extends T> it) {
-       
-        return (LazyPQueueX<T>)super.retainAll(it);
+
+        return (LazyPQueueX<T>) super.retainAll(it);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#retainAll(java.util.stream.Stream)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#retainAll(java.util.stream.Stream)
      */
     @Override
     public LazyPQueueX<T> retainAll(Stream<? extends T> stream) {
-       
-        return (LazyPQueueX<T>)super.retainAll(stream);
+
+        return (LazyPQueueX<T>) super.retainAll(stream);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#retainAll(org.jooq.lambda.Seq)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#retainAll(org.jooq.lambda.Seq)
      */
     @Override
     public LazyPQueueX<T> retainAll(Seq<? extends T> stream) {
-       
-        return (LazyPQueueX<T>)super.retainAll(stream);
+
+        return (LazyPQueueX<T>) super.retainAll(stream);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#retainAll(java.lang.Object[])
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#retainAll(java.lang.Object[])
      */
     @Override
     public LazyPQueueX<T> retainAll(T... values) {
-       
-        return (LazyPQueueX<T>)super.retainAll(values);
+
+        return (LazyPQueueX<T>) super.retainAll(values);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#cast(java.lang.Class)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#cast(java.lang.Class)
      */
     @Override
     public <U> LazyPQueueX<U> cast(Class<? extends U> type) {
-       
-        return (LazyPQueueX<U>)super.cast(type);
+
+        return (LazyPQueueX<U>) super.cast(type);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#patternMatch(java.util.function.Function, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#patternMatch(java.util.function.Function,
+     * java.util.function.Supplier)
      */
     @Override
     public <R> LazyPQueueX<R> patternMatch(Function<CheckValue1<T, R>, CheckValue1<T, R>> case1,
             Supplier<? extends R> otherwise) {
-       
-        return (LazyPQueueX<R>)super.patternMatch(case1, otherwise);
+
+        return (LazyPQueueX<R>) super.patternMatch(case1, otherwise);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#permutations()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#permutations()
      */
     @Override
     public LazyPQueueX<ReactiveSeq<T>> permutations() {
-       
-        return (LazyPQueueX<ReactiveSeq<T>>)super.permutations();
+
+        return (LazyPQueueX<ReactiveSeq<T>>) super.permutations();
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#combinations(int)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#combinations(int)
      */
     @Override
     public LazyPQueueX<ReactiveSeq<T>> combinations(int size) {
-       
-        return (LazyPQueueX<ReactiveSeq<T>>)super.combinations(size);
+
+        return (LazyPQueueX<ReactiveSeq<T>>) super.combinations(size);
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#combinations()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#combinations()
      */
     @Override
     public LazyPQueueX<ReactiveSeq<T>> combinations() {
-       
-        return (LazyPQueueX<ReactiveSeq<T>>)super.combinations();
+
+        return (LazyPQueueX<ReactiveSeq<T>>) super.combinations();
     }
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#grouped(int, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#grouped(int, java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyPQueueX<C> grouped(int size, Supplier<C> supplier) {
-       
-        return (LazyPQueueX<C>)super.grouped(size, supplier);
+
+        return (LazyPQueueX<C>) super.grouped(size, supplier);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedUntil(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedUntil(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<ListX<T>> groupedUntil(Predicate<? super T> predicate) {
-       
-        return (LazyPQueueX<ListX<T>>)super.groupedUntil(predicate);
+
+        return (LazyPQueueX<ListX<T>>) super.groupedUntil(predicate);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedWhile(java.util.function.Predicate)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedWhile(java.util.function.Predicate)
      */
     @Override
     public LazyPQueueX<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
-       
-        return (LazyPQueueX<ListX<T>>)super.groupedWhile(predicate);
+
+        return (LazyPQueueX<ListX<T>>) super.groupedWhile(predicate);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedWhile(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedWhile(java.util.function.Predicate,
+     * java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyPQueueX<C> groupedWhile(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazyPQueueX<C>)super.groupedWhile(predicate, factory);
+
+        return (LazyPQueueX<C>) super.groupedWhile(predicate, factory);
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedUntil(java.util.function.Predicate, java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedUntil(java.util.function.Predicate,
+     * java.util.function.Supplier)
      */
     @Override
     public <C extends Collection<? super T>> LazyPQueueX<C> groupedUntil(Predicate<? super T> predicate,
             Supplier<C> factory) {
-        
-        return (LazyPQueueX<C>)super.groupedUntil(predicate, factory);
+
+        return (LazyPQueueX<C>) super.groupedUntil(predicate, factory);
     }
-   
+
     /** PStackX methods **/
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#with(int, java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#with(int,
+     * java.lang.Object)
      */
-    public LazyPQueueX<T> with(int i,T element){
-        return stream( Fluxes.insertAt(Fluxes.deleteBetween(flux(),i, i+1),i,element)) ;
+    public LazyPQueueX<T> with(int i, T element) {
+        return stream(Fluxes.insertAt(Fluxes.deleteBetween(flux(), i, i + 1), i, element));
     }
-    
-    
-    
- 
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.BiPredicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#groupedStatefullyUntil(java.util.function.
+     * BiPredicate)
      */
     @Override
     public LazyPQueueX<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        
-        return (LazyPQueueX<ListX<T>>)super.groupedStatefullyUntil(predicate);
+
+        return (LazyPQueueX<ListX<T>>) super.groupedStatefullyUntil(predicate);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#peek(java.util.function.Consumer)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#peek(java.util.function.Consumer)
      */
     @Override
     public LazyPQueueX<T> peek(Consumer<? super T> c) {
-        
-        return (LazyPQueueX)super.peek(c);
+
+        return (LazyPQueueX) super.peek(c);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(org.jooq.lambda.Seq, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(org.jooq.lambda.Seq,
+     * java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazyPQueueX<R> zip(Seq<? extends U> other,
-            BiFunction<? super T, ? super U, ? extends R> zipper) {
-        
-        return (LazyPQueueX<R>)super.zip(other, zipper);
+    public <U, R> LazyPQueueX<R> zip(Seq<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazyPQueueX<R>) super.zip(other, zipper);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream,
+     * java.util.function.BiFunction)
      */
     @Override
-    public <U, R> LazyPQueueX<R> zip(Stream<? extends U> other,
-            BiFunction<? super T, ? super U, ? extends R> zipper) {
-      
-        return (LazyPQueueX<R>)super.zip(other, zipper);
+    public <U, R> LazyPQueueX<R> zip(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+
+        return (LazyPQueueX<R>) super.zip(other, zipper);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.stream.Stream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.stream.Stream)
      */
     @Override
     public <U> LazyPQueueX<Tuple2<T, U>> zip(Stream<? extends U> other) {
-        
-        return (LazyPQueueX)super.zip(other);
+
+        return (LazyPQueueX) super.zip(other);
     }
 
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#zip(java.util.function.BiFunction, org.reactivestreams.Publisher)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#zip(java.util.function.BiFunction,
+     * org.reactivestreams.Publisher)
      */
     @Override
     public <T2, R> LazyPQueueX<R> zip(BiFunction<? super T, ? super T2, ? extends R> fn,
             Publisher<? extends T2> publisher) {
-       
-        return (LazyPQueueX<R>)super.zip(fn, publisher);
+
+        return (LazyPQueueX<R>) super.zip(fn, publisher);
     }
- 
-   
-  
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptySwitch(java.util.function.Supplier)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.standard.ListX#onEmptySwitch(
+     * java.util.function.Supplier)
      */
     @Override
     public LazyPQueueX<T> onEmptySwitch(Supplier<? extends PQueue<T>> supplier) {
-        return stream(Fluxes.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
-       
-    }
-    
+        return stream(Fluxes.onEmptySwitch(flux(), () -> Flux.fromIterable(supplier.get())));
 
-   
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#unit(Collection)
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.data.collections.extensions.standard.ListX#unit(
+     * Collection)
      */
     @Override
     public <R> LazyPQueueX<R> unit(Collection<R> col) {
-       
+
         return fromIterable(col);
     }
-    
+
     @Override
     public <R> LazyPQueueX<R> unit(R value) {
         return singleton(value);
     }
 
     @Override
-    public<R> LazyPQueueX<R> unitIterator(Iterator<R> it) {
+    public <R> LazyPQueueX<R> unitIterator(Iterator<R> it) {
         return fromIterable(() -> it);
     }
 
     @Override
     public <R> LazyPQueueX<R> emptyUnit() {
-       
+
         return LazyPQueueX.<R> empty();
     }
 
@@ -1290,15 +1589,21 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#plusInOrder(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX
+     * #plusInOrder(java.lang.Object)
      */
     @Override
     public LazyPQueueX<T> plusInOrder(T e) {
         return plus(e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.data.collections.extensions.CollectionX#stream()
      */
     @Override
@@ -1306,84 +1611,101 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
 
         return ReactiveSeq.fromIterable(this);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#from(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#from(java.util.Collection)
      */
     @Override
     public <X> LazyPQueueX<X> from(Collection<X> col) {
         return fromIterable(col);
     }
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.data.collections.extensions.persistent.PQueueX#monoid()
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.data.collections.extensions.persistent.PQueueX#monoid()
      */
     @Override
     public <T> Reducer<PQueue<T>> monoid() {
-       
+
         return Reducers.toPQueue();
 
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.MapPSet#plus(java.lang.Object)
      */
     @Override
     public LazyPQueueX<T> plus(T e) {
-        return new LazyPQueueX<T>(getQueue().plus(e),this.collector);
+        return new LazyPQueueX<T>(
+                                  getQueue().plus(e), this.collector);
     }
-    
-  
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.MapPSet#plusAll(java.util.Collection)
      */
     @Override
-    public  LazyPQueueX<T> plusAll(Collection<? extends T> list) {
-        return new LazyPQueueX<T>(getQueue().plusAll(list),this.collector);
+    public LazyPQueueX<T> plusAll(Collection<? extends T> list) {
+        return new LazyPQueueX<T>(
+                                  getQueue().plusAll(list), this.collector);
     }
-    
 
-   
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.PQueue#minus()
      */
     public LazyPQueueX<T> minus() {
-        return LazyPQueueX.fromIterable(this.collector,getQueue().minus());
+        return LazyPQueueX.fromIterable(this.collector, getQueue().minus());
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.PQueue#offer(java.lang.Object)
      */
     public boolean offer(T o) {
         return getQueue().offer(o);
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.PQueue#poll()
      */
     public T poll() {
         return getQueue().poll();
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.pcollections.PQueue#remove()
      */
     public T remove() {
         return getQueue().remove();
     }
 
-   
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Queue#element()
      */
     public T element() {
         return getQueue().element();
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Queue#peek()
      */
     @Override
@@ -1391,22 +1713,28 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
         return getQueue().peek();
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minus(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#minus(java.lang.Object)
      */
     @Override
-    public  LazyPQueueX<T> minus(Object e) {
+    public LazyPQueueX<T> minus(Object e) {
         PCollection<T> res = getQueue().minus(e);
-        return LazyPQueueX.fromIterable(this.collector,res);
-        
+        return LazyPQueueX.fromIterable(this.collector, res);
+
     }
-    
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX#minusAll(java.util.Collection)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.collections.extensions.base.
+     * AbstractFluentCollectionX#minusAll(java.util.Collection)
      */
     public LazyPQueueX<T> minusAll(Collection<?> list) {
         PCollection<T> res = getQueue().minusAll(list);
-        return LazyPQueueX.fromIterable(this.collector,res);
+        return LazyPQueueX.fromIterable(this.collector, res);
     }
 
 }

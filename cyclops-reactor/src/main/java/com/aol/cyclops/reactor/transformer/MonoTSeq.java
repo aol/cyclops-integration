@@ -23,7 +23,6 @@ import org.jooq.lambda.tuple.Tuple4;
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.control.monads.transformers.seq.MaybeTSeq;
 import com.aol.cyclops.control.monads.transformers.values.ValueTransformerSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.types.IterableFoldable;
@@ -36,7 +35,6 @@ import com.aol.cyclops.types.stream.CyclopsCollectable;
 
 import reactor.core.publisher.Mono;
 
-
 /**
  * Monad Transformer for Reactor Monos nested inside Sequential data types
  * 
@@ -44,14 +42,15 @@ import reactor.core.publisher.Mono;
  *
  * @param <A> the type of elements held in the nested Monos
  */
-public class MonoTSeq<A>
-        implements MonoT<A>, ValueTransformerSeq<A>, IterableFoldable<A>, ConvertableSequence<A>, CyclopsCollectable<A>, Sequential<A> {
+public class MonoTSeq<A> implements MonoT<A>, ValueTransformerSeq<A>, IterableFoldable<A>, ConvertableSequence<A>,
+        CyclopsCollectable<A>, Sequential<A> {
 
     private final AnyMSeq<Mono<A>> run;
 
     /**
      * @return The wrapped AnyM
      */
+    @Override
     public AnyMSeq<Mono<A>> unwrap() {
         return run;
     }
@@ -60,69 +59,78 @@ public class MonoTSeq<A>
         this.run = run;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.ValueTransformerSeq#
+     * unitStream(com.aol.cyclops.control.ReactiveSeq)
+     */
     @Override
-    public <T> MonoTSeq<T> unitStream(ReactiveSeq<T> traversable) {
+    public <T> MonoTSeq<T> unitStream(final ReactiveSeq<T> traversable) {
         return MonoT.fromStream(traversable.map(Mono::just));
 
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#
+     * unitAnyM(com.aol.cyclops.control.AnyM)
+     */
     @Override
-    public <T> MonoTSeq<T> unitAnyM(AnyM<Traversable<T>> traversable) {
+    public <T> MonoTSeq<T> unitAnyM(final AnyM<Traversable<T>> traversable) {
 
         return of((AnyMSeq) traversable.map(t -> Mono.from(t)));
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#
+     * transformerStream()
+     */
     @Override
     public AnyMSeq<? extends Traversable<A>> transformerStream() {
 
         return run.map(f -> ListX.of(f.block()));
     }
 
-    
-    public MonoTSeq<A> filter(Predicate<? super A> test) {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.transformer.MonoT#filter(java.util.function.
+     * Predicate)
+     */
+    @Override
+    public MonoTSeq<A> filter(final Predicate<? super A> test) {
         return MonoTSeq.of(run.map(opt -> opt.filter(test)));
     }
 
-    /**
-     * Peek at the current value of the Mono
-     * <pre>
-     * {@code 
-     *    MonoT.of(AnyM.fromStream(Arrays.asMono(10))
-     *             .peek(System.out::println);
-     *             
-     *     //prints 10        
-     * }
-     * </pre>
+    /*
+     * (non-Javadoc)
      * 
-     * @param peek  Consumer to accept current value of Mono
-     * @return MonoT with peek call
+     * @see com.aol.cyclops.reactor.transformer.MonoT#peek(java.util.function.
+     * Consumer)
      */
-    public MonoTSeq<A> peek(Consumer<? super A> peek) {
+    @Override
+    public MonoTSeq<A> peek(final Consumer<? super A> peek) {
         return of(run.peek(future -> future.map(a -> {
             peek.accept(a);
             return a;
         })));
     }
 
-    /**
-     * Map the wrapped Mono
+    /*
+     * (non-Javadoc)
      * 
-     * <pre>
-     * {@code 
-     *  MonoT.of(AnyM.fromStream(Arrays.asMono(10))
-     *             .map(t->t=t+1);
-     *  
-     *  
-     *  //MonoT<AnyMSeq<Stream<Mono[11]>>>
-     * }
-     * </pre>
-     * 
-     * @param f Mapping function for the wrapped Mono
-     * @return MonoT that applies the map function to the wrapped Mono
+     * @see com.aol.cyclops.reactor.transformer.MonoT#map(java.util.function.
+     * Function)
      */
-    public <B> MonoTSeq<B> map(Function<? super A, ? extends B> f) {
+    @Override
+    public <B> MonoTSeq<B> map(final Function<? super A, ? extends B> f) {
         return new MonoTSeq<B>(
-                                  run.map(o -> o.map(f)));
+                               run.map(o -> o.map(f)));
     }
 
     /**
@@ -140,19 +148,27 @@ public class MonoTSeq<A>
      * @return MonoT that applies the flatMap function to the wrapped Mono
      */
 
-    public <B> MonoTSeq<B> flatMapT(Function<? super A, MonoTSeq<B>> f) {
+    public <B> MonoTSeq<B> flatMapT(final Function<? super A, MonoTSeq<B>> f) {
         return of(run.map(future -> Mono.from(future.flatMap(a -> f.apply(a).run.stream()
-                                                                      .toList()
-                                                                      .get(0)))));
+                                                                                .toList()
+                                                                                .get(0)))));
     }
 
-    private static <B> AnyMSeq<Mono<B>> narrow(AnyMSeq<Mono<? extends B>> run) {
+    private static <B> AnyMSeq<Mono<B>> narrow(final AnyMSeq<Mono<? extends B>> run) {
         return (AnyMSeq) run;
     }
 
-    public <B> MonoTSeq<B> flatMap(Function<? super A, ? extends MonadicValue<? extends B>> f) {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.reactor.transformer.MonoT#flatMap(java.util.function.
+     * Function)
+     */
+    @Override
+    public <B> MonoTSeq<B> flatMap(final Function<? super A, ? extends MonadicValue<? extends B>> f) {
 
-        AnyMSeq<Mono<? extends B>> mapped = run.map(o -> Mono.from(o.flatMap(f)));
+        final AnyMSeq<Mono<? extends B>> mapped = run.map(o -> Mono.from(o.flatMap(f)));
         return of(narrow(mapped));
 
     }
@@ -162,31 +178,13 @@ public class MonoTSeq<A>
      * This allows multiple monad types to add functionality to existing functions and methods
      * 
      * e.g. to add list handling  / iteration (via Mono) and iteration (via Stream) to an existing function
-     * <pre>
-     * {@code 
-        Function<Integer,Integer> add2 = i -> i+2;
-        Function<MonoT<Integer>, MonoT<Integer>> optTAdd2 = MonoT.lift(add2);
-        
-        Stream<Integer> withNulls = Stream.of(1,2,3);
-        AnyMSeq<Integer> stream = AnyM.fromStream(withNulls);
-        AnyMSeq<Mono<Integer>> streamOpt = stream.map(Mono::completedFuture);
-        List<Integer> results = optTAdd2.apply(MonoT.of(streamOpt))
-                                        .unwrap()
-                                        .<Stream<Mono<Integer>>>unwrap()
-                                        .map(Mono::join)
-                                        .collect(Collectors.toList());
-        
-        
-        //Mono.completedFuture(List[3,4]);
-     * 
-     * 
-     * }</pre>
+    
      * 
      * 
      * @param fn Function to enhance with functionality from Mono and another monad type
      * @return Function that accepts and returns an MonoT
      */
-    public static <U, R> Function<MonoTSeq<U>, MonoTSeq<R>> lift(Function<? super U, ? extends R> fn) {
+    public static <U, R> Function<MonoTSeq<U>, MonoTSeq<R>> lift(final Function<? super U, ? extends R> fn) {
         return optTu -> optTu.map(input -> fn.apply(input));
     }
 
@@ -196,31 +194,12 @@ public class MonoTSeq<A>
      * 
      * e.g. to add list handling / iteration (via Mono), iteration (via Stream)  and asynchronous execution (Mono) 
      * to an existing function
-     * 
-     * <pre>
-     * {@code 
-        BiFunction<Integer,Integer,Integer> add = (a,b) -> a+b;
-        BiFunction<MonoT<Integer>,MonoT<Integer>,MonoT<Integer>> optTAdd2 = MonoT.lift2(add);
-        
-        Stream<Integer> withNulls = Stream.of(1,2,3);
-        AnyMSeq<Integer> stream = AnyM.ofMonad(withNulls);
-        AnyMSeq<Mono<Integer>> streamOpt = stream.map(Mono::completedFuture);
-        
-        Mono<Mono<Integer>> two = Mono.completedFuture(Mono.completedFuture(2));
-        AnyMSeq<Mono<Integer>> future=  AnyM.fromMono(two);
-        List<Integer> results = optTAdd2.apply(MonoT.of(streamOpt),MonoT.of(future))
-                                        .unwrap()
-                                        .<Stream<Mono<Integer>>>unwrap()
-                                        .map(Mono::join)
-                                        .collect(Collectors.toList());
-                                        
-            //Mono.completedFuture(List[3,4,5]);                        
-      }
-      </pre>
+    
      * @param fn BiFunction to enhance with functionality from Mono and another monad type
      * @return Function that accepts and returns an MonoT
      */
-    public static <U1, U2, R> BiFunction<MonoTSeq<U1>, MonoTSeq<U2>, MonoTSeq<R>> lift2(BiFunction<? super U1, ? super U2, ? extends R> fn) {
+    public static <U1, U2, R> BiFunction<MonoTSeq<U1>, MonoTSeq<U2>, MonoTSeq<R>> lift2(
+            final BiFunction<? super U1, ? super U2, ? extends R> fn) {
         return (optTu1, optTu2) -> optTu1.flatMapT(input1 -> optTu2.map(input2 -> fn.apply(input1, input2)));
     }
 
@@ -231,7 +210,7 @@ public class MonoTSeq<A>
      * @param anyM AnyM that doesn't contain a monad wrapping an Mono
      * @return MonoT
      */
-    public static <A> MonoTSeq<A> fromAnyM(AnyMSeq<A> anyM) {
+    public static <A> MonoTSeq<A> fromAnyM(final AnyMSeq<A> anyM) {
         return of(anyM.map(Mono::just));
     }
 
@@ -241,12 +220,12 @@ public class MonoTSeq<A>
      * @param monads AnyM that contains a monad wrapping an Mono
      * @return MonoT
      */
-    public static <A> MonoTSeq<A> of(AnyMSeq<Mono<A>> monads) {
+    public static <A> MonoTSeq<A> of(final AnyMSeq<Mono<A>> monads) {
         return new MonoTSeq<>(
-                                 monads);
+                              monads);
     }
 
-    public static <A> MonoTSeq<A> of(Mono<A> monads) {
+    public static <A> MonoTSeq<A> of(final Mono<A> monads) {
         return MonoT.fromIterable(ListX.of(monads));
     }
 
@@ -255,35 +234,60 @@ public class MonoTSeq<A>
      * 
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         return String.format("FutureTSeq[%s]", run);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.types.stream.ToStream#stream()
+     */
     @Override
     public ReactiveSeq<A> stream() {
         return run.stream()
                   .map(cf -> cf.block());
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.types.stream.ToStream#iterator()
+     */
     @Override
     public Iterator<A> iterator() {
         return stream().iterator();
     }
 
-    public <R> MonoTSeq<R> unitIterator(Iterator<R> it) {
+    public <R> MonoTSeq<R> unitIterator(final Iterator<R> it) {
         return of(run.unitIterator(it)
                      .map(i -> Mono.just(i)));
     }
 
-    public <R> MonoTSeq<R> unit(R value) {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.types.Unit#unit(java.lang.Object)
+     */
+    @Override
+    public <R> MonoTSeq<R> unit(final R value) {
         return of(run.unit(Mono.just(value)));
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.reactor.transformer.MonoT#empty()
+     */
+    @Override
     public <R> MonoTSeq<R> empty() {
         return of(run.unit(Mono.empty()));
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.stream.CyclopsCollectable#collectable()
      */
     @Override
@@ -291,6 +295,13 @@ public class MonoTSeq<A>
         return stream();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#
+     * isSeqPresent()
+     */
+    @Override
     public boolean isSeqPresent() {
         return !run.isEmpty();
     }
@@ -299,117 +310,183 @@ public class MonoTSeq<A>
         return MonoT.fromIterable(ListX.of());
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#combine(java.util.function.BiPredicate, java.util.function.BinaryOperator)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#combine(
+     * java.util.function.BiPredicate, java.util.function.BinaryOperator)
      */
     @Override
-    public MonoTSeq<A> combine(BiPredicate<? super A, ? super A> predicate, BinaryOperator<A> op) {
+    public MonoTSeq<A> combine(final BiPredicate<? super A, ? super A> predicate, final BinaryOperator<A> op) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.combine(predicate, op);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#cycle(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#cycle(int)
      */
     @Override
-    public MonoTSeq<A> cycle(int times) {
+    public MonoTSeq<A> cycle(final int times) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.cycle(times);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#cycle(com.aol.cyclops.Monoid, int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#cycle(com.
+     * aol.cyclops.Monoid, int)
      */
     @Override
-    public MonoTSeq<A> cycle(Monoid<A> m, int times) {
+    public MonoTSeq<A> cycle(final Monoid<A> m, final int times) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.cycle(m, times);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#cycleWhile(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#cycleWhile
+     * (java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> cycleWhile(Predicate<? super A> predicate) {
+    public MonoTSeq<A> cycleWhile(final Predicate<? super A> predicate) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.cycleWhile(predicate);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#cycleUntil(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#cycleUntil
+     * (java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> cycleUntil(Predicate<? super A> predicate) {
+    public MonoTSeq<A> cycleUntil(final Predicate<? super A> predicate) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.cycleUntil(predicate);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#zip(java.lang.Iterable, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#zip(java.
+     * lang.Iterable, java.util.function.BiFunction)
      */
     @Override
-    public <U, R> MonoTSeq<R> zip(Iterable<? extends U> other, BiFunction<? super A, ? super U, ? extends R> zipper) {
+    public <U, R> MonoTSeq<R> zip(final Iterable<? extends U> other,
+            final BiFunction<? super A, ? super U, ? extends R> zipper) {
 
         return (MonoTSeq<R>) ValueTransformerSeq.super.zip(other, zipper);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.ValueTransformerSeq#
+     * zip(java.util.stream.Stream, java.util.function.BiFunction)
+     */
     @Override
-    public <U, R> MonoTSeq<R> zip(Stream<? extends U> other, BiFunction<? super A, ? super U, ? extends R> zipper) {
+    public <U, R> MonoTSeq<R> zip(final Stream<? extends U> other,
+            final BiFunction<? super A, ? super U, ? extends R> zipper) {
 
         return (MonoTSeq<R>) ValueTransformerSeq.super.zip(other, zipper);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.ValueTransformerSeq#
+     * zip(org.jooq.lambda.Seq, java.util.function.BiFunction)
+     */
     @Override
-    public <U, R> MonoTSeq<R> zip(Seq<? extends U> other, BiFunction<? super A, ? super U, ? extends R> zipper) {
+    public <U, R> MonoTSeq<R> zip(final Seq<? extends U> other,
+            final BiFunction<? super A, ? super U, ? extends R> zipper) {
 
         return (MonoTSeq<R>) ValueTransformerSeq.super.zip(other, zipper);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#zip(java.util.stream.Stream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#zip(java.
+     * util.stream.Stream)
      */
     @Override
-    public <U> MonoTSeq<Tuple2<A, U>> zip(Stream<? extends U> other) {
+    public <U> MonoTSeq<Tuple2<A, U>> zip(final Stream<? extends U> other) {
 
         return (MonoTSeq) ValueTransformerSeq.super.zip(other);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.ValueTransformerSeq#
+     * zip(java.lang.Iterable)
+     */
     @Override
-    public <U> MonoTSeq<Tuple2<A, U>> zip(Iterable<? extends U> other) {
+    public <U> MonoTSeq<Tuple2<A, U>> zip(final Iterable<? extends U> other) {
 
         return (MonoTSeq) ValueTransformerSeq.super.zip(other);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#zip(org.jooq.lambda.Seq)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#zip(org.
+     * jooq.lambda.Seq)
      */
     @Override
-    public <U> MonoTSeq<Tuple2<A, U>> zip(Seq<? extends U> other) {
+    public <U> MonoTSeq<Tuple2<A, U>> zip(final Seq<? extends U> other) {
 
         return (MonoTSeq) ValueTransformerSeq.super.zip(other);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#zip3(java.util.stream.Stream, java.util.stream.Stream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#zip3(java.
+     * util.stream.Stream, java.util.stream.Stream)
      */
     @Override
-    public <S, U> MonoTSeq<Tuple3<A, S, U>> zip3(Stream<? extends S> second, Stream<? extends U> third) {
+    public <S, U> MonoTSeq<Tuple3<A, S, U>> zip3(final Stream<? extends S> second, final Stream<? extends U> third) {
 
         return (MonoTSeq) ValueTransformerSeq.super.zip3(second, third);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#zip4(java.util.stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#zip4(java.
+     * util.stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
      */
     @Override
-    public <T2, T3, T4> MonoTSeq<Tuple4<A, T2, T3, T4>> zip4(Stream<? extends T2> second, Stream<? extends T3> third,
-            Stream<? extends T4> fourth) {
+    public <T2, T3, T4> MonoTSeq<Tuple4<A, T2, T3, T4>> zip4(final Stream<? extends T2> second,
+            final Stream<? extends T3> third, final Stream<? extends T4> fourth) {
 
         return (MonoTSeq) ValueTransformerSeq.super.zip4(second, third, fourth);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#zipWithIndex()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#
+     * zipWithIndex()
      */
     @Override
     public MonoTSeq<Tuple2<A, Long>> zipWithIndex() {
@@ -417,107 +494,152 @@ public class MonoTSeq<A>
         return (MonoTSeq<Tuple2<A, Long>>) ValueTransformerSeq.super.zipWithIndex();
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#sliding(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#sliding(
+     * int)
      */
     @Override
-    public MonoTSeq<ListX<A>> sliding(int windowSize) {
+    public MonoTSeq<ListX<A>> sliding(final int windowSize) {
 
         return (MonoTSeq<ListX<A>>) ValueTransformerSeq.super.sliding(windowSize);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#sliding(int, int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#sliding(
+     * int, int)
      */
     @Override
-    public MonoTSeq<ListX<A>> sliding(int windowSize, int increment) {
+    public MonoTSeq<ListX<A>> sliding(final int windowSize, final int increment) {
 
         return (MonoTSeq<ListX<A>>) ValueTransformerSeq.super.sliding(windowSize, increment);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#grouped(int, java.util.function.Supplier)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#grouped(
+     * int, java.util.function.Supplier)
      */
     @Override
-    public <C extends Collection<? super A>> MonoTSeq<C> grouped(int size, Supplier<C> supplier) {
+    public <C extends Collection<? super A>> MonoTSeq<C> grouped(final int size, final Supplier<C> supplier) {
 
         return (MonoTSeq<C>) ValueTransformerSeq.super.grouped(size, supplier);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#groupedUntil(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#
+     * groupedUntil(java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<ListX<A>> groupedUntil(Predicate<? super A> predicate) {
+    public MonoTSeq<ListX<A>> groupedUntil(final Predicate<? super A> predicate) {
 
         return (MonoTSeq<ListX<A>>) ValueTransformerSeq.super.groupedUntil(predicate);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#groupedStatefullyUntil(java.util.function.BiPredicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#
+     * groupedStatefullyUntil(java.util.function.BiPredicate)
      */
     @Override
-    public MonoTSeq<ListX<A>> groupedStatefullyUntil(BiPredicate<ListX<? super A>, ? super A> predicate) {
+    public MonoTSeq<ListX<A>> groupedStatefullyUntil(final BiPredicate<ListX<? super A>, ? super A> predicate) {
 
         return (MonoTSeq<ListX<A>>) ValueTransformerSeq.super.groupedStatefullyUntil(predicate);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#groupedWhile(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#
+     * groupedWhile(java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<ListX<A>> groupedWhile(Predicate<? super A> predicate) {
+    public MonoTSeq<ListX<A>> groupedWhile(final Predicate<? super A> predicate) {
 
         return (MonoTSeq<ListX<A>>) ValueTransformerSeq.super.groupedWhile(predicate);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#groupedWhile(java.util.function.Predicate, java.util.function.Supplier)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#
+     * groupedWhile(java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
-    public <C extends Collection<? super A>> MonoTSeq<C> groupedWhile(Predicate<? super A> predicate, Supplier<C> factory) {
+    public <C extends Collection<? super A>> MonoTSeq<C> groupedWhile(final Predicate<? super A> predicate,
+            final Supplier<C> factory) {
 
         return (MonoTSeq<C>) ValueTransformerSeq.super.groupedWhile(predicate, factory);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#groupedUntil(java.util.function.Predicate, java.util.function.Supplier)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#
+     * groupedUntil(java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
-    public <C extends Collection<? super A>> MonoTSeq<C> groupedUntil(Predicate<? super A> predicate, Supplier<C> factory) {
+    public <C extends Collection<? super A>> MonoTSeq<C> groupedUntil(final Predicate<? super A> predicate,
+            final Supplier<C> factory) {
 
         return (MonoTSeq<C>) ValueTransformerSeq.super.groupedUntil(predicate, factory);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#grouped(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#grouped(
+     * int)
      */
     @Override
-    public MonoTSeq<ListX<A>> grouped(int groupSize) {
+    public MonoTSeq<ListX<A>> grouped(final int groupSize) {
 
         return (MonoTSeq<ListX<A>>) ValueTransformerSeq.super.grouped(groupSize);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#grouped(java.util.function.Function, java.util.stream.Collector)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#grouped(
+     * java.util.function.Function, java.util.stream.Collector)
      */
     @Override
-    public <K, T, D> MonoTSeq<Tuple2<K, D>> grouped(Function<? super A, ? extends K> classifier, Collector<? super A, T, D> downstream) {
+    public <K, T, D> MonoTSeq<Tuple2<K, D>> grouped(final Function<? super A, ? extends K> classifier,
+            final Collector<? super A, T, D> downstream) {
 
         return (MonoTSeq) ValueTransformerSeq.super.grouped(classifier, downstream);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#grouped(java.util.function.Function)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#grouped(
+     * java.util.function.Function)
      */
     @Override
-    public <K> MonoTSeq<Tuple2<K, Seq<A>>> grouped(Function<? super A, ? extends K> classifier) {
+    public <K> MonoTSeq<Tuple2<K, Seq<A>>> grouped(final Function<? super A, ? extends K> classifier) {
 
         return (MonoTSeq) ValueTransformerSeq.super.grouped(classifier);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#distinct()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#distinct()
      */
     @Override
     public MonoTSeq<A> distinct() {
@@ -525,44 +647,63 @@ public class MonoTSeq<A>
         return (MonoTSeq<A>) ValueTransformerSeq.super.distinct();
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#scanLeft(com.aol.cyclops.Monoid)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#scanLeft(
+     * com.aol.cyclops.Monoid)
      */
     @Override
-    public MonoTSeq<A> scanLeft(Monoid<A> monoid) {
+    public MonoTSeq<A> scanLeft(final Monoid<A> monoid) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.scanLeft(monoid);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#scanLeft(java.lang.Object, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#scanLeft(
+     * java.lang.Object, java.util.function.BiFunction)
      */
     @Override
-    public <U> MonoTSeq<U> scanLeft(U seed, BiFunction<? super U, ? super A, ? extends U> function) {
+    public <U> MonoTSeq<U> scanLeft(final U seed, final BiFunction<? super U, ? super A, ? extends U> function) {
 
         return (MonoTSeq<U>) ValueTransformerSeq.super.scanLeft(seed, function);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#scanRight(com.aol.cyclops.Monoid)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#scanRight(
+     * com.aol.cyclops.Monoid)
      */
     @Override
-    public MonoTSeq<A> scanRight(Monoid<A> monoid) {
+    public MonoTSeq<A> scanRight(final Monoid<A> monoid) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.scanRight(monoid);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#scanRight(java.lang.Object, java.util.function.BiFunction)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#scanRight(
+     * java.lang.Object, java.util.function.BiFunction)
      */
     @Override
-    public <U> MonoTSeq<U> scanRight(U identity, BiFunction<? super A, ? super U, ? extends U> combiner) {
+    public <U> MonoTSeq<U> scanRight(final U identity, final BiFunction<? super A, ? super U, ? extends U> combiner) {
 
         return (MonoTSeq<U>) ValueTransformerSeq.super.scanRight(identity, combiner);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#sorted()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#sorted()
      */
     @Override
     public MonoTSeq<A> sorted() {
@@ -570,134 +711,191 @@ public class MonoTSeq<A>
         return (MonoTSeq<A>) ValueTransformerSeq.super.sorted();
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#sorted(java.util.Comparator)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#sorted(
+     * java.util.Comparator)
      */
     @Override
-    public MonoTSeq<A> sorted(Comparator<? super A> c) {
+    public MonoTSeq<A> sorted(final Comparator<? super A> c) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.sorted(c);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#takeWhile(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#takeWhile(
+     * java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> takeWhile(Predicate<? super A> p) {
+    public MonoTSeq<A> takeWhile(final Predicate<? super A> p) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.takeWhile(p);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#dropWhile(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#dropWhile(
+     * java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> dropWhile(Predicate<? super A> p) {
+    public MonoTSeq<A> dropWhile(final Predicate<? super A> p) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.dropWhile(p);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#takeUntil(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#takeUntil(
+     * java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> takeUntil(Predicate<? super A> p) {
+    public MonoTSeq<A> takeUntil(final Predicate<? super A> p) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.takeUntil(p);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#dropUntil(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#dropUntil(
+     * java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> dropUntil(Predicate<? super A> p) {
+    public MonoTSeq<A> dropUntil(final Predicate<? super A> p) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.dropUntil(p);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#dropRight(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#dropRight(
+     * int)
      */
     @Override
-    public MonoTSeq<A> dropRight(int num) {
+    public MonoTSeq<A> dropRight(final int num) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.dropRight(num);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#takeRight(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#takeRight(
+     * int)
      */
     @Override
-    public MonoTSeq<A> takeRight(int num) {
+    public MonoTSeq<A> takeRight(final int num) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.takeRight(num);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#skip(long)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#skip(long)
      */
     @Override
-    public MonoTSeq<A> skip(long num) {
+    public MonoTSeq<A> skip(final long num) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.skip(num);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#skipWhile(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#skipWhile(
+     * java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> skipWhile(Predicate<? super A> p) {
+    public MonoTSeq<A> skipWhile(final Predicate<? super A> p) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.skipWhile(p);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#skipUntil(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#skipUntil(
+     * java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> skipUntil(Predicate<? super A> p) {
+    public MonoTSeq<A> skipUntil(final Predicate<? super A> p) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.skipUntil(p);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#limit(long)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#limit(
+     * long)
      */
     @Override
-    public MonoTSeq<A> limit(long num) {
+    public MonoTSeq<A> limit(final long num) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.limit(num);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#limitWhile(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#limitWhile
+     * (java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> limitWhile(Predicate<? super A> p) {
+    public MonoTSeq<A> limitWhile(final Predicate<? super A> p) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.limitWhile(p);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#limitUntil(java.util.function.Predicate)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#limitUntil
+     * (java.util.function.Predicate)
      */
     @Override
-    public MonoTSeq<A> limitUntil(Predicate<? super A> p) {
+    public MonoTSeq<A> limitUntil(final Predicate<? super A> p) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.limitUntil(p);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#intersperse(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#
+     * intersperse(java.lang.Object)
      */
     @Override
-    public MonoTSeq<A> intersperse(A value) {
+    public MonoTSeq<A> intersperse(final A value) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.intersperse(value);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#reverse()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#reverse()
      */
     @Override
     public MonoTSeq<A> reverse() {
@@ -705,8 +903,11 @@ public class MonoTSeq<A>
         return (MonoTSeq<A>) ValueTransformerSeq.super.reverse();
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#shuffle()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#shuffle()
      */
     @Override
     public MonoTSeq<A> shuffle() {
@@ -714,84 +915,125 @@ public class MonoTSeq<A>
         return (MonoTSeq<A>) ValueTransformerSeq.super.shuffle();
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#skipLast(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#skipLast(
+     * int)
      */
     @Override
-    public MonoTSeq<A> skipLast(int num) {
+    public MonoTSeq<A> skipLast(final int num) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.skipLast(num);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#limitLast(int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#limitLast(
+     * int)
      */
     @Override
-    public MonoTSeq<A> limitLast(int num) {
+    public MonoTSeq<A> limitLast(final int num) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.limitLast(num);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#onEmpty(java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#onEmpty(
+     * java.lang.Object)
      */
     @Override
-    public MonoTSeq<A> onEmpty(A value) {
+    public MonoTSeq<A> onEmpty(final A value) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.onEmpty(value);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#onEmptyGet(java.util.function.Supplier)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#onEmptyGet
+     * (java.util.function.Supplier)
      */
     @Override
-    public MonoTSeq<A> onEmptyGet(Supplier<? extends A> supplier) {
+    public MonoTSeq<A> onEmptyGet(final Supplier<? extends A> supplier) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.onEmptyGet(supplier);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#onEmptyThrow(java.util.function.Supplier)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#
+     * onEmptyThrow(java.util.function.Supplier)
      */
     @Override
-    public <X extends Throwable> MonoTSeq<A> onEmptyThrow(Supplier<? extends X> supplier) {
+    public <X extends Throwable> MonoTSeq<A> onEmptyThrow(final Supplier<? extends X> supplier) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.onEmptyThrow(supplier);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#shuffle(java.util.Random)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#shuffle(
+     * java.util.Random)
      */
     @Override
-    public MonoTSeq<A> shuffle(Random random) {
+    public MonoTSeq<A> shuffle(final Random random) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.shuffle(random);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#slice(long, long)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#slice(
+     * long, long)
      */
     @Override
-    public MonoTSeq<A> slice(long from, long to) {
+    public MonoTSeq<A> slice(final long from, final long to) {
 
         return (MonoTSeq<A>) ValueTransformerSeq.super.slice(from, to);
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.Traversable#sorted(java.util.function.Function)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.Traversable#sorted(
+     * java.util.function.Function)
      */
     @Override
-    public <U extends Comparable<? super U>> MonoTSeq<A> sorted(Function<? super A, ? extends U> function) {
+    public <U extends Comparable<? super U>> MonoTSeq<A> sorted(final Function<? super A, ? extends U> function) {
         return (MonoTSeq) ValueTransformerSeq.super.sorted(function);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         return run.hashCode();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o instanceof MonoTSeq) {
             return run.equals(((MonoTSeq) o).run);
         }

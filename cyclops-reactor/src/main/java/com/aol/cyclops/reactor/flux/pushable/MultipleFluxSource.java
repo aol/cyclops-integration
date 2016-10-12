@@ -54,6 +54,7 @@ public class MultipleFluxSource<T> {
 
         return topic.stream();
     }
+
     /**
      * Create a pushable Flux
      * 

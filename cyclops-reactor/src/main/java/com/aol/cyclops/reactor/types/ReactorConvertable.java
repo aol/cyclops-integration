@@ -11,22 +11,21 @@ import reactor.core.publisher.Mono;
  * @param <T> type of elements contained
  */
 public interface ReactorConvertable<T> {
-    
+
     /**
      * Convert this type to a Reactor Flux
      * 
      * @return Reactor Flux
      */
     Flux<T> flux();
-    
+
     /**
      * Convert this type to a Reactor Mono
      * 
      * @return Reactor Mono
      */
-     default Mono<T> mono(){
-         return Mono.from(flux());
-     }
-    
+    default Mono<T> mono() {
+        return Mono.from(flux());
+    }
 
 }
