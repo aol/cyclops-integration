@@ -15,6 +15,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
+import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Matchable;
@@ -51,6 +52,9 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
         this.run = run;
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerValue#value()
+     */
     public FutureW<A> value() {
         return FutureW.of(run.get().toFuture());
     }
@@ -64,46 +68,27 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
         Mono<A> val = run.orElse(Mono.empty());
         return val.block()!=null;
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerValue#isValuePresent()
+     */
     public boolean isValuePresent() {
         return !run.isEmpty();
     }
 
-    /**
-    * Filter the wrapped Maybe
-    * 
-    * <pre>
-    * {@code 
-    *    MaybeT.of(AnyM.fromStream(Maybe.of(10))
-    *             .filter(t->t!=10);
-    *             
-    *     //MaybeT<AnyMValue<Stream<Maybe.empty>>>
-    * }
-    * </pre>
-    * 
-    * @param test
-    *            Predicate to filter the wrapped Maybe
-    * @return MaybeT that applies the provided filter
-    */
+  
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#filter(java.util.function.Predicate)
+     */
+    @Override
     public MonoTValue<A> filter(Predicate<? super A> test) {  
        
         AnyMValue<Mono<A>> x = run.map(opt -> opt.filter(test));
         return MonoTValue.of(x);
     }
-
-    /**
-     * Peek at the current value of the CompletableFuture
-     * <pre>
-     * {@code 
-     *    CompletableFutureT.of(AnyM.fromStream(Arrays.asCompletableFuture(10))
-     *             .peek(System.out::println);
-     *             
-     *     //prints 10        
-     * }
-     * </pre>
-     * 
-     * @param peek  Consumer to accept current value of CompletableFuture
-     * @return CompletableFutureT with peek call
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#peek(java.util.function.Consumer)
      */
+    @Override
     public MonoTValue<A> peek(Consumer<? super A> peek) {
         return map(e->{
            peek.accept(e);
@@ -112,22 +97,11 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
        
     }
 
-    /**
-     * Map the wrapped CompletableFuture
-     * 
-     * <pre>
-     * {@code 
-     *  CompletableFutureT.of(AnyM.fromStream(Arrays.asCompletableFuture(10))
-     *             .map(t->t=t+1);
-     *  
-     *  
-     *  //CompletableFutureT<AnyMValue<Stream<CompletableFuture[11]>>>
-     * }
-     * </pre>
-     * 
-     * @param f Mapping function for the wrapped CompletableFuture
-     * @return CompletableFutureT that applies the map function to the wrapped CompletableFuture
+  
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#map(java.util.function.Function)
      */
+    @Override
     public <B> MonoTValue<B> map(Function<? super A, ? extends B> f) {
         return new MonoTValue<B>(
                                     run.map(o -> o.map(f)));
@@ -220,17 +194,16 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      * Flat Map the wrapped CompletableFuture
       * <pre>
      * {@code 
-     *  CompletableFutureT.of(AnyM.fromStream(Arrays.asCompletableFuture(10))
-     *             .flatMap(t->CompletableFuture.completedFuture(20));
+     *  MonoT.fromOptional(Optional.of(Mono.just(10))
+     *             .flatMapT(t->MonoT.fromOptional(Mono.just(t*2));
      *  
      *  
-     *  //CompletableFutureT<AnyMValue<Stream<CompletableFuture[20]>>>
+     *  //MonoT[20]
      * }
      * </pre>
      * @param f FlatMap function
-     * @return CompletableFutureT that applies the flatMap function to the wrapped CompletableFuture
+     * @return MonoT that applies the flatMap function to the wrapped CompletableFuture
      */
-
     public <B> MonoTValue<B> flatMapT(Function<? super A, MonoTValue<B>> f) {
         return of(run.map(future -> Mono.from(future.flatMap(a -> f.apply(a).run.stream()
                                                                       .toList()
@@ -241,6 +214,10 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
         return (AnyMValue) run;
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#flatMap(java.util.function.Function)
+     */
+    @Override
     public <B> MonoTValue<B> flatMap(Function<? super A, ? extends MonadicValue<? extends B>> f) {
 
         
@@ -254,26 +231,6 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      * This allows multiple monad types to add functionality to existing functions and methods
      * 
      * e.g. to add list handling  / iteration (via CompletableFuture) and iteration (via Stream) to an existing function
-     * <pre>
-     * {@code 
-        Function<Integer,Integer> add2 = i -> i+2;
-        Function<CompletableFutureT<Integer>, CompletableFutureT<Integer>> optTAdd2 = CompletableFutureT.lift(add2);
-        
-        Stream<Integer> withNulls = Stream.of(1,2,3);
-        AnyMValue<Integer> stream = AnyM.fromStream(withNulls);
-        AnyMValue<CompletableFuture<Integer>> streamOpt = stream.map(CompletableFuture::completedFuture);
-        List<Integer> results = optTAdd2.apply(CompletableFutureT.of(streamOpt))
-                                        .unwrap()
-                                        .<Stream<CompletableFuture<Integer>>>unwrap()
-                                        .map(CompletableFuture::join)
-                                        .collect(Collectors.toList());
-        
-        
-        //CompletableFuture.completedFuture(List[3,4]);
-     * 
-     * 
-     * }</pre>
-     * 
      * 
      * @param fn Function to enhance with functionality from CompletableFuture and another monad type
      * @return Function that accepts and returns an CompletableFutureT
@@ -289,26 +246,6 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      * e.g. to add list handling / iteration (via CompletableFuture), iteration (via Stream)  and asynchronous execution (CompletableFuture) 
      * to an existing function
      * 
-     * <pre>
-     * {@code 
-        BiFunction<Integer,Integer,Integer> add = (a,b) -> a+b;
-        BiFunction<CompletableFutureT<Integer>,CompletableFutureT<Integer>,CompletableFutureT<Integer>> optTAdd2 = CompletableFutureT.lift2(add);
-        
-        Stream<Integer> withNulls = Stream.of(1,2,3);
-        AnyMValue<Integer> stream = AnyM.ofMonad(withNulls);
-        AnyMValue<CompletableFuture<Integer>> streamOpt = stream.map(CompletableFuture::completedFuture);
-        
-        CompletableFuture<CompletableFuture<Integer>> two = CompletableFuture.completedFuture(CompletableFuture.completedFuture(2));
-        AnyMValue<CompletableFuture<Integer>> future=  AnyM.fromCompletableFuture(two);
-        List<Integer> results = optTAdd2.apply(CompletableFutureT.of(streamOpt),CompletableFutureT.of(future))
-                                        .unwrap()
-                                        .<Stream<CompletableFuture<Integer>>>unwrap()
-                                        .map(CompletableFuture::join)
-                                        .collect(Collectors.toList());
-                                        
-            //CompletableFuture.completedFuture(List[3,4,5]);                       
-      }
-      </pre>
      * @param fn BiFunction to enhance with functionality from CompletableFuture and another monad type
      * @return Function that accepts and returns an CompletableFutureT
      */
@@ -343,10 +280,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
         return MonoT.fromOptional(Optional.of(monads));
     }
 
-    public static <A, V extends MonadicValue<Mono<A>>> MonoTValue<A> fromValue(V monadicValue) {
-        return of(AnyM.ofValue(monadicValue));
-    }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -356,12 +290,18 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
         return String.format("MonoTValue[%s]", run);
     }
 
+    /* (non-Javadoc)
+     * @see java.util.function.Supplier#get()
+     */
     @Override
     public A get() {
         return run.get()
                   .block();
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#stream()
+     */
     @Override
     public ReactiveSeq<A> stream() {
         val maybeEval = run.toMaybe();
@@ -370,6 +310,9 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
                 : ReactiveSeq.of();
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#iterator()
+     */
     @Override
     public Iterator<A> iterator() {
         val maybeEval = run.toMaybe();
@@ -379,6 +322,9 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
                         .iterator();
     }
 
+    /* (non-Javadoc)
+     * @see org.reactivestreams.Publisher#subscribe(org.reactivestreams.Subscriber)
+     */
     @Override
     public void subscribe(Subscriber<? super A> s) {
         run.toMaybe()
@@ -386,11 +332,11 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
 
     }
 
-    public boolean isFuturePresent() {
-        return !run.isEmpty();
+  
 
-    }
-
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.Value#test(java.lang.Object)
+     */
     @Override
     public boolean test(A t) {
         val maybeEval = run.toMaybe();
@@ -399,17 +345,22 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
 
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.Unit#unit(java.lang.Object)
+     */
+    @Override
     public <R> MonoTValue<R> unit(R value) {
         return of(run.unit(Mono.just(value)));
     }
-
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#empty()
+     */
+    @Override
     public <R> MonoTValue<R> empty() {
         return of(run.unit(Mono.empty()));
     }
 
-    public static <T> MonoTValue<T> emptyOptional() {
-        return MonoT.fromOptional(Optional.empty());
-    }
+    
 
     /* (non-Javadoc)
      * @see com.aol.cyclops.types.Functor#cast(java.lang.Class)
@@ -461,12 +412,50 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
 
         return (MonoTValue<A>) MonoT.super.notNull();
     }
+    
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#bind(java.util.function.Function)
+     */
+    @Override
+    public <B> MonoTValue<B> bind(Function<? super A, MonoT<? extends B>> f) {
+        return (MonoTValue<B>)MonoT.super.bind(f);
+    }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#nest()
+     */
+    @Override
+    public MonoTValue<MonadicValue<A>> nest() {
+        return (MonoTValue<MonadicValue<A>>)MonoT.super.nest();
+    }
+
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#coflatMap(java.util.function.Function)
+     */
+    @Override
+    public <R> MonoTValue<R> coflatMap(Function<? super MonadicValue<A>, R> mapper) {
+        return (MonoTValue<R>)MonoT.super.coflatMap(mapper);
+    }
+
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.MonoT#combineEager(com.aol.cyclops.Monoid, com.aol.cyclops.types.MonadicValue)
+     */
+    @Override
+    public MonoTValue<A> combineEager(Monoid<A> monoid, MonadicValue<? extends A> v2) {
+        return (MonoTValue<A>)MonoT.super.combineEager(monoid, v2);
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         return run.hashCode();
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object o) {
         if (o instanceof MonoTValue) {

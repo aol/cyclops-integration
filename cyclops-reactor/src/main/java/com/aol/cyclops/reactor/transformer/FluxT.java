@@ -45,7 +45,7 @@ import reactor.core.publisher.Flux;
  * 
  * @author johnmcclean
  *
- * @param <T>
+ * @param <T> the type of elements held in the nested Fluxes
  */
 public interface FluxT<T> extends FoldableTransformerSeq<T> {
 
@@ -194,23 +194,6 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
      * This allows multiple monad types to add functionality to existing functions and methods
      * 
      * e.g. to add iteration handling (via Flux) and nullhandling (via Optional) to an existing function
-     * <pre>
-     * {@code 
-    	Function<Integer,Integer> add2 = i -> i+2;
-    	Function<FluxT<Integer>, FluxT<Integer>> optTAdd2 = FluxT.lift(add2);
-    	
-    	Flux<Integer> nums = Flux.of(1,2);
-    	AnyM<Flux<Integer>> Flux = AnyM.fromOptional(Optional.of(nums));
-    	
-    	List<Integer> results = optTAdd2.apply(FluxT.of(Flux))
-    									.unwrap()
-    									.<Optional<Flux<Integer>>>unwrap()
-    									.get()
-    									.collect(Collectors.toList());
-    	//Flux.of(3,4);
-     * 
-     * 
-     * }</pre>
      * 
      * 
      * @param fn Function to enhance with functionality from Flux and another monad type
@@ -325,7 +308,7 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
      * @return FluxTransformer for manipulating nested Fluxes
      */
     public static <A, V extends MonadicValue<? extends Flux<A>>> FluxTValue<A> fromValue(V monadicValue) {
-        return FluxTValue.fromValue(monadicValue);
+        return FluxTValue.of(AnyM.ofValue(monadicValue));
     }
 
     /**

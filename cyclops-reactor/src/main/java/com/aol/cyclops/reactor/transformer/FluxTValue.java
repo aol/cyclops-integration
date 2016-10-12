@@ -17,16 +17,11 @@ import com.aol.cyclops.types.stream.CyclopsCollectable;
 import reactor.core.publisher.Flux;
 
 /**
- * Monad Transformer for Cyclops Streams
+ * Monad Transformer for Reactor Fluxs nested inside Scalar  data types
  * 
- * FluxT consists of an AnyM instance that in turns wraps anoter Monad type that contains an Stream
- * 
- * FluxT<AnyM<*SOME_MONAD_TYPE*<Stream<T>>>>
- * 
- * FluxT allows the deeply wrapped Stream to be manipulating within it's nested /contained context
  * @author johnmcclean
  *
- * @param <T>
+ * @param <T> the type of elements held in the nested Fluxes
  */
 public class FluxTValue<T> implements FluxT<T> {
 
@@ -43,22 +38,26 @@ public class FluxTValue<T> implements FluxT<T> {
         return run;
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#isSeqPresent()
+     */
+    @Override
     public boolean isSeqPresent() {
         return !run.isEmpty();
     }
 
     /**
-     * Peek at the current value of the Stream
+     * Peek at the current value of the Flux
      * <pre>
      * {@code 
-     *    FluxT.of(AnyM.fromStream(Arrays.asStream(10))
-     *             .peek(System.out::println);
+     *    FluxT.fromOptional(Optional.of(Flux.just(10))
+     *         .peek(System.out::println);
      *             
      *     //prints 10        
      * }
      * </pre>
      * 
-     * @param peek  Consumer to accept current value of Stream
+     * @param peek  Consumer to accept current value of Flux
      * @return FluxT with peek call
      */
     public FluxTValue<T> peek(Consumer<? super T> peek) {
@@ -69,16 +68,15 @@ public class FluxTValue<T> implements FluxT<T> {
     }
 
     /**
-     * Filter the wrapped Stream
+     * Filter the wrapped Flux
      * <pre>
      * {@code 
-     *    FluxT.of(AnyM.fromStream(Arrays.asStream(10,11))
+     *    FluxT.fromOptional(Optional.of(Flux.just(10,11))
      *             .filter(t->t!=10);
      *             
-     *     //FluxT<AnyM<Stream<Stream[11]>>>
      * }
      * </pre>
-     * @param test Predicate to filter the wrapped Stream
+     * @param test Predicate to filter the wrapped Flux
      * @return FluxT that applies the provided filter
      */
     public FluxTValue<T> filter(Predicate<? super T> test) {
@@ -87,19 +85,18 @@ public class FluxTValue<T> implements FluxT<T> {
     }
 
     /**
-     * Map the wrapped Stream
+     * Map the wrapped Flux
      * 
      * <pre>
      * {@code 
-     *  FluxT.of(AnyM.fromStream(Arrays.asStream(10))
+     *  FluxT.fromOptional(Optional.of(Flux.just(10))
      *             .map(t->t=t+1);
      *  
      *  
-     *  //FluxT<AnyM<Stream<Stream[11]>>>
      * }
      * </pre>
      * 
-     * @param f Mapping function for the wrapped Stream
+     * @param f Mapping function for the wrapped Flux
      * @return FluxT that applies the map function to the wrapped Stream
      */
     public <B> FluxTValue<B> map(Function<? super T, ? extends B> f) {
@@ -108,24 +105,26 @@ public class FluxTValue<T> implements FluxT<T> {
     }
 
     /**
-     * Flat Map the wrapped Stream
+     * Flat Map the wrapped Flux
       * <pre>
      * {@code 
-     *  FluxT.of(AnyM.fromStream(Arrays.asStream(10))
-     *             .flatMap(t->Stream.empty();
+     *  FluxT.fromOptional(Optional.of(Flux.just(10))
+     *       .flatMap(t->FluxT.fromOptional(Optional.of(Flux.just(t+10)));
      *  
      *  
-     *  //FluxT<AnyM<Stream<Stream.empty>>>
      * }
      * </pre>
      * @param f FlatMap function
-     * @return FluxT that applies the flatMap function to the wrapped Stream
+     * @return FluxT that applies the flatMap function to the wrapped Flux
      */
     public <B> FluxTValue<B> flatMapT(Function<? super T, FluxTValue<? extends B>> f) {
         return of(run.map(stream -> stream.flatMap(a -> Flux.from(f.apply(a).run.stream()))
                                           .<B> flatMap(a -> a)));
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.FluxT#flatMap(java.util.function.Function)
+     */
     public <B> FluxTValue<B> flatMap(Function<? super T, ? extends Flux<? extends B>> f) {
 
         return new FluxTValue<B>(
@@ -138,23 +137,7 @@ public class FluxTValue<T> implements FluxT<T> {
      * This allows multiple monad types to add functionality to existing functions and methods
      * 
      * e.g. to add iteration handling (via Stream) and nullhandling (via Optional) to an existing function
-     * <pre>
-     * {@code 
-    	Function<Integer,Integer> add2 = i -> i+2;
-    	Function<FluxT<Integer>, FluxT<Integer>> optTAdd2 = FluxT.lift(add2);
-    	
-    	Stream<Integer> nums = Stream.of(1,2);
-    	AnyM<Stream<Integer>> stream = AnyM.fromOptional(Optional.of(nums));
-    	
-    	List<Integer> results = optTAdd2.apply(FluxT.of(stream))
-    									.unwrap()
-    									.<Optional<Stream<Integer>>>unwrap()
-    									.get()
-    									.collect(Collectors.toList());
-    	//Stream.of(3,4);
-     * 
-     * 
-     * }</pre>
+  
      * 
      * 
      * @param fn Function to enhance with functionality from Stream and another monad type
@@ -185,19 +168,18 @@ public class FluxTValue<T> implements FluxT<T> {
         return new FluxTValue<>(
                                 monads);
     }
+    
 
-    public static <A> FluxTValue<A> of(Flux<A> monads) {
-        return FluxT.fromOptional(Optional.of(monads));
-    }
-
-    public static <A, V extends MonadicValue<? extends Flux<A>>> FluxTValue<A> fromValue(V monadicValue) {
-        return of(AnyM.ofValue(monadicValue));
-    }
-
+    /**
+     * @return True if Flux is present
+     */
     public boolean isStreamPresent() {
         return !run.isEmpty();
     }
 
+    /**
+     * @return Get wrapped Flux
+     */
     public Flux<T> get() {
         return run.get();
     }
@@ -242,6 +224,9 @@ public class FluxTValue<T> implements FluxT<T> {
         return of(run.unit(Flux.just(unit)));
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq#stream()
+     */
     @Override
     public ReactiveSeq<T> stream() {
         return run.map(i -> ReactiveSeq.fromPublisher(i))
@@ -249,48 +234,69 @@ public class FluxTValue<T> implements FluxT<T> {
                   .flatMap(e -> e);
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.FluxT#flux()
+     */
     @Override
     public Flux<T> flux() {
         return Flux.from(stream());
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.transformer.FluxT#empty()
+     */
     @Override
     public <R> FluxTValue<R> empty() {
         return of(run.empty());
     }
 
-    public static <T> FluxTValue<T> emptyOptional() {
-        return FluxT.fromOptional(Optional.empty());
-    }
-
+    
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.anyM.NestedFoldable#nestedFoldables()
+     */
     @Override
     public AnyM<? extends IterableFoldable<T>> nestedFoldables() {
         return run.map(i -> ReactiveSeq.fromPublisher(i));
 
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.anyM.NestedCollectable#nestedCollectables()
+     */
     @Override
     public AnyM<? extends CyclopsCollectable<T>> nestedCollectables() {
         return run.map(i -> ReactiveSeq.fromPublisher(i));
 
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#unitAnyM(com.aol.cyclops.control.AnyM)
+     */
     @Override
     public <T> FluxTValue<T> unitAnyM(AnyM<Traversable<T>> traversable) {
 
         return of((AnyMValue) traversable.map(t -> Flux.fromIterable(t)));
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#transformerStream()
+     */
     @Override
     public AnyM<? extends Traversable<T>> transformerStream() {
         return run.map(i -> ReactiveSeq.fromPublisher(i));
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         return run.hashCode();
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object o) {
         if (o instanceof FluxTValue) {
