@@ -173,20 +173,46 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return (optTu1, optTu2) -> optTu1.bind(input1 -> optTu2.map(input2 -> fn.apply(input1, input2)));
     }
 
+    /**
+     * Construct an MonoT from an AnyM that contains a monad type that contains type other than Mono
+     * The values in the underlying monad will be mapped to Mono<A>
+     * 
+     * @param anyM AnyM that doesn't contain a monad wrapping an Mono
+     * @return MonoTransformer for manipulating nested Monos
+     */
     public static <A> MonoT<A> fromAnyM(AnyM<A> anyM) {
         return of(anyM.map(Mono::just));
     }
-
+    /**
+     * Create a MonoT from an AnyMValue by wrapping the element stored in the AnyMValue in a Mono
+     * 
+     * @param anyM Monad to embed a Mono inside (wrapping it's current value)
+     * @return MonoTransformer for manipulating nested Monos
+     */
     public static <A> MonoTValue<A> fromAnyMValue(AnyMValue<A> anyM) {
         return MonoTValue.fromAnyM(anyM);
     }
-
+    /**
+     * Create a MonoT from an AnyMSeq by wrapping the elements stored in the AnyMSeq in a Mono
+     * 
+     * @param anyM  Monad to embed a Mono inside (wrapping it's current values individually in Monos)
+     * @return  MonoTransformer for manipulating nested Monos
+     */
     public static <A> MonoTSeq<A> fromAnyMSeq(AnyMSeq<A> anyM) {
         return MonoTSeq.fromAnyM(anyM);
     }
-
-    public static <A> MonoTSeq<A> fromIterable(Iterable<Mono<A>> iterableOfCompletableFutures) {
-        return MonoTSeq.of(AnyM.fromIterable(iterableOfCompletableFutures));
+    /**
+     * Create a MonoTSeq from an Iterable that contains nested Monos
+     * <pre>
+     * {@code 
+     *    MonoTSeq<Integer> monoT = MonoT.fromIterable(Arrays.asList(Mono.just(1));
+     * }
+     * </pre>
+     * @param iterableOfMonos An Iterable containing nested Monos
+     * @return  MonoTransformer for manipulating nested Monos
+     */
+    public static <A> MonoTSeq<A> fromIterable(Iterable<Mono<A>> iterableOfMonos) {
+        return MonoTSeq.of(AnyM.fromIterable(iterableOfMonos));
     }
 
     public static <A> MonoTSeq<A> fromStream(Stream<Mono<A>> streamOfCompletableFutures) {

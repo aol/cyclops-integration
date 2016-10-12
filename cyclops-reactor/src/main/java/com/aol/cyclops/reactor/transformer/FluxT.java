@@ -208,7 +208,7 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
      * The values in the underlying monad will be mapped to Flux<A>
      * 
      * @param anyM AnyM that doesn't contain a monad wrapping an Flux
-     * @return FluxT
+     * @return FluxTransformer for manipulating nested Fluxes
      */
     public static <A> FluxT<A> fromAnyM(AnyM<A> anyM) {
         return of(anyM.map(Flux::just));
