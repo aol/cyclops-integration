@@ -309,7 +309,7 @@ public class Fluxes {
      * 
      * <pre>
      * {@code
-     * FluxUtils.grouped(Flux.just(1,2,3,1,1,1),3,()->new TreeSet<>())
+     * Fluxes.grouped(Flux.just(1,2,3,1,1,1),3,()->new TreeSet<>())
      * 
      * //Flux[Set[1,2,4],Set[1]]
 
@@ -370,7 +370,7 @@ public class Fluxes {
      * with it's neighbour
      * <pre>
      * {@code 
-     *  FluxUtils.combine(Flux.just(1,1,2,3),(a, b)->a.equals(b),Semigroups.intSum)
+     *  Fluxes.combine(Flux.just(1,1,2,3),(a, b)->a.equals(b),Semigroups.intSum)
                    
                    
      *  //Flux(3,4) 
@@ -426,7 +426,7 @@ public class Fluxes {
      * 
      * <pre>
      * {@code 
-     *   List<Integer> list = Fluexs.cycle(Flux.just(1,2,2)),Reducers.toCountInt(),3)
+     *   List<Integer> list = Fluxes.cycle(Flux.just(1,2,2)),Reducers.toCountInt(),3)
      *                                 .collect(Collectors.toList());
      *   //List[3,3,3];
      *   }
@@ -468,7 +468,7 @@ public class Fluxes {
      * {@code 
      *  int count =0;
      *  
-        assertThat(FluxUtils.cycleWhile(Flux.just(1,2,2)
+        assertThat(Fluxes.cycleWhile(Flux.just(1,2,2)
                                             ,next -> count++<6 )
                                             .collect(Collectors.toList()),equalTo(Arrays.asList(1,2,2,1,2,2)));
      * }
@@ -502,6 +502,20 @@ public class Fluxes {
            }
          );
     }
+    
+    /**
+     * Take elements from the Stream until the predicate returns true, after
+     * which all elements are excluded.
+     * <pre>
+     * {@code 
+     *  Fluxes.limitUntil(Flux.justf(4,3,6,7),i->i==6).collect(Collectors.toList())
+     *  //Arrays.asList(4,3)
+     * }</pre>
+     * 
+     * @param stream Flux to take elements from
+     * @param predicate Take until predicate is true
+     * @return  Stream with limited elements
+     */
     public final static <T> Flux<T> takeUntil(final Flux<T> stream, final Predicate<? super T> predicate) {
         return Flux.fromIterable(()-> new Iterator<T>(){
             
@@ -527,31 +541,7 @@ public class Fluxes {
            }
          );
     }
-    public final static <T> Flux<T> limitUntil(final Flux<T> stream, final Predicate<? super T> predicate) {
-        return Flux.fromIterable(()-> new Iterator<T>(){
-            
-            Iterator<T> it;
-            private void init(){
-                if(it==null){
-                    ReactiveSeq<T> seq = ReactiveSeq.fromPublisher(stream);
-                    it = seq.limitUntil(predicate).iterator();
-                }
-            }
-            @Override
-            public boolean hasNext() {
-                init();
-                return it.hasNext();
-            }
-
-            @Override
-            public T next() {
-                init();
-                return it.next();
-            }
-               
-           }
-         );
-    }
+    
 
     /**
      * Repeat in a Stream until specified predicate holds
@@ -559,7 +549,7 @@ public class Fluxes {
      * <pre>
      * {@code 
      *  count =0;
-        assertThat(FluxUtils.cycleUntil(Flux.just(1,2,2,3)
+        assertThat(Fluxes.cycleUntil(Flux.just(1,2,2,3)
                                             ,next -> count++>10 )
                                             .collect(Collectors.toList()),equalTo(Arrays.asList(1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2)));
     
@@ -600,7 +590,7 @@ public class Fluxes {
      * 
      * 
      * assertThat(Arrays.asList(1, 2, 3), 
-     *      equalTo( FluxUtils.ofType(Flux.just(1, "a", 2, "b", 3,Integer.class));
+     *      equalTo( Fluxes.ofType(Flux.just(1, "a", 2, "b", 3,Integer.class));
      * 
      */
     @SuppressWarnings("unchecked")
@@ -630,7 +620,7 @@ public class Fluxes {
      * <pre>
      * {@code
      * 
-       FluxUtils.trampoline(Flux.just(10,20,30,40),i-> fibonacci(i))
+       Fluxes.trampoline(Flux.just(10,20,30,40),i-> fibonacci(i))
                 .forEach(System.out::println); 
                 
        Trampoline<Long> fibonacci(int i){
@@ -647,7 +637,7 @@ public class Fluxes {
      * 
      * 
      * 
-       FluxUtils.trampoline(Flux.just(10_000,200_000,3_000_000,40_000_000),i-> fibonacci(i))
+       Fluxes.trampoline(Flux.just(10_000,200_000,3_000_000,40_000_000),i-> fibonacci(i))
                 .forEach(System.out::println);
                 
                 
@@ -668,8 +658,7 @@ public class Fluxes {
    *
    * <pre>
    * {@code
-   * List<String> result = CollectionX.of(1,2,3,4)
-                                            .patternMatch(
+   * List<String> result = Fluxes.patternMatch(Flux.just(1,2,3,4),
                                                       c->c.valuesWhere(i->"even", (Integer i)->i%2==0 )
                                                     )
    * }
@@ -1209,7 +1198,7 @@ public class Fluxes {
     * Delete elements between given indexes in a Flux
     * <pre>
     * {@code 
-    * List<String> result =    FluxUtils.deleteBetween(Flux.just(1,2,3,4,5,6),2,4)
+    * List<String> result =    Fluxes.deleteBetween(Flux.just(1,2,3,4,5,6),2,4)
                                            .map(it ->it+"!!")
                                            .collect(Collectors.toList())
                                            .block();
@@ -1230,7 +1219,7 @@ public class Fluxes {
    * Insert data into a Flux at given position
    * <pre>
    * {@code  
-   * List<String> result =    FluxUtils.insertAt(Flux.just(1,2,3),1,100,200,300)
+   * List<String> result =    Fluxes.insertAt(Flux.just(1,2,3),1,100,200,300)
                                        .map(it ->it+"!!")
                                        .collect(Collectors.toList())
                                        .block();

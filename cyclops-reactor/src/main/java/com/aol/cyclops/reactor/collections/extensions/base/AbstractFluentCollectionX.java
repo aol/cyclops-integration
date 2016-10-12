@@ -294,7 +294,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
      */
     @Override
     public FluentCollectionX<T> takeUntil(final Predicate<? super T> p) {
-        return stream(Fluxes.limitUntil(flux(), p));
+        return stream(Fluxes.takeUntil(flux(), p));
     }
 
     /* (non-Javadoc)
@@ -665,7 +665,7 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
     @Override
     public FluentCollectionX<T> limitUntil(final Predicate<? super T> p) {
 
-        return stream(Fluxes.limitUntil(flux(), p));
+        return stream(Fluxes.takeUntil(flux(), p));
     }
 
     /*

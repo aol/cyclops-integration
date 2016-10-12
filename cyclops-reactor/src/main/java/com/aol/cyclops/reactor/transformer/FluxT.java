@@ -30,7 +30,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.reactor.Reactor;
+import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
@@ -206,7 +206,7 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
     }
 
     public static <A> FluxTSeq<A> fromFlux(Flux<Flux<A>> FluxOfFluxs) {
-        return FluxTSeq.of(Reactor.flux(FluxOfFluxs));
+        return FluxTSeq.of(Fluxes.anyM(FluxOfFluxs));
     }
 
     public static <A> FluxTSeq<A> fromPublisher(Publisher<Flux<A>> publisherOfFluxs) {
