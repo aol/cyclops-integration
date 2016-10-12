@@ -19,11 +19,11 @@ import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Matchable;
 import com.aol.cyclops.control.Matchable.CheckValue1;
-import com.aol.cyclops.control.PublisherUtils;
+import com.aol.cyclops.control.Publishers;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.monads.transformers.values.TransformerValue;
-import com.aol.cyclops.reactor.MonoUtils;
+import com.aol.cyclops.reactor.Monos;
 import com.aol.cyclops.types.ConvertableFunctor;
 import com.aol.cyclops.types.Filterable;
 import com.aol.cyclops.types.MonadicValue;
@@ -143,7 +143,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public <T2, R> MonoTValue<R> combine(Value<? extends T2> app, BiFunction<? super A, ? super T2, ? extends R> fn) {
         return new MonoTValue<R>(
-                                   run.map(o -> MonoUtils.combine(o,app, fn)));
+                                   run.map(o -> Monos.combine(o,app, fn)));
     }
 
     /*
@@ -156,7 +156,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     public <T2, R> MonoTValue<R> zip(Iterable<? extends T2> app, BiFunction<? super A, ? super T2, ? extends R> fn) {
 
         return new MonoTValue<R>(
-                                   run.map(o -> MonoUtils.zip(o,app, fn)));
+                                   run.map(o -> Monos.zip(o,app, fn)));
     }
 
     /*
@@ -168,7 +168,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public <T2, R> MonoTValue<R> zip(BiFunction<? super A, ? super T2, ? extends R> fn, Publisher<? extends T2> app) {
         return new MonoTValue<>(
-                                   run.map(o ->  MonoUtils.zip(o,fn, app)));
+                                   run.map(o ->  Monos.zip(o,fn, app)));
     }
 
     /* (non-Javadoc)
@@ -365,7 +365,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public ReactiveSeq<A> stream() {
         val maybeEval = run.toMaybe();
-        return maybeEval.isPresent() ? PublisherUtils.stream(maybeEval.get())
+        return maybeEval.isPresent() ? Publishers.stream(maybeEval.get())
                                                 
                 : ReactiveSeq.of();
     }
@@ -373,7 +373,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public Iterator<A> iterator() {
         val maybeEval = run.toMaybe();
-        return maybeEval.isPresent() ? MonoUtils.iterator(maybeEval.get())
+        return maybeEval.isPresent() ? Monos.iterator(maybeEval.get())
                                              
                 : Arrays.<A> asList()
                         .iterator();
@@ -394,7 +394,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
     @Override
     public boolean test(A t) {
         val maybeEval = run.toMaybe();
-        return maybeEval.isPresent() ? MonoUtils.test(maybeEval.get(),t)
+        return maybeEval.isPresent() ? Monos.test(maybeEval.get(),t)
                 : false;
 
     }

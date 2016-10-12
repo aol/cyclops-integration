@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
  * @author johnmcclean
  *
  */
-public class MonoUtils {
+public class Monos {
 
     /**
      * Lazily combine this Mono with the supplied value via the supplied BiFunction

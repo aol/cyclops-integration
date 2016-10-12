@@ -33,7 +33,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.SetX;
-import com.aol.cyclops.reactor.FluxUtils;
+import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
@@ -766,7 +766,7 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T> implements SetX<T>
      */
     @Override
     public LazyListX<T> cycle(Monoid<T> m, int times) {
-        return LazyListX.fromPublisher(FluxUtils.cycle(flux(), m, times));
+        return LazyListX.fromPublisher(Fluxes.cycle(flux(), m, times));
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.SetX#cycleWhile(java.util.function.Predicate)
@@ -774,7 +774,7 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T> implements SetX<T>
     @Override
     public LazyListX<T> cycleWhile(Predicate<? super T> predicate) {
        
-        return LazyListX.fromPublisher(FluxUtils.cycleWhile(flux(),predicate));
+        return LazyListX.fromPublisher(Fluxes.cycleWhile(flux(),predicate));
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.SetX#cycleUntil(java.util.function.Predicate)
@@ -782,7 +782,7 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T> implements SetX<T>
     @Override
     public LazyListX<T> cycleUntil(Predicate<? super T> predicate) {
        
-        return LazyListX.fromPublisher(FluxUtils.cycleUntil(flux(),predicate));
+        return LazyListX.fromPublisher(Fluxes.cycleUntil(flux(),predicate));
     }
     
     /* (non-Javadoc)
@@ -1117,7 +1117,7 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T> implements SetX<T>
      * @see com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(int, java.lang.Object)
      */
     public LazySetX<T> with(int i,T element){
-        return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(flux(),i, i+1),i,element)) ;
+        return stream( Fluxes.insertAt(Fluxes.deleteBetween(flux(),i, i+1),i,element)) ;
     }
     
     
@@ -1233,7 +1233,7 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T> implements SetX<T>
      */
     @Override
     public LazySetX<T> onEmptySwitch(Supplier<? extends Set<T>> supplier) {
-        return stream(FluxUtils.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
+        return stream(Fluxes.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
     }
     
    

@@ -5,7 +5,10 @@ import java.util.stream.StreamSupport;
 
 import org.reactivestreams.Publisher;
 
+import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
+
+import reactor.core.publisher.Flux;
 
 
 /**
@@ -14,9 +17,28 @@ import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
  * @author johnmcclean
  *
  */
-public class PublisherUtils {
+public class Publishers {
 
-   
+    /**
+     * Construct an AnyM type from a Publisher. This allows the Publisher to be manipulated according to a standard interface
+     * along with a vast array of other Java Monad implementations
+     * 
+     * <pre>
+     * {@code 
+     *    
+     *    AnyMSeq<Integer> publisher = Publishers.anyM(Flux.just(1,2,3));
+     *    AnyMSeq<Integer> transformedPublisher = myGenericOperation(flux);
+     *    
+     *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
+     * }
+     * </pre>
+     * 
+     * @param flux To wrap inside an AnyM
+     * @return AnyMSeq wrapping a flux
+     */
+    public static <T> AnyMSeq<T> anyM(Publisher<T> flux) {
+        return AnyM.ofSeq(flux);
+    }
    
     /**
      * Convert a reactive-streams Publisher to a cyclops-react ReactiveSeq extended Stream type

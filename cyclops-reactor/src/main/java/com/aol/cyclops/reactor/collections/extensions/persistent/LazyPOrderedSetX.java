@@ -35,7 +35,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.persistent.POrderedSetX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.reactor.FluxUtils;
+import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
@@ -1172,7 +1172,7 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#with(int, java.lang.Object)
      */
     public LazyPOrderedSetX<T> with(int i,T element){
-        return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(flux(),i, i+1),i,element)) ;
+        return stream( Fluxes.insertAt(Fluxes.deleteBetween(flux(),i, i+1),i,element)) ;
     }
     
     
@@ -1250,7 +1250,7 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T> implements
      */
     @Override
     public LazyPOrderedSetX<T> onEmptySwitch(Supplier<? extends POrderedSet<T>> supplier) {
-        return stream(FluxUtils.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
+        return stream(Fluxes.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
        
     }
     

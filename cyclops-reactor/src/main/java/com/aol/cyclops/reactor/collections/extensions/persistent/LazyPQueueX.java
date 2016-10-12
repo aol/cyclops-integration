@@ -37,7 +37,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.persistent.PQueueX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.reactor.FluxUtils;
+import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
@@ -1174,7 +1174,7 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
      * @see com.aol.cyclops.data.collections.extensions.standard.ListX#with(int, java.lang.Object)
      */
     public LazyPQueueX<T> with(int i,T element){
-        return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(flux(),i, i+1),i,element)) ;
+        return stream( Fluxes.insertAt(Fluxes.deleteBetween(flux(),i, i+1),i,element)) ;
     }
     
     
@@ -1252,7 +1252,7 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T> implements PQue
      */
     @Override
     public LazyPQueueX<T> onEmptySwitch(Supplier<? extends PQueue<T>> supplier) {
-        return stream(FluxUtils.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
+        return stream(Fluxes.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
        
     }
     

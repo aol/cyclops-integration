@@ -326,6 +326,9 @@ public class ReactorPipes<K, V> {
                                                          .peek(p -> publishTo(key, p)));
     }
 
+    /**
+     * @param key Close the Adapter defined by the supplied key
+     */
     public void close(final String key) {
         Optional.ofNullable(registered.get(key))
                 .ifPresent(a -> a.close());

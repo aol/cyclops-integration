@@ -37,7 +37,7 @@ import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
 import com.aol.cyclops.data.collections.extensions.standard.SortedSetX.Comparables;
-import com.aol.cyclops.reactor.FluxUtils;
+import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
@@ -763,7 +763,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
      */
     @Override
     public LazyListX<T> cycle(Monoid<T> m, int times) {
-        return LazyListX.fromPublisher(FluxUtils.cycle(flux(), m, times));
+        return LazyListX.fromPublisher(Fluxes.cycle(flux(), m, times));
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cycleWhile(java.util.function.Predicate)
@@ -771,7 +771,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
     @Override
     public LazyListX<T> cycleWhile(Predicate<? super T> predicate) {
        
-        return LazyListX.fromPublisher(FluxUtils.cycleWhile(flux(),predicate));
+        return LazyListX.fromPublisher(Fluxes.cycleWhile(flux(),predicate));
     }
     /* (non-Javadoc)
      * @see com.aol.cyclops.data.collections.extensions.standard.SortedSetX#cycleUntil(java.util.function.Predicate)
@@ -779,7 +779,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
     @Override
     public LazyListX<T> cycleUntil(Predicate<? super T> predicate) {
        
-        return LazyListX.fromPublisher(FluxUtils.cycleUntil(flux(),predicate));
+        return LazyListX.fromPublisher(Fluxes.cycleUntil(flux(),predicate));
     }
     
     /* (non-Javadoc)
@@ -1091,7 +1091,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
      * @see com.aol.cyclops.collections.extensions.standard.MutableSequenceX#with(int, java.lang.Object)
      */
     public LazySortedSetX<T> with(int i,T element){
-        return stream( FluxUtils.insertAt(FluxUtils.deleteBetween(flux(),i, i+1),i,element)) ;
+        return stream( Fluxes.insertAt(Fluxes.deleteBetween(flux(),i, i+1),i,element)) ;
     }
     
     
@@ -1207,7 +1207,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
      */
     @Override
     public LazySortedSetX<T> onEmptySwitch(Supplier<? extends SortedSet<T>> supplier) {
-        return stream(FluxUtils.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
+        return stream(Fluxes.onEmptySwitch(flux(), ()->Flux.fromIterable(supplier.get())));
     }
     
     /**
@@ -1289,7 +1289,7 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T> implements S
      */
     @Override
     public <K> LazySortedSetX<Tuple2<K, Seq<T>>> grouped(Function<? super T, ? extends K> classifier) {
-        Flux<Tuple2<K, Seq<T>>> flux = FluxUtils.grouped(flux(), classifier);
+        Flux<Tuple2<K, Seq<T>>> flux = Fluxes.grouped(flux(), classifier);
         Flux f = flux.map(t -> t.map2(Comparables::comparable));
         return (LazySortedSetX) stream(f);
     }
