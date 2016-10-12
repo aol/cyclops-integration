@@ -230,7 +230,7 @@ public class FluxTSeq<T> implements FluxT<T> {
     }
 
     @Override
-    public Flux<T> Flux() {
+    public Flux<T> flux() {
         return Flux.from(stream());
     }
 
