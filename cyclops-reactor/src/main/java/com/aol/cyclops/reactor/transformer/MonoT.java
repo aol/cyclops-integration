@@ -219,18 +219,62 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return MonoTSeq.of(AnyM.fromIterable(iterableOfMonos));
     }
 
-    public static <A> MonoTSeq<A> fromStream(Stream<Mono<A>> streamOfCompletableFutures) {
-        return MonoTSeq.of(AnyM.fromStream(streamOfCompletableFutures));
+    /**
+     * Construct a MonoTSeq from a Stream of Monos
+     * 
+     * <pre>
+     * {@code 
+     *    MonoTSeq<Integer> monoT = MonoT.fromStream(Stream.of(Mono.just(1));
+     * }
+     * </pre> 
+     * 
+     * @param streamOfMonos Stream containing nested Monos 
+     * @return Mono Transformer for manipulating nested Monos
+     */
+    public static <A> MonoTSeq<A> fromStream(Stream<Mono<A>> streamOfMonos) {
+        return MonoTSeq.of(AnyM.fromStream(streamOfMonos));
     }
 
-    public static <A> MonoTSeq<A> fromPublisher(Publisher<Mono<A>> publisherOfCompletableFutures) {
-        return MonoTSeq.of(AnyM.fromPublisher(publisherOfCompletableFutures));
+    /**
+     * Construct a MonoTSeq from a Publisher containing Monos
+     * 
+     * <pre>
+     * {@code 
+     *    MonoTSeq<Integer> monoT = MonoT.fromPublisher(Flux.just(Mono.just(1));
+     * }
+     * </pre> 
+     * 
+     * @param publisherOfMonos Publisher containing nested Monos 
+     * @return Mono Transformer for manipulating nested Monos
+     */
+    public static <A> MonoTSeq<A> fromPublisher(Publisher<Mono<A>> publisherOfMonos) {
+        return MonoTSeq.of(AnyM.fromPublisher(publisherOfMonos));
     }
 
+    /**
+     * Construct a MonoTValue from a cyclops-react MonadicValue (Maybe, Eval FutureW etc) containing a Mono
+     * <pre>
+     * {@code 
+     *    MonoTValue<Integer> monoT = MonoT.fromValue(Maybe.just(Mono.just(1));
+     * }
+     * </pre> 
+     * @param monadicValue MonadicValue containing a nested Mono
+     * @return Mono Transformer for manipulating nested Monos
+     */
     public static <A, V extends MonadicValue<Mono<A>>> MonoTValue<A> fromValue(V monadicValue) {
         return MonoTValue.of(AnyM.ofValue(monadicValue));
     }
 
+    /**
+     * Construct a MonoTValue from an Optional containing a Mono
+     * <pre>
+     * {@code 
+     *    MonoTValue<Integer> monoT = MonoT.fromOptional(Optional.of(Mono.just(1));
+     * }
+     * </pre> 
+     * @param optional Optional containing a nested Mono
+     * @return  Mono Transformer for manipulating nested Monos
+     */
     public static <A> MonoTValue<A> fromOptional(Optional<Mono<A>> optional) {
         return MonoTValue.of(AnyM.fromOptional(optional));
     }
