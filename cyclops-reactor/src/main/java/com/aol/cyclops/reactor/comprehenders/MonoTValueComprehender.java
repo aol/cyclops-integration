@@ -3,6 +3,7 @@ package com.aol.cyclops.reactor.comprehenders;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.aol.cyclops.reactor.transformer.MonoT;
 import com.aol.cyclops.reactor.transformer.MonoTValue;
 import com.aol.cyclops.types.extensability.Comprehender;
 import com.aol.cyclops.types.extensability.ValueComprehender;
@@ -15,7 +16,7 @@ public class MonoTValueComprehender implements ValueComprehender<MonoTValue>, Pr
     @Override
     public Object resolveForCrossTypeFlatMap(Comprehender comp, MonoTValue apply) {
 
-        return apply.isFuturePresent() ? comp.of(apply.get()) : comp.empty();
+        return apply.isValuePresent() ? comp.of(apply.get()) : comp.empty();
     }
 
     @Override
@@ -41,7 +42,7 @@ public class MonoTValueComprehender implements ValueComprehender<MonoTValue>, Pr
 
     @Override
     public MonoTValue empty() {
-        return MonoTValue.emptyOptional();
+        return MonoT.emptyOptional();
     }
 
     @Override

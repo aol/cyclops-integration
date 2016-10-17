@@ -225,8 +225,14 @@ public class MonoTSeq<A> implements MonoT<A>, ValueTransformerSeq<A>, IterableFo
                               monads);
     }
 
-    public static <A> MonoTSeq<A> of(final Mono<A> monads) {
-        return MonoT.fromIterable(ListX.of(monads));
+    /**
+     * Construct a MonoTSeq containing the supplied Mono inside a List
+     * 
+     * @param mono Mono to nest inside a List
+     * @return MonoTSeq wrapping a List containing a Mono
+     */
+    public static <A> MonoTSeq<A> of(final Mono<A> mono) {
+        return MonoT.fromIterable(ListX.of(mono));
     }
 
     /*
@@ -306,10 +312,7 @@ public class MonoTSeq<A> implements MonoT<A>, ValueTransformerSeq<A>, IterableFo
         return !run.isEmpty();
     }
 
-    public static <T> MonoTSeq<T> emptyList() {
-        return MonoT.fromIterable(ListX.of());
-    }
-
+    
     /*
      * (non-Javadoc)
      * 

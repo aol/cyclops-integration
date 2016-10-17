@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.reactor.Reactor;
+import com.aol.cyclops.reactor.FluxTs;
 import com.aol.cyclops.reactor.transformer.FluxT;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
@@ -22,7 +22,7 @@ public class FluxTOptionalTest extends AbstractAnyMSeqOrderedDependentTest {
 
     @Override
     public <T> AnyMSeq<T> of(T... values) {
-        return Reactor.fromFluxT(FluxT.fromOptional(Optional.of(Flux.just(values))));
+        return FluxTs.anyM(FluxT.fromOptional(Optional.of(Flux.just(values))));
     }
 
     @Test

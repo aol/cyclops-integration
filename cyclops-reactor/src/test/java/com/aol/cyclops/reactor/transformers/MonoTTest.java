@@ -51,6 +51,7 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.QueueX;
 import com.aol.cyclops.data.collections.extensions.standard.SetX;
 import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
+import com.aol.cyclops.reactor.transformer.MonoT;
 import com.aol.cyclops.reactor.transformer.MonoTValue;
 import com.aol.cyclops.types.applicative.ApplicativeFunctor.Applicatives;
 import com.aol.cyclops.types.mixins.Printable;
@@ -64,7 +65,7 @@ public class MonoTTest implements Printable {
     @Before
     public void setUp() throws Exception {
         just = MonoTValue.of(Mono.just(10));
-        none = MonoTValue.emptyOptional();
+        none = MonoT.emptyOptional();
         one = MonoTValue.of(Mono.just(1));
     }
     

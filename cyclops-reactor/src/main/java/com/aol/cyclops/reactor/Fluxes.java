@@ -253,7 +253,7 @@ public class Fluxes {
      * @param yieldingFunction Generates a result per combination
      * @return
      */
-    public static <T, R1, R> Flux<R> forEach(Flux<? extends T> value1, Function<? super T, Publisher<R1>> value2,
+    public static <T, R1, R> Flux<R> forEach(Flux<? extends T> value1, Function<? super T, Flux<R1>> value2,
             BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
 
         return AnyM.ofSeq(For.anyM(anyM(value1))

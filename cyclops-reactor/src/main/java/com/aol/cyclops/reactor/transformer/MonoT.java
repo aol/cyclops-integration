@@ -19,6 +19,7 @@ import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.reactor.Monos;
 import com.aol.cyclops.types.Filterable;
 import com.aol.cyclops.types.Functor;
 import com.aol.cyclops.types.MonadicValue;
@@ -235,6 +236,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return MonoTSeq.of(AnyM.fromStream(streamOfMonos));
     }
 
+
     /**
      * Construct a MonoTSeq from a Publisher containing Monos
      * 
@@ -279,18 +281,57 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return MonoTValue.of(AnyM.fromOptional(optional));
     }
 
+    /**
+     * Construct a MonoTValue from an CompletableFuture containing a Mono
+     * <pre>
+     * {@code 
+     *    MonoTValue<Integer> monoT = MonoT.fromFuture(CompletableFuture.completedFuture(Mono.just(1));
+     * }
+     * </pre>  
+     * @param future Future containing a nested Mono
+     * @return Mono Transformer for manipulating nested Monos
+     */
     public static <A> MonoTValue<A> fromFuture(CompletableFuture<Mono<A>> future) {
         return MonoTValue.of(AnyM.fromCompletableFuture(future));
     }
-
-    public static <A> MonoTValue<A> fromIterableValue(Iterable<Mono<A>> iterableOfCompletableFutures) {
-        return MonoTValue.of(AnyM.fromIterableValue(iterableOfCompletableFutures));
+    /**
+     * Construct a MonoTValue from a Mono containing a Mono
+     * <pre>
+     * {@code 
+     *    MonoTValue<Integer> monoT = MonoT.fromFuture(Mono.just(Mono.just(1));
+     * }
+     * </pre>  
+     * @param future Mono containing a nested Mono
+     * @return Mono Transformer for manipulating nested Monos
+     */
+    public static <A> MonoTValue<A> fromMono(Mono<Mono<A>> mono) {
+        return MonoTValue.of(Monos.anyM(mono));
     }
 
+    /**
+     * Construct a MonoTValue from an Iterable containing a Mono
+     * <pre>
+     * {@code 
+     *    MonoTValue<Integer> monoT = MonoT.fromIterableValue(Arrays.asList(Mono.just(1));
+     * }
+     * </pre> 
+     * @param iterableOfMonos An Iterable containing a Mono
+     * @return Mono Transformer for manipulating nested Monos
+     */
+    public static <A> MonoTValue<A> fromIterableValue(Iterable<Mono<A>> iterableOfMonos) {
+        return MonoTValue.of(AnyM.fromIterableValue(iterableOfMonos));
+    }
+
+    /**
+     * @return An empty MonoTValue (wraps an Empty Optional)
+     */
     public static <T> MonoTValue<T> emptyOptional() {
         return MonoTValue.of(AnyM.fromOptional(Optional.empty()));
     }
 
+    /**
+     * @return An empty MonoTSeq (wraps an Empty List)
+     */
     public static <T> MonoTSeq<T> emptyList() {
         return MonoT.fromIterable(ListX.of());
     }

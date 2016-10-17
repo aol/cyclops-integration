@@ -45,7 +45,7 @@ public class Monos {
      * @param mono To wrap inside an AnyM
      * @return AnyMSeq wrapping a Mono
      */
-    public static <T> AnyMValue<T> mono(Mono<T> mono) {
+    public static <T> AnyMValue<T> anyM(Mono<T> mono) {
         return AnyM.ofValue(mono);
     }
 
@@ -80,10 +80,10 @@ public class Monos {
             TriFunction<? super T1, ? super R1, ? super R2, ? extends Mono<R3>> value4,
             QuadFunction<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
-        return AnyM.ofValue(For.anyM(mono(value1))
-                               .anyM(a -> mono(value2.apply(a)))
-                               .anyM(a -> b -> mono(value3.apply(a, b)))
-                               .anyM(a -> b -> c -> mono(value4.apply(a, b, c)))
+        return AnyM.ofValue(For.anyM(anyM(value1))
+                               .anyM(a -> anyM(value2.apply(a)))
+                               .anyM(a -> b -> anyM(value3.apply(a, b)))
+                               .anyM(a -> b -> c -> anyM(value4.apply(a, b, c)))
                                .yield4(yieldingFunction)
                                .unwrap())
                    .unwrap();
@@ -125,10 +125,10 @@ public class Monos {
             QuadFunction<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
             QuadFunction<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
-        return AnyM.ofValue(For.anyM(mono(value1))
-                               .anyM(a -> mono(value2.apply(a)))
-                               .anyM(a -> b -> mono(value3.apply(a, b)))
-                               .anyM(a -> b -> c -> mono(value4.apply(a, b, c)))
+        return AnyM.ofValue(For.anyM(anyM(value1))
+                               .anyM(a -> anyM(value2.apply(a)))
+                               .anyM(a -> b -> anyM(value3.apply(a, b)))
+                               .anyM(a -> b -> c -> anyM(value4.apply(a, b, c)))
                                .filter(a -> b -> c -> d -> filterFunction.apply(a, b, c, d))
                                .yield4(yieldingFunction)
                                .unwrap())
@@ -164,9 +164,9 @@ public class Monos {
             BiFunction<? super T1, ? super R1, ? extends Mono<R2>> value3,
             TriFunction<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
-        return AnyM.ofValue(For.anyM(mono(value1))
-                               .anyM(a -> mono(value2.apply(a)))
-                               .anyM(a -> b -> mono(value3.apply(a, b)))
+        return AnyM.ofValue(For.anyM(anyM(value1))
+                               .anyM(a -> anyM(value2.apply(a)))
+                               .anyM(a -> b -> anyM(value3.apply(a, b)))
                                .yield3(yieldingFunction)
                                .unwrap())
                    .unwrap();
@@ -205,9 +205,9 @@ public class Monos {
             TriFunction<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
             TriFunction<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
-        return AnyM.ofValue(For.anyM(mono(value1))
-                               .anyM(a -> mono(value2.apply(a)))
-                               .anyM(a -> b -> mono(value3.apply(a, b)))
+        return AnyM.ofValue(For.anyM(anyM(value1))
+                               .anyM(a -> anyM(value2.apply(a)))
+                               .anyM(a -> b -> anyM(value3.apply(a, b)))
                                .filter(a -> b -> c -> filterFunction.apply(a, b, c))
                                .yield3(yieldingFunction)
                                .unwrap())
@@ -239,8 +239,8 @@ public class Monos {
     public static <T, R1, R> Mono<R> forEach(Mono<? extends T> value1, Function<? super T, Mono<R1>> value2,
             BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
 
-        return AnyM.ofValue(For.anyM(mono(value1))
-                               .anyM(a -> mono(value2.apply(a)))
+        return AnyM.ofValue(For.anyM(anyM(value1))
+                               .anyM(a -> anyM(value2.apply(a)))
                                .yield2(yieldingFunction)
                                .unwrap())
                    .unwrap();
@@ -276,8 +276,8 @@ public class Monos {
             BiFunction<? super T, ? super R1, Boolean> filterFunction,
             BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
 
-        return AnyM.ofValue(For.anyM(mono(value1))
-                               .anyM(a -> mono(value2.apply(a)))
+        return AnyM.ofValue(For.anyM(anyM(value1))
+                               .anyM(a -> anyM(value2.apply(a)))
                                .filter(a -> b -> filterFunction.apply(a, b))
                                .yield2(yieldingFunction)
                                .unwrap())

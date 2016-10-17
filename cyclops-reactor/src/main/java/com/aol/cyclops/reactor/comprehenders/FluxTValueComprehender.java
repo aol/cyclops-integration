@@ -4,11 +4,13 @@ import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.aol.cyclops.reactor.transformer.FluxT;
 import com.aol.cyclops.reactor.transformer.FluxTValue;
 import com.aol.cyclops.types.extensability.Comprehender;
 import com.aol.cyclops.types.mixins.Printable;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class FluxTValueComprehender implements Comprehender<FluxTValue>, Printable {
 
@@ -35,12 +37,12 @@ public class FluxTValueComprehender implements Comprehender<FluxTValue>, Printab
 
     @Override
     public FluxTValue of(Object o) {
-        return FluxTValue.of(Flux.just(o));
+        return FluxT.fromMono(Mono.just(Flux.just(o)));
     }
 
     @Override
     public FluxTValue empty() {
-        return FluxTValue.emptyOptional();
+        return FluxT.emptyOptional();
     }
 
     @Override
@@ -49,8 +51,9 @@ public class FluxTValueComprehender implements Comprehender<FluxTValue>, Printab
     }
 
     @Override
-    public FluxTValue fromIterator(Iterator o) {
-        return FluxTValue.of(Flux.fromIterable(() -> o));
+    public  FluxTValue fromIterator(Iterator o) {
+        Mono<Flux<Object>> mono = Mono.just(Flux.fromIterable(() -> o));
+        return FluxT.fromMono(mono);
     }
 
 }

@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.aol.cyclops.internal.comprehensions.comprehenders.MaterializedList;
+import com.aol.cyclops.reactor.transformer.FluxT;
 import com.aol.cyclops.reactor.transformer.FluxTSeq;
 import com.aol.cyclops.types.extensability.Comprehender;
 import com.aol.cyclops.types.mixins.Printable;
@@ -39,12 +40,12 @@ public class FluxTSeqComprehender implements Comprehender<FluxTSeq>, Printable {
 
     @Override
     public FluxTSeq of(Object o) {
-        return FluxTSeq.of(Flux.just(o));
+        return FluxT.fromPublisher(Flux.just(Flux.just(o)));
     }
 
     @Override
     public FluxTSeq empty() {
-        return FluxTSeq.emptyStream();
+        return FluxT.emptyFlux();
     }
 
     @Override
@@ -54,7 +55,8 @@ public class FluxTSeqComprehender implements Comprehender<FluxTSeq>, Printable {
 
     @Override
     public FluxTSeq fromIterator(Iterator o) {
-        return FluxTSeq.of(Flux.fromIterable(() -> o));
+        Flux<Flux<Object>> flux = Flux.just(Flux.fromIterable(() -> o));
+        return FluxT.fromPublisher(flux);
     }
 
 }

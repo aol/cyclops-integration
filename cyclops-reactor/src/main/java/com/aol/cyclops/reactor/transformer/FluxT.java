@@ -26,16 +26,17 @@ import com.aol.cyclops.Matchables;
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.Matchable.CheckValue1;
-import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
+import com.aol.cyclops.reactor.Monos;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Monad Transformer for Reactor Flux types.
@@ -264,21 +265,7 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
         return FluxTSeq.of(AnyM.fromIterable(iterableOfFluxs));
     }
 
-    /**
-     * Create a FluxT from a Flux that contains nested Fluxes
-     * 
-     * <pre>
-     * {@code 
-     *    FluxTSeq<Integer> fluxT = FluxT.fromFlux(Flux.just(Flux.just(1,2,3));
-     * }
-     * </pre>
-     * 
-     * @param FluxOfFluxs  A Flux containing nested Fluxes
-     * @return  FluxTransformer for manipulating nested Fluxes
-     */
-    public static <A> FluxTSeq<A> fromFlux(Flux<Flux<A>> FluxOfFluxs) {
-        return FluxTSeq.of(Fluxes.anyM(FluxOfFluxs));
-    }
+ 
 
     /**
      * Create a FluxTSeq from a Publisher that contains nested Fluxes
@@ -337,6 +324,19 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
     public static <A> FluxTValue<A> fromFuture(CompletableFuture<Flux<A>> future) {
         return FluxTValue.of(AnyM.fromCompletableFuture(future));
     }
+    /**
+     * Create a FluxTValue from a Reactor Mono type that contains nested Fluxes
+     * <pre>
+     * {@code 
+     *    FluxTValue<Integer> fluxT = FluxT.fromMono(Mono.just(Flux.just(1,2,3));
+     * }
+     * </pre>
+     * @param future A Mono containing nested Fluxes
+     * @return FluxTransformer for manipulating nested Fluxes
+     */
+    public static <A> FluxTValue<A> fromMono(Mono<Flux<A>> mono) {
+        return FluxTValue.of(Monos.anyM(mono));
+    }
 
     /**
      * Create a FluxTValue from an Iterable that contains nested Fluxes
@@ -351,6 +351,13 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
      */
     public static <A> FluxTValue<A> fromIterableValue(Iterable<Flux<A>> iterableOfFluxs) {
         return FluxTValue.of(AnyM.fromIterableValue(iterableOfFluxs));
+    }
+    
+    /**
+     * @return An empty FluxValue (wraps an Empty Optional)
+     */
+    public static <T> FluxTValue<T> emptyOptional() {
+        return FluxTValue.of(AnyM.fromOptional(Optional.empty()));
     }
 
     /**
@@ -1115,4 +1122,6 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
     default <U extends Comparable<? super U>> FluxT<T> sorted(Function<? super T, ? extends U> function) {
         return (FluxT) FoldableTransformerSeq.super.sorted(function);
     }
+
+   
 }
