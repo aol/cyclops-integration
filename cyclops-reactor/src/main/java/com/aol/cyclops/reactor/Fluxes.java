@@ -1387,13 +1387,34 @@ public class Fluxes {
 
         });
     }
-
+    /**
+     * 
+     * 
+     * <pre>
+     * {@code 
+     * assertEquals(asList(new Tuple2("a", 0L), new Tuple2("b", 1L)), of("a", "b").zipWithIndex().toList());
+     * }
+     * </pre>
+     */
+    /**
+     * Add an index to the supplied Flux
+     * 
+     * <pre>
+     * {@code 
+     *    Fluxes.zipWithIndex(Flux.just("a", "b"))
+     *    
+     *    //Flux[Tuple2["a",0l],Tuple2["b",1l]]]
+     * }
+     * </pre>
+     * 
+     * @param flux Flux to add index too
+     * @return Flux with index
+     */
     public static <T> Flux<Tuple2<T, Long>> zipWithIndex(Flux<T> stream) {
-
         return stream.zipWith(ReactiveSeq.rangeLong(0, Long.MAX_VALUE), Tuple::tuple);
     }
 
-    /**
+   /**
     * Delete elements between given indexes in a Flux
     * <pre>
     * {@code 
@@ -1441,8 +1462,28 @@ public class Fluxes {
 
     }
 
+
+    /**
+     * Create Flux of ListX where
+     * each ListX is populated while the supplied bipredicate holds. The
+     * bipredicate recieves the ListX from the last window as well as the
+     * current value and can choose to aggregate the current value or create a
+     * new window
+     * 
+     * <pre>
+     * {@code 
+     * assertThat(Fluxes.groupedStatefullUntil(Flux.just(1,2,3,4,5,6),(s,i)-> s.contains(4) ? true : false)
+     *              .toList().size(),equalTo(5));
+     * }
+     * </pre>
+     * 
+     * @param flux Flux to group
+     * @param predicate  Window while true
+     * @return Flux windowed while predicate holds
+     */
     public final static <T> Flux<ListX<T>> groupedStatefullyUntil(final Flux<T> flux,
             final BiPredicate<ListX<? super T>, ? super T> predicate) {
+      
         return Flux.fromIterable(() -> new Iterator<ListX<T>>() {
 
             Iterator<ListX<T>> it;
