@@ -231,8 +231,12 @@ public class ObservableTSeq<T> implements ObservableT<T> {
         return of(run.unit(Observable.just(unit)));
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq#stream()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq
+     * #stream()
      */
     @Override
     public ReactiveSeq<T> stream() {
@@ -241,7 +245,9 @@ public class ObservableTSeq<T> implements ObservableT<T> {
                   .flatMap(e -> e);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.rx.transformer.ObservableT#observable()
      */
     @Override
@@ -249,7 +255,9 @@ public class ObservableTSeq<T> implements ObservableT<T> {
         return Observables.observable(stream());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Iterable#iterator()
      */
     @Override
@@ -257,8 +265,11 @@ public class ObservableTSeq<T> implements ObservableT<T> {
         return stream().iterator();
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops.rx.transformer.ObservableT#unitIterator(java.util.Iterator)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.rx.transformer.ObservableT#unitIterator(java.util.
+     * Iterator)
      */
     @Override
     public <R> ObservableTSeq<R> unitIterator(final Iterator<R> it) {
@@ -266,7 +277,9 @@ public class ObservableTSeq<T> implements ObservableT<T> {
                      .map(i -> Observable.just(i)));
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.rx.transformer.ObservableT#empty()
      */
     @Override
@@ -274,7 +287,9 @@ public class ObservableTSeq<T> implements ObservableT<T> {
         return of(run.empty());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.aol.cyclops.types.anyM.NestedFoldable#nestedFoldables()
      */
     @Override
@@ -976,7 +991,9 @@ public class ObservableTSeq<T> implements ObservableT<T> {
         return (ObservableTSeq) ObservableT.super.sorted(function);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -984,7 +1001,9 @@ public class ObservableTSeq<T> implements ObservableT<T> {
         return run.hashCode();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

@@ -53,6 +53,7 @@ public class Observables {
     public static <T> Observable<T> observable(Publisher<T> publisher) {
         return RxReactiveStreams.toObservable(publisher);
     }
+
     /**
      * Construct an AnyM type from an Observable. This allows the Observable to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
@@ -73,6 +74,7 @@ public class Observables {
     public static <T> AnyMSeq<T> anyM(Observable<T> obs) {
         return AnyM.ofSeq(obs);
     }
+
     /**
      * Perform a For Comprehension over a Observable, accepting 3 generating functions. 
      * This results in a four level nested internal iteration over the provided Observables.
@@ -103,7 +105,7 @@ public class Observables {
             BiFunction<? super T1, ? super R1, ? extends Observable<R2>> value3,
             TriFunction<? super T1, ? super R1, ? super R2, ? extends Observable<R3>> value4,
             QuadFunction<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
-       
+
         return AnyM.ofSeq(For.anyM(anyM(value1))
                              .anyM(a -> anyM(value2.apply(a)))
                              .anyM(a -> b -> anyM(value3.apply(a, b)))
@@ -113,6 +115,7 @@ public class Observables {
                    .unwrap();
 
     }
+
     /**
      * Perform a For Comprehension over a Observable, accepting 3 generating functions. 
      * This results in a four level nested internal iteration over the provided Observables. 
@@ -156,6 +159,7 @@ public class Observables {
                    .unwrap();
 
     }
+
     /**
      * Perform a For Comprehension over a Observable, accepting 2 generating functions. 
      * This results in a three level nested internal iteration over the provided Observables.
@@ -192,6 +196,7 @@ public class Observables {
                    .unwrap();
 
     }
+
     /**
      * Perform a For Comprehension over a Observable, accepting 2 generating functions. 
      * This results in a three level nested internal iteration over the provided Observables. 
@@ -231,6 +236,7 @@ public class Observables {
                    .unwrap();
 
     }
+
     /**
      * Perform a For Comprehension over a Observable, accepting a generating function. 
      * This results in a two level nested internal iteration over the provided Observables.
@@ -263,6 +269,7 @@ public class Observables {
                    .unwrap();
 
     }
+
     /**
      * Perform a For Comprehension over a Observable, accepting a generating function. 
      * This results in a two level nested internal iteration over the provided Observables. 

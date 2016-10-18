@@ -253,8 +253,7 @@ public class Fluxes {
      * @param yieldingFunction Generates a result per combination
      * @return
      */
-    public static <T, R1, R> Flux<R> forEach(Flux<? extends T> value1, 
-            Function<? super T, Flux<R1>> value2,
+    public static <T, R1, R> Flux<R> forEach(Flux<? extends T> value1, Function<? super T, Flux<R1>> value2,
             BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
 
         return AnyM.ofSeq(For.anyM(anyM(value1))
@@ -1144,7 +1143,7 @@ public class Fluxes {
 
         });
     }
-    
+
     /**
      * Apply the identity function / combiner from left to right accumulating partial results in the resulting Flux
      * 
@@ -1165,7 +1164,7 @@ public class Fluxes {
      */
     public static <T, U> Flux<U> scanRight(Flux<T> flux, U identity,
             BiFunction<? super T, ? super U, ? extends U> combiner) {
-      
+
         return Flux.fromIterable(() -> new Iterator<U>() {
 
             Iterator<U> it;
@@ -1331,6 +1330,7 @@ public class Fluxes {
 
         });
     }
+
     /**
      * Create a sliding view over this Sequence
      * 
@@ -1379,7 +1379,7 @@ public class Fluxes {
 
         });
     }
-  
+
     /**
      * Group elements in a Flux
      * <pre>
@@ -1515,7 +1515,7 @@ public class Fluxes {
         return stream.zipWith(ReactiveSeq.rangeLong(0, Long.MAX_VALUE), Tuple::tuple);
     }
 
-   /**
+    /**
     * Delete elements between given indexes in a Flux
     * <pre>
     * {@code 
@@ -1563,7 +1563,6 @@ public class Fluxes {
 
     }
 
-
     /**
      * Create Flux of ListX where
      * each ListX is populated while the supplied bipredicate holds. The
@@ -1584,7 +1583,7 @@ public class Fluxes {
      */
     public final static <T> Flux<ListX<T>> groupedStatefullyUntil(final Flux<T> flux,
             final BiPredicate<ListX<? super T>, ? super T> predicate) {
-      
+
         return Flux.fromIterable(() -> new Iterator<ListX<T>>() {
 
             Iterator<ListX<T>> it;

@@ -51,7 +51,7 @@ public class FluxTValueComprehender implements Comprehender<FluxTValue>, Printab
     }
 
     @Override
-    public  FluxTValue fromIterator(Iterator o) {
+    public FluxTValue fromIterator(Iterator o) {
         Mono<Flux<Object>> mono = Mono.just(Flux.fromIterable(() -> o));
         return FluxT.fromMono(mono);
     }

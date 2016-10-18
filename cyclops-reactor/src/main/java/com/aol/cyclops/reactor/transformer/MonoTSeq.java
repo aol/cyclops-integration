@@ -312,7 +312,6 @@ public class MonoTSeq<A> implements MonoT<A>, ValueTransformerSeq<A>, IterableFo
         return !run.isEmpty();
     }
 
-    
     /*
      * (non-Javadoc)
      * 
