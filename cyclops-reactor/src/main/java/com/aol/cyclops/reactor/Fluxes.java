@@ -1071,8 +1071,15 @@ public class Fluxes {
         });
     }
 
+    /**
+     * Sort the Flux using the supplied Function. 
+     * This is a lazy operation that materializes the provided Flux on first use in order to sort it.
+     * 
+     * @param flux Flux to sort
+     * @param function To sort Flux with
+     * @return Sorted Flux
+     */
     public static <T, U> Flux<T> sorted(Flux<T> flux, Function<? super T, ? extends U> function) {
-
         return Flux.fromIterable(() -> new Iterator<T>() {
 
             Iterator<T> it;
@@ -1100,6 +1107,14 @@ public class Fluxes {
         });
     }
 
+    /**
+     * Sort Flux using the provided comparator
+     * This is a lazy operation that materializes the provided Flux on first use in order to sort it.
+     * 
+     * @param flux Flux to sort
+     * @param c Comparator to sort Flux
+     * @return Sorted Flux
+     */
     public static <T> Flux<T> sorted(Flux<T> flux, Comparator<? super T> c) {
 
         return Flux.fromIterable(() -> new Iterator<T>() {
@@ -1128,10 +1143,28 @@ public class Fluxes {
 
         });
     }
-
+    
+    /**
+     * Apply the identity function / combiner from left to right accumulating partial results in the resulting Flux
+     * 
+     * This is a lazy operation that materializes the provided Flux in order to reverse it on first use.
+     * 
+     * <pre>
+     * {@code 
+     * assertThat(Fluxes.scanRight(Flux.just("a", "ab", "abc").map(str->str.length()),0, (t, u) -> u + t).toList().size(),
+     *             is(asList(0, 3, 5, 6).size()));
+     * 
+     * }
+     * </pre>
+     * 
+     * @param flux Flux to scanRight
+     * @param identity Identity value that leaves the current value unchanged when applied in the combiner function
+     * @param combiner Function for combining two values
+     * @return Flux with scanRight applied
+     */
     public static <T, U> Flux<U> scanRight(Flux<T> flux, U identity,
             BiFunction<? super T, ? super U, ? extends U> combiner) {
-
+      
         return Flux.fromIterable(() -> new Iterator<U>() {
 
             Iterator<U> it;
@@ -1188,6 +1221,13 @@ public class Fluxes {
         });
     }
 
+    /**
+     * Remove all the values in the supplied Iterable from the Flux
+     * 
+     * @param flux Flux to filter values out
+     * @param iterable Iterable of values to remove
+     * @return Flux with values in the supplied iterable removed
+     */
     public static <T> Flux<T> removeAll(Flux<T> flux, Iterable<? extends T> iterable) {
         return Flux.fromIterable(() -> new Iterator<T>() {
 
@@ -1216,6 +1256,13 @@ public class Fluxes {
         });
     }
 
+    /**
+     * Retain only the values in the supplied Iterable in the generated Flux
+     * 
+     * @param flux Flux to filter values from
+     * @param iterable Values to retain
+     * @return Flux with only values in Iterable retained (if present in original Flux)
+     */
     public static <T> Flux<T> retainAll(Flux<T> flux, Iterable<? extends T> iterable) {
         return Flux.fromIterable(() -> new Iterator<T>() {
 
@@ -1244,6 +1291,13 @@ public class Fluxes {
         });
     }
 
+    /**
+     * Intersperse the supplied value throughout this Flux
+     * 
+     * @param flux Flux to intersperse value in
+     * @param value Value to intersperse
+     * @return Flux with value interspersed
+     */
     public static <T> Flux<T> intersperse(Flux<T> flux, T value) {
         return Flux.fromIterable(() -> new Iterator<T>() {
 
@@ -1271,7 +1325,27 @@ public class Fluxes {
 
         });
     }
-
+    /**
+     * Create a sliding view over this Sequence
+     * 
+     * <pre>
+     * {
+     *  {@code
+     *  List<List<Integer>> list = Fluxes.sliding(Flux.just(1, 2, 3, 4, 5, 6),3, 2).collect(Collectors.toList());
+     * 
+     *  assertThat(list.get(0), hasItems(1, 2, 3));
+     *  assertThat(list.get(1), hasItems(3, 4, 5));
+     * 
+     * }
+     * 
+     * </pre>
+     * @param flux Flux to create a sliding window over
+     * @param windowSize
+     *            number of elements in each batch
+     * @param increment
+     *            for each window
+     * @return Flux with sliding view
+     */
     public static <T> Flux<ListX<T>> sliding(Flux<T> flux, int windowSize, int increment) {
         return Flux.fromIterable(() -> new Iterator<ListX<T>>() {
 
@@ -1299,7 +1373,22 @@ public class Fluxes {
 
         });
     }
-
+  
+    /**
+     * Group elements in a Flux
+     * <pre>
+     * {
+     *  {@code
+     *  List<List<Integer>> list = Fluxes.grouped(Flux.just(1, 2, 3, 4, 5, 6),3).collect(Collectors.toList());
+     * 
+     *  //[[1, 2, 3],[4, 5, 6]]
+     *  
+     * }
+     * </pre>
+     * @param flux Flux to group
+     * @param size Group size
+     * @return Grouped Flux
+     */
     public static <T> Flux<ListX<T>> grouped(Flux<T> flux, int size) {
         return Flux.fromIterable(() -> new Iterator<ListX<T>>() {
 
@@ -1328,6 +1417,14 @@ public class Fluxes {
         });
     }
 
+    /**
+     * Classify a Flux by the supplied classifying function, materialize into  collection with the supplied Collector
+     * 
+     * @param flux Flux to group
+     * @param classifier  Classifying function
+     * @param downstream Collector to build grouping collection
+     * @return Grouped flux
+     */
     public static <T, K, A, D> Flux<Tuple2<K, D>> grouped(Flux<T> flux, Function<? super T, ? extends K> classifier,
             Collector<? super T, A, D> downstream) {
 
@@ -1359,8 +1456,16 @@ public class Fluxes {
         });
     }
 
+    /**
+     * Classify a Flux by the supplied classifying function. 
+     * 
+     * @param flux Flux to group
+     * @param classifier Classifying function
+     * @return Grouped flux
+     */
     public static <T, K, A, D> Flux<Tuple2<K, D>> grouped(Flux<T> flux, Function<? super T, ? extends K> classifier) {
-
+        ReactiveSeq s = null;
+        s.grouped(classifier);
         return Flux.fromIterable(() -> new Iterator<Tuple2<K, D>>() {
 
             Iterator<Tuple2<K, D>> it;
@@ -1387,15 +1492,7 @@ public class Fluxes {
 
         });
     }
-    /**
-     * 
-     * 
-     * <pre>
-     * {@code 
-     * assertEquals(asList(new Tuple2("a", 0L), new Tuple2("b", 1L)), of("a", "b").zipWithIndex().toList());
-     * }
-     * </pre>
-     */
+
     /**
      * Add an index to the supplied Flux
      * 
