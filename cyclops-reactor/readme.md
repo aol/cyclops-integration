@@ -1,6 +1,6 @@
 # Project Reactor Integration
 
-v8.0.0 of cyclops-reactor and above is built using v2.5.0-M4 of Project Reactor
+v8.2.0 of cyclops-reactor and above is built using v3.0.2.RELEASE of Project Reactor
 
 ## Get cyclops-reactor
 
