@@ -17,6 +17,7 @@ import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
 import com.aol.cyclops.types.Functor;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
 
+import javaslang.API;
 import javaslang.Lazy;
 import javaslang.collection.Array;
 import javaslang.collection.CharSeq;

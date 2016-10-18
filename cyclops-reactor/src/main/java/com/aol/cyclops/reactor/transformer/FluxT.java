@@ -26,39 +26,89 @@ import com.aol.cyclops.Matchables;
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.Matchable.CheckValue1;
-import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.reactor.Reactor;
+import com.aol.cyclops.reactor.Fluxes;
+import com.aol.cyclops.reactor.Monos;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
- * Monad Transformer for RxJava Fluxs
+ * Monad Transformer for Reactor Flux types.
  * 
- * FluxT consists of an AnyM instance that in turns wraps anoter Monad type that contains an Flux
+ * It allows users to manipulated Flux instances contained inside other monad types
  * 
- * FluxT<AnyM<*SOME_MONAD_TYPE*<Flux<T>>>>
  * 
- * FluxT allows the deeply wrapped Flux to be manipulating within it's nested /contained context
  * @author johnmcclean
  *
- * @param <T>
+ * @param <T> the type of elements held in the nested Fluxes
  */
 public interface FluxT<T> extends FoldableTransformerSeq<T> {
 
+    /**
+     * Create an instance of the same FluxTransformer type from the provided Iterator over raw values.
+     * 
+     * <pre>
+     * {@code 
+     *    FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.just(1,2,3),Flux.just(4,5,6));
+     *    FluxT<String> fluxTStrings = fluxT.unitIterator(Arrays.asList("hello","world").iterator());
+     *    //List[Flux["hello","world"]]
+     * 
+     * }
+     * </pre>
+     * 
+     * 
+     * 
+     * @param it Iterator over raw values to add to a new Flux Transformer
+     * @return Flux Transformer of the same type over the raw value in the Iterator provided
+     */
     public <R> FluxT<R> unitIterator(Iterator<R> it);
 
+    /**
+     * Create an instance of the same FluxTransformer that contains a Flux with just the value provided
+     * <pre>
+     * {@code 
+     *    FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.just(1,2,3),Flux.just(4,5,6));
+     *    FluxT<String> fluxTStrings = fluxT.unit("hello");
+     *    //List[Flux["hello"]]
+     * 
+     * }
+     * </pre>
+     * @param t Value to embed in new Flux Transformer
+     * @return Flux Transformer of the same type over the raw value provided
+     */
     public <R> FluxT<R> unit(R t);
 
+    /**
+     * @return An empty Flux Transformer of the same type
+     */
     public <R> FluxT<R> empty();
 
+    /**
+     * Perform a flatMap operation on each nested Flux
+     * 
+     * @param f FlatMapping function
+     * @return FluxTransformer containing flatMapped Fluxes
+     */
     public <B> FluxT<B> flatMap(Function<? super T, ? extends Flux<? extends B>> f);
 
+    /**
+     * Convert this FluxTransformer into a Flux of Fluxes
+     * <pre>
+     * {@code 
+     *    FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.just(1,2,3),Flux.just(4,5,6));
+     *    Flux<Flux<Integer>> fluxes = fluxT.fluxOfFlux();
+     *    //Flux[Flux[1,2,3],Flux[4,5,6]]
+     * 
+     * }
+     * </pre>
+     * @return Flux of Fluxes
+     */
     default Flux<Flux<T>> fluxOfFlux() {
         return Flux.from(this.unwrap()
                              .stream());
@@ -144,23 +194,6 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
      * This allows multiple monad types to add functionality to existing functions and methods
      * 
      * e.g. to add iteration handling (via Flux) and nullhandling (via Optional) to an existing function
-     * <pre>
-     * {@code 
-    	Function<Integer,Integer> add2 = i -> i+2;
-    	Function<FluxT<Integer>, FluxT<Integer>> optTAdd2 = FluxT.lift(add2);
-    	
-    	Flux<Integer> nums = Flux.of(1,2);
-    	AnyM<Flux<Integer>> Flux = AnyM.fromOptional(Optional.of(nums));
-    	
-    	List<Integer> results = optTAdd2.apply(FluxT.of(Flux))
-    									.unwrap()
-    									.<Optional<Flux<Integer>>>unwrap()
-    									.get()
-    									.collect(Collectors.toList());
-    	//Flux.of(3,4);
-     * 
-     * 
-     * }</pre>
      * 
      * 
      * @param fn Function to enhance with functionality from Flux and another monad type
@@ -175,7 +208,7 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
      * The values in the underlying monad will be mapped to Flux<A>
      * 
      * @param anyM AnyM that doesn't contain a monad wrapping an Flux
-     * @return FluxT
+     * @return FluxTransformer for manipulating nested Fluxes
      */
     public static <A> FluxT<A> fromAnyM(AnyM<A> anyM) {
         return of(anyM.map(Flux::just));
@@ -184,55 +217,160 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
     /**
      * Create a FluxT from an AnyM that wraps a monad containing a Flux
      * 
-     * @param monads
-     * @return
+     * <pre>
+     * {@code 
+     *    FluxT<Integer> fluxT = FluxT.of(AnyM.fromOptional(Optional.of(Flux.just(1,2,3)));
+     * }
+     * </pre>
+     * 
+     * @param monads AnyM containing nested Fluxes
+     * @return FluxTransformer for manipulating nested Fluxes
      */
     public static <A> FluxT<A> of(AnyM<? extends Flux<A>> monads) {
         return Matchables.anyM(monads)
                          .visit(v -> FluxTValue.of(v), s -> FluxTSeq.of(s));
     }
 
+    /**
+     * Create a FluxT from an AnyMValue by wrapping the element stored in the AnyMValue in a Flux
+     * 
+     * @param anyM Monad to embed a Flux inside (wrapping it's current value)
+     * @return FluxTransformer for manipulating nested Fluxes
+     */
     public static <A> FluxTValue<A> fromAnyMValue(AnyMValue<A> anyM) {
         return FluxTValue.fromAnyM(anyM);
     }
 
+    /**
+     * Create a FluxT from an AnyMSeq by wrapping the elements stored in the AnyMSeq in a Flux
+     * 
+     * @param anyM  Monad to embed a Flux inside (wrapping it's current values individually in Fluxes)
+     * @return  FluxTransformer for manipulating nested Fluxes
+     */
     public static <A> FluxTSeq<A> fromAnyMSeq(AnyMSeq<A> anyM) {
         return FluxTSeq.fromAnyM(anyM);
     }
 
+    /**
+     * Create a FluxT from an Iterable that contains nested Fluxes
+     * <pre>
+     * {@code 
+     *    FluxTSeq<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.just(1,2,3));
+     * }
+     * </pre>
+     * @param iterableOfFluxs An Iterable containing nested Fluxes
+     * @return  FluxTransformer for manipulating nested Fluxes
+     */
     public static <A> FluxTSeq<A> fromIterable(Iterable<Flux<A>> iterableOfFluxs) {
         return FluxTSeq.of(AnyM.fromIterable(iterableOfFluxs));
     }
 
-    public static <A> FluxTSeq<A> fromFlux(Flux<Flux<A>> FluxOfFluxs) {
-        return FluxTSeq.of(Reactor.flux(FluxOfFluxs));
-    }
+ 
 
+    /**
+     * Create a FluxTSeq from a Publisher that contains nested Fluxes
+     * 
+     * <pre>
+     * {@code 
+     *    FluxTSeq<Integer> fluxT = FluxT.fromPublisher(Flux.just(Flux.just(1,2,3));
+     * }
+     * </pre> 
+     * 
+     * @param publisherOfFluxs A Publisher containing nested Fluxes
+     * @return FluxTransformer for manipulating nested Fluxes
+     */
     public static <A> FluxTSeq<A> fromPublisher(Publisher<Flux<A>> publisherOfFluxs) {
         return FluxTSeq.of(AnyM.fromPublisher(publisherOfFluxs));
     }
 
+    /**
+     * Create a FluxTValue from a cyclops-react Value that contains nested Fluxes
+     * <pre>
+     * {@code 
+     *    FluxTValue<Integer> fluxT = FluxT.fromValue(Maybe.just(Flux.just(1,2,3));
+     * }
+     * </pre> 
+     * @param monadicValue A Value containing nested Fluxes
+     * @return FluxTransformer for manipulating nested Fluxes
+     */
     public static <A, V extends MonadicValue<? extends Flux<A>>> FluxTValue<A> fromValue(V monadicValue) {
-        return FluxTValue.fromValue(monadicValue);
+        return FluxTValue.of(AnyM.ofValue(monadicValue));
     }
 
+    /**
+     * Create a FluxTValue from a JDK Optional that contains nested Fluxes
+     * <pre>
+     * {@code 
+     *    FluxTValue<Integer> fluxT = FluxT.fromOptional(Optional.of(Flux.just(1,2,3));
+     * }
+     * </pre>
+     * @param optional An Optional containing nested Fluxes
+     * @return FluxTransformer for manipulating nested Fluxes
+     */
     public static <A> FluxTValue<A> fromOptional(Optional<Flux<A>> optional) {
         return FluxTValue.of(AnyM.fromOptional(optional));
     }
 
+    /**
+     * Create a FluxTValue from a JDK CompletableFuture that contains nested Fluxes
+     * <pre>
+     * {@code 
+     *    FluxTValue<Integer> fluxT = FluxT.fromFuture(CompletableFuture.completedFuture(Flux.just(1,2,3));
+     * }
+     * </pre>
+     * @param future A CompletableFuture containing nested Fluxes
+     * @return FluxTransformer for manipulating nested Fluxes
+     */
     public static <A> FluxTValue<A> fromFuture(CompletableFuture<Flux<A>> future) {
         return FluxTValue.of(AnyM.fromCompletableFuture(future));
     }
+    /**
+     * Create a FluxTValue from a Reactor Mono type that contains nested Fluxes
+     * <pre>
+     * {@code 
+     *    FluxTValue<Integer> fluxT = FluxT.fromMono(Mono.just(Flux.just(1,2,3));
+     * }
+     * </pre>
+     * @param future A Mono containing nested Fluxes
+     * @return FluxTransformer for manipulating nested Fluxes
+     */
+    public static <A> FluxTValue<A> fromMono(Mono<Flux<A>> mono) {
+        return FluxTValue.of(Monos.anyM(mono));
+    }
 
+    /**
+     * Create a FluxTValue from an Iterable that contains nested Fluxes
+     * <pre>
+     * {@code 
+     *    FluxTValue<Integer> fluxT = FluxT.fromIterableValue(Arrays.asList(Flux.just(1,2,3));
+     * }
+     * </pre>
+     * 
+     * @param iterableOfFluxs An Iterable containing nested Fluxes
+     * @return FluxTransformer for manipulating nested Fluxes
+     */
     public static <A> FluxTValue<A> fromIterableValue(Iterable<Flux<A>> iterableOfFluxs) {
         return FluxTValue.of(AnyM.fromIterableValue(iterableOfFluxs));
     }
-
-    public static <T> FluxTSeq<T> emptyFlux() {
-        return FluxT.fromIterable(ReactiveSeq.empty());
+    
+    /**
+     * @return An empty FluxValue (wraps an Empty Optional)
+     */
+    public static <T> FluxTValue<T> emptyOptional() {
+        return FluxTValue.of(AnyM.fromOptional(Optional.empty()));
     }
 
-    public Flux<T> Flux();
+    /**
+     * @return An empty FluxTransformer (contains an empty Flux)
+     */
+    public static <T> FluxTSeq<T> emptyFlux() {
+        return FluxT.fromPublisher(Flux.empty());
+    }
+
+    /**
+     * @return Flatten the data in this FluxTransformer into a single Flux
+     */
+    public Flux<T> flux();
 
     /*
      * (non-Javadoc)
@@ -378,6 +516,13 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
         return (FluxT<R>) FoldableTransformerSeq.super.zip(other, zipper);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(org
+     * .jooq.lambda.Seq, java.util.function.BiFunction)
+     */
     @Override
     default <U, R> FluxT<R> zip(Seq<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
 
@@ -403,12 +548,26 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
         return (FluxT) FoldableTransformerSeq.super.zip(other);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(org
+     * .jooq.lambda.Seq)
+     */
     @Override
     default <U> FluxT<Tuple2<T, U>> zip(Seq<? extends U> other) {
 
         return (FluxT) FoldableTransformerSeq.super.zip(other);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(
+     * java.lang.Iterable)
+     */
     @Override
     default <U> FluxT<Tuple2<T, U>> zip(Iterable<? extends U> other) {
 
@@ -963,4 +1122,6 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
     default <U extends Comparable<? super U>> FluxT<T> sorted(Function<? super T, ? extends U> function) {
         return (FluxT) FoldableTransformerSeq.super.sorted(function);
     }
+
+   
 }

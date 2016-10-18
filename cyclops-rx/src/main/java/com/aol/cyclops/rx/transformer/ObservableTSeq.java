@@ -23,7 +23,7 @@ import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.rx.RxCyclops;
+import com.aol.cyclops.rx.Observables;
 import com.aol.cyclops.types.IterableFoldable;
 import com.aol.cyclops.types.Traversable;
 import com.aol.cyclops.types.anyM.AnyMSeq;
@@ -48,9 +48,10 @@ public class ObservableTSeq<T> implements ObservableT<T> {
     private final AnyMSeq<Observable<T>> run;
 
     private ObservableTSeq(final AnyMSeq<? extends Observable<T>> run) {
-        this.run = (AnyMSeq) (run);
+        this.run = (AnyMSeq) run;
     }
 
+    @Override
     public boolean isSeqPresent() {
         return !run.isEmpty();
     }
@@ -58,6 +59,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
     /**
      * @return The wrapped AnyM
      */
+    @Override
     public AnyMSeq<Observable<T>> unwrap() {
         return run;
     }
@@ -76,7 +78,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * @param peek  Consumer to accept current value of Stream
      * @return ObservableT with peek call
      */
-    public ObservableTSeq<T> peek(Consumer<? super T> peek) {
+    @Override
+    public ObservableTSeq<T> peek(final Consumer<? super T> peek) {
         return map(a -> {
             peek.accept(a);
             return a;
@@ -96,7 +99,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * @param test Predicate to filter the wrapped Stream
      * @return ObservableT that applies the provided filter
      */
-    public ObservableTSeq<T> filter(Predicate<? super T> test) {
+    @Override
+    public ObservableTSeq<T> filter(final Predicate<? super T> test) {
         return of(run.map(stream -> stream.filter(i -> test.test(i))));
     }
 
@@ -116,7 +120,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * @param f Mapping function for the wrapped Stream
      * @return ObservableT that applies the map function to the wrapped Stream
      */
-    public <B> ObservableTSeq<B> map(Function<? super T, ? extends B> f) {
+    @Override
+    public <B> ObservableTSeq<B> map(final Function<? super T, ? extends B> f) {
         return new ObservableTSeq<B>(
                                      run.map(o -> o.map(i -> f.apply(i))));
     }
@@ -135,12 +140,13 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * @param f FlatMap function
      * @return ObservableT that applies the flatMap function to the wrapped Stream
      */
-    public <B> ObservableTSeq<B> flatMapT(Function<? super T, ObservableTSeq<? extends B>> f) {
-        return of(run.map(stream -> stream.flatMap(a -> RxCyclops.toObservable(f.apply(a).run.stream()))
+    public <B> ObservableTSeq<B> flatMapT(final Function<? super T, ObservableTSeq<? extends B>> f) {
+        return of(run.map(stream -> stream.flatMap(a -> Observables.observable(f.apply(a).run.stream()))
                                           .<B> flatMap(a -> a)));
     }
 
-    public <B> ObservableTSeq<B> flatMap(Function<? super T, ? extends Observable<? extends B>> f) {
+    @Override
+    public <B> ObservableTSeq<B> flatMap(final Function<? super T, ? extends Observable<? extends B>> f) {
 
         return new ObservableTSeq<B>(
                                      run.map(o -> o.flatMap(i -> f.apply(i))));
@@ -174,7 +180,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * @param fn Function to enhance with functionality from Stream and another monad type
      * @return Function that accepts and returns an ObservableT
      */
-    public static <U, R> Function<ObservableTSeq<U>, ObservableTSeq<R>> lift(Function<? super U, ? extends R> fn) {
+    public static <U, R> Function<ObservableTSeq<U>, ObservableTSeq<R>> lift(
+            final Function<? super U, ? extends R> fn) {
         return optTu -> optTu.map(input -> fn.apply(input));
     }
 
@@ -185,7 +192,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * @param anyM AnyM that doesn't contain a monad wrapping an Stream
      * @return ObservableT
      */
-    public static <A> ObservableTSeq<A> fromAnyM(AnyMSeq<A> anyM) {
+    public static <A> ObservableTSeq<A> fromAnyM(final AnyMSeq<A> anyM) {
         return of(anyM.map(Observable::just));
     }
 
@@ -195,12 +202,12 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * @param monads
      * @return
      */
-    public static <A> ObservableTSeq<A> of(AnyMSeq<? extends Observable<A>> monads) {
+    public static <A> ObservableTSeq<A> of(final AnyMSeq<? extends Observable<A>> monads) {
         return new ObservableTSeq<>(
                                     monads);
     }
 
-    public static <A> ObservableTSeq<A> of(Observable<A> monads) {
+    public static <A> ObservableTSeq<A> of(final Observable<A> monads) {
         return ObservableT.fromIterable(ReactiveSeq.of(monads));
     }
 
@@ -209,6 +216,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * 
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         return String.format("ObservableTSeq[%s]", run);
     }
@@ -219,58 +227,94 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * @see com.aol.cyclops.types.Unit#unit(java.lang.Object)
      */
     @Override
-    public <T> ObservableTSeq<T> unit(T unit) {
+    public <T> ObservableTSeq<T> unit(final T unit) {
         return of(run.unit(Observable.just(unit)));
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq#stream()
+     */
     @Override
     public ReactiveSeq<T> stream() {
-        return run.map(i -> RxCyclops.reactiveSeq(i))
+        return run.map(i -> Observables.reactiveSeq(i))
                   .stream()
                   .flatMap(e -> e);
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.rx.transformer.ObservableT#observable()
+     */
     @Override
     public Observable<T> observable() {
-        return RxCyclops.toObservable(stream());
+        return Observables.observable(stream());
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Iterable#iterator()
+     */
     @Override
     public Iterator<T> iterator() {
         return stream().iterator();
     }
 
-    public <R> ObservableTSeq<R> unitIterator(Iterator<R> it) {
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.rx.transformer.ObservableT#unitIterator(java.util.Iterator)
+     */
+    @Override
+    public <R> ObservableTSeq<R> unitIterator(final Iterator<R> it) {
         return of(run.unitIterator(it)
                      .map(i -> Observable.just(i)));
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.rx.transformer.ObservableT#empty()
+     */
     @Override
     public <R> ObservableT<R> empty() {
         return of(run.empty());
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.anyM.NestedFoldable#nestedFoldables()
+     */
     @Override
     public AnyM<? extends IterableFoldable<T>> nestedFoldables() {
-        return run.map(i -> RxCyclops.reactiveSeq(i));
+        return run.map(i -> Observables.reactiveSeq(i));
 
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.types.anyM.NestedCollectable#nestedCollectables()
+     */
     @Override
     public AnyM<? extends CyclopsCollectable<T>> nestedCollectables() {
-        return run.map(i -> RxCyclops.reactiveSeq(i));
+        return run.map(i -> Observables.reactiveSeq(i));
 
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#
+     * unitAnyM(com.aol.cyclops.control.AnyM)
+     */
     @Override
-    public <T> ObservableTSeq<T> unitAnyM(AnyM<Traversable<T>> traversable) {
+    public <T> ObservableTSeq<T> unitAnyM(final AnyM<Traversable<T>> traversable) {
 
         return of((AnyMSeq) traversable.map(t -> Observable.from(t)));
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#
+     * transformerStream()
+     */
     @Override
     public AnyMSeq<? extends Traversable<T>> transformerStream() {
-        return run.map(i -> RxCyclops.reactiveSeq(i));
+        return run.map(i -> Observables.reactiveSeq(i));
     }
 
     public static <T> ObservableTSeq<T> emptyStream() {
@@ -285,7 +329,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.BiPredicate, java.util.function.BinaryOperator)
      */
     @Override
-    public ObservableTSeq<T> combine(BiPredicate<? super T, ? super T> predicate, BinaryOperator<T> op) {
+    public ObservableTSeq<T> combine(final BiPredicate<? super T, ? super T> predicate, final BinaryOperator<T> op) {
 
         return (ObservableTSeq<T>) ObservableT.super.combine(predicate, op);
     }
@@ -297,7 +341,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * com.aol.cyclops.control.monads.transformers.values.ObservableT#cycle(int)
      */
     @Override
-    public ObservableTSeq<T> cycle(int times) {
+    public ObservableTSeq<T> cycle(final int times) {
 
         return (ObservableTSeq<T>) ObservableT.super.cycle(times);
     }
@@ -310,7 +354,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * aol.cyclops.Monoid, int)
      */
     @Override
-    public ObservableTSeq<T> cycle(Monoid<T> m, int times) {
+    public ObservableTSeq<T> cycle(final Monoid<T> m, final int times) {
 
         return (ObservableTSeq<T>) ObservableT.super.cycle(m, times);
     }
@@ -323,7 +367,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * (java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> cycleWhile(Predicate<? super T> predicate) {
+    public ObservableTSeq<T> cycleWhile(final Predicate<? super T> predicate) {
 
         return (ObservableTSeq<T>) ObservableT.super.cycleWhile(predicate);
     }
@@ -336,7 +380,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * (java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> cycleUntil(Predicate<? super T> predicate) {
+    public ObservableTSeq<T> cycleUntil(final Predicate<? super T> predicate) {
 
         return (ObservableTSeq<T>) ObservableT.super.cycleUntil(predicate);
     }
@@ -349,8 +393,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * lang.Iterable, java.util.function.BiFunction)
      */
     @Override
-    public <U, R> ObservableTSeq<R> zip(Iterable<? extends U> other,
-            BiFunction<? super T, ? super U, ? extends R> zipper) {
+    public <U, R> ObservableTSeq<R> zip(final Iterable<? extends U> other,
+            final BiFunction<? super T, ? super U, ? extends R> zipper) {
 
         return (ObservableTSeq<R>) ObservableT.super.zip(other, zipper);
     }
@@ -363,7 +407,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.stream.Stream)
      */
     @Override
-    public <U> ObservableTSeq<Tuple2<T, U>> zip(Stream<? extends U> other) {
+    public <U> ObservableTSeq<Tuple2<T, U>> zip(final Stream<? extends U> other) {
 
         return (ObservableTSeq) ObservableT.super.zip(other);
     }
@@ -376,7 +420,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * util.stream.Stream, java.util.stream.Stream)
      */
     @Override
-    public <S, U> ObservableTSeq<Tuple3<T, S, U>> zip3(Stream<? extends S> second, Stream<? extends U> third) {
+    public <S, U> ObservableTSeq<Tuple3<T, S, U>> zip3(final Stream<? extends S> second,
+            final Stream<? extends U> third) {
 
         return (ObservableTSeq) ObservableT.super.zip3(second, third);
     }
@@ -389,8 +434,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * util.stream.Stream, java.util.stream.Stream, java.util.stream.Stream)
      */
     @Override
-    public <T2, T3, T4> ObservableTSeq<Tuple4<T, T2, T3, T4>> zip4(Stream<? extends T2> second,
-            Stream<? extends T3> third, Stream<? extends T4> fourth) {
+    public <T2, T3, T4> ObservableTSeq<Tuple4<T, T2, T3, T4>> zip4(final Stream<? extends T2> second,
+            final Stream<? extends T3> third, final Stream<? extends T4> fourth) {
 
         return (ObservableTSeq) ObservableT.super.zip4(second, third, fourth);
     }
@@ -415,7 +460,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * int)
      */
     @Override
-    public ObservableTSeq<ListX<T>> sliding(int windowSize) {
+    public ObservableTSeq<ListX<T>> sliding(final int windowSize) {
 
         return (ObservableTSeq<ListX<T>>) ObservableT.super.sliding(windowSize);
     }
@@ -428,7 +473,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * int, int)
      */
     @Override
-    public ObservableTSeq<ListX<T>> sliding(int windowSize, int increment) {
+    public ObservableTSeq<ListX<T>> sliding(final int windowSize, final int increment) {
 
         return (ObservableTSeq<ListX<T>>) ObservableT.super.sliding(windowSize, increment);
     }
@@ -441,7 +486,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * int, java.util.function.Supplier)
      */
     @Override
-    public <C extends Collection<? super T>> ObservableTSeq<C> grouped(int size, Supplier<C> supplier) {
+    public <C extends Collection<? super T>> ObservableTSeq<C> grouped(final int size, final Supplier<C> supplier) {
 
         return (ObservableTSeq<C>) ObservableT.super.grouped(size, supplier);
     }
@@ -453,7 +498,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * groupedUntil(java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<ListX<T>> groupedUntil(Predicate<? super T> predicate) {
+    public ObservableTSeq<ListX<T>> groupedUntil(final Predicate<? super T> predicate) {
 
         return (ObservableTSeq<ListX<T>>) ObservableT.super.groupedUntil(predicate);
     }
@@ -465,7 +510,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * groupedStatefullyWhile(java.util.function.BiPredicate)
      */
     @Override
-    public ObservableTSeq<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
+    public ObservableTSeq<ListX<T>> groupedStatefullyUntil(final BiPredicate<ListX<? super T>, ? super T> predicate) {
 
         return (ObservableTSeq<ListX<T>>) ObservableT.super.groupedStatefullyUntil(predicate);
     }
@@ -477,7 +522,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * groupedWhile(java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
+    public ObservableTSeq<ListX<T>> groupedWhile(final Predicate<? super T> predicate) {
 
         return (ObservableTSeq<ListX<T>>) ObservableT.super.groupedWhile(predicate);
     }
@@ -489,8 +534,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * groupedWhile(java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
-    public <C extends Collection<? super T>> ObservableTSeq<C> groupedWhile(Predicate<? super T> predicate,
-            Supplier<C> factory) {
+    public <C extends Collection<? super T>> ObservableTSeq<C> groupedWhile(final Predicate<? super T> predicate,
+            final Supplier<C> factory) {
 
         return (ObservableTSeq<C>) ObservableT.super.groupedWhile(predicate, factory);
     }
@@ -502,8 +547,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * groupedUntil(java.util.function.Predicate, java.util.function.Supplier)
      */
     @Override
-    public <C extends Collection<? super T>> ObservableTSeq<C> groupedUntil(Predicate<? super T> predicate,
-            Supplier<C> factory) {
+    public <C extends Collection<? super T>> ObservableTSeq<C> groupedUntil(final Predicate<? super T> predicate,
+            final Supplier<C> factory) {
 
         return (ObservableTSeq<C>) ObservableT.super.groupedUntil(predicate, factory);
     }
@@ -516,7 +561,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * int)
      */
     @Override
-    public ObservableTSeq<ListX<T>> grouped(int groupSize) {
+    public ObservableTSeq<ListX<T>> grouped(final int groupSize) {
 
         return (ObservableTSeq<ListX<T>>) ObservableT.super.grouped(groupSize);
     }
@@ -529,8 +574,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.Function, java.util.stream.Collector)
      */
     @Override
-    public <K, A, D> ObservableTSeq<Tuple2<K, D>> grouped(Function<? super T, ? extends K> classifier,
-            Collector<? super T, A, D> downstream) {
+    public <K, A, D> ObservableTSeq<Tuple2<K, D>> grouped(final Function<? super T, ? extends K> classifier,
+            final Collector<? super T, A, D> downstream) {
 
         return (ObservableTSeq) ObservableT.super.grouped(classifier, downstream);
     }
@@ -543,7 +588,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.Function)
      */
     @Override
-    public <K> ObservableTSeq<Tuple2<K, Seq<T>>> grouped(Function<? super T, ? extends K> classifier) {
+    public <K> ObservableTSeq<Tuple2<K, Seq<T>>> grouped(final Function<? super T, ? extends K> classifier) {
 
         return (ObservableTSeq) ObservableT.super.grouped(classifier);
     }
@@ -568,7 +613,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * com.aol.cyclops.Monoid)
      */
     @Override
-    public ObservableTSeq<T> scanLeft(Monoid<T> monoid) {
+    public ObservableTSeq<T> scanLeft(final Monoid<T> monoid) {
 
         return (ObservableTSeq<T>) ObservableT.super.scanLeft(monoid);
     }
@@ -581,7 +626,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.lang.Object, java.util.function.BiFunction)
      */
     @Override
-    public <U> ObservableTSeq<U> scanLeft(U seed, BiFunction<? super U, ? super T, ? extends U> function) {
+    public <U> ObservableTSeq<U> scanLeft(final U seed, final BiFunction<? super U, ? super T, ? extends U> function) {
 
         return (ObservableTSeq<U>) ObservableT.super.scanLeft(seed, function);
     }
@@ -594,7 +639,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * com.aol.cyclops.Monoid)
      */
     @Override
-    public ObservableTSeq<T> scanRight(Monoid<T> monoid) {
+    public ObservableTSeq<T> scanRight(final Monoid<T> monoid) {
 
         return (ObservableTSeq<T>) ObservableT.super.scanRight(monoid);
     }
@@ -607,7 +652,8 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.lang.Object, java.util.function.BiFunction)
      */
     @Override
-    public <U> ObservableTSeq<U> scanRight(U identity, BiFunction<? super T, ? super U, ? extends U> combiner) {
+    public <U> ObservableTSeq<U> scanRight(final U identity,
+            final BiFunction<? super T, ? super U, ? extends U> combiner) {
 
         return (ObservableTSeq<U>) ObservableT.super.scanRight(identity, combiner);
     }
@@ -632,7 +678,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.Comparator)
      */
     @Override
-    public ObservableTSeq<T> sorted(Comparator<? super T> c) {
+    public ObservableTSeq<T> sorted(final Comparator<? super T> c) {
 
         return (ObservableTSeq<T>) ObservableT.super.sorted(c);
     }
@@ -645,7 +691,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> takeWhile(Predicate<? super T> p) {
+    public ObservableTSeq<T> takeWhile(final Predicate<? super T> p) {
 
         return (ObservableTSeq<T>) ObservableT.super.takeWhile(p);
     }
@@ -658,7 +704,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> dropWhile(Predicate<? super T> p) {
+    public ObservableTSeq<T> dropWhile(final Predicate<? super T> p) {
 
         return (ObservableTSeq<T>) ObservableT.super.dropWhile(p);
     }
@@ -671,7 +717,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> takeUntil(Predicate<? super T> p) {
+    public ObservableTSeq<T> takeUntil(final Predicate<? super T> p) {
 
         return (ObservableTSeq<T>) ObservableT.super.takeUntil(p);
     }
@@ -684,7 +730,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> dropUntil(Predicate<? super T> p) {
+    public ObservableTSeq<T> dropUntil(final Predicate<? super T> p) {
 
         return (ObservableTSeq<T>) ObservableT.super.dropUntil(p);
     }
@@ -697,7 +743,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * int)
      */
     @Override
-    public ObservableTSeq<T> dropRight(int num) {
+    public ObservableTSeq<T> dropRight(final int num) {
 
         return (ObservableTSeq<T>) ObservableT.super.dropRight(num);
     }
@@ -710,7 +756,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * int)
      */
     @Override
-    public ObservableTSeq<T> takeRight(int num) {
+    public ObservableTSeq<T> takeRight(final int num) {
 
         return (ObservableTSeq<T>) ObservableT.super.takeRight(num);
     }
@@ -722,7 +768,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * com.aol.cyclops.control.monads.transformers.values.ObservableT#skip(long)
      */
     @Override
-    public ObservableTSeq<T> skip(long num) {
+    public ObservableTSeq<T> skip(final long num) {
 
         return (ObservableTSeq<T>) ObservableT.super.skip(num);
     }
@@ -735,7 +781,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> skipWhile(Predicate<? super T> p) {
+    public ObservableTSeq<T> skipWhile(final Predicate<? super T> p) {
 
         return (ObservableTSeq<T>) ObservableT.super.skipWhile(p);
     }
@@ -748,7 +794,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> skipUntil(Predicate<? super T> p) {
+    public ObservableTSeq<T> skipUntil(final Predicate<? super T> p) {
 
         return (ObservableTSeq<T>) ObservableT.super.skipUntil(p);
     }
@@ -761,7 +807,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * long)
      */
     @Override
-    public ObservableTSeq<T> limit(long num) {
+    public ObservableTSeq<T> limit(final long num) {
 
         return (ObservableTSeq<T>) ObservableT.super.limit(num);
     }
@@ -774,7 +820,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * (java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> limitWhile(Predicate<? super T> p) {
+    public ObservableTSeq<T> limitWhile(final Predicate<? super T> p) {
 
         return (ObservableTSeq<T>) ObservableT.super.limitWhile(p);
     }
@@ -787,7 +833,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * (java.util.function.Predicate)
      */
     @Override
-    public ObservableTSeq<T> limitUntil(Predicate<? super T> p) {
+    public ObservableTSeq<T> limitUntil(final Predicate<? super T> p) {
 
         return (ObservableTSeq<T>) ObservableT.super.limitUntil(p);
     }
@@ -799,7 +845,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * intersperse(java.lang.Object)
      */
     @Override
-    public ObservableTSeq<T> intersperse(T value) {
+    public ObservableTSeq<T> intersperse(final T value) {
 
         return (ObservableTSeq<T>) ObservableT.super.intersperse(value);
     }
@@ -836,7 +882,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * int)
      */
     @Override
-    public ObservableTSeq<T> skipLast(int num) {
+    public ObservableTSeq<T> skipLast(final int num) {
 
         return (ObservableTSeq<T>) ObservableT.super.skipLast(num);
     }
@@ -849,7 +895,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * int)
      */
     @Override
-    public ObservableTSeq<T> limitLast(int num) {
+    public ObservableTSeq<T> limitLast(final int num) {
 
         return (ObservableTSeq<T>) ObservableT.super.limitLast(num);
     }
@@ -862,7 +908,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.lang.Object)
      */
     @Override
-    public ObservableTSeq<T> onEmpty(T value) {
+    public ObservableTSeq<T> onEmpty(final T value) {
 
         return (ObservableTSeq<T>) ObservableT.super.onEmpty(value);
     }
@@ -875,7 +921,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * (java.util.function.Supplier)
      */
     @Override
-    public ObservableTSeq<T> onEmptyGet(Supplier<? extends T> supplier) {
+    public ObservableTSeq<T> onEmptyGet(final Supplier<? extends T> supplier) {
 
         return (ObservableTSeq<T>) ObservableT.super.onEmptyGet(supplier);
     }
@@ -887,7 +933,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * onEmptyThrow(java.util.function.Supplier)
      */
     @Override
-    public <X extends Throwable> ObservableTSeq<T> onEmptyThrow(Supplier<? extends X> supplier) {
+    public <X extends Throwable> ObservableTSeq<T> onEmptyThrow(final Supplier<? extends X> supplier) {
 
         return (ObservableTSeq<T>) ObservableT.super.onEmptyThrow(supplier);
     }
@@ -900,7 +946,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.Random)
      */
     @Override
-    public ObservableTSeq<T> shuffle(Random random) {
+    public ObservableTSeq<T> shuffle(final Random random) {
 
         return (ObservableTSeq<T>) ObservableT.super.shuffle(random);
     }
@@ -913,7 +959,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * long, long)
      */
     @Override
-    public ObservableTSeq<T> slice(long from, long to) {
+    public ObservableTSeq<T> slice(final long from, final long to) {
 
         return (ObservableTSeq<T>) ObservableT.super.slice(from, to);
     }
@@ -926,17 +972,23 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * java.util.function.Function)
      */
     @Override
-    public <U extends Comparable<? super U>> ObservableTSeq<T> sorted(Function<? super T, ? extends U> function) {
+    public <U extends Comparable<? super U>> ObservableTSeq<T> sorted(final Function<? super T, ? extends U> function) {
         return (ObservableTSeq) ObservableT.super.sorted(function);
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         return run.hashCode();
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o instanceof ObservableTSeq) {
             return run.equals(((ObservableTSeq) o).run);
         }

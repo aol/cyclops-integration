@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.rx.RxCyclops;
+import com.aol.cyclops.rx.Observables;
 import com.aol.cyclops.types.IterableFoldable;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.Traversable;
@@ -123,7 +123,7 @@ public class ObservableTValue<T> implements ObservableT<T> {
      * @return ObservableT that applies the flatMap function to the wrapped Stream
      */
     public <B> ObservableTValue<B> flatMapT(Function<? super T, ObservableTValue<? extends B>> f) {
-        return of(run.map(stream -> stream.flatMap(a -> RxCyclops.toObservable(f.apply(a).run.stream()))
+        return of(run.map(stream -> stream.flatMap(a -> Observables.observable(f.apply(a).run.stream()))
                                           .<B> flatMap(a -> a)));
     }
 
@@ -245,14 +245,14 @@ public class ObservableTValue<T> implements ObservableT<T> {
 
     @Override
     public ReactiveSeq<T> stream() {
-        return run.map(i -> RxCyclops.reactiveSeq(i))
+        return run.map(i -> Observables.reactiveSeq(i))
                   .stream()
                   .flatMap(e -> e);
     }
 
     @Override
     public Observable<T> observable() {
-        return RxCyclops.toObservable(stream());
+        return Observables.observable(stream());
     }
 
     @Override
@@ -266,13 +266,13 @@ public class ObservableTValue<T> implements ObservableT<T> {
 
     @Override
     public AnyM<? extends IterableFoldable<T>> nestedFoldables() {
-        return run.map(i -> RxCyclops.reactiveSeq(i));
+        return run.map(i -> Observables.reactiveSeq(i));
 
     }
 
     @Override
     public AnyM<? extends CyclopsCollectable<T>> nestedCollectables() {
-        return run.map(i -> RxCyclops.reactiveSeq(i));
+        return run.map(i -> Observables.reactiveSeq(i));
 
     }
 
@@ -284,7 +284,7 @@ public class ObservableTValue<T> implements ObservableT<T> {
 
     @Override
     public AnyM<? extends Traversable<T>> transformerStream() {
-        return run.map(i -> RxCyclops.reactiveSeq(i));
+        return run.map(i -> Observables.reactiveSeq(i));
     }
 
     @Override

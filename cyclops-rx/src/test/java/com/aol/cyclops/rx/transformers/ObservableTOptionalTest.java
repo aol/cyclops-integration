@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.rx.RxCyclops;
+import com.aol.cyclops.rx.ObservableTs;
 import com.aol.cyclops.rx.transformer.ObservableT;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
@@ -22,7 +22,7 @@ public class ObservableTOptionalTest extends AbstractAnyMSeqOrderedDependentTest
 
     @Override
     public <T> AnyMSeq<T> of(T... values) {
-        return RxCyclops.fromObservableT(ObservableT.fromOptional(Optional.of(Observable.from(values))));
+        return ObservableTs.anyM(ObservableT.fromOptional(Optional.of(Observable.from(values))));
     }
 
     @Test

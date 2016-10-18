@@ -30,7 +30,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.monads.transformers.values.FoldableTransformerSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.rx.RxCyclops;
+import com.aol.cyclops.rx.Observables;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
@@ -40,14 +40,11 @@ import rx.Observable;
 /**
  * Monad Transformer for RxJava Observables
  * 
- * ObservableT consists of an AnyM instance that in turns wraps anoter Monad type that contains an Observable
- * 
- * ObservableT<AnyM<*SOME_MONAD_TYPE*<Observable<T>>>>
- * 
- * ObservableT allows the deeply wrapped Observable to be manipulating within it's nested /contained context
+ * It allows users to manipulated Flux instances contained inside other Observable types
+
  * @author johnmcclean
  *
- * @param <T>
+ * @param <T> the type of elements held in the nested Observable
  */
 public interface ObservableT<T> extends FoldableTransformerSeq<T> {
 
@@ -128,7 +125,7 @@ public interface ObservableT<T> extends FoldableTransformerSeq<T> {
      * @return ObservableT that applies the flatMap function to the wrapped Observable
      */
     default <B> ObservableT<B> bind(Function<? super T, ObservableT<? extends B>> f) {
-        return of(unwrap().map(observable -> observable.flatMap(a -> RxCyclops.toObservable(f.apply(a)
+        return of(unwrap().map(observable -> observable.flatMap(a -> Observables.observable(f.apply(a)
                                                                                              .unwrap()
                                                                                              .stream()))
                                                        .<B> flatMap(a -> a)));
@@ -200,7 +197,7 @@ public interface ObservableT<T> extends FoldableTransformerSeq<T> {
     }
 
     public static <A> ObservableTSeq<A> fromObservable(Observable<Observable<A>> ObservableOfObservables) {
-        return ObservableTSeq.of(RxCyclops.observable(ObservableOfObservables));
+        return ObservableTSeq.of(Observables.anyM(ObservableOfObservables));
     }
 
     public static <A> ObservableTSeq<A> fromPublisher(Publisher<Observable<A>> publisherOfObservables) {
