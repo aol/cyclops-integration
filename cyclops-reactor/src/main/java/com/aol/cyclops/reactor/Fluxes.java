@@ -1470,8 +1470,6 @@ public class Fluxes {
      * @return Grouped flux
      */
     public static <T, K, A, D> Flux<Tuple2<K, D>> grouped(Flux<T> flux, Function<? super T, ? extends K> classifier) {
-        ReactiveSeq s = null;
-        s.grouped(classifier);
         return Flux.fromIterable(() -> new Iterator<Tuple2<K, D>>() {
 
             Iterator<Tuple2<K, D>> it;
