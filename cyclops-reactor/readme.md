@@ -48,7 +48,7 @@ Persistent collections
 
 ## LazyListX
 
-LazyListX extends ListX from cyclops (and JDK java.util.List). 
+LazyListX extends ListX from cyclops-react (and JDK java.util.List). 
 
 ```java
 
@@ -72,7 +72,7 @@ LazyListX extends ListX from cyclops (and JDK java.util.List).
 
 ## LazyDequeX
 
-LazyDequeX extends DequeX from cyclops (and JDK java.util.Deque). 
+LazyDequeX extends DequeX from cyclops-react (and JDK java.util.Deque). 
 
 ```java
 
@@ -90,7 +90,7 @@ LazyDequeX extends DequeX from cyclops (and JDK java.util.Deque).
 
 ## LazyQueueX
 
-LazyQueueX extends QueueX from cyclops (and JDK java.util.Deque). 
+LazyQueueX extends QueueX from cyclops-react (and JDK java.util.Deque). 
 
 ```java
 
