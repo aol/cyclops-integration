@@ -4,8 +4,8 @@
 
 There are a number of integration modules for cyclops-react, they are
 
-* [cyclops-rx](https://github.com/aol/cyclops/tree/master/cyclops-rx)
 * [cyclops-reactor](https://github.com/aol/cyclops/tree/master/cyclops-reactor)
+* [cyclops-rx](https://github.com/aol/cyclops/tree/master/cyclops-rx)
 * [cyclops-guava](https://github.com/aol/cyclops/tree/master/cyclops-guava)
 * [cyclops-functionaljava](https://github.com/aol/cyclops/tree/master/cyclops-functionaljava)
 * [cyclops-javaslang](https://github.com/aol/cyclops/tree/master/cyclops-javaslang)
@@ -18,6 +18,9 @@ This screencast gives an overview of how cyclops can help integrate and provide 
 2. for-comprehensions
 3. type conversion 
 4. AnyM, AnyMValue and AnyMSeq support
+5. Lazy Extended Collections (via [cyclops-reactor](https://github.com/aol/cyclops/tree/master/cyclops-reactor))
+6. Utilities for connecting Streams (cyclops-reactor Flux types) in advanced ways
+7. Utilities for pushing data into Streams (e.g. cyclops-reactor Flux types)
 
 ### Reactive Streams support and AnyM support
 
