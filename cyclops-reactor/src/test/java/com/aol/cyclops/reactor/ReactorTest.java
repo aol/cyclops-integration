@@ -40,11 +40,11 @@ public class ReactorTest {
        
             FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.range(10,2),Flux.range(100,2)));
             
-            FluxTs.forEach(fluxT, 
+            FluxTs.forEach4(fluxT, 
                                                a-> ReactiveSeq.iterate(a,i->i+1).limit(2),
                                                (a,b)-> ReactiveSeq.iterate(a,i->i+1).limit(2),
                                                (a,b,c)-> ReactiveSeq.iterate(a,i->i+1).limit(2),
-                                               Tuple4::new)
+                                               Tuple::tuple)
                  .forEach(System.out::println);
     }
     @Test
@@ -52,12 +52,12 @@ public class ReactorTest {
        
             FluxT<Integer> fluxT = FluxT.fromIterable(Arrays.asList(Flux.range(10,2),Flux.range(100,2)));
             
-            FluxTs.forEach(fluxT, 
+            FluxTs.forEach4(fluxT, 
                                                a-> ReactiveSeq.iterate(a,i->i+1).limit(2),
                                                (a,b)-> ReactiveSeq.iterate(a,i->i+1).limit(2),
                                                (a,b,c)-> ReactiveSeq.iterate(a,i->i+1).limit(2),
                                                (a,b,c,d)->a+b+c+d<102,
-                    Tuple4::new).forEach(System.out::println);
+                    Tuple::tuple).forEach(System.out::println);
     }
    
     @Test

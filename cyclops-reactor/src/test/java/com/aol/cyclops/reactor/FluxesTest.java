@@ -14,7 +14,6 @@ import reactor.core.publisher.Flux;
 public class FluxesTest {
     @Test
     public void fluxComp() {
-
        
 
         Flux<Tuple2<Integer, Integer>> stream = Fluxes.forEach(Flux.range(1, 10), i -> Flux.range(i, 10), Tuple::tuple);
@@ -31,7 +30,7 @@ public class FluxesTest {
     @Test
     public void tupleGenFilter(){
         Fluxes.forEach(Flux.range(1, 10), i -> Flux.range(i, 10),(a,b) -> a>2 && b<10,Tuple::tuple)
-              .subscribe(System.out::println);
+                          .subscribe(System.out::println);
     }
     
     @Test

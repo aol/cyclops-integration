@@ -1,8 +1,5 @@
 package com.aol.cyclops.control;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -17,7 +14,6 @@ import org.reactivestreams.Subscriber;
 
 import com.aol.cyclops.data.LazyImmutable;
 import com.aol.cyclops.data.async.Adapter;
-import com.aol.cyclops.data.async.Queue;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
 import com.aol.cyclops.react.threads.SequentialElasticPools;
 import com.aol.cyclops.reactor.collections.extensions.standard.LazyListX;
