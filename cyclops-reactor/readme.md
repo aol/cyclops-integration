@@ -210,7 +210,7 @@ import static com.aol.cyclops.reactor.FluxTs.fluxT;
 FluxTSeq<Integer> nested = fluxT(Flux.just(Flux.just(1,2,3),Flux.just(10,20,30)));
 FluxTSeq<Integer> mapped = nested.map(i->i*3);
 
-//mapped = [Flux[ReactiveSeq[3,6,9],ReactiveSeq[30,60,90]]
+//mapped = [Flux[Flux[3,6,9],Flux[30,60,90]]
 ```
 ## MonoT monad transformer
 
@@ -220,6 +220,6 @@ import static com.aol.cyclops.reactor.MonoTs.monoT;
 MonoTSeq<Integer> nestedFuture = monoT(Flux.just(Mono.just(1),Mono.just(10)));
 mapped = nested.map(i->i*3);
 
-//mapped =  [Flux[FutureW[3],FutureW[30]]
+//mapped =  [Flux[Mono[3],Mono[30]]
 ```
  		
