@@ -22,14 +22,29 @@ jar {
     }
 }
 
+
+
+
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+      tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+      }
+    }
+  }
+
 repositories {
     mavenCentral()
 
 }
 configurations {
 	provided
+    doc {
+        transitive false
+    }
 }
 dependencies {
+    doc  'com.aol.simplereact:cyclops-react:'+cyclopsReactVersion+':sources'
 	compile 'io.projectreactor:reactor-core:'+reactorVersion
 	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
@@ -51,7 +66,11 @@ eclipse.classpath.plusConfigurations += [configurations.provided]  // Eclipse us
 test {
     systemProperties 'property': 'value'
 }
-
+javadoc {
+    source configurations.doc.collect { zipTree(it) }
+    include '**/*.java'
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
 
 
 modifyPom {

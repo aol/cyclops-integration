@@ -25,7 +25,7 @@ import rx.Observable;
  */
 @UtilityClass
 public class ObservableTs {
-    
+
     /**
      * Construct an AnyM type from an Observable Transformer. This allows the Observable Transformer to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
@@ -46,6 +46,7 @@ public class ObservableTs {
     public static <T> AnyMSeq<T> anyM(ObservableT<T> obs) {
         return AnyM.ofSeq(obs);
     }
+
     /**
      * Construct an ObservableT from a Publisher containing nested Observables
      * 
@@ -55,6 +56,7 @@ public class ObservableTs {
     public static <T> ObservableTSeq<T> observableT(Publisher<Observable<T>> nested) {
         return ObservableT.fromPublisher(nested);
     }
+
     /**
      * Construct an ObservableT from an Observable containing nested Observables
      * 
@@ -106,13 +108,14 @@ public class ObservableTs {
 
         return AnyM.ofSeq(For.anyM(anyM(value1))
                              .anyM(a -> AnyM.fromPublisher(value2.apply(a)))
-                             .anyM(a -> b ->  AnyM.fromPublisher(value3.apply(a, b)))
-                             .anyM(a -> b -> c ->  AnyM.fromPublisher(value4.apply(a, b, c)))
+                             .anyM(a -> b -> AnyM.fromPublisher(value3.apply(a, b)))
+                             .anyM(a -> b -> c -> AnyM.fromPublisher(value4.apply(a, b, c)))
                              .yield4(yieldingFunction)
                              .unwrap())
                    .unwrap();
 
     }
+
     /**
      * Perform a For Comprehension over an ObservableT, accepting 3 generating functions. 
      * This results in a four level nested internal iteration over the provided Publishers.
@@ -153,15 +156,16 @@ public class ObservableTs {
             QuadFunction<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return AnyM.ofSeq(For.anyM(anyM(value1))
-                             .anyM(a ->  AnyM.fromPublisher(value2.apply(a)))
-                             .anyM(a -> b ->  AnyM.fromPublisher(value3.apply(a, b)))
-                             .anyM(a -> b -> c ->  AnyM.fromPublisher(value4.apply(a, b, c)))
+                             .anyM(a -> AnyM.fromPublisher(value2.apply(a)))
+                             .anyM(a -> b -> AnyM.fromPublisher(value3.apply(a, b)))
+                             .anyM(a -> b -> c -> AnyM.fromPublisher(value4.apply(a, b, c)))
                              .filter(a -> b -> c -> d -> filterFunction.apply(a, b, c, d))
                              .yield4(yieldingFunction)
                              .unwrap())
                    .unwrap();
 
     }
+
     /**
      * Perform a For Comprehension over a  ObservableT, accepting 2 generating functions. 
      * This results in a three level nested internal iteration over the provided Publishers.
@@ -196,8 +200,8 @@ public class ObservableTs {
             TriFunction<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return AnyM.ofSeq(For.anyM(anyM(value1))
-                             .anyM(a ->  AnyM.fromPublisher(value2.apply(a)))
-                             .anyM(a -> b ->  AnyM.fromPublisher(value3.apply(a, b)))
+                             .anyM(a -> AnyM.fromPublisher(value2.apply(a)))
+                             .anyM(a -> b -> AnyM.fromPublisher(value3.apply(a, b)))
                              .yield3(yieldingFunction)
                              .unwrap())
                    .unwrap();
@@ -239,14 +243,15 @@ public class ObservableTs {
             TriFunction<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return AnyM.ofSeq(For.anyM(anyM(value1))
-                             .anyM(a ->  AnyM.fromPublisher(value2.apply(a)))
-                             .anyM(a -> b ->  AnyM.fromPublisher(value3.apply(a, b)))
+                             .anyM(a -> AnyM.fromPublisher(value2.apply(a)))
+                             .anyM(a -> b -> AnyM.fromPublisher(value3.apply(a, b)))
                              .filter(a -> b -> c -> filterFunction.apply(a, b, c))
                              .yield3(yieldingFunction)
                              .unwrap())
                    .unwrap();
 
     }
+
     /**
      * Perform a For Comprehension over a  ObservableT, accepting a generating function. 
      * This results in a two level nested internal iteration over the provided Publishers.
@@ -278,12 +283,13 @@ public class ObservableTs {
             BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
 
         return AnyM.ofSeq(For.anyM(anyM(value1))
-                             .anyM(a ->  AnyM.fromPublisher(value2.apply(a)))
+                             .anyM(a -> AnyM.fromPublisher(value2.apply(a)))
                              .yield2(yieldingFunction)
                              .unwrap())
                    .unwrap();
 
     }
+
     /**
      * Perform a For Comprehension over an ObservableT, accepting a generating function. 
      * This results in a two level nested internal iteration over the provided Publishers.
@@ -317,7 +323,7 @@ public class ObservableTs {
             BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
 
         return AnyM.ofSeq(For.anyM(anyM(value1))
-                             .anyM(a ->  AnyM.fromPublisher(value2.apply(a)))
+                             .anyM(a -> AnyM.fromPublisher(value2.apply(a)))
                              .filter(a -> b -> filterFunction.apply(a, b))
                              .yield2(yieldingFunction)
                              .unwrap())

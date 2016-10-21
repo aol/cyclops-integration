@@ -15,7 +15,7 @@ public class ObservableTValueComprehender implements Comprehender<ObservableTVal
     @Override
     public Object resolveForCrossTypeFlatMap(Comprehender comp, ObservableTValue apply) {
 
-        return apply.isStreamPresent() ? comp.of(apply.get()) : comp.empty();
+        return apply.isObservablePresent() ? comp.of(apply.get()) : comp.empty();
     }
 
     @Override

@@ -236,7 +236,6 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
         return MonoTSeq.of(AnyM.fromStream(streamOfMonos));
     }
 
-
     /**
      * Construct a MonoTSeq from a Publisher containing Monos
      * 
@@ -294,6 +293,7 @@ public interface MonoT<A> extends Unit<A>, Publisher<A>, Functor<A>, Filterable<
     public static <A> MonoTValue<A> fromFuture(CompletableFuture<Mono<A>> future) {
         return MonoTValue.of(AnyM.fromCompletableFuture(future));
     }
+
     /**
      * Construct a MonoTValue from a Mono containing a Mono
      * <pre>

@@ -265,8 +265,6 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
         return FluxTSeq.of(AnyM.fromIterable(iterableOfFluxs));
     }
 
- 
-
     /**
      * Create a FluxTSeq from a Publisher that contains nested Fluxes
      * 
@@ -324,6 +322,7 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
     public static <A> FluxTValue<A> fromFuture(CompletableFuture<Flux<A>> future) {
         return FluxTValue.of(AnyM.fromCompletableFuture(future));
     }
+
     /**
      * Create a FluxTValue from a Reactor Mono type that contains nested Fluxes
      * <pre>
@@ -352,7 +351,7 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
     public static <A> FluxTValue<A> fromIterableValue(Iterable<Flux<A>> iterableOfFluxs) {
         return FluxTValue.of(AnyM.fromIterableValue(iterableOfFluxs));
     }
-    
+
     /**
      * @return An empty FluxValue (wraps an Empty Optional)
      */
@@ -1123,5 +1122,4 @@ public interface FluxT<T> extends FoldableTransformerSeq<T> {
         return (FluxT) FoldableTransformerSeq.super.sorted(function);
     }
 
-   
 }

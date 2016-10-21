@@ -40,7 +40,7 @@ import rx.Observable;
 /**
  * Monad Transformer for RxJava Observables
  * 
- * It allows users to manipulated Flux instances contained inside other Observable types
+ * It allows users to manipulated Observable instances contained inside other Observable types
 
  * @author johnmcclean
  *
@@ -48,12 +48,50 @@ import rx.Observable;
  */
 public interface ObservableT<T> extends FoldableTransformerSeq<T> {
 
+    /**
+     * Create an instance of the same ObservableTransformer type from the provided Iterator over raw values.
+     * 
+     * <pre>
+     * {@code 
+     *    ObservableT<Integer> ObservableT = ObservableT.fromIterable(Arrays.asList(Observable.just(1,2,3),Observable.just(4,5,6));
+     *    ObservableT<String> ObservableTStrings = ObservableT.unitIterator(Arrays.asList("hello","world").iterator());
+     *    //List[Observable["hello","world"]]
+     * 
+     * }
+     * </pre>
+     * 
+     * 
+     * 
+     * @param it Iterator over raw values to add to a new Observable Transformer
+     * @return Observable Transformer of the same type over the raw value in the Iterator provided
+     */
     public <R> ObservableT<R> unitIterator(Iterator<R> it);
 
+    /**
+     * Create an instance of the same ObservableTransformer that contains a Observable with just the value provided
+     * <pre>
+     * {@code 
+     *    ObservableT<Integer> ObservableT = ObservableT.fromIterable(Arrays.asList(Observable.just(1,2,3),Observable.just(4,5,6));
+     *    ObservableT<String> ObservableTStrings = ObservableT.unit("hello");
+     *    //List[Observable["hello"]]
+     * 
+     * }
+     * </pre>
+     * @param t Value to embed in new Observable Transformer
+     * @return Observable Transformer of the same type over the raw value provided
+     */
     public <R> ObservableT<R> unit(R t);
-
+    /**
+     * @return An empty Observable Transformer of the same type
+     */
     public <R> ObservableT<R> empty();
 
+    /**
+     * Perform a flatMap operation on each nested Observable
+     * 
+     * @param f FlatMapping function
+     * @return ObservableTransformer containing flatMapped Observables
+     */
     public <B> ObservableT<B> flatMap(Function<? super T, ? extends Observable<? extends B>> f);
 
     /**
@@ -135,24 +173,6 @@ public interface ObservableT<T> extends FoldableTransformerSeq<T> {
      * Lift a function into one that accepts and returns an ObservableT
      * This allows multiple monad types to add functionality to existing functions and methods
      * 
-     * e.g. to add iteration handling (via Observable) and nullhandling (via Optional) to an existing function
-     * <pre>
-     * {@code 
-    	Function<Integer,Integer> add2 = i -> i+2;
-    	Function<ObservableT<Integer>, ObservableT<Integer>> optTAdd2 = ObservableT.lift(add2);
-    	
-    	Observable<Integer> nums = Observable.of(1,2);
-    	AnyM<Observable<Integer>> Observable = AnyM.fromOptional(Optional.of(nums));
-    	
-    	List<Integer> results = optTAdd2.apply(ObservableT.of(Observable))
-    									.unwrap()
-    									.<Optional<Observable<Integer>>>unwrap()
-    									.get()
-    									.collect(Collectors.toList());
-    	//Observable.of(3,4);
-     * 
-     * 
-     * }</pre>
      * 
      * 
      * @param fn Function to enhance with functionality from Observable and another monad type
@@ -184,51 +204,138 @@ public interface ObservableT<T> extends FoldableTransformerSeq<T> {
                          .visit(v -> ObservableTValue.of(v), s -> ObservableTSeq.of(s));
     }
 
+    /**
+     * Create a ObservableT from an AnyMValue by wrapping the element stored in the AnyMValue in a Observable
+     * 
+     * @param anyM Monad to embed a Observable inside (wrapping it's current value)
+     * @return ObservableTransformer for manipulating nested Observables
+     */
     public static <A> ObservableTValue<A> fromAnyMValue(AnyMValue<A> anyM) {
         return ObservableTValue.fromAnyM(anyM);
     }
-
+    /**
+     * Create a ObservableT from an AnyMSeq by wrapping the elements stored in the AnyMSeq in a Observable
+     * 
+     * @param anyM  Monad to embed a Observable inside (wrapping it's current values individually in Observables)
+     * @return  ObservableTransformer for manipulating nested Observables
+     */
     public static <A> ObservableTSeq<A> fromAnyMSeq(AnyMSeq<A> anyM) {
         return ObservableTSeq.fromAnyM(anyM);
     }
-
+    
+    /**
+     * Create a ObservableT from an Iterable that contains nested Observables
+     * <pre>
+     * {@code 
+     *    ObservableTSeq<Integer> ObservableT = ObservableT.fromIterable(Arrays.asList(Observable.just(1,2,3));
+     * }
+     * </pre>
+     * @param iterableOfObservables An Iterable containing nested Observables
+     * @return  ObservableTransformer for manipulating nested Observables
+     */
     public static <A> ObservableTSeq<A> fromIterable(Iterable<Observable<A>> iterableOfObservables) {
         return ObservableTSeq.of(AnyM.fromIterable(iterableOfObservables));
     }
-
+    
+    /**
+     * Create a ObservableTSeq from a Publisher that contains nested Observables
+     * <pre>
+     * {@code 
+     *    ObservableTSeq<Integer> ObservableT = ObservableT.fromObservable(Arrays.asList(Observable.just(1,2,3));
+     * }
+     * </pre>
+     * @param ObservableOfObservables An Obsverable containing nested Observables
+     * @return
+     */
     public static <A> ObservableTSeq<A> fromObservable(Observable<Observable<A>> ObservableOfObservables) {
         return ObservableTSeq.of(Observables.anyM(ObservableOfObservables));
     }
-
+    /**
+     * Create a ObservableTSeq from a Publisher that contains nested Observables
+     * 
+     * <pre>
+     * {@code 
+     *    ObservableTSeq<Integer> ObservableT = ObservableT.fromPublisher(Observable.just(Observable.just(1,2,3));
+     * }
+     * </pre> 
+     * 
+     * @param publisherOfObservables A Publisher containing nested Observables
+     * @return ObservableTransformer for manipulating nested Observables
+     */
     public static <A> ObservableTSeq<A> fromPublisher(Publisher<Observable<A>> publisherOfObservables) {
         return ObservableTSeq.of(AnyM.fromPublisher(publisherOfObservables));
     }
-
+    /**
+     * Create a ObservableTValue from a cyclops-react Value that contains nested Observables
+     * <pre>
+     * {@code 
+     *    ObservableTValue<Integer> ObservableT = ObservableT.fromValue(Maybe.just(Observable.just(1,2,3));
+     * }
+     * </pre> 
+     * @param monadicValue A Value containing nested Observables
+     * @return ObservableTransformer for manipulating nested Observables
+     */
     public static <A, V extends MonadicValue<? extends Observable<A>>> ObservableTValue<A> fromValue(V monadicValue) {
         return ObservableTValue.fromValue(monadicValue);
     }
-
+    /**
+     * Create a ObservableTValue from a JDK Optional that contains nested Observables
+     * <pre>
+     * {@code 
+     *    ObservableTValue<Integer> ObservableT = ObservableT.fromOptional(Optional.of(Observable.just(1,2,3));
+     * }
+     * </pre>
+     * @param optional An Optional containing nested Observables
+     * @return ObservableTransformer for manipulating nested Observables
+     */
     public static <A> ObservableTValue<A> fromOptional(Optional<Observable<A>> optional) {
         return ObservableTValue.of(AnyM.fromOptional(optional));
     }
-
+    /**
+     * Create a ObservableTValue from a JDK CompletableFuture that contains nested Observables
+     * <pre>
+     * {@code 
+     *    ObservableTValue<Integer> ObservableT = ObservableT.fromFuture(CompletableFuture.completedFuture(Observable.just(1,2,3));
+     * }
+     * </pre>
+     * @param future A CompletableFuture containing nested Observables
+     * @return ObservableTransformer for manipulating nested Observables
+     */
     public static <A> ObservableTValue<A> fromFuture(CompletableFuture<Observable<A>> future) {
         return ObservableTValue.of(AnyM.fromCompletableFuture(future));
     }
-
+    /**
+     * Create a ObservableTValue from an Iterable that contains nested Observables
+     * <pre>
+     * {@code 
+     *    ObservableTValue<Integer> ObservableT = ObservableT.fromIterableValue(Arrays.asList(Observable.just(1,2,3));
+     * }
+     * </pre>
+     * 
+     * @param iterableOfObservables An Iterable containing nested Observables
+     * @return ObservableTransformer for manipulating nested Observables
+     */
     public static <A> ObservableTValue<A> fromIterableValue(Iterable<Observable<A>> iterableOfObservables) {
         return ObservableTValue.of(AnyM.fromIterableValue(iterableOfObservables));
     }
-
+    /**
+     * @return An empty ObservableTransformer (contains an empty Obsverable)
+     */
     public static <T> ObservableTSeq<T> emptyObservable() {
         return ObservableT.fromIterable(ReactiveSeq.empty());
     }
 
+    /**
+     * @return Convert this ObservabeT to an Observable of Observables
+     */
     default Observable<Observable<T>> observableOfObservable() {
         return Observable.from(this.unwrap()
                                    .stream());
     }
 
+    /**
+     * @return Convert this ObservervableT to a flattened Observable
+     */
     public Observable<T> observable();
 
     /*
@@ -376,6 +483,9 @@ public interface ObservableT<T> extends FoldableTransformerSeq<T> {
         return (ObservableT<R>) FoldableTransformerSeq.super.zip(other, zipper);
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(org.jooq.lambda.Seq, java.util.function.BiFunction)
+     */
     @Override
     default <U, R> ObservableT<R> zip(Seq<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
 
@@ -401,12 +511,18 @@ public interface ObservableT<T> extends FoldableTransformerSeq<T> {
         return (ObservableT) FoldableTransformerSeq.super.zip(other);
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(org.jooq.lambda.Seq)
+     */
     @Override
     default <U> ObservableT<Tuple2<T, U>> zip(Seq<? extends U> other) {
 
         return (ObservableT) FoldableTransformerSeq.super.zip(other);
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#zip(java.lang.Iterable)
+     */
     @Override
     default <U> ObservableT<Tuple2<T, U>> zip(Iterable<? extends U> other) {
 
