@@ -21,6 +21,7 @@ test {
 }
 
 
+
 subprojects {
 	apply plugin: 'eclipse'
 	
@@ -32,11 +33,7 @@ subprojects {
 		  }
 		}
 	  }
-    javadoc {
-        configure((CoreJavadocOptions) getOptions()) {
-            addStringOption('sourcepath', "/Sources/jool-0.9.11-sources.jar;/Sources/cyclops-react-1.0.1-sources.jar")
-        }
-    }
+   
 	
 	
 }
