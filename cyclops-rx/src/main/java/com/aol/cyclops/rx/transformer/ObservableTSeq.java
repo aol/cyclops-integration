@@ -51,6 +51,9 @@ public class ObservableTSeq<T> implements ObservableT<T> {
         this.run = (AnyMSeq) run;
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.monads.transformers.values.TransformerSeq#isSeqPresent()
+     */
     @Override
     public boolean isSeqPresent() {
         return !run.isEmpty();
@@ -68,7 +71,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * Peek at the current value of the Stream
      * <pre>
      * {@code 
-     *    ObservableT.fromIterable(ListX.of(Stream.of(10))
+     *    ObservableT.fromIterable(ListX.of(Observable.just(10))
      *             .peek(System.out::println);
      *             
      *     //prints 10        
@@ -90,7 +93,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * Filter the wrapped Stream
      * <pre>
      * {@code 
-     *   ObservableT.fromIterable(ListX.of(Stream.of(10,11))
+     *   ObservableT.fromIterable(ListX.of(Observable.just(10,11))
      *          .filter(t->t!=10);
      *             
      *     //ObservableT<[11]>>
@@ -109,7 +112,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * 
      * <pre>
      * {@code 
-     *  ObservableT.of(AnyM.fromStream(Arrays.asStream(10))
+     *  ObservableT.of(AnyM.fromStream(Stream.of(Observable.just(10)))
      *             .map(t->t=t+1);
      *  
      *  
@@ -122,6 +125,7 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      */
     @Override
     public <B> ObservableTSeq<B> map(final Function<? super T, ? extends B> f) {
+        
         return new ObservableTSeq<B>(
                                      run.map(o -> o.map(i -> f.apply(i))));
     }
@@ -130,11 +134,10 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * Flat Map the wrapped Stream
       * <pre>
      * {@code 
-     *  ObservableT.of(AnyM.fromStream(Arrays.asStream(10))
-     *             .flatMap(t->Stream.empty();
+     *  ObservableT.of(AnyM.fromStream(Stream.of(Observable.just(10)))
+     *             .flatMapT(t->ObservableT.emptyObservable());
      *  
      *  
-     *  //ObservableT<AnyM<Stream<Stream.empty>>>
      * }
      * </pre>
      * @param f FlatMap function
@@ -145,6 +148,9 @@ public class ObservableTSeq<T> implements ObservableT<T> {
                                           .<B> flatMap(a -> a)));
     }
 
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.rx.transformer.ObservableT#flatMap(java.util.function.Function)
+     */
     @Override
     public <B> ObservableTSeq<B> flatMap(final Function<? super T, ? extends Observable<? extends B>> f) {
 
@@ -157,24 +163,6 @@ public class ObservableTSeq<T> implements ObservableT<T> {
      * Lift a function into one that accepts and returns an ObservableT
      * This allows multiple monad types to add functionality to existing functions and methods
      * 
-     * e.g. to add iteration handling (via Stream) and nullhandling (via Optional) to an existing function
-     * <pre>
-     * {@code 
-    	Function<Integer,Integer> add2 = i -> i+2;
-    	Function<ObservableT<Integer>, ObservableT<Integer>> optTAdd2 = ObservableT.lift(add2);
-    	
-    	Stream<Integer> nums = Stream.of(1,2);
-    	AnyM<Stream<Integer>> stream = AnyM.fromOptional(Optional.of(nums));
-    	
-    	List<Integer> results = optTAdd2.apply(ObservableT.of(stream))
-    									.unwrap()
-    									.<Optional<Stream<Integer>>>unwrap()
-    									.get()
-    									.collect(Collectors.toList());
-    	//Stream.of(3,4);
-     * 
-     * 
-     * }</pre>
      * 
      * 
      * @param fn Function to enhance with functionality from Stream and another monad type
@@ -207,6 +195,12 @@ public class ObservableTSeq<T> implements ObservableT<T> {
                                     monads);
     }
 
+    /**
+     * Create a ObservableT from an AnyM that wraps a monad containing a Observable
+     * 
+     * @param monads AnyM that wraps a Observable containing monad
+     * @return ObservableTSeq
+     */
     public static <A> ObservableTSeq<A> of(final Observable<A> monads) {
         return ObservableT.fromIterable(ReactiveSeq.of(monads));
     }

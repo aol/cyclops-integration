@@ -105,11 +105,11 @@ public class FluxTSeq<T> implements FluxT<T> {
      * 
      * <pre>
      * {@code 
-     *  FluxT.of(AnyM.fromStream(Arrays.asStream(Flux.just(10)))
+     *  FluxT.of(AnyM.fromStream(Stream.of(Flux.just(10)))
      *             .map(t->t=t+1);
      *  
      *  
-     *  //FluxT<AnyM<Stream<Stream[11]>>>
+     *  //FluxT<11>>
      * }
      * </pre>
      * 
@@ -180,10 +180,10 @@ public class FluxTSeq<T> implements FluxT<T> {
     }
 
     /**
-     * Create a FluxT from an AnyM that wraps a monad containing a Stream
+     * Create a FluxT from an AnyM that wraps a monad containing a Flux
      * 
-     * @param monads
-     * @return
+     * @param monads AnyM that wraps a Flux containing monad
+     * @return FluxTSeq
      */
     public static <A> FluxTSeq<A> of(AnyMSeq<? extends Flux<A>> monads) {
         return new FluxTSeq<>(
