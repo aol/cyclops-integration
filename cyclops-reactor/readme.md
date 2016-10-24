@@ -24,20 +24,20 @@ v8.2.0 of cyclops-reactor and above is built using v3.0.2.RELEASE of Project Rea
 
 Standard JDK collections
 
-1. LazyListX
-2. LazyDequeX
-3. LazyQueueX
-4. LazySetX
-5. LazySortedX
+1. [LazyListX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/standard/LazyListX.html)
+2. [LazyDequeX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/standard/LazyDequeX.html)
+3. [LazyQueueX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/standard/LazyQueueX.html)
+4. [LazySetX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/standard/LazySetX.html)
+5. [LazySortedX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/standard/LazySortedX.html)
 
 Persistent collections
 
-1. LazyPStackX          (A persistent LinkedList)
-2. LazyPVectorX         (A persistent Vector - an ArrayList analogue)
-3. LazyPQueueX          (A persistent Queue)
-4. LazyPSetX            (A persistent Set)
-5. LazyPOrderedSetX     (A persistent OrderedSet)
-6. LazyPBagX            (A persistent Bag)
+1. [LazyPStackX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/persistent/LazyPStackX.html)          (A persistent LinkedList)
+2. [LazyPVectorX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/persistent/LazyPVectorX.html)         (A persistent Vector - an ArrayList analogue)
+3. [LazyPQueueX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/persistent/LazyPQueueX.html)          (A persistent Queue)
+4. [LazyPSetX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/persistent/LazyPSetX.html)            (A persistent Set)
+5. [LazyPOrderedSetX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/persistent/LazyPOrderedSetX.html)     (A persistent OrderedSet)
+6. [LazyPBagX](http://static.javadoc.io/com.aol.cyclops/cyclops-reactor/8.2.1/com/aol/cyclops/reactor/collections/extensions/persistent/LazyPBagX.html)            (A persistent Bag)
 
 
 ### Notes : 
@@ -48,7 +48,7 @@ Persistent collections
 
 ## LazyListX
 
-LazyListX extends ListX from cyclops-react (and JDK java.util.List). 
+LazyListX extends [ListX](http://static.javadoc.io/com.aol.simplereact/cyclops-react/1.0.1/com/aol/cyclops/data/collections/extensions/standard/ListX.html) from cyclops-react (and JDK java.util.List). 
 
 ```java
 
