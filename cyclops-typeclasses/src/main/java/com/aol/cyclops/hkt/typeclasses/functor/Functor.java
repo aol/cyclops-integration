@@ -1,0 +1,49 @@
+package com.aol.cyclops.hkt.typeclasses.functor;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import com.aol.cyclops.hkt.alias.Higher;
+
+/**
+ * Functor type class, performs a transformation operation over the supplied data structure
+ * 
+ * @author johnmcclean
+ *
+ * @param <CRE>
+ */
+@FunctionalInterface
+public interface Functor<CRE> {
+    /**
+     * Transform the supplied data structure using the supplied transformation function
+     * 
+     * <pre>
+     * {@code 
+     *  ListX<Integer> listx = ListX.of(1,2,3);
+        ListType<Integer> mapped1 =listFunctor().map(a->a+1, listx);
+        mapped1.add(1);
+        ListX<Integer> listxMapped = mapped1.list();
+     * }
+     * </pre>
+     * 
+     * @param fn Transformation function
+     * @param ds Datastructure to transform
+     * @return
+     */
+    public <T,R> Higher<CRE,R> map(Function<? super T,? extends R> fn, Higher<CRE,T> ds);
+    
+    default <T> Higher<CRE,T> peek(Consumer<? super T> fn, Higher<CRE,T> ds){
+        return map(t->{
+            fn.accept(t);
+            return t;
+        },ds);
+    }
+    
+    default <T, R> Function<Higher<CRE, T>, Higher<CRE, R>> lift(final Function<? super T,? extends R> fn) {
+        return t -> map(fn, t);
+    }
+    
+   
+    
+    
+}
