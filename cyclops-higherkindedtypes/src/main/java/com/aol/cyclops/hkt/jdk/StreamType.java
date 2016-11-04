@@ -1,4 +1,4 @@
-package com.aol.cyclops.hkt;
+package com.aol.cyclops.hkt.jdk;
 
 import java.util.Comparator;
 import java.util.Iterator;

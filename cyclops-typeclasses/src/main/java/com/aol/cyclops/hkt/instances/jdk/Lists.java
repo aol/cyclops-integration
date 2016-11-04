@@ -1,4 +1,4 @@
-package com.aol.cyclops.hkt.instances;
+package com.aol.cyclops.hkt.instances.jdk;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -7,8 +7,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.hkt.ListType;
 import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.instances.General;
+import com.aol.cyclops.hkt.jdk.ListType;
 import com.aol.cyclops.hkt.typeclasses.Unit;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;

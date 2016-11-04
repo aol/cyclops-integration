@@ -1,4 +1,4 @@
-package com.aol.cyclops.hkt;
+package com.aol.cyclops.hkt.jdk;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
