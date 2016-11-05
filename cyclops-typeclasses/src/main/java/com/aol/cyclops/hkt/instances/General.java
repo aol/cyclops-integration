@@ -141,7 +141,7 @@ public interface General {
     @AllArgsConstructor
     static class GeneralMonadZero<CRE,A,B>  implements MonadZero<CRE>{
         Higher<CRE, A> zero;
-        GeneralMonad<CRE,A,B> monad;
+        Monad<CRE> monad;
         
         
 
@@ -171,7 +171,7 @@ public interface General {
         }
         
     }
-    static  <CRE,A,B> GeneralMonadZero<CRE,A,B> monadZero(GeneralMonad<CRE,A,B> monad,
+    static  <CRE,A,B> GeneralMonadZero<CRE,A,B> monadZero(Monad<CRE> monad,
             Higher<CRE, A> zero) {
    
         return new GeneralMonadZero<CRE,A,B>(zero,monad);
@@ -180,7 +180,7 @@ public interface General {
     @AllArgsConstructor
     static class GeneralMonadPlus<CRE,T,B> implements MonadPlus<CRE,T>{
         Monoid<Higher<CRE, T>> monoid;
-        GeneralMonad<CRE,T,B> monad;
+        Monad<CRE> monad;
         
 
         @Override
@@ -211,7 +211,7 @@ public interface General {
         }
         
     }
-    static  <CRE,A,B> GeneralMonadPlus<CRE,A,B> monadPlus(GeneralMonad<CRE,A,B> monad,
+    static  <CRE,A,B> GeneralMonadPlus<CRE,A,B> monadPlus(Monad<CRE> monad,
             Monoid<Higher<CRE, A>> monoid) {
    
         return new GeneralMonadPlus<CRE,A,B>(monoid,monad);
@@ -276,7 +276,7 @@ public interface General {
     @AllArgsConstructor
     static class GeneralTraverse<CRE,C2,A,B> implements TraverseBySequence<CRE>{
 
-        GeneralApplicative<CRE,A,B> applicative;
+        Applicative<CRE> applicative;
         BiFunction<Applicative<C2>,Higher<CRE, Higher<C2, A>>,Higher<C2, Higher<CRE, A>> > sequenceFn;
         
         <C2,T> BiFunction<Applicative<C2>,Higher<CRE, Higher<C2, T>>,Higher<C2, Higher<CRE, T>> > sequenceFn(){
@@ -305,7 +305,7 @@ public interface General {
         }
         
     }
-    static <CRE,C2,T,R> GeneralTraverse<CRE,C2,T,R> traverse(GeneralApplicative<CRE,T,R> applicative,
+    static <CRE,C2,T,R> GeneralTraverse<CRE,C2,T,R> traverse(Applicative<CRE> applicative,
             BiFunction<Applicative<C2>,Higher<CRE, Higher<C2, T>>,Higher<C2, Higher<CRE, T>> > sequenceFn)  {
         return new GeneralTraverse<>(applicative,sequenceFn);
     }

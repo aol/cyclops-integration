@@ -30,7 +30,7 @@ public interface Monad<CRE> extends Applicative<CRE>,Functor<CRE>, Unit<CRE>{
         
         BiFunction<Higher<CRE,Stream<T>>,Higher<CRE,T>,Higher<CRE,Stream<T>>> combineToStream = (acc,next) -> ap2(unit(a->b->Stream.concat(a,Stream.of(b))),acc,next);
 
-        BinaryOperator<Higher<CRE,Stream<T>>> combineStreams = (a,b)->a.then(b, (s1,s2)->s1);  
+        BinaryOperator<Higher<CRE,Stream<T>>> combineStreams = (a,b)->a.apply(b, (s1,s2)->s1);  
 
         return stream.reduce(identity,combineToStream,combineStreams);
     }

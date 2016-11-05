@@ -1,6 +1,7 @@
 package com.aol.cyclops.hkt.alias;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 
 
@@ -37,8 +38,11 @@ public interface Higher<T1,T2> extends Convert<Higher<T1,T2>>{//,__<T1, T2>{
      * @param param 1st parameter to pass to BiFunction
      * @return Result of executing the provided BiFunction
      */
-    default <T3,R> Higher<T1,R> then_(BiFunction<? super T3,? super Higher<T1,T2>,? extends Higher<T1,R>> biFn,T3 param ){
+    default <T3,R> Higher<T1,R> apply_(BiFunction<? super T3,? super Higher<T1,T2>,? extends Higher<T1,R>> biFn,T3 param ){
         return biFn.apply(param,this);
+    }
+    default <R> Higher<T1,R> then(Function<? super Higher<T1,T2>,? extends Higher<T1,R>> fn){
+        return fn.apply(this);
     }
     /**
      * Apply the provided BiFunction passing this as the first parameter
@@ -47,8 +51,8 @@ public interface Higher<T1,T2> extends Convert<Higher<T1,T2>>{//,__<T1, T2>{
      * @param biFn BiFunction to execute
      * @param param 2nd parameter to pass to BiFunction
      * @return Result of executing the provided BiFunction
-     */
-    default <T3,R> Higher<T1,R> then(T3 param,BiFunction<? super Higher<T1,T2>,? super T3,? extends Higher<T1,R>> biFn ){
+    */ 
+    default <T3,R> Higher<T1,R> apply(T3 param,BiFunction<? super Higher<T1,T2>,? super T3,? extends Higher<T1,R>> biFn ){
         return biFn.apply(this,param);
     }
     
