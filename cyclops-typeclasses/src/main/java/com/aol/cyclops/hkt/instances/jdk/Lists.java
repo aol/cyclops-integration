@@ -1,8 +1,5 @@
 package com.aol.cyclops.hkt.instances.jdk;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

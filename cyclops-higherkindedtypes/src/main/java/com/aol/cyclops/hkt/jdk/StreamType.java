@@ -62,7 +62,26 @@ public interface StreamType<T> extends Higher<StreamType.µ, T>, Stream<T> {
         return new Box<>(
                          stream);
     }
-
+    /**
+     * Widen a StreamType nested inside another HKT encoded type
+     * 
+     * @param stream HTK encoded type containing  a Stream to widen
+     * @return HKT encoded type with a widened Stream
+     */
+    public static <C2,T> Higher<C2, Higher<StreamType.µ,T>> widen2(Higher<C2, StreamType<T>> stream){
+        //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
+        //cast seems safer as Higher<StreamType.µ,T> must be a StreamType
+        return (Higher)stream;
+    }
+    /**
+     * Convert the raw Higher Kinded Type for Stream types into the StreamType type definition class
+     * 
+     * @param stream HKT encoded Stream into a StreamType
+     * @return StreamType
+     */
+    public static <T> StreamType<T> narrowK(final Higher<StreamType.µ, T> stream) {
+       return (StreamType<T>)stream;
+    }
     /**
      * Convert the HigherKindedType definition for a Stream into
      * 

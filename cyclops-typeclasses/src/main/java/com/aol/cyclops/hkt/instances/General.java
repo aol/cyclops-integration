@@ -1,8 +1,9 @@
 package com.aol.cyclops.hkt.instances;
 
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.hkt.alias.Higher;
@@ -172,10 +173,60 @@ public interface General {
         }
         
     }
+    @AllArgsConstructor
+    static class SupplierMonadZero<CRE,A,B>  implements MonadZero<CRE>{
+        Supplier<Higher<CRE, A>> zero;
+        Monad<CRE> monad;
+        
+        BiFunction<? extends Higher<CRE,A>,Predicate<? super A>,? extends Higher<CRE,A>> filterRef;
+        
+        
+        <T> BiFunction<Higher<CRE,T>,Predicate<? super T>,Higher<CRE,T>> filterRef(){
+            return (BiFunction)filterRef;
+        }
+
+        @Override
+        public <T> Higher<CRE, T> zero() {
+            return (Higher)zero.get();
+        }
+
+        @Override
+        public <T, R> Higher<CRE, R> flatMap(Function<? super T, ? extends Higher<CRE, R>> fn, Higher<CRE, T> ds) {
+            return monad.flatMap(fn, ds);
+        }
+
+        @Override
+        public <T,R> Higher<CRE,R> ap(Higher<CRE, Function< T,R>> fn,  Higher<CRE,T> apply){
+            return monad.ap(fn, apply);
+        }
+
+        @Override
+        public <T, R> Higher<CRE, R> map(Function<? super T, ? extends R> fn, Higher<CRE, T> ds) {
+            return monad.map(fn, ds);
+        }
+
+        @Override
+        public <T> Higher<CRE, T> unit(T value) {
+            return monad.unit(value);
+        }
+
+        @Override
+        public <T> Higher<CRE, T> filter(Predicate<? super T> predicate, Higher<CRE, T> ds) {
+            return this.<T>filterRef().apply(ds,predicate);
+        }
+        
+    }
     static  <CRE,A,B> GeneralMonadZero<CRE,A,B> monadZero(Monad<CRE> monad,
             Higher<CRE, A> zero) {
    
         return new GeneralMonadZero<CRE,A,B>(zero,monad);
+        
+    }
+    static  <CRE,A,B> SupplierMonadZero<CRE,A,B> monadZero(Monad<CRE> monad,
+            Supplier<Higher<CRE, A>> zero,
+            BiFunction<Higher<CRE,A>,Predicate<? super A>,Higher<CRE,A>> filterRef) {
+   
+        return new SupplierMonadZero<CRE,A,B>(zero,monad,filterRef);
         
     }
     @AllArgsConstructor
@@ -212,10 +263,53 @@ public interface General {
         }
         
     }
+    @AllArgsConstructor
+    static class SupplierMonadPlus<CRE,T,B> implements MonadPlus<CRE,T>{
+        Monoid<Higher<CRE, T>> monoid;
+        MonadZero<CRE> monad;
+        
+
+        @Override
+        public <T, R> Higher<CRE, R> flatMap(Function<? super T, ? extends Higher<CRE, R>> fn, Higher<CRE, T> ds) {
+            return monad.flatMap(fn, ds);
+        }
+
+        @Override
+        public <T,R> Higher<CRE,R> ap(Higher<CRE, Function< T,R>> fn,  Higher<CRE,T> apply){
+            return monad.ap(fn,apply);
+        }
+
+        @Override
+        public <T, R> Higher<CRE, R> map(Function<? super T, ? extends R> fn, Higher<CRE, T> ds) {
+            return monad.map(fn,ds);
+        }
+
+        @Override
+        public <T> Higher<CRE, T> unit(T value) {
+            return monad.unit(value);
+        }
+
+        @Override
+        public Higher<CRE, T> zero(){
+            return monad.zero();
+        }
+
+        @Override
+        public Monoid<Higher<CRE, T>> monoid() {
+            return (Monoid)monoid;
+        }
+        
+    }
     static  <CRE,A,B> GeneralMonadPlus<CRE,A,B> monadPlus(Monad<CRE> monad,
             Monoid<Higher<CRE, A>> monoid) {
    
         return new GeneralMonadPlus<CRE,A,B>(monoid,monad);
+        
+    }
+    static  <CRE,A,B> SupplierMonadPlus<CRE,A,B> monadPlus(MonadZero<CRE> monad,
+            Monoid<Higher<CRE, A>> monoid) {
+   
+        return new SupplierMonadPlus<CRE,A,B>(monoid,monad);
         
     }
     @AllArgsConstructor

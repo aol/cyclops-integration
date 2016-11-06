@@ -10,7 +10,7 @@ public interface MonadPlus<CRE,T> extends MonadZero<CRE>{
    
     @Override
     default Higher<CRE, T> zero(){
-        return this.zero();
+        return monoid().zero();
     }
     
     default Higher<CRE,T> plus(Higher<CRE,T> a, Higher<CRE,T> b){
