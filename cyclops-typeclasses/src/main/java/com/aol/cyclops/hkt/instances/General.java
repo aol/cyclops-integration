@@ -222,8 +222,8 @@ public interface General {
     static class GeneralComonad<CRE,A,B> implements Comonad<CRE>{
         GeneralFunctor<CRE,A,B> functor;
         GeneralUnit<CRE,A> unit;
-        Function<? super Higher<CRE, A>, ? extends List<A>> extractFn;
-        <T> Function<? super Higher<CRE, T>, ? extends List<T>> extractFn(){
+        Function<? super Higher<CRE, A>, ? extends A> extractFn;
+        <T> Function<? super Higher<CRE, T>, ? extends T> extractFn(){
             return (Function)extractFn;
         }
         @Override
@@ -239,13 +239,13 @@ public interface General {
        
 
         @Override
-        public <T> List<T> extract(Higher<CRE, T> ds) {
+        public <T> T extract(Higher<CRE, T> ds) {
            return this.<T>extractFn().apply(ds);
         }
         
     }
     static  <CRE,T,R> GeneralComonad<CRE,T,R> comonad(GeneralFunctor<CRE,T,R> functor, GeneralUnit<CRE,T> unit,
-            Function<? super Higher<CRE, T>, ? extends List<T>> extractFn ) {
+            Function<? super Higher<CRE, T>, ? extends T> extractFn ) {
         
         return new GeneralComonad<>(functor,unit,extractFn);
         

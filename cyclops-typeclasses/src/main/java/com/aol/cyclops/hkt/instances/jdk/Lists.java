@@ -12,8 +12,8 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.jdk.ListType;
-import com.aol.cyclops.hkt.jdk.ListType.µ;
 import com.aol.cyclops.hkt.typeclasses.Unit;
+import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
 import com.aol.cyclops.hkt.typeclasses.monad.Monad;
@@ -87,6 +87,12 @@ public class Lists {
         BiFunction<Applicative<C2>,Higher<ListType.µ,Higher<C2, T>>,Higher<C2, Higher<ListType.µ,T>>> sequenceNarrow  = 
                                                         (a,b) -> ListType.widen2(sequenceFn.apply(a, ListType.narrowK(b)));
         return General.traverse(zippingApplicative(), sequenceNarrow);
+    }
+    
+    public static <T> Foldable<ListType.µ> folable(){
+        BiFunction<Monoid<T>,Higher<ListType.µ,T>,T> foldRightFn =  (m,l)-> ListX.fromIterable(ListType.narrow(l)).foldRight(m);
+        BiFunction<Monoid<T>,Higher<ListType.µ,T>,T> foldLeftFn = (m,l)-> ListX.fromIterable(ListType.narrow(l)).reduce(m);
+        return General.foldable(foldRightFn, foldLeftFn);
     }
   
     private <T> ListType<T> of(T value){

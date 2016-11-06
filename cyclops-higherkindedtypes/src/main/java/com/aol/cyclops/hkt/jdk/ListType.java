@@ -47,6 +47,8 @@ public interface ListType<T> extends Higher<ListType.µ, T>, List<T> {
         return new Box<>(list);
     }
     public static <C2,T> Higher<C2, Higher<ListType.µ,T>> widen2(Higher<C2, ListType<T>> list){
+        //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
+        //cast seems safer as Higher<ListType.µ,T> must be a ListType
         return (Higher)list;
     }
     public static <T> ListType<T> narrowK(final Higher<ListType.µ, T> list) {

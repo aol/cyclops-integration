@@ -1,6 +1,5 @@
 package com.aol.cyclops.hkt.typeclasses.comonad;
 
-import java.util.List;
 import java.util.function.Function;
 
 import com.aol.cyclops.hkt.alias.Higher;
@@ -18,5 +17,5 @@ public interface Comonad<CRE> extends Unit<CRE>, Functor<CRE> {
                      .apply(ds);
     }
     
-    public <T> List<T> extract(Higher<CRE,T> ds);
+    public <T> T extract(Higher<CRE,T> ds);
 }
