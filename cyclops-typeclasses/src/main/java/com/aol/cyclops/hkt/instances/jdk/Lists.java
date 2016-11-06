@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 import com.aol.cyclops.Monoid;
@@ -11,12 +12,14 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.jdk.ListType;
+import com.aol.cyclops.hkt.jdk.ListType.µ;
 import com.aol.cyclops.hkt.typeclasses.Unit;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
 import com.aol.cyclops.hkt.typeclasses.monad.Monad;
 import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
 import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
+import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 
 import lombok.experimental.UtilityClass;
 
@@ -64,7 +67,29 @@ public class Lists {
         Monoid<Higher<ListType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
-        private <T> ListType<T> of(T value){
+ 
+    public static <C2,T> Traverse<ListType.µ> traverse(){
+        BiFunction<Applicative<C2>,ListType<Higher<C2, T>>,Higher<C2, ListType<T>>> sequenceFn = (ap,list) -> {
+        
+            Higher<C2,ListType<T>> identity = ap.unit(ListType.widen(Arrays.asList()));
+
+            BiFunction<Higher<C2,ListType<T>>,Higher<C2,T>,Higher<C2,ListType<T>>> combineToList =   (acc,next) -> ap.apBiFn(ap.unit((a,b) -> { a.add(b); return a;}),acc,next);
+
+            BinaryOperator<Higher<C2,ListType<T>>> combineLists = (a,b)-> ap.apBiFn(ap.unit((l1,l2)-> { l1.addAll(l2); return l1;}),a,b); ;  
+
+            return list.stream()
+                      .reduce(identity,
+                              combineToList,
+                              combineLists);  
+
+   
+        };
+        BiFunction<Applicative<C2>,Higher<ListType.µ,Higher<C2, T>>,Higher<C2, Higher<ListType.µ,T>>> sequenceNarrow  = 
+                                                        (a,b) -> ListType.widen2(sequenceFn.apply(a, ListType.narrowK(b)));
+        return General.traverse(zippingApplicative(), sequenceNarrow);
+    }
+  
+    private <T> ListType<T> of(T value){
         return ListType.widen(Arrays.asList(value));
     }
     private static <T,R> ListType<R> ap(ListType<Function<? super T, ? extends R>> lt,  ListType<T> list){

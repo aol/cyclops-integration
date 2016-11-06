@@ -46,6 +46,9 @@ public interface ListType<T> extends Higher<ListType.µ, T>, List<T> {
             return (ListType<T>) list;
         return new Box<>(list);
     }
+    public static <C2,T> Higher<C2, Higher<ListType.µ,T>> widen2(Higher<C2, ListType<T>> list){
+        return (Higher)list;
+    }
     public static <T> ListType<T> narrowK(final Higher<ListType.µ, T> list) {
        return (ListType<T>)list;
     }

@@ -14,6 +14,7 @@ import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
 import com.aol.cyclops.hkt.typeclasses.monad.Monad;
 import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
 import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
+import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 import com.aol.cyclops.hkt.typeclasses.monad.TraverseBySequence;
 
 import lombok.AllArgsConstructor;
@@ -305,7 +306,7 @@ public interface General {
         }
         
     }
-    static <CRE,C2,T,R> GeneralTraverse<CRE,C2,T,R> traverse(Applicative<CRE> applicative,
+    static <CRE,C2,T,R> Traverse<CRE> traverse(Applicative<CRE> applicative,
             BiFunction<Applicative<C2>,Higher<CRE, Higher<C2, T>>,Higher<C2, Higher<CRE, T>> > sequenceFn)  {
         return new GeneralTraverse<>(applicative,sequenceFn);
     }
