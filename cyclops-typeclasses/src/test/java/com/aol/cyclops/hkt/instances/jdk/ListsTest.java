@@ -45,6 +45,35 @@ public class ListsTest {
         
         assertThat(list,equalTo(Arrays.asList("hello".length()*2)));
     }
-    
+    @Test
+    public void monad(){
+        
+        ListType<Integer> list = Lists.unit()
+                                     .unit("hello")
+                                     .then(h->Lists.monad().flatMap((String v) ->Lists.unit().unit(v.length()), h))
+                                     .convert(ListType::narrowK);
+        
+        assertThat(list,equalTo(Arrays.asList("hello".length())));
+    }
+    @Test
+    public void monadZeroFilter(){
+        
+        ListType<String> list = Lists.unit()
+                                     .unit("hello")
+                                     .then(h->Lists.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .convert(ListType::narrowK);
+        
+        assertThat(list,equalTo(Arrays.asList("hello")));
+    }
+    @Test
+    public void monadZeroFilterOut(){
+        
+        ListType<String> list = Lists.unit()
+                                     .unit("hello")
+                                     .then(h->Lists.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .convert(ListType::narrowK);
+        
+        assertThat(list,equalTo(Arrays.asList()));
+    }
     
 }
