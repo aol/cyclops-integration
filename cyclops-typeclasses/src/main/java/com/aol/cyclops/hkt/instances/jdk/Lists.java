@@ -23,6 +23,11 @@ import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 
 import lombok.experimental.UtilityClass;
 
+/**
+ * Companion class for creating Type Class instances for working with Lists
+ * @author johnmcclean
+ *
+ */
 @UtilityClass
 public class Lists {
 
@@ -46,7 +51,7 @@ public class Lists {
         return General.unit(Lists::of);
     }
     public static <T,R> Applicative<ListType.µ> zippingApplicative(){
-        BiFunction<ListType< Function<? super T, ? extends R>>,ListType<T>,ListType<R>> ap = Lists::ap;
+        BiFunction<ListType< Function<T, R>>,ListType<T>,ListType<R>> ap = Lists::ap;
         return General.applicative(functor(), unit(), ap);
     }
     public static <T,R> Monad<ListType.µ> monad(){
@@ -98,7 +103,7 @@ public class Lists {
     private <T> ListType<T> of(T value){
         return ListType.widen(Arrays.asList(value));
     }
-    private static <T,R> ListType<R> ap(ListType<Function<? super T, ? extends R>> lt,  ListType<T> list){
+    private static <T,R> ListType<R> ap(ListType<Function< T, R>> lt,  ListType<T> list){
         return ListType.widen(ListX.fromIterable(lt).zip(list,(a,b)->a.apply(b)));
     }
     private static <T,R> Higher<ListType.µ,R> flatMap( Higher<ListType.µ,T> lt, Function<? super T, ? extends  Higher<ListType.µ,R>> fn){
