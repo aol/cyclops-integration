@@ -10,6 +10,7 @@ import java.util.function.Function;
 
 import org.junit.Test;
 
+import com.aol.cyclops.Monoid;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.hkt.jdk.ListType;
 import com.aol.cyclops.util.function.Lambda;
@@ -99,6 +100,15 @@ public class ListsTest {
                                       .plus(ListType.widen(Arrays.asList()), ListType.widen(Arrays.asList(10)))
                                       .convert(ListType::narrowK);
         assertThat(list,equalTo(Arrays.asList(10)));
+    }
+    @Test
+    public void monadPlusNonEmpty(){
+        
+        Monoid<ListType<Integer>> m = Monoid.of(ListType.widen(Arrays.asList()), (a,b)->a.isEmpty() ? b : a);
+        ListType<Integer> list = Lists.<Integer>monadPlus(m)
+                                      .plus(ListType.widen(Arrays.asList(5)), ListType.widen(Arrays.asList(10)))
+                                      .convert(ListType::narrowK);
+        assertThat(list,equalTo(Arrays.asList(5)));
     }
     @Test
     public void  foldLeft(){

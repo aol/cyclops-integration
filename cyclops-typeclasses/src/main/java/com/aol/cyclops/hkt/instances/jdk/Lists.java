@@ -1,5 +1,8 @@
 package com.aol.cyclops.hkt.instances.jdk;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -206,6 +209,18 @@ public class Lists {
         return General.monadPlus(monadZero(),m2);
     }
     /**
+     * 
+     * <pre>
+     * {@code 
+     *  Monoid<ListType<Integer>> m = Monoid.of(ListType.widen(Arrays.asList()), (a,b)->a.isEmpty() ? b : a);
+        ListType<Integer> list = Lists.<Integer>monadPlus(m)
+                                      .plus(ListType.widen(Arrays.asList(5)), ListType.widen(Arrays.asList(10)))
+                                      .convert(ListType::narrowK);
+        //Arrays.asList(5))
+     * 
+     * }
+     * </pre>
+     * 
      * @param m Monoid to use for combining Lists
      * @return Type class for combining Lists
      */
@@ -239,6 +254,18 @@ public class Lists {
     }
     
     /**
+     * 
+     * <pre>
+     * {@code 
+     * int sum  = Lists.foldable()
+                        .foldLeft(0, (a,b)->a+b, ListType.widen(Arrays.asList(1,2,3,4)));
+        
+        //10
+     * 
+     * }
+     * </pre>
+     * 
+     * 
      * @return Type class for folding / reduction operations
      */
     public static <T> Foldable<ListType.µ> foldable(){
