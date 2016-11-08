@@ -2,6 +2,7 @@ package com.aol.cyclops.hkt;
 
 import java.util.Optional;
 
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.hkt.alias.Higher;
 
 import lombok.AccessLevel;

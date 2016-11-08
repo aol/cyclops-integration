@@ -1,7 +1,7 @@
 package com.aol.cyclops.hkt;
 
 
-
+import com.aol.cyclops.control.*;
 import java.util.function.Supplier;
 
 import com.aol.cyclops.hkt.alias.Higher;

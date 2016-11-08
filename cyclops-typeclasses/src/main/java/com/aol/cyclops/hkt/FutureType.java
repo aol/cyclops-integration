@@ -5,6 +5,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
+import org.reactivestreams.Publisher;
+
+import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.hkt.alias.Higher;
 
 import lombok.AccessLevel;
