@@ -33,6 +33,16 @@ public interface CompletableFutureType<T> extends Higher<CompletableFutureType.Â
      */
     public static class Âµ {
     }
+    
+    /**
+     * Construct a HKT encoded completed CompletableFuture
+     * 
+     * @param value To encode inside a HKT encoded CompletableFuture
+     * @return Completed HKT encoded CompletableFuture
+     */
+    public static <T> CompletableFutureType<T> completedFuture(T value){
+        return widen(CompletableFuture.completedFuture(value));
+    }
 
     /**
      * Convert a CompletableFuture to a simulated HigherKindedType that captures CompletableFuture nature
@@ -49,6 +59,16 @@ public interface CompletableFutureType<T> extends Higher<CompletableFutureType.Â
             return (CompletableFutureType<T>) completableFuture;
         return new Box<>(
                          completableFuture);
+    }
+    
+    /**
+     * Convert the raw Higher Kinded Type for CompletableFutureType types into the CompletableFutureType type definition class
+     * 
+     * @param future HKT encoded list into a CompletableFutureType
+     * @return CompletableFutureType
+     */
+    public static <T> CompletableFutureType<T> narrowK(final Higher<CompletableFutureType.Âµ, T> future) {
+       return (CompletableFutureType<T>)future;
     }
 
     /**

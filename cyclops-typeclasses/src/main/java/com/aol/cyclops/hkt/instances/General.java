@@ -17,6 +17,8 @@ import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
 import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
 import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 import com.aol.cyclops.hkt.typeclasses.monad.TraverseBySequence;
+import com.aol.cyclops.hkt.typeclasses.monad.TraverseByTraverse;
+import com.aol.cyclops.util.function.TriFunction;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -403,6 +405,45 @@ public interface General {
     static <CRE,C2,T,R> Traverse<CRE> traverse(Applicative<CRE> applicative,
             BiFunction<Applicative<C2>,Higher<CRE, Higher<C2, T>>,Higher<C2, Higher<CRE, T>> > sequenceFn)  {
         return new GeneralTraverse<>(applicative,sequenceFn);
+    }
+    @AllArgsConstructor
+    static class GeneralTraverseByTraverse<CRE,C2,A,B> implements TraverseByTraverse<CRE>{
+
+        Applicative<CRE> applicative;
+        TriFunction<Applicative<C2>,Function<A, Higher<C2, B>>,Higher<CRE, A>,Higher<C2, Higher<CRE, B>>> traverseFn;
+        
+        <C2,T,R> TriFunction<Applicative<C2>,Function< T, Higher<C2, R>>,Higher<CRE, T>,Higher<C2, Higher<CRE, R>>> traverseFn(){
+            return (TriFunction)traverseFn;
+        }
+
+        @Override
+        public <T,R> Higher<CRE,R> ap(Higher<CRE, Function< T,R>> fn,  Higher<CRE,T> apply){
+            return applicative.ap(fn, apply);
+        }
+
+        @Override
+        public <T, R> Higher<CRE, R> map(Function<? super T, ? extends R> fn, Higher<CRE, T> ds) {
+            return applicative.map(fn, ds);
+        }
+
+        @Override
+        public <T> Higher<CRE, T> unit(T value) {
+            return applicative.unit(value);
+        }
+
+       
+
+        @Override
+        public <C2, T, R> Higher<C2, Higher<CRE, R>> traverseA(Applicative<C2> applicative,
+                Function<? super T, ? extends Higher<C2, R>> fn, Higher<CRE, T> ds) {
+           return this.<C2,T,R>traverseFn().apply(applicative,(Function) fn , ds);
+        }
+
+       
+    }
+    static <CRE,C2,T,R> Traverse<CRE> traverseByTraverse(Applicative<CRE> applicative,
+            TriFunction<Applicative<C2>,Function< T, Higher<C2, R>>,Higher<CRE, T>,Higher<C2, Higher<CRE, R>>> traverseFn)  {
+        return new GeneralTraverseByTraverse<>(applicative,traverseFn);
     }
     
 
