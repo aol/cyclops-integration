@@ -36,9 +36,9 @@ public class FromCyclopsReact {
         return Future.of(() -> value.get());
     }
 
-    public static <T> Option<T> option(MonadicValue<T> value) {
-        return Option.ofOptional(value.toOptional());
-    }
+    public static <T> Option<T> option(com.aol.cyclops.types.Value<T> value){
+        return value.visit(Option::some, Option::none);
+     }
 
     public static <L, R> Either<L, R> either(MonadicValue2<L, R> value) {
         Xor<L, R> xor = (Xor) value.toXor();

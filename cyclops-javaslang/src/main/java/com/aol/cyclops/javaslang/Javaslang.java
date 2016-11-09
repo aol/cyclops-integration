@@ -23,6 +23,7 @@ import javaslang.control.Try;
 
 public class Javaslang {
     
+   
     public static <T> FutureW<T> futureW(Future<T> future){
         FutureW<T> res = FutureW.future();
         future.onSuccess(v->res.complete(v))

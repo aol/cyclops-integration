@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.For;
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.internal.monads.ComprehenderSelector;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
@@ -35,6 +36,10 @@ import fj.data.Writer;
  */
 public interface FJ {
 
+    
+    public static <T> Maybe<T> maybe(Option<T> opt){
+        return opt.option(Maybe::none, Maybe::just);
+    }
     /**
      * Methods for making working with FJ's Trampoline a little more Java8 friendly
      *
