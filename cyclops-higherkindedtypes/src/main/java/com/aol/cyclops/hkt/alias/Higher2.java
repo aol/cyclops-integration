@@ -1,7 +1,5 @@
 package com.aol.cyclops.hkt.alias;
 
-import org.derive4j.hkt.__2;
-
 /**
  * 
  * Higher Kinded Type - a core type (e.g. a Xor) and the data types which it may store / manipulate (e.g. String and Exception).

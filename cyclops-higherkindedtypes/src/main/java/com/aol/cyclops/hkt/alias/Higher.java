@@ -3,8 +3,6 @@ package com.aol.cyclops.hkt.alias;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.derive4j.hkt.__;
-
 
 
 /**
