@@ -1,4 +1,4 @@
-package com.aol.cyclops.hkt;
+package com.aol.cyclops.hkt.cyclops;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -9,10 +9,7 @@ import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.hkt.alias.Higher;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.experimental.Delegate;
+import com.aol.cyclops.hkt.jdk.CompletableFutureType;
 
 /**
  * Simulates Higher Kinded Types for FutureW's
@@ -24,7 +21,18 @@ import lombok.experimental.Delegate;
  * @param <T> Data type stored within the FutureW
  */
 
-public interface FutureType<T> extends Higher<FutureType.µ, T>, FutureW<T> {
+public final class FutureType<T> extends FutureW<T> implements Higher<FutureType.µ, T>  {
+   
+    
+    private FutureType(CompletableFuture<T> future) {
+        super(
+              future); 
+    }
+
+
+
+
+
     /**
      * Witness type
      * 
@@ -49,6 +57,15 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, FutureW<T> {
      */
     public static <T> FutureType<T> future() {
         return widen(FutureW.future());
+    }
+    /**
+     * Convert the raw Higher Kinded Type for  FutureType types into the FutureType type definition class
+     * 
+     * @param future HKT encoded list into a FutureType
+     * @return FutureType
+     */
+    public static <T> FutureType<T> narrowK(final Higher<FutureType.µ, T> future) {
+       return (FutureType<T>)future;
     }
     /**
      * Construct a FutureW asyncrhonously that contains a single value extracted from the supplied reactive-streams Publisher
@@ -237,7 +254,7 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, FutureW<T> {
         final CompletableFuture<T> cf = new CompletableFuture<>();
         cf.completeExceptionally(error);
 
-        return FutureW.<T> of(cf);
+        return widen(FutureW.of(cf));
     }
 
     /**
@@ -253,8 +270,8 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, FutureW<T> {
     public static <T> FutureType<T> widen(final FutureW<T> futureW) {
         if (futureW instanceof FutureType)
             return (FutureType<T>) futureW;
-        return new Box<>(
-                         futureW);
+        return new FutureType<T>(
+                         futureW.getFuture());
     }
 
     /**
@@ -267,7 +284,7 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, FutureW<T> {
         if (futureW instanceof FutureW)
             return (FutureW) futureW;
         //this code should be unreachable due to HKT type checker
-        final Box<T> type = (Box<T>) futureW;
+        final FutureType<T> type = (FutureType<T>) futureW;
         return type.narrow();
     }
     /**
@@ -278,27 +295,25 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, FutureW<T> {
      */
     public static <T> CompletableFuture<T> narrowCompletableFuture(final Higher<FutureType.µ, T> futureW) {
         if (futureW instanceof FutureW)
-            return (FutureW) futureW;
-        final Box<T> type = (Box<T>) futureW;
+            return ((FutureW<T>) futureW).getFuture();
+        final FutureType<T> type = (FutureType<T>) futureW;
         return type.narrow().getFuture();
     }
 
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    static final class Box<T> implements FutureType<T> {
+    
 
-        @Delegate
-        private final FutureW<T> boxed;
+       
 
         /**
          * @return This back as a FutureW
          */
         public FutureW<T> narrow() {
-            return  boxed;
+            return  this;
         }
 
         
        
 
-    }
+    
 
 }

@@ -28,7 +28,19 @@ public final class OptionalType<T> implements Higher<OptionalType.µ, T> {
      */
     public static class µ {
     }
-    
+    /**
+     * @return An HKT encoded empty Optional
+     */
+    public static <T> OptionalType<T> empty() {
+        return widen(Optional.empty());
+    }
+    /**
+     * @param value Value to embed in an Optional
+     * @return An HKT encoded Optional
+     */
+    public static <T> OptionalType<T> of(T value) {
+        return widen(Optional.of(value));
+    }
     /**
      * Convert a Optional to a simulated HigherKindedType that captures Optional nature
      * and Optional element data type separately. Recover via @see OptionalType#narrow
@@ -43,7 +55,15 @@ public final class OptionalType<T> implements Higher<OptionalType.µ, T> {
         
         return new OptionalType<T>(Optional);
     }
-
+    /**
+     * Convert the raw Higher Kinded Type for OptionalType types into the OptionalType type definition class
+     * 
+     * @param future HKT encoded list into a OptionalType
+     * @return OptionalType
+     */
+    public static <T> OptionalType<T> narrowK(final Higher<OptionalType.µ, T> future) {
+       return (OptionalType<T>)future;
+    }
     /**
      * Convert the HigherKindedType definition for a Optional into
      * 
@@ -55,6 +75,7 @@ public final class OptionalType<T> implements Higher<OptionalType.µ, T> {
          return ((OptionalType<T>)Optional).boxed;
         
     }
+   
 
    
    

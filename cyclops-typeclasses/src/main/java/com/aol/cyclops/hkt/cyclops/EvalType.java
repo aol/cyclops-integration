@@ -1,14 +1,17 @@
-package com.aol.cyclops.hkt;
+package com.aol.cyclops.hkt.cyclops;
 
 
-import com.aol.cyclops.control.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.reactivestreams.Publisher;
+
+import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.types.MonadicValue;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.experimental.Delegate;
 
 /**
  * Simulates Higher Kinded Types for Eval's
@@ -22,7 +25,7 @@ import lombok.experimental.Delegate;
 
 public interface EvalType<T> extends Higher<EvalType.µ, T>, Eval<T> {
     
-    
+ 
     /**
      * Witness type
      * 
@@ -154,7 +157,7 @@ public interface EvalType<T> extends Higher<EvalType.µ, T>, Eval<T> {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     static final class Box<T> implements EvalType<T> {
 
-        @Delegate
+       
         private final Eval<T> boxed;
 
         /**
@@ -164,8 +167,25 @@ public interface EvalType<T> extends Higher<EvalType.µ, T>, Eval<T> {
             return Eval.fromIterable(boxed);
         }
 
+
+        public <T> Eval<T> unit(T unit) {
+            return boxed.unit(unit);
+        }
+
+        public <R> Eval<R> map(Function<? super T, ? extends R> mapper) {
+            return boxed.map(mapper);
+        }
+
+        public <R> Eval<R> flatMap(Function<? super T, ? extends MonadicValue<? extends R>> mapper) {
+            return boxed.flatMap(mapper);
+        }
+
+
+        public T get() {
+            return boxed.get();
+        }
         
-       
+              
 
     }
 

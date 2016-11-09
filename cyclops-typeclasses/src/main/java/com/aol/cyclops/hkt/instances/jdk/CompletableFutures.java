@@ -1,12 +1,8 @@
 package com.aol.cyclops.hkt.instances.jdk;
 
-import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.Monoids;
@@ -30,7 +26,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Futures {
+public class CompletableFutures {
 
     
     /**
@@ -62,7 +58,7 @@ public class Futures {
      * @return A functor for CompletableFutures
      */
     public static <T,R>Functor<CompletableFutureType.µ> functor(){
-        BiFunction<CompletableFutureType<T>,Function<? super T, ? extends R>,CompletableFutureType<R>> map = Futures::map;
+        BiFunction<CompletableFutureType<T>,Function<? super T, ? extends R>,CompletableFutureType<R>> map = CompletableFutures::map;
         return General.functor(map);
     }
     /**
@@ -81,7 +77,7 @@ public class Futures {
      * @return A factory for CompletableFutures
      */
     public static Unit<CompletableFutureType.µ> unit(){
-        return General.unit(Futures::of);
+        return General.unit(CompletableFutures::of);
     }
     /**
      * 
@@ -121,7 +117,7 @@ public class Futures {
      * @return A zipper for CompletableFutures
      */
     public static <T,R> Applicative<CompletableFutureType.µ> applicative(){
-        BiFunction<CompletableFutureType< Function<T, R>>,CompletableFutureType<T>,CompletableFutureType<R>> ap = Futures::ap;
+        BiFunction<CompletableFutureType< Function<T, R>>,CompletableFutureType<T>,CompletableFutureType<R>> ap = CompletableFutures::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -152,7 +148,7 @@ public class Futures {
      */
     public static <T,R> Monad<CompletableFutureType.µ> monad(){
   
-        BiFunction<Higher<CompletableFutureType.µ,T>,Function<? super T, ? extends Higher<CompletableFutureType.µ,R>>,Higher<CompletableFutureType.µ,R>> flatMap = Futures::flatMap;
+        BiFunction<Higher<CompletableFutureType.µ,T>,Function<? super T, ? extends Higher<CompletableFutureType.µ,R>>,Higher<CompletableFutureType.µ,R>> flatMap = CompletableFutures::flatMap;
         return General.monad(applicative(), flatMap);
     }
     /**
@@ -222,7 +218,7 @@ public class Futures {
      */
     public static <C2,T> Traverse<CompletableFutureType.µ> traverse(){
       
-        return General.traverseByTraverse(applicative(), Futures::traverseA);
+        return General.traverseByTraverse(applicative(), CompletableFutures::traverseA);
     }
     
     /**

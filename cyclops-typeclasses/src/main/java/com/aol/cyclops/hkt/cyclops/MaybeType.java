@@ -1,13 +1,19 @@
-package com.aol.cyclops.hkt;
+package com.aol.cyclops.hkt.cyclops;
 
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.jdk.OptionalType;
+import com.aol.cyclops.hkt.jdk.StreamType;
+import com.aol.cyclops.types.MonadicValue;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.experimental.Delegate;
+import lombok.EqualsAndHashCode;
 
 /**
  * Simulates Higher Kinded Types for Maybe's
@@ -28,6 +34,32 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
      */
     public static class µ {
     }
+    
+    /**
+     * @return Get the empty Maybe (single instance)
+     */
+    @SuppressWarnings("unchecked")
+    static <T> MaybeType<T> none() {
+        return widen(Maybe.none());
+    }
+    /**
+     * Construct an equivalent Maybe from the Supplied Optional
+     * <pre>
+     * {@code 
+     *   MaybeType<Integer> some = MaybeType.fromOptional(Optional.of(10));
+     *   //Maybe[10], Some[10]
+     *  
+     *   MaybeType<Integer> none = MaybeType.fromOptional(Optional.empty());
+     *   //Maybe.empty, None[]
+     * }
+     * </pre>
+     * 
+     * @param opt Optional to construct Maybe from
+     * @return Maybe created from Optional
+     */
+    public static <T> MaybeType<T> fromOptional(Higher<OptionalType.µ,T> optional){
+        return widen(Maybe.fromOptional(OptionalType.narrow(optional)));
+    }
     /**
      * Convert a Optional to a simulated HigherKindedType that captures Optional nature
      * and Optional element data type separately. Recover via @see OptionalType#narrow
@@ -40,9 +72,13 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
      */
     public static <T> MaybeType<T> widen(final Optional<T> optional) {
         
-        return new Box<>(optional);
+        return new Box<>(Maybe.fromOptional(optional));
     }
-
+    public static <C2,T> Higher<C2, Higher<MaybeType.µ,T>> widen2(Higher<C2, MaybeType<T>> nestedMaybe){
+        //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
+        //cast seems safer as Higher<MaybeType.µ,T> must be a StreamType
+        return (Higher)nestedMaybe;
+    }
     /**
      * Convert the HigherKindedType definition for a Optional into
      * 
@@ -144,9 +180,10 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(of={"boxed"})
     static final class Box<T> implements MaybeType<T> {
 
-        @Delegate
+        
         private final Maybe<T> boxed;
 
         /**
@@ -156,9 +193,48 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
             return Maybe.fromIterable(boxed);
         }
 
-        
        
 
+        public T get() {
+            return boxed.get();
+        }
+
+       
+  
+        public boolean isPresent() {
+            return boxed.isPresent();
+        }
+
+        public Maybe<T> recover(Supplier<T> value) {
+            return boxed.recover(value);
+        }
+
+        public Maybe<T> recover(T value) {
+            return boxed.recover(value);
+        }
+
+        public <R> Maybe<R> map(Function<? super T, ? extends R> mapper) {
+            return boxed.map(mapper);
+        }
+
+        public <R> Maybe<R> flatMap(Function<? super T, ? extends MonadicValue<? extends R>> mapper) {
+            return boxed.flatMap(mapper);
+        }
+
+        public <R> R visit(Function<? super T, ? extends R> some, Supplier<? extends R> none) {
+            return boxed.visit(some, none);
+        }
+
+       
+
+        public Maybe<T> filter(Predicate<? super T> fn) {
+            return boxed.filter(fn);
+        }
+
+      
     }
+
+
+   
 
 }

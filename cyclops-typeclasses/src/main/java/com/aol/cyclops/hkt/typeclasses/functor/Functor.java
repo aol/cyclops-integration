@@ -20,7 +20,7 @@ public interface Functor<CRE> {
      * <pre>
      * {@code 
      *  ListX<Integer> listx = ListX.of(1,2,3);
-        ListType<Integer> mapped1 =listFunctor().map(a->a+1, listx);
+        ListType<Integer> mapped1 =Lists.dunctor().map(a->a+1, ListType.widen(listx));
         mapped1.add(1);
         ListX<Integer> listxMapped = mapped1.list();
      * }
@@ -47,7 +47,5 @@ public interface Functor<CRE> {
         return t -> map(fn, t);
     }
     
-   
-    
-    
+ 
 }
