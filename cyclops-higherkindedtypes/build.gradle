@@ -1,0 +1,118 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'com.bmuschko.nexus'
+apply plugin: 'maven-publish'
+
+buildscript {
+	repositories {
+		jcenter()
+	}
+
+	dependencies {
+		classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+		
+	}
+}
+
+sourceCompatibility = 1.8
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Cyclops Higher Kinded Types', 'Implementation-Version': version
+    }
+}
+
+
+
+
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+      tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+      }
+    }
+  }
+
+repositories {
+    mavenCentral()
+
+}
+configurations {
+	provided
+    doc {
+        transitive false
+    }
+}
+dependencies {
+  //  compile group: 'org.derive4j.hkt', name: 'hkt', version: '0.2'
+	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
+
+	testCompile 'commons-io:commons-io:2.4'
+	testCompile group: 'junit', name: 'junit', version: '4.12'
+	testCompile group: 'junit', name: 'junit', version: '4.12'
+	testCompile  group: 'org.hamcrest', name: 'hamcrest-all', version:'1.3'
+	testCompile group: 'org.mockito', name: 'mockito-all', version:'1.9.5'
+	
+}
+sourceSets {
+	main.compileClasspath += [configurations.provided]
+	test.compileClasspath += [configurations.provided]
+	test.runtimeClasspath += [configurations.provided]
+}
+eclipse.classpath.plusConfigurations += [configurations.provided]  // Eclipse users only
+test {
+    systemProperties 'property': 'value'
+}
+javadoc {
+    source configurations.doc.collect { zipTree(it) }
+    include '**/*.java'
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+
+modifyPom {
+	project {
+		name 'cyclops-higherkindedtypes'
+		description 'Simulated higher kinded types'
+		url 'https://github.com/aol/cyclops'
+		inceptionYear '2016'
+
+		groupId 'com.aol.cyclops'
+		artifactId 'cyclops-higherkindedtypes'
+		version "$version"
+		
+		scm {
+			url 'ssh://git@github.com:aol/cyclops.git'
+			connection 'ssh://git@github.com:aol/cyclops.git'
+			developerConnection 'ssh://git@github.com:aol/cyclops.git'
+		}
+
+		licenses {
+			license {
+				name 'The MIT License (MIT)'
+				url 'https://github.com/aol/cyclops/blob/master/licence.txt'
+				distribution 'repo'
+			}
+		}
+
+		developers {
+			developer {
+				id 'johnmcclean-aol'
+				name 'John McClean'
+				email 'john.mcclean@teamaol.com'
+			}
+		}
+	}
+}
+
+extraArchive {
+        sources = true
+        tests = true
+        javadoc = true
+}
+
+nexus {
+       sign = true
+        repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
+        snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots'	
+}

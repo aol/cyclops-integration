@@ -10,9 +10,10 @@ import fj.data.Validation;
 
 public class FromCyclopsReact {
     public static <T> fj.data.Stream<T> stream(java.util.stream.Stream<T> s) {
+        
         return fj.data.Stream.iteratorStream(s.iterator());
     }
-
+   
     public static <T> Option<T> option(MonadicValue<T> value) {
         return Option.fromNull(value.orElse(null));
     }

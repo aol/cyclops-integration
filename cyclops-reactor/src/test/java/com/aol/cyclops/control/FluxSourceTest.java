@@ -8,10 +8,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jooq.lambda.Seq;
+import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
@@ -19,11 +21,12 @@ import org.mockito.internal.util.collections.Sets;
 import com.aol.cyclops.data.async.Queue;
 import com.aol.cyclops.data.async.QueueFactories;
 import com.aol.cyclops.data.async.Signal;
+import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.react.threads.SequentialElasticPools;
+import com.aol.cyclops.reactor.collections.extensions.standard.LazyListX;
 import com.aol.cyclops.reactor.flux.pushable.MultipleFluxSource;
 import com.aol.cyclops.reactor.flux.pushable.PushableFlux;
 import com.aol.cyclops.types.futurestream.LazyFutureStream;
-import com.aol.cyclops.util.stream.pushable.MultipleStreamSource;
 import com.aol.cyclops.util.stream.pushable.PushableLazyFutureStream;
 import com.aol.cyclops.util.stream.pushable.PushableReactiveSeq;
 import com.aol.cyclops.util.stream.pushable.PushableStream;
@@ -31,7 +34,25 @@ import com.aol.cyclops.util.stream.pushable.PushableStream;
 
 public class FluxSourceTest {
     
+    @Test
+    public void listTest(){
+        ListX.of(1,2,3)
+             .forEach2(a->ListX.range(0, a), a->b->Tuple.tuple(a,b))
+             .printOut();;
+        
    
+        ListX.of(1,2,3)
+             .zip(ListX.of('a','b','c'), (a,b)->""+b+":"+a)
+             .sliding(2,1)
+             .onEmptySwitch(()->ListX.of(ListX.of("default:1000")))
+             .printOut();
+        
+        LazyListX.of(1,2,3)
+                 .plus(10)
+                 .onePer(1, TimeUnit.MINUTES)
+                 .map(i->i+1)
+                 .printOut();
+    }
 
     @Test
     public void testLazyFutureStream() {

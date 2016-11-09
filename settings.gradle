@@ -4,3 +4,6 @@ include ':cyclops-functionaljava'
 include ':cyclops-guava'
 include ':cyclops-reactor'
 include ':cyclops-rx'
+include ':cyclops-typeclasses'
+include ':cyclops-higherkindedtypes'
+
