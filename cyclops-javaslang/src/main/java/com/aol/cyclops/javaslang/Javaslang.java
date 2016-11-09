@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.For;
+import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.util.function.QuadFunction;
@@ -13,14 +14,21 @@ import com.aol.cyclops.util.function.TriFunction;
 
 import javaslang.Value;
 import javaslang.collection.Traversable;
+import javaslang.concurrent.Future;
 import javaslang.control.Either;
 import javaslang.control.Either.LeftProjection;
 import javaslang.control.Either.RightProjection;
 import javaslang.control.Option;
 import javaslang.control.Try;
-import javaslang.control.Try.Failure;
 
 public class Javaslang {
+    
+    public static <T> FutureW<T> futureW(Future<T> future){
+        FutureW<T> res = FutureW.future();
+        future.onSuccess(v->res.complete(v))
+              .onFailure(t->res.completeExceptionally(t));
+        return res;
+    }
     public static <T> AnyMValue<T> value(Value<T> monadM) {
         return AnyM.ofValue(monadM);
     }

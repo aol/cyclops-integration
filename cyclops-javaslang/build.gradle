@@ -30,6 +30,7 @@ configurations {
 	provided
 }
 dependencies {
+    compile project(':cyclops-typeclasses')
     compile project(':cyclops-higherkindedtypes')
 	provided 'io.projectreactor:reactor-core:'+reactorVersion
 	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion

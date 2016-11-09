@@ -2,17 +2,26 @@ package com.aol.cyclops.javaslang;
 
 import java.util.stream.Stream;
 
+import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.MonadicValue2;
 
 import javaslang.concurrent.Future;
+import javaslang.concurrent.Promise;
 import javaslang.control.Either;
 import javaslang.control.Option;
 import javaslang.control.Try;
 import javaslang.control.Validation;
 
 public class FromCyclopsReact {
+    
+    public static <T> Future<T> future(FutureW<T> future){
+        Promise<T> result =  Promise.make();
+        
+        future.peek(n->result.complete(Try.success(n)));
+        return result.future();
+    }
     public static <T> javaslang.collection.Stream<T> fromStream(Stream<T> s) {
         return javaslang.collection.Stream.ofAll(() -> s.iterator());
     }
