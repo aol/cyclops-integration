@@ -8,12 +8,10 @@ import java.util.function.Supplier;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.jdk.OptionalType;
-import com.aol.cyclops.hkt.jdk.StreamType;
 import com.aol.cyclops.types.MonadicValue;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 
 /**
  * Simulates Higher Kinded Types for Maybe's
@@ -78,6 +76,15 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
         //cast seems safer as Higher<MaybeType.µ,T> must be a StreamType
         return (Higher)nestedMaybe;
+    }
+    /**
+     * Convert the raw Higher Kinded Type for MaybeType types into the MaybeType type definition class
+     * 
+     * @param future HKT encoded list into a OptionalType
+     * @return MaybeType
+     */
+    public static <T> MaybeType<T> narrowK(final Higher<MaybeType.µ, T> future) {
+       return (MaybeType<T>)future;
     }
     /**
      * Convert the HigherKindedType definition for a Optional into
@@ -180,7 +187,6 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of={"boxed"})
     static final class Box<T> implements MaybeType<T> {
 
         
@@ -231,6 +237,36 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
             return boxed.filter(fn);
         }
 
+        public String toString(){
+            return boxed.toString();
+        }
+
+
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if(!(obj instanceof Maybe))
+                return false;
+            Maybe other = (Maybe) obj;
+            
+            return boxed.equals(other);
+               
+        }
+
+
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((boxed == null) ? 0 : boxed.hashCode());
+            return result;
+        }
+        
       
     }
 
