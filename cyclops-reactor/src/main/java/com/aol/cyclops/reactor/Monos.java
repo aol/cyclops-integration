@@ -28,6 +28,7 @@ import reactor.core.publisher.Mono;
 @UtilityClass
 public class Monos {
 
+    
     /**
      * Construct an AnyM type from a Mono. This allows the Mono to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
