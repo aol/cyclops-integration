@@ -5,6 +5,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.jdk.OptionalType;
@@ -42,6 +43,25 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
     static <T> MaybeType<T> none() {
         return widen(Maybe.none());
     }
+    /**
+     *  Construct a MaybeType  that contains a single value extracted from the supplied Iterable
+     * <pre>
+     * {@code 
+     *   ReactiveSeq<Integer> stream =  ReactiveSeq.of(1,2,3);
+        
+         MaybeType<Integer> maybe = MaybeType.fromIterable(stream);
+        
+        //Maybe[1]
+     * 
+     * }
+     * </pre> 
+     * @param iterable Iterable  to extract value from
+     * @return Maybe populated with first value from Iterable (Maybe.empty if Publisher empty)
+     */
+    static <T> MaybeType<T> fromIterable(final Iterable<T> iterable) {
+        return widen(Maybe.fromEval(Eval.fromIterable(iterable)));
+    }
+
     /**
      * Construct an equivalent Maybe from the Supplied Optional
      * <pre>
