@@ -48,11 +48,11 @@ public class OptionalsTest {
         OptionalType<Function<Integer,Integer>> optFn =Optionals.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(OptionalType::narrowK);
         
         OptionalType<Integer> opt = Optionals.unit()
-                                     .unit("hello")
-                                     .then(h->Optionals.functor().map((String v) ->v.length(), h))
-                                     .then(h->Optionals.applicative().ap(optFn, h))
-                                     .convert(OptionalType::narrowK);
-        
+                                             .unit("hello")
+                                             .then(h->Optionals.functor().map((String v) ->v.length(), h))
+                                             .then(h->Optionals.applicative().ap(optFn, h))
+                                             .convert(OptionalType::narrowK);
+                
         assertThat(opt,equalTo(Optional.of("hello".length()*2)));
     }
     @Test

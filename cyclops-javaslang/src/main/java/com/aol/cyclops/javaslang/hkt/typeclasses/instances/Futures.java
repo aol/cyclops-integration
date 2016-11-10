@@ -37,9 +37,9 @@ public class Futures {
      * 
      * <pre>
      * {@code 
-     *  FutureType<Integer> future = Futures.functor().map(i->i*2, FutureType.widen(Arrays.asFuture(1,2,3));
+     *  FutureType<Integer> future = Futures.functor().map(i->i*2, FutureType.widen(Future.successful(1));
      *  
-     *  //[2,4,6]
+     *  //[2]
      *  
      * 
      * }
@@ -87,10 +87,9 @@ public class Futures {
      * {@code 
      * import static com.aol.cyclops.hkt.jdk.FutureType.widen;
      * import static com.aol.cyclops.util.function.Lambda.l1;
-     * import static java.util.Arrays.asFuture;
      * 
-       Futures.zippingApplicative()
-            .ap(widen(asFuture(l1(this::multiplyByTwo))),widen(asFuture(1,2,3)));
+       Futures.applicative()
+            .ap(widen(Future.successful(l1(this::multiplyByTwo))),widen(asFuture(1,2,3)));
      * 
      * //[2,4,6]
      * }
@@ -128,7 +127,7 @@ public class Futures {
      * {@code 
      * import static com.aol.cyclops.hkt.jdk.FutureType.widen;
      * FutureType<Integer> ft  = Futures.monad()
-                                      .flatMap(i->widen(FutureX.range(0,i)), widen(Arrays.asFuture(1,2,3)))
+                                      .flatMap(i->widen(Future.successful(i), widen(Future.successful(3))
                                       .convert(FutureType::narrowK);
      * }
      * </pre>
@@ -178,9 +177,9 @@ public class Futures {
      * <pre>
      * {@code 
      *  FutureType<Integer> ft = Futures.<Integer>monadPlus()
-                                      .plus(FutureType.widen(Arrays.asFuture()), FutureType.widen(Arrays.asFuture(10)))
+                                      .plus(FutureType.widen(Arrays.asFuture()), FutureType.widen(Future.successful((10)))
                                       .convert(FutureType::narrowK);
-        //Arrays.asFuture(10))
+        //Future(10)
      * 
      * }
      * </pre>
@@ -198,11 +197,11 @@ public class Futures {
      * 
      * <pre>
      * {@code 
-     *  Monoid<FutureType<Integer>> m = Monoid.of(FutureType.widen(Arrays.asFuture()), (a,b)->a.isEmpty() ? b : a);
+     *  Monoid<FutureType<Integer>> m = Monoid.of(FutureType.widen(Future.failed(e), (a,b)->a.isEmpty() ? b : a);
         FutureType<Integer> ft = Futures.<Integer>monadPlus(m)
-                                      .plus(FutureType.widen(Arrays.asFuture(5)), FutureType.widen(Arrays.asFuture(10)))
+                                      .plus(FutureType.widen(Future.successful(5), FutureType.widen(Future.successful(10))
                                       .convert(FutureType::narrowK);
-        //Arrays.asFuture(5))
+        //Future(5)
      * 
      * }
      * </pre>
@@ -228,9 +227,9 @@ public class Futures {
      * <pre>
      * {@code 
      * int sum  = Futures.foldable()
-                        .foldLeft(0, (a,b)->a+b, FutureType.widen(Arrays.asFuture(1,2,3,4)));
+                        .foldLeft(0, (a,b)->a+b, FutureType.widen(Future.successful(4));
         
-        //10
+        //4
      * 
      * }
      * </pre>
