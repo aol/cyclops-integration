@@ -31,13 +31,13 @@ public class Maybes {
     
     /**
      * 
-     * Transform a list, mulitplying every element by 2
+     * Transform a maybe, mulitplying every element by 2
      * 
      * <pre>
      * {@code 
-     *  MaybeType<Integer> list = Maybes.functor().map(i->i*2, MaybeType.widen(Arrays.asMaybe(1,2,3));
+     *  MaybeType<Integer> maybe = Maybes.functor().map(i->i*2, MaybeType.widen(Maybe.just(1));
      *  
-     *  //[2,4,6]
+     *  //[2]
      *  
      * 
      * }
@@ -46,7 +46,7 @@ public class Maybes {
      * An example fluent api working with Maybes
      * <pre>
      * {@code 
-     *   MaybeType<Integer> list = Maybes.unit()
+     *   MaybeType<Integer> maybe = Maybes.unit()
                                        .unit("hello")
                                        .then(h->Maybes.functor().map((String v) ->v.length(), h))
                                        .convert(MaybeType::narrowK);
@@ -64,11 +64,11 @@ public class Maybes {
     /**
      * <pre>
      * {@code 
-     * MaybeType<String> list = Maybes.unit()
+     * MaybeType<String> maybe = Maybes.unit()
                                      .unit("hello")
                                      .convert(MaybeType::narrowK);
         
-        //Arrays.asMaybe("hello"))
+        //Maybe.just("hello"))
      * 
      * }
      * </pre>
@@ -85,7 +85,7 @@ public class Maybes {
      * {@code 
      * import static com.aol.cyclops.hkt.jdk.MaybeType.widen;
      * import static com.aol.cyclops.util.function.Lambda.l1;
-     * import static java.util.Arrays.asMaybe;
+     * import static java.util.Maybe.just;
      * 
        Maybes.zippingApplicative()
             .ap(widen(asMaybe(l1(this::multiplyByTwo))),widen(asMaybe(1,2,3)));
@@ -98,17 +98,17 @@ public class Maybes {
      * Example fluent API
      * <pre>
      * {@code 
-     * MaybeType<Function<Integer,Integer>> listFn =Maybes.unit()
+     * MaybeType<Function<Integer,Integer>> maybeFn =Maybes.unit()
      *                                                  .unit(Lambda.l1((Integer i) ->i*2))
      *                                                  .convert(MaybeType::narrowK);
         
-        MaybeType<Integer> list = Maybes.unit()
+        MaybeType<Integer> maybe = Maybes.unit()
                                       .unit("hello")
                                       .then(h->Maybes.functor().map((String v) ->v.length(), h))
-                                      .then(h->Maybes.applicative().ap(listFn, h))
+                                      .then(h->Maybes.applicative().ap(maybeFn, h))
                                       .convert(MaybeType::narrowK);
         
-        //Arrays.asMaybe("hello".length()*2))
+        //Maybe.just("hello".length()*2))
      * 
      * }
      * </pre>
@@ -125,8 +125,8 @@ public class Maybes {
      * <pre>
      * {@code 
      * import static com.aol.cyclops.hkt.jdk.MaybeType.widen;
-     * MaybeType<Integer> list  = Maybes.monad()
-                                      .flatMap(i->widen(MaybeX.range(0,i)), widen(Arrays.asMaybe(1,2,3)))
+     * MaybeType<Integer> maybe  = Maybes.monad()
+                                      .flatMap(i->widen(MaybeX.range(0,i)), widen(Maybe.just(1,2,3)))
                                       .convert(MaybeType::narrowK);
      * }
      * </pre>
@@ -134,12 +134,12 @@ public class Maybes {
      * Example fluent API
      * <pre>
      * {@code 
-     *    MaybeType<Integer> list = Maybes.unit()
+     *    MaybeType<Integer> maybe = Maybes.unit()
                                         .unit("hello")
                                         .then(h->Maybes.monad().flatMap((String v) ->Maybes.unit().unit(v.length()), h))
                                         .convert(MaybeType::narrowK);
         
-        //Arrays.asMaybe("hello".length())
+        //Maybe.just("hello".length())
      * 
      * }
      * </pre>
@@ -155,12 +155,12 @@ public class Maybes {
      * 
      * <pre>
      * {@code 
-     *  MaybeType<String> list = Maybes.unit()
+     *  MaybeType<String> maybe = Maybes.unit()
                                      .unit("hello")
                                      .then(h->Maybes.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(MaybeType::narrowK);
         
-       //Arrays.asMaybe("hello"));
+       //Maybe.just("hello"));
      * 
      * }
      * </pre>
@@ -175,10 +175,10 @@ public class Maybes {
     /**
      * <pre>
      * {@code 
-     *  MaybeType<Integer> list = Maybes.<Integer>monadPlus()
-                                      .plus(MaybeType.widen(Arrays.asMaybe()), MaybeType.widen(Arrays.asMaybe(10)))
+     *  MaybeType<Integer> maybe = Maybes.<Integer>monadPlus()
+                                      .plus(MaybeType.widen(Maybe.just()), MaybeType.widen(Maybe.just(10)))
                                       .convert(MaybeType::narrowK);
-        //Arrays.asMaybe(10))
+        //Maybe.just(10))
      * 
      * }
      * </pre>
@@ -196,11 +196,11 @@ public class Maybes {
      * 
      * <pre>
      * {@code 
-     *  Monoid<MaybeType<Integer>> m = Monoid.of(MaybeType.widen(Arrays.asMaybe()), (a,b)->a.isEmpty() ? b : a);
-        MaybeType<Integer> list = Maybes.<Integer>monadPlus(m)
-                                      .plus(MaybeType.widen(Arrays.asMaybe(5)), MaybeType.widen(Arrays.asMaybe(10)))
+     *  Monoid<MaybeType<Integer>> m = Monoid.of(MaybeType.widen(Maybe.just()), (a,b)->a.isEmpty() ? b : a);
+        MaybeType<Integer> maybe = Maybes.<Integer>monadPlus(m)
+                                      .plus(MaybeType.widen(Maybe.just(5)), MaybeType.widen(Maybe.just(10)))
                                       .convert(MaybeType::narrowK);
-        //Arrays.asMaybe(5))
+        //Maybe[5]
      * 
      * }
      * </pre>
@@ -226,9 +226,9 @@ public class Maybes {
      * <pre>
      * {@code 
      * int sum  = Maybes.foldable()
-                           .foldLeft(0, (a,b)->a+b, MaybeType.widen(Arrays.asMaybe(1,2,3,4)));
+                           .foldLeft(0, (a,b)->a+b, MaybeType.widen(Maybe.just(1)));
         
-        //10
+        //1
      * 
      * }
      * </pre>

@@ -7,6 +7,7 @@ import java.util.function.Function;
 import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.For;
 import com.aol.cyclops.control.FutureW;
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.util.function.QuadFunction;
@@ -23,6 +24,9 @@ import javaslang.control.Try;
 
 public class Javaslang {
     
+    public static <T> Maybe<T> maybe(Option<T> opt){
+        return opt.isDefined() ? Maybe.just(opt.get()) : Maybe.none();
+    }
    
     public static <T> FutureW<T> futureW(Future<T> future){
         FutureW<T> res = FutureW.future();
