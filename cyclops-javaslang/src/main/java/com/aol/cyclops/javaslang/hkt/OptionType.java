@@ -248,8 +248,10 @@ public interface OptionType<T> extends Higher<OptionType.µ, T>, Option<T> {
                 return true;
             if (obj == null)
                 return false;
-            
+            if(!(obj instanceof Option))
+                return false;
             Option other = (Option) obj;
+            
             if (boxed == null) {
                 if (other != null)
                     return false;

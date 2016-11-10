@@ -27,7 +27,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Optionals {
+public class OptionalInstances {
 
     
     /**
@@ -59,7 +59,7 @@ public class Optionals {
      * @return A functor for Optionals
      */
     public static <T,R>Functor<OptionalType.µ> functor(){
-        BiFunction<OptionalType<T>,Function<? super T, ? extends R>,OptionalType<R>> map = Optionals::map;
+        BiFunction<OptionalType<T>,Function<? super T, ? extends R>,OptionalType<R>> map = OptionalInstances::map;
         return General.functor(map);
     }
     /**
@@ -78,7 +78,7 @@ public class Optionals {
      * @return A factory for Optionals
      */
     public static Unit<OptionalType.µ> unit(){
-        return General.unit(Optionals::of);
+        return General.unit(OptionalInstances::of);
     }
     /**
      * 
@@ -118,7 +118,7 @@ public class Optionals {
      * @return A zipper for Optionals
      */
     public static <T,R> Applicative<OptionalType.µ> applicative(){
-        BiFunction<OptionalType< Function<T, R>>,OptionalType<T>,OptionalType<R>> ap = Optionals::ap;
+        BiFunction<OptionalType< Function<T, R>>,OptionalType<T>,OptionalType<R>> ap = OptionalInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -149,7 +149,7 @@ public class Optionals {
      */
     public static <T,R> Monad<OptionalType.µ> monad(){
   
-        BiFunction<Higher<OptionalType.µ,T>,Function<? super T, ? extends Higher<OptionalType.µ,R>>,Higher<OptionalType.µ,R>> flatMap = Optionals::flatMap;
+        BiFunction<Higher<OptionalType.µ,T>,Function<? super T, ? extends Higher<OptionalType.µ,R>>,Higher<OptionalType.µ,R>> flatMap = OptionalInstances::flatMap;
         return General.monad(applicative(), flatMap);
     }
     /**
@@ -219,7 +219,7 @@ public class Optionals {
      */
     public static <C2,T> Traverse<OptionalType.µ> traverse(){
       
-        return General.traverseByTraverse(applicative(), Optionals::traverseA);
+        return General.traverseByTraverse(applicative(), OptionalInstances::traverseA);
     }
     
     /**

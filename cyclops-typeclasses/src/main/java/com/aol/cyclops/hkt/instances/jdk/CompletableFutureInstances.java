@@ -26,16 +26,16 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class CompletableFutures {
+public class CompletableFutureInstances {
 
     
     /**
      * 
-     * Transform a list, mulitplying every element by 2
+     * Transform a future, mulitplying every element by 2
      * 
      * <pre>
      * {@code 
-     *  CompletableFutureType<Integer> list = CompletableFutures.functor().map(i->i*2, CompletableFutureType.widen(Arrays.asCompletableFuture(1,2,3));
+     *  CompletableFutureType<Integer> future = CompletableFutures.functor().map(i->i*2, CompletableFutureType.widen(CompletableFuture.completedFuture(1,2,3));
      *  
      *  //[2,4,6]
      *  
@@ -46,7 +46,7 @@ public class CompletableFutures {
      * An example fluent api working with CompletableFutures
      * <pre>
      * {@code 
-     *   CompletableFutureType<Integer> list = CompletableFutures.unit()
+     *   CompletableFutureType<Integer> future = CompletableFutures.unit()
                                        .unit("hello")
                                        .then(h->CompletableFutures.functor().map((String v) ->v.length(), h))
                                        .convert(CompletableFutureType::narrowK);
@@ -58,17 +58,17 @@ public class CompletableFutures {
      * @return A functor for CompletableFutures
      */
     public static <T,R>Functor<CompletableFutureType.µ> functor(){
-        BiFunction<CompletableFutureType<T>,Function<? super T, ? extends R>,CompletableFutureType<R>> map = CompletableFutures::map;
+        BiFunction<CompletableFutureType<T>,Function<? super T, ? extends R>,CompletableFutureType<R>> map = CompletableFutureInstances::map;
         return General.functor(map);
     }
     /**
      * <pre>
      * {@code 
-     * CompletableFutureType<String> list = CompletableFutures.unit()
+     * CompletableFutureType<String> future = CompletableFutures.unit()
                                      .unit("hello")
                                      .convert(CompletableFutureType::narrowK);
         
-        //Arrays.asCompletableFuture("hello"))
+        //CompletableFuture.completedFuture("hello"))
      * 
      * }
      * </pre>
@@ -77,7 +77,7 @@ public class CompletableFutures {
      * @return A factory for CompletableFutures
      */
     public static Unit<CompletableFutureType.µ> unit(){
-        return General.unit(CompletableFutures::of);
+        return General.unit(CompletableFutureInstances::of);
     }
     /**
      * 
@@ -85,12 +85,11 @@ public class CompletableFutures {
      * {@code 
      * import static com.aol.cyclops.hkt.jdk.CompletableFutureType.widen;
      * import static com.aol.cyclops.util.function.Lambda.l1;
-     * import static java.util.Arrays.asCompletableFuture;
      * 
-       CompletableFutures.zippingApplicative()
-            .ap(widen(asCompletableFuture(l1(this::multiplyByTwo))),widen(asCompletableFuture(1,2,3)));
+       CompletableFutures.applicative()
+            .ap(widen(asCompletableFuture(l1(this::multiplyByTwo))),widen(asCompletableFuture(3)));
      * 
-     * //[2,4,6]
+     * //[6]
      * }
      * </pre>
      * 
@@ -98,17 +97,17 @@ public class CompletableFutures {
      * Example fluent API
      * <pre>
      * {@code 
-     * CompletableFutureType<Function<Integer,Integer>> listFn =CompletableFutures.unit()
+     * CompletableFutureType<Function<Integer,Integer>> futureFn =CompletableFutures.unit()
      *                                                  .unit(Lambda.l1((Integer i) ->i*2))
      *                                                  .convert(CompletableFutureType::narrowK);
         
-        CompletableFutureType<Integer> list = CompletableFutures.unit()
+        CompletableFutureType<Integer> future = CompletableFutures.unit()
                                       .unit("hello")
                                       .then(h->CompletableFutures.functor().map((String v) ->v.length(), h))
-                                      .then(h->CompletableFutures.applicative().ap(listFn, h))
+                                      .then(h->CompletableFutures.applicative().ap(futureFn, h))
                                       .convert(CompletableFutureType::narrowK);
         
-        //Arrays.asCompletableFuture("hello".length()*2))
+        //CompletableFuture.completedFuture("hello".length()*2))
      * 
      * }
      * </pre>
@@ -117,7 +116,7 @@ public class CompletableFutures {
      * @return A zipper for CompletableFutures
      */
     public static <T,R> Applicative<CompletableFutureType.µ> applicative(){
-        BiFunction<CompletableFutureType< Function<T, R>>,CompletableFutureType<T>,CompletableFutureType<R>> ap = CompletableFutures::ap;
+        BiFunction<CompletableFutureType< Function<T, R>>,CompletableFutureType<T>,CompletableFutureType<R>> ap = CompletableFutureInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -125,8 +124,8 @@ public class CompletableFutures {
      * <pre>
      * {@code 
      * import static com.aol.cyclops.hkt.jdk.CompletableFutureType.widen;
-     * CompletableFutureType<Integer> list  = CompletableFutures.monad()
-                                      .flatMap(i->widen(CompletableFutureX.range(0,i)), widen(Arrays.asCompletableFuture(1,2,3)))
+     * CompletableFutureType<Integer> future  = CompletableFutures.monad()
+                                      .flatMap(i->widen(CompletableFutureX.range(0,i)), widen(CompletableFuture.completedFuture(3)))
                                       .convert(CompletableFutureType::narrowK);
      * }
      * </pre>
@@ -134,12 +133,12 @@ public class CompletableFutures {
      * Example fluent API
      * <pre>
      * {@code 
-     *    CompletableFutureType<Integer> list = CompletableFutures.unit()
+     *    CompletableFutureType<Integer> future = CompletableFutures.unit()
                                         .unit("hello")
                                         .then(h->CompletableFutures.monad().flatMap((String v) ->CompletableFutures.unit().unit(v.length()), h))
                                         .convert(CompletableFutureType::narrowK);
         
-        //Arrays.asCompletableFuture("hello".length())
+        //CompletableFuture.completedFuture("hello".length())
      * 
      * }
      * </pre>
@@ -148,19 +147,19 @@ public class CompletableFutures {
      */
     public static <T,R> Monad<CompletableFutureType.µ> monad(){
   
-        BiFunction<Higher<CompletableFutureType.µ,T>,Function<? super T, ? extends Higher<CompletableFutureType.µ,R>>,Higher<CompletableFutureType.µ,R>> flatMap = CompletableFutures::flatMap;
+        BiFunction<Higher<CompletableFutureType.µ,T>,Function<? super T, ? extends Higher<CompletableFutureType.µ,R>>,Higher<CompletableFutureType.µ,R>> flatMap = CompletableFutureInstances::flatMap;
         return General.monad(applicative(), flatMap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     *  CompletableFutureType<String> list = CompletableFutures.unit()
+     *  CompletableFutureType<String> future = CompletableFutures.unit()
                                      .unit("hello")
                                      .then(h->CompletableFutures.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(CompletableFutureType::narrowK);
         
-       //Arrays.asCompletableFuture("hello"));
+       //CompletableFuture.completedFuture("hello"));
      * 
      * }
      * </pre>
@@ -175,10 +174,10 @@ public class CompletableFutures {
     /**
      * <pre>
      * {@code 
-     *  CompletableFutureType<Integer> list = CompletableFutures.<Integer>monadPlus()
-                                      .plus(CompletableFutureType.widen(Arrays.asCompletableFuture()), CompletableFutureType.widen(Arrays.asCompletableFuture(10)))
+     *  CompletableFutureType<Integer> future = CompletableFutures.<Integer>monadPlus()
+                                      .plus(CompletableFutureType.widen(CompletableFuture.completedFuture()), CompletableFutureType.widen(CompletableFuture.completedFuture(10)))
                                       .convert(CompletableFutureType::narrowK);
-        //Arrays.asCompletableFuture(10))
+        //CompletableFuture.completedFuture(10))
      * 
      * }
      * </pre>
@@ -196,11 +195,11 @@ public class CompletableFutures {
      * 
      * <pre>
      * {@code 
-     *  Monoid<CompletableFutureType<Integer>> m = Monoid.of(CompletableFutureType.widen(Arrays.asCompletableFuture()), (a,b)->a.isEmpty() ? b : a);
-        CompletableFutureType<Integer> list = CompletableFutures.<Integer>monadPlus(m)
-                                      .plus(CompletableFutureType.widen(Arrays.asCompletableFuture(5)), CompletableFutureType.widen(Arrays.asCompletableFuture(10)))
+     *  Monoid<CompletableFutureType<Integer>> m = Monoid.of(CompletableFutureType.widen(CompletableFuture.completedFuture()), (a,b)->a.isEmpty() ? b : a);
+        CompletableFutureType<Integer> future = CompletableFutures.<Integer>monadPlus(m)
+                                      .plus(CompletableFutureType.widen(CompletableFuture.completedFuture(5)), CompletableFutureType.widen(CompletableFuture.completedFuture(10)))
                                       .convert(CompletableFutureType::narrowK);
-        //Arrays.asCompletableFuture(5))
+        //CompletableFuture.completedFuture(5))
      * 
      * }
      * </pre>
@@ -218,7 +217,7 @@ public class CompletableFutures {
      */
     public static <C2,T> Traverse<CompletableFutureType.µ> traverse(){
       
-        return General.traverseByTraverse(applicative(), CompletableFutures::traverseA);
+        return General.traverseByTraverse(applicative(), CompletableFutureInstances::traverseA);
     }
     
     /**
@@ -226,9 +225,9 @@ public class CompletableFutures {
      * <pre>
      * {@code 
      * int sum  = CompletableFutures.foldable()
-                        .foldLeft(0, (a,b)->a+b, CompletableFutureType.widen(Arrays.asCompletableFuture(1,2,3,4)));
+                        .foldLeft(0, (a,b)->a+b, CompletableFutureType.widen(CompletableFuture.completedFuture(3)));
         
-        //10
+        //3
      * 
      * }
      * </pre>
@@ -246,8 +245,8 @@ public class CompletableFutures {
     private <T> CompletableFutureType<T> of(T value){
         return CompletableFutureType.widen(CompletableFuture.completedFuture(value));
     }
-    private static <T,R> CompletableFutureType<R> ap(CompletableFutureType<Function< T, R>> lt,  CompletableFutureType<T> list){
-        return CompletableFutureType.widen(lt.thenCombine(list, (a,b)->a.apply(b)));
+    private static <T,R> CompletableFutureType<R> ap(CompletableFutureType<Function< T, R>> lt,  CompletableFutureType<T> future){
+        return CompletableFutureType.widen(lt.thenCombine(future, (a,b)->a.apply(b)));
         
     }
     private static <T,R> Higher<CompletableFutureType.µ,R> flatMap( Higher<CompletableFutureType.µ,T> lt, Function<? super T, ? extends  Higher<CompletableFutureType.µ,R>> fn){

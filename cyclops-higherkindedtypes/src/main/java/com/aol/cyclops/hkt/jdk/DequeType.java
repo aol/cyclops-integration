@@ -220,8 +220,7 @@ public interface DequeType<T> extends Higher<DequeType.µ, T>, Deque<T> {
             return boxed.hashCode();
         }
 
-      
-      
+        
 
     }
 
