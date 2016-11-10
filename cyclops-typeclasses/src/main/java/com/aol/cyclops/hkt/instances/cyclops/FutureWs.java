@@ -31,13 +31,13 @@ public class FutureWs {
     
     /**
      * 
-     * Transform a list, mulitplying every element by 2
+     * Transform a future, mulitplying every element by 2
      * 
      * <pre>
      * {@code 
-     *  FutureType<Integer> list = FutureWs.functor().map(i->i*2, FutureType.widen(Arrays.asFutureW(1,2,3));
+     *  FutureType<Integer> future = FutureWs.functor().map(i->i*2, FutureType.widen(FutureW.ofResult(2));
      *  
-     *  //[2,4,6]
+     *  //[4]
      *  
      * 
      * }
@@ -46,7 +46,7 @@ public class FutureWs {
      * An example fluent api working with FutureWs
      * <pre>
      * {@code 
-     *   FutureType<Integer> list = FutureWs.unit()
+     *   FutureType<Integer> future = FutureWs.unit()
                                        .unit("hello")
                                        .then(h->FutureWs.functor().map((String v) ->v.length(), h))
                                        .convert(FutureType::narrowK);
@@ -64,11 +64,11 @@ public class FutureWs {
     /**
      * <pre>
      * {@code 
-     * FutureType<String> list = FutureWs.unit()
+     * FutureType<String> future = FutureWs.unit()
                                      .unit("hello")
                                      .convert(FutureType::narrowK);
         
-        //Arrays.asFutureW("hello"))
+        //FutureW("hello")
      * 
      * }
      * </pre>
@@ -98,17 +98,17 @@ public class FutureWs {
      * Example fluent API
      * <pre>
      * {@code 
-     * FutureType<Function<Integer,Integer>> listFn =FutureWs.unit()
+     * FutureType<Function<Integer,Integer>> futureFn =FutureWs.unit()
      *                                                  .unit(Lambda.l1((Integer i) ->i*2))
      *                                                  .convert(FutureType::narrowK);
         
-        FutureType<Integer> list = FutureWs.unit()
+        FutureType<Integer> future = FutureWs.unit()
                                       .unit("hello")
                                       .then(h->FutureWs.functor().map((String v) ->v.length(), h))
-                                      .then(h->FutureWs.applicative().ap(listFn, h))
+                                      .then(h->FutureWs.applicative().ap(futureFn, h))
                                       .convert(FutureType::narrowK);
         
-        //Arrays.asFutureW("hello".length()*2))
+        //FutureW("hello".length()*2))
      * 
      * }
      * </pre>
@@ -125,8 +125,8 @@ public class FutureWs {
      * <pre>
      * {@code 
      * import static com.aol.cyclops.hkt.jdk.FutureType.widen;
-     * FutureType<Integer> list  = FutureWs.monad()
-                                      .flatMap(i->widen(FutureWX.range(0,i)), widen(Arrays.asFutureW(1,2,3)))
+     * FutureType<Integer> future  = FutureWs.monad()
+                                      .flatMap(i->widen(FutureW.ofResult(0)), widen(FutureW.ofResult(2)))
                                       .convert(FutureType::narrowK);
      * }
      * </pre>
@@ -134,12 +134,12 @@ public class FutureWs {
      * Example fluent API
      * <pre>
      * {@code 
-     *    FutureType<Integer> list = FutureWs.unit()
+     *    FutureType<Integer> future = FutureWs.unit()
                                         .unit("hello")
                                         .then(h->FutureWs.monad().flatMap((String v) ->FutureWs.unit().unit(v.length()), h))
                                         .convert(FutureType::narrowK);
         
-        //Arrays.asFutureW("hello".length())
+        //FutureW("hello".length())
      * 
      * }
      * </pre>
@@ -155,12 +155,12 @@ public class FutureWs {
      * 
      * <pre>
      * {@code 
-     *  FutureType<String> list = FutureWs.unit()
+     *  FutureType<String> future = FutureWs.unit()
                                      .unit("hello")
                                      .then(h->FutureWs.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FutureType::narrowK);
         
-       //Arrays.asFutureW("hello"));
+       //FutureW["hello"]
      * 
      * }
      * </pre>
@@ -175,10 +175,10 @@ public class FutureWs {
     /**
      * <pre>
      * {@code 
-     *  FutureType<Integer> list = FutureWs.<Integer>monadPlus()
-                                      .plus(FutureType.widen(Arrays.asFutureW()), FutureType.widen(Arrays.asFutureW(10)))
+     *  FutureType<Integer> future = FutureWs.<Integer>monadPlus()
+                                      .plus(FutureType.widen(FutureW.future()), FutureType.widen(FutureW.ofResult(10)))
                                       .convert(FutureType::narrowK);
-        //Arrays.asFutureW(10))
+        //FutureW[10]
      * 
      * }
      * </pre>
@@ -196,11 +196,11 @@ public class FutureWs {
      * 
      * <pre>
      * {@code 
-     *  Monoid<FutureType<Integer>> m = Monoid.of(FutureType.widen(Arrays.asFutureW()), (a,b)->a.isEmpty() ? b : a);
-        FutureType<Integer> list = FutureWs.<Integer>monadPlus(m)
-                                      .plus(FutureType.widen(Arrays.asFutureW(5)), FutureType.widen(Arrays.asFutureW(10)))
+     *  Monoid<FutureType<Integer>> m = Monoid.of(FutureType.widen(FutureW.future()()), (a,b)->a.isDone() ? b : a);
+        FutureType<Integer> future = FutureWs.<Integer>monadPlus(m)
+                                      .plus(FutureType.widen(FutureW.ofResult(5)), FutureType.widen(FutureW.ofResult(10)))
                                       .convert(FutureType::narrowK);
-        //Arrays.asFutureW(5))
+        //FutureW(5)
      * 
      * }
      * </pre>
@@ -226,9 +226,9 @@ public class FutureWs {
      * <pre>
      * {@code 
      * int sum  = FutureWs.foldable()
-                        .foldLeft(0, (a,b)->a+b, FutureType.widen(Arrays.asFutureW(1,2,3,4)));
+                        .foldLeft(0, (a,b)->a+b, FutureType.widen(FutureW.ofResult(4)));
         
-        //10
+        //4
      * 
      * }
      * </pre>
@@ -246,8 +246,8 @@ public class FutureWs {
     private <T> FutureType<T> of(T value){
         return FutureType.widen(FutureW.ofResult(value));
     }
-    private static <T,R> FutureType<R> ap(FutureType<Function< T, R>> lt,  FutureType<T> list){
-        return FutureType.widen(lt.combine(list, (a,b)->a.apply(b)));
+    private static <T,R> FutureType<R> ap(FutureType<Function< T, R>> lt,  FutureType<T> future){
+        return FutureType.widen(lt.combine(future, (a,b)->a.apply(b)));
         
     }
     private static <T,R> Higher<FutureType.µ,R> flatMap( Higher<FutureType.µ,T> lt, Function<? super T, ? extends  Higher<FutureType.µ,R>> fn){
