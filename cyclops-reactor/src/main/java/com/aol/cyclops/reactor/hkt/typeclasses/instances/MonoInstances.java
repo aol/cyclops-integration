@@ -37,9 +37,9 @@ public class MonoInstances {
      * 
      * <pre>
      * {@code 
-     *  MonoType<Integer> future = Monos.functor().map(i->i*2, MonoType.widen(Arrays.asMono(1,2,3));
+     *  MonoType<Integer> future = Monos.functor().map(i->i*2, MonoType.widen(Mono.just(3));
      *  
-     *  //[2,4,6]
+     *  //[6]
      *  
      * 
      * }
@@ -70,7 +70,7 @@ public class MonoInstances {
                                      .unit("hello")
                                      .convert(MonoType::narrowK);
         
-        //Arrays.asMono("hello"))
+        //Mono["hello"]
      * 
      * }
      * </pre>
@@ -89,10 +89,10 @@ public class MonoInstances {
      * import static com.aol.cyclops.util.function.Lambda.l1;
      * import static java.util.Arrays.asMono;
      * 
-       Monos.zippingApplicative()
-            .ap(widen(asMono(l1(this::multiplyByTwo))),widen(asMono(1,2,3)));
+       Monos.applicative()
+            .ap(widen(asMono(l1(this::multiplyByTwo))),widen(Mono.just(3)));
      * 
-     * //[2,4,6]
+     * //[6]
      * }
      * </pre>
      * 
@@ -110,7 +110,7 @@ public class MonoInstances {
                                       .then(h->Monos.applicative().ap(ftFn, h))
                                       .convert(MonoType::narrowK);
         
-        //Arrays.asMono("hello".length()*2))
+        //Mono.just("hello".length()*2))
      * 
      * }
      * </pre>
@@ -128,7 +128,7 @@ public class MonoInstances {
      * {@code 
      * import static com.aol.cyclops.hkt.jdk.MonoType.widen;
      * MonoType<Integer> ft  = Monos.monad()
-                                      .flatMap(i->widen(MonoX.range(0,i)), widen(Arrays.asMono(1,2,3)))
+                                      .flatMap(i->widen(Mono.just(i)), widen(Mono.just(3)))
                                       .convert(MonoType::narrowK);
      * }
      * </pre>
@@ -141,7 +141,7 @@ public class MonoInstances {
                                         .then(h->Monos.monad().flatMap((String v) ->Monos.unit().unit(v.length()), h))
                                         .convert(MonoType::narrowK);
         
-        //Arrays.asMono("hello".length())
+        //Mono.just("hello".length())
      * 
      * }
      * </pre>
@@ -162,7 +162,7 @@ public class MonoInstances {
                                      .then(h->Monos.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(MonoType::narrowK);
         
-       //Arrays.asMono("hello"));
+       //Mono.just("hello"));
      * 
      * }
      * </pre>
@@ -175,21 +175,24 @@ public class MonoInstances {
         return General.monadZero(monad(), MonoType.empty());
     }
     /**
+     * Combines Monos by selecting the first result returned
+     * 
      * <pre>
      * {@code 
      *  MonoType<Integer> ft = Monos.<Integer>monadPlus()
-                                      .plus(MonoType.widen(Arrays.asMono()), MonoType.widen(Arrays.asMono(10)))
+                                      .plus(MonoType.widen(Mono.empty()), MonoType.widen(Mono.just(10)))
                                       .convert(MonoType::narrowK);
-        //Arrays.asMono(10))
+        //Mono.empty()
      * 
      * }
      * </pre>
      * @return Type class for combining Monos by concatenation
      */
     public static <T> MonadPlus<MonoType.µ,T> monadPlus(){
-        Monoid<FutureW<T>> mn = Monoids.firstSuccessfulFuture();
-        Monoid<MonoType<T>> m = Monoid.of(MonoType.widen(mn.zero()), (f,g)-> MonoType.widen(
-                                                                             mn.apply(f.toFuture(), g.toFuture())));
+ 
+        
+        Monoid<MonoType<T>> m = Monoid.of(MonoType.<T>widen(Mono.empty()), 
+                                              (f,g)-> MonoType.widen(Mono.first(f.narrow(),g.narrow())));
                 
         Monoid<Higher<MonoType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);

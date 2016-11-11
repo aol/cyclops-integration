@@ -59,7 +59,7 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, Future<T> {
      * @return FutureType encoding HKT info about Futures
      */
     public static <T> FutureType<T> widen(final Future<T> completableFuture) {
-        if (completableFuture instanceof Future)
+        if (completableFuture instanceof FutureType)
             return (FutureType<T>) completableFuture;
         return new Box<>(
                          completableFuture);
