@@ -36,9 +36,9 @@ public  class NonEmptyListType<T> implements Higher<NonEmptyListType.µ, T> {
     public static class µ {
     }
     
-    public static<T> NonEmptyListType<T> of(T...v){
+    public static<T> NonEmptyListType<T> of(T first,T...v){
         
-        return widen(NonEmptyList.fromList(List.list(v)).some());
+        return widen(NonEmptyList.fromList(List.list(v).cons(first)).some());
     }
 
     /**

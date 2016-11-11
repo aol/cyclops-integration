@@ -18,8 +18,10 @@ import com.aol.cyclops.hkt.typeclasses.monad.Monad;
 import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
 import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
 import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
+import com.aol.cyclops.util.function.TriFunction;
 
 import fj.data.List;
+import fj.data.Option;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -232,11 +234,11 @@ public class Lists {
         
             Higher<C2,ListType<T>> identity = ap.unit(ListType.widen(List.list()));
 
-            BiFunction<Higher<C2,ListType<T>>,Higher<C2,T>,Higher<C2,ListType<T>>> combineToList =   (acc,next) -> ap.apBiFn(ap.unit((a,b) -> ListType.widen(ListType.narrow(a).cons(b))),
-                                                                                                                             acc,next);
+            BiFunction<Higher<C2,ListType<T>>,Higher<C2,T>,Higher<C2,ListType<T>>> combineToList =   
+                    (acc,next) -> ap.apBiFn(ap.unit((a,b) -> ListType.widen(ListType.narrow(a).cons(b))), acc,next);
 
             BinaryOperator<Higher<C2,ListType<T>>> combineLists = (a,b)-> ap.apBiFn(ap.unit((l1,l2)-> ListType.widen(ListType.narrow(l1).append(ListType.narrow(l2)))),a,b); ;  
-
+           
             return ReactiveSeq.fromIterable(ListType.narrow(list))
                       .reduce(identity,
                               combineToList,
@@ -248,6 +250,7 @@ public class Lists {
                                                         (a,b) -> ListType.widen2(sequenceFn.apply(a, ListType.narrowK(b)));
         return General.traverse(zippingApplicative(), sequenceNarrow);
     }
+
     
     /**
      * 

@@ -2,8 +2,10 @@ package com.aol.cyclops.functionaljava.hkt;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.jdk.DequeType;
 
 import fj.Equal;
 import fj.F;
@@ -49,7 +51,10 @@ public  class ListType<T> implements Higher<ListType.µ, T> {
      */
     public static class µ {
     }
-
+    public static <T> ListType<T> list(final T... values) {
+        
+        return widen(List.list(values));
+    }
     /**
      * Convert a List to a simulated HigherKindedType that captures List nature
      * and List element data type separately. Recover via @see ListType#narrow

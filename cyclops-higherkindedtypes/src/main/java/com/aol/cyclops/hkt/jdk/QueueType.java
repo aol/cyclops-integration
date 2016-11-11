@@ -2,6 +2,7 @@ package com.aol.cyclops.hkt.jdk;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Queue;
 
 import com.aol.cyclops.hkt.alias.Higher;
@@ -28,7 +29,14 @@ public interface QueueType<T> extends Higher<QueueType.µ, T>, Queue<T> {
      */
     public static class µ {
     }
-
+    public static <T> QueueType<T> of(final T... values) {
+       
+        LinkedList<T> list = new LinkedList<>();
+        for (T val : values) {
+            list.add(val);
+        }
+        return widen(list);
+     }
     /**
      * Convert a Queue to a simulated HigherKindedType that captures Queue nature
      * and Queue element data type separately. Recover via @see QueueType#narrow
