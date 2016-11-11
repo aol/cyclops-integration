@@ -9,6 +9,10 @@ import java.util.function.Function;
 import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
+import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
+import com.aol.cyclops.hkt.instances.cyclops.Maybes;
 import com.aol.cyclops.javaslang.hkt.OptionType;
 import com.aol.cyclops.javaslang.hkt.typeclasses.instances.Options;
 import com.aol.cyclops.util.function.Lambda;
@@ -123,6 +127,15 @@ public class OptionsTest {
                         .foldRight(0, (a,b)->a+b, OptionType.widen(Option.of(1)));
         
         assertThat(sum,equalTo(1));
+    }
+    @Test
+    public void traverse(){
+       MaybeType<Higher<OptionType.µ, Integer>> res = Options.traverse()
+                                                                 .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), OptionType.of(1))
+                                                                 .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res,equalTo(Maybe.just(Option.of(2))));
     }
     
 }

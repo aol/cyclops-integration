@@ -4,13 +4,20 @@ import static com.aol.cyclops.util.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.functionaljava.hkt.OptionType;
 import com.aol.cyclops.functionaljava.hkt.typeclassess.instances.Options;
+import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
+import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.jdk.OptionalInstances;
+import com.aol.cyclops.hkt.jdk.OptionalType;
 import com.aol.cyclops.util.function.Lambda;
 
 import fj.data.Option;
@@ -123,6 +130,15 @@ public class OptionTest {
                         .foldRight(0, (a,b)->a+b, OptionType.widen(Option.some(1)));
         
         assertThat(sum,equalTo(1));
+    }
+    @Test
+    public void traverse(){
+       MaybeType<Higher<OptionType.µ, Integer>> res = Options.traverse()
+                                                             .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), OptionType.of(1))
+                                                             .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res,equalTo(Maybe.just(Option.some(2))));
     }
     
 }

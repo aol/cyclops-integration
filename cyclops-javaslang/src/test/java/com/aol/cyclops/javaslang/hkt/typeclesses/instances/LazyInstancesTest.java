@@ -10,11 +10,18 @@ import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Eval;
+import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
+import com.aol.cyclops.hkt.instances.cyclops.Maybes;
 import com.aol.cyclops.javaslang.hkt.LazyType;
+import com.aol.cyclops.javaslang.hkt.OptionType;
 import com.aol.cyclops.javaslang.hkt.typeclasses.instances.LazyInstances;
+import com.aol.cyclops.javaslang.hkt.typeclasses.instances.Options;
 import com.aol.cyclops.util.function.Lambda;
 
 import javaslang.Lazy;
+import javaslang.control.Option;
 
 public class LazyInstancesTest {
 
@@ -124,6 +131,15 @@ public class LazyInstancesTest {
                         .foldRight(0, (a,b)->a+b, LazyType.widen(Lazy.of(()->1)));
         
         assertThat(sum,equalTo(1));
+    }
+    @Test
+    public void traverse(){
+       MaybeType<Higher<LazyType.µ, Integer>> res = LazyInstances.traverse()
+                                                                   .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), LazyType.of(()->1))
+                                                                 .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res,equalTo(Maybe.just(Lazy.of(()->2))));
     }
     
 }

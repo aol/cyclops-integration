@@ -38,6 +38,9 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, Future<T> {
     public static class µ {
     }
     
+    public static <T> FutureType<T> failed(Throwable exception){
+        return widen(Future.failed(exception));
+    }
     /**
      * Construct a HKT encoded completed Future
      * 

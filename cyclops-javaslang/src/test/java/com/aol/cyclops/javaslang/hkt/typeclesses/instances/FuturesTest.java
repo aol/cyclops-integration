@@ -12,11 +12,18 @@ import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.FutureW;
+import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
+import com.aol.cyclops.hkt.instances.cyclops.Maybes;
 import com.aol.cyclops.javaslang.hkt.FutureType;
+import com.aol.cyclops.javaslang.hkt.OptionType;
 import com.aol.cyclops.javaslang.hkt.typeclasses.instances.Futures;
+import com.aol.cyclops.javaslang.hkt.typeclasses.instances.Options;
 import com.aol.cyclops.util.function.Lambda;
 
 import javaslang.concurrent.Future;
+import javaslang.control.Option;
 
 public class FuturesTest {
 
@@ -126,6 +133,16 @@ public class FuturesTest {
                         .foldRight(0, (a,b)->a+b, FutureType.widen(FutureW.ofResult(1)));
         
         assertThat(sum,equalTo(1));
+    }
+    @Test
+    public void traverse(){
+       MaybeType<Higher<FutureType.µ, Integer>> res = Futures.traverse()
+                                                                 .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), FutureType.successful(1))
+                                                                 .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res.map(h->h.convert(FutureType::narrowK).get()),
+                  equalTo(Maybe.just(Future.successful(2).get())));
     }
     
 }

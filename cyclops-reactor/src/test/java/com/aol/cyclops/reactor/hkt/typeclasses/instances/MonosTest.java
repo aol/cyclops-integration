@@ -1,8 +1,9 @@
 package com.aol.cyclops.reactor.hkt.typeclasses.instances;
 import static com.aol.cyclops.reactor.hkt.MonoType.widen;
 import static com.aol.cyclops.util.function.Lambda.l1;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.function.Function;
 
@@ -10,6 +11,10 @@ import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.FutureW;
+import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
+import com.aol.cyclops.hkt.instances.cyclops.Maybes;
 import com.aol.cyclops.reactor.hkt.MonoType;
 import com.aol.cyclops.util.function.Lambda;
 
@@ -123,6 +128,16 @@ public class MonosTest {
                         .foldRight(0, (a,b)->a+b, MonoType.widen(FutureW.ofResult(1)));
         
         assertThat(sum,equalTo(1));
+    }
+    @Test
+    public void traverse(){
+       MaybeType<Higher<MonoType.µ, Integer>> res = MonoInstances.traverse()
+                                                                 .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), MonoType.just(1))
+                                                                 .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res.map(h->h.convert(MonoType::narrowK).block()),
+                  equalTo(Maybe.just(Mono.just(2).block())));
     }
     
 }

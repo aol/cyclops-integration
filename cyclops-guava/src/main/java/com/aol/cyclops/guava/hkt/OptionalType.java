@@ -44,6 +44,9 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
     public static <T> OptionalType<T> absent() {
         return widen(Optional.absent());
     }
+    public static <T> OptionalType<T> of(T element) {
+        return widen(Optional.of(element));
+    }
     /**
      *  Construct a OptionalType  that contains a single value extracted from the supplied Iterable
      * <pre>
