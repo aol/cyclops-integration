@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -12,7 +13,12 @@ import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.FutureW;
+import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.FutureType;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
+import com.aol.cyclops.hkt.instances.jdk.CompletableFutureInstances;
+import com.aol.cyclops.hkt.jdk.CompletableFutureType;
 import com.aol.cyclops.util.function.Lambda;
 
 public class FutureWsTest {
@@ -123,6 +129,17 @@ public class FutureWsTest {
                         .foldRight(0, (a,b)->a+b, FutureType.widen(FutureW.ofResult(1)));
         
         assertThat(sum,equalTo(1));
+    }
+    
+    @Test
+    public void traverse(){
+       MaybeType<Higher<FutureType.µ, Integer>> res = FutureWs.traverse()
+                                                               .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), FutureType.ofResult(1))
+                                                              .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res.map(h->h.convert(FutureType::narrow).get()),
+                  equalTo(Maybe.just(FutureW.ofResult(2).get())));
     }
     
 }

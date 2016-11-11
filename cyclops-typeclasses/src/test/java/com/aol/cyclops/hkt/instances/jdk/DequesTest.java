@@ -11,12 +11,10 @@ import org.junit.Test;
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.data.collections.extensions.standard.DequeX;
-import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
 import com.aol.cyclops.hkt.instances.cyclops.Maybes;
 import com.aol.cyclops.hkt.jdk.DequeType;
-import com.aol.cyclops.hkt.jdk.ListType;
 import com.aol.cyclops.util.function.Lambda;
 
 public class DequesTest {
@@ -28,7 +26,7 @@ public class DequesTest {
                                      .unit("hello")
                                      .convert(DequeType::narrowK);
         
-        assertThat(list,equalTo(DequeX.of("hello")));
+        assertThat(list.toArray(),equalTo(DequeX.of("hello").toArray()));
     }
     @Test
     public void functor(){
@@ -38,7 +36,7 @@ public class DequesTest {
                                      .then(h->Deques.functor().map((String v) ->v.length(), h))
                                      .convert(DequeType::narrowK);
         
-        assertThat(list,equalTo(DequeX.of("hello".length())));
+        assertThat(list.toArray(),equalTo(DequeX.of("hello".length()).toArray()));
     }
     @Test
     public void apSimple(){
@@ -59,7 +57,7 @@ public class DequesTest {
                                      .then(h->Deques.zippingApplicative().ap(listFn, h))
                                      .convert(DequeType::narrowK);
         
-        assertThat(list,equalTo(DequeX.of("hello".length()*2)));
+        assertThat(list.toArray(),equalTo(DequeX.of("hello".length()*2).toArray()));
     }
     @Test
     public void monadSimple(){
@@ -75,7 +73,7 @@ public class DequesTest {
                                      .then(h->Deques.monad().flatMap((String v) ->Deques.unit().unit(v.length()), h))
                                      .convert(DequeType::narrowK);
         
-        assertThat(list,equalTo(DequeX.of("hello".length())));
+        assertThat(list.toArray(),equalTo(DequeX.of("hello".length()).toArray()));
     }
     @Test
     public void monadZeroFilter(){
@@ -85,7 +83,7 @@ public class DequesTest {
                                      .then(h->Deques.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(DequeType::narrowK);
         
-        assertThat(list,equalTo(DequeX.of("hello")));
+        assertThat(list.toArray(),equalTo(DequeX.of("hello").toArray()));
     }
     @Test
     public void monadZeroFilterOut(){
@@ -95,7 +93,7 @@ public class DequesTest {
                                      .then(h->Deques.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(DequeType::narrowK);
         
-        assertThat(list,equalTo(DequeX.of()));
+        assertThat(list.toArray(),equalTo(DequeX.of().toArray()));
     }
     
     @Test
@@ -103,7 +101,7 @@ public class DequesTest {
         DequeType<Integer> list = Deques.<Integer>monadPlus()
                                       .plus(DequeType.widen(DequeX.of()), DequeType.widen(DequeX.of(10)))
                                       .convert(DequeType::narrowK);
-        assertThat(list,equalTo(DequeX.of(10)));
+        assertThat(list.toArray(),equalTo(DequeX.of(10).toArray()));
     }
     @Test
     public void monadPlusNonEmpty(){
@@ -112,7 +110,7 @@ public class DequesTest {
         DequeType<Integer> list = Deques.<Integer>monadPlus(m)
                                       .plus(DequeType.widen(DequeX.of(5)), DequeType.widen(DequeX.of(10)))
                                       .convert(DequeType::narrowK);
-        assertThat(list,equalTo(DequeX.of(5)));
+        assertThat(list.toArray(),equalTo(DequeX.of(5).toArray()));
     }
     @Test
     public void  foldLeft(){
@@ -135,7 +133,8 @@ public class DequesTest {
                                                             .convert(MaybeType::narrowK);
        
        
-       assertThat(res,equalTo(Maybe.just(DequeX.of(2,4,6))));
+       assertThat(res.map(h->DequeX.fromIterable(h.convert(DequeType::narrowK)).toList()),
+                  equalTo(Maybe.just(DequeX.of(2,4,6).toList())));
     }
     
 }

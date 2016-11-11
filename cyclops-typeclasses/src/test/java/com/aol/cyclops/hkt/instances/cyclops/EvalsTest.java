@@ -10,8 +10,12 @@ import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Eval;
+import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.EvalType;
+import com.aol.cyclops.hkt.cyclops.FutureType;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
 import com.aol.cyclops.util.function.Lambda;
 
 public class EvalsTest {
@@ -122,6 +126,16 @@ public class EvalsTest {
                         .foldRight(0, (a,b)->a+b, EvalType.widen(Eval.now(1)));
         
         assertThat(sum,equalTo(1));
+    }
+    @Test
+    public void traverse(){
+       MaybeType<Higher<EvalType.µ, Integer>> res = Evals.traverse()
+                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), EvalType.now(1))
+                                                         .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res.map(h->h.convert(EvalType::narrow).get()),
+                  equalTo(Maybe.just(Eval.now(2).get())));
     }
     
 }
