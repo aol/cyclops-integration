@@ -46,6 +46,9 @@ public interface StreamType<T> extends Higher<StreamType.µ, T>, Stream<T> {
     public static class µ {
     }
 
+    public static <T> StreamType<T> of(T... elements){
+        return widen(Stream.of(elements));
+    }
     /**
      * Convert a Stream to a simulated HigherKindedType that captures Stream nature
      * and Stream element data type separately. Recover via @see StreamType#narrow

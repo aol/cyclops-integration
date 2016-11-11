@@ -2,15 +2,23 @@ package com.aol.cyclops.hkt.instances.jdk;
 import static com.aol.cyclops.hkt.jdk.CompletableFutureType.widen;
 import static com.aol.cyclops.util.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
+import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
+import com.aol.cyclops.hkt.instances.cyclops.Maybes;
 import com.aol.cyclops.hkt.jdk.CompletableFutureType;
+import com.aol.cyclops.hkt.jdk.OptionalType;
+import com.aol.cyclops.util.CompletableFutures;
 import com.aol.cyclops.util.function.Lambda;
 
 public class CompletableFuturesTest {
@@ -121,6 +129,15 @@ public class CompletableFuturesTest {
                         .foldRight(0, (a,b)->a+b, CompletableFutureType.widen(CompletableFuture.completedFuture(1)));
         
         assertThat(sum,equalTo(1));
+    }
+    @Test
+    public void traverse(){
+       MaybeType<Higher<CompletableFutureType.µ, Integer>> res = CompletableFutureInstances.traverse()
+                                                                          .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), CompletableFutureType.completedFuture(1))
+                                                                         .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res,equalTo(Maybe.just(Optional.of(2))));
     }
     
 }

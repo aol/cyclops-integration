@@ -6,12 +6,18 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
+import com.aol.cyclops.hkt.cyclops.MaybeType.µ;
+import com.aol.cyclops.hkt.instances.cyclops.Maybes;
 import com.aol.cyclops.hkt.jdk.ListType;
 import com.aol.cyclops.util.function.Lambda;
 
@@ -123,6 +129,16 @@ public class ListsTest {
                         .foldRight(0, (a,b)->a+b, ListType.widen(Arrays.asList(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
+    }
+    
+    @Test
+    public void traverse(){
+       MaybeType<Higher<ListType.µ, Integer>> res = Lists.traverse()
+                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), ListType.of(1,2,3))
+                                                         .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res,equalTo(Maybe.just(ListX.of(2,4,6))));
     }
     
 }

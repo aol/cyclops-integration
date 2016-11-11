@@ -1,8 +1,10 @@
 package com.aol.cyclops.hkt.jdk;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import com.aol.cyclops.hkt.alias.Higher;
 
@@ -28,7 +30,13 @@ public interface DequeType<T> extends Higher<DequeType.µ, T>, Deque<T> {
      */
     public static class µ {
     }
-
+    public static <T> DequeType<T> of(final T... values) {
+        LinkedList<T> list = new LinkedList<>();
+        for(T val : values){
+            list.add(val);
+        }
+        return DequeType.widen(list);
+    }
     /**
      * Convert a Deque to a simulated HigherKindedType that captures Deque nature
      * and Deque element data type separately. Recover via @see DequeType#narrow
@@ -237,6 +245,15 @@ public interface DequeType<T> extends Higher<DequeType.µ, T>, Deque<T> {
 
         public int hashCode() {
             return boxed.hashCode();
+        }
+
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "DequeType [" + boxed + "]";
         }
 
         

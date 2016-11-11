@@ -86,6 +86,7 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
     public static <T> MaybeType<T> narrowK(final Higher<MaybeType.µ, T> future) {
        return (MaybeType<T>)future;
     }
+   
     /**
      * Convert the HigherKindedType definition for a Optional into
      * 

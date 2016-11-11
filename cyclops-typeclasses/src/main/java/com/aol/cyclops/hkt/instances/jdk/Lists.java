@@ -232,7 +232,7 @@ public class Lists {
     public static <C2,T> Traverse<ListType.µ> traverse(){
         BiFunction<Applicative<C2>,ListType<Higher<C2, T>>,Higher<C2, ListType<T>>> sequenceFn = (ap,list) -> {
         
-            Higher<C2,ListType<T>> identity = ap.unit(ListType.widen(Arrays.asList()));
+            Higher<C2,ListType<T>> identity = ap.unit(ListType.widen(new ArrayList<>()));
 
             BiFunction<Higher<C2,ListType<T>>,Higher<C2,T>,Higher<C2,ListType<T>>> combineToList =   (acc,next) -> ap.apBiFn(ap.unit((a,b) -> { a.add(b); return a;}),acc,next);
 

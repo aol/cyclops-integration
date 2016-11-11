@@ -12,7 +12,13 @@ import java.util.stream.Stream;
 import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
+import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.jdk.ListType;
 import com.aol.cyclops.hkt.jdk.StreamType;
 import com.aol.cyclops.util.function.Lambda;
 
@@ -126,6 +132,16 @@ public class StreamsTest {
                         .foldRight(0, (a,b)->a+b, StreamType.widen(Stream.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
+    }
+    @Test
+    public void traverse(){
+       MaybeType<Higher<StreamType.µ, Integer>> res = Streams.traverse()
+                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), StreamType.of(1,2,3))
+                                                         .convert(MaybeType::narrowK);
+       
+       
+       assertThat(res.map(i->i.convert(StreamType::narrowK).collect(Collectors.toList())),
+                  equalTo(Maybe.just(ListX.of(2,4,6))));
     }
     
 }
