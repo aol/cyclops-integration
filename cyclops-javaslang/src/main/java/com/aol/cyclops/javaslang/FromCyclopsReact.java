@@ -7,6 +7,7 @@ import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.MonadicValue2;
 
+import javaslang.Lazy;
 import javaslang.concurrent.Future;
 import javaslang.concurrent.Promise;
 import javaslang.control.Either;
@@ -34,6 +35,9 @@ public class FromCyclopsReact {
 
     public static <T> Future<T> future(MonadicValue<T> value) {
         return Future.of(() -> value.get());
+    }
+    public static <T> Lazy<T> lazy(com.aol.cyclops.types.Value<T> value){
+        return Lazy.of(value);
     }
 
     public static <T> Option<T> option(com.aol.cyclops.types.Value<T> value){

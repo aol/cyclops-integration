@@ -5,6 +5,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.For;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Maybe;
@@ -13,6 +14,7 @@ import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.util.function.QuadFunction;
 import com.aol.cyclops.util.function.TriFunction;
 
+import javaslang.Lazy;
 import javaslang.Value;
 import javaslang.collection.Traversable;
 import javaslang.concurrent.Future;
@@ -26,6 +28,9 @@ public class Javaslang {
     
     public static <T> Maybe<T> maybe(Option<T> opt){
         return opt.isDefined() ? Maybe.just(opt.get()) : Maybe.none();
+    }
+    public static <T> Eval<T> eval(Lazy<T> opt){
+        return Eval.later(opt);
     }
    
     public static <T> FutureW<T> futureW(Future<T> future){
