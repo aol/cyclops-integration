@@ -44,7 +44,26 @@ public interface QueueType<T> extends Higher<QueueType.µ, T>, Queue<T> {
             return (QueueType<T>) queue;
         return new Box<>(queue);
     }
-
+    /**
+     * Widen a QueueType nested inside another HKT encoded type
+     * 
+     * @param  queue HTK encoded type containing  a List to widen
+     * @return HKT encoded type with a widened List
+     */
+    public static <C2,T> Higher<C2, Higher<QueueType.µ,T>> widen2(Higher<C2, QueueType<T>> queue){
+        //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
+        //cast seems safer as Higher<QueueType.µ,T> must be a ListType
+        return (Higher)queue;
+    }
+    /**
+     * Convert the raw Higher Kinded Type for Queue types into the QueueType type definition class
+     * 
+     * @param queue HKT encoded list into a QueueType
+     * @return QueueType
+     */
+    public static <T> QueueType<T> narrowK(final Higher<QueueType.µ, T> queue) {
+       return (QueueType<T>)queue;
+    }
     /**
      * Convert the HigherKindedType definition for a Queue into
      * 
