@@ -8,7 +8,9 @@ import com.aol.cyclops.Monoids;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.instances.General;
+import com.aol.cyclops.hkt.jdk.CompletableFutureType;
 import com.aol.cyclops.hkt.typeclasses.Unit;
+import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
@@ -246,7 +248,10 @@ public class MonoInstances {
         BiFunction<Monoid<T>,Higher<MonoType.µ,T>,T> foldLeftFn = (m,l)->  m.apply(m.zero(), MonoType.narrow(l).block());
         return General.foldable(foldRightFn, foldLeftFn);
     }
-  
+    public static <T> Comonad<MonoType.µ> comonad(){
+        Function<? super Higher<MonoType.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(MonoType::narrow).block();
+        return General.comonad(functor(), unit(), extractFn);
+    }
     
     private <T> MonoType<T> of(T value){
         return MonoType.widen(Mono.just(value));

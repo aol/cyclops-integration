@@ -8,6 +8,7 @@ import com.aol.cyclops.Monoids;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.typeclasses.Unit;
+import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
@@ -18,6 +19,7 @@ import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 import com.aol.cyclops.javaslang.FromCyclopsReact;
 import com.aol.cyclops.javaslang.FromJDK;
 import com.aol.cyclops.javaslang.Javaslang;
+import com.aol.cyclops.javaslang.hkt.LazyType;
 import com.aol.cyclops.javaslang.hkt.OptionType;
 
 import javaslang.control.Option;
@@ -242,7 +244,10 @@ public class Options {
         BiFunction<Monoid<T>,Higher<OptionType.µ,T>,T> foldLeftFn = (m,l)-> OptionType.narrow(l).getOrElse(m.zero());
         return General.foldable(foldRightFn, foldLeftFn);
     }
-  
+    public static <T> Comonad<OptionType.µ> comonad(){
+        Function<? super Higher<OptionType.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionType::narrow).get();
+        return General.comonad(functor(), unit(), extractFn);
+    }
     
     private <T> OptionType<T> of(T value){
         return OptionType.widen(Option.of(value));

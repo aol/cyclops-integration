@@ -6,7 +6,9 @@ import java.util.function.Function;
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.instances.General;
+import com.aol.cyclops.hkt.jdk.CompletableFutureType;
 import com.aol.cyclops.hkt.typeclasses.Unit;
+import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
@@ -240,7 +242,10 @@ public class LazyInstances {
         BiFunction<Monoid<T>,Higher<LazyType.µ,T>,T> foldLeftFn = (m,l)-> LazyType.narrow(l).getOrElse(m.zero());
         return General.foldable(foldRightFn, foldLeftFn);
     }
-  
+    public static <T> Comonad<LazyType.µ> comonad(){
+        Function<? super Higher<LazyType.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(LazyType::narrow).get();
+        return General.comonad(functor(), unit(), extractFn);
+    }
     
     private <T> LazyType<T> of(T value){
         return LazyType.widen(Lazy.of(()->value));
