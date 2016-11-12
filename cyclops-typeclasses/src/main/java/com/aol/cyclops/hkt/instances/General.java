@@ -316,8 +316,8 @@ public interface General {
     }
     @AllArgsConstructor
     static class GeneralComonad<CRE,A,B> implements Comonad<CRE>{
-        GeneralFunctor<CRE,A,B> functor;
-        GeneralUnit<CRE,A> unit;
+        Functor<CRE> functor;
+        Unit<CRE> unit;
         Function<? super Higher<CRE, A>, ? extends A> extractFn;
         <T> Function<? super Higher<CRE, T>, ? extends T> extractFn(){
             return (Function)extractFn;
@@ -340,7 +340,7 @@ public interface General {
         }
         
     }
-    static  <CRE,T,R> GeneralComonad<CRE,T,R> comonad(GeneralFunctor<CRE,T,R> functor, GeneralUnit<CRE,T> unit,
+    static  <CRE,T,R> GeneralComonad<CRE,T,R> comonad(Functor<CRE> functor, Unit<CRE> unit,
             Function<? super Higher<CRE, T>, ? extends T> extractFn ) {
         
         return new GeneralComonad<>(functor,unit,extractFn);

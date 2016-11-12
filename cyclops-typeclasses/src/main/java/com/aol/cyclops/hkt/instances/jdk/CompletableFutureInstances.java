@@ -7,9 +7,11 @@ import java.util.function.Function;
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.Monoids;
 import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.jdk.CompletableFutureType;
 import com.aol.cyclops.hkt.typeclasses.Unit;
+import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
@@ -240,7 +242,10 @@ public class CompletableFutureInstances {
         BiFunction<Monoid<T>,Higher<CompletableFutureType.µ,T>,T> foldLeftFn = (m,l)->  m.apply(m.zero(), CompletableFutureType.narrow(l).join());
         return General.foldable(foldRightFn, foldLeftFn);
     }
-  
+    public static <T> Comonad<CompletableFutureType.µ> comonad(){
+        Function<? super Higher<CompletableFutureType.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(CompletableFutureType::narrow).join();
+        return General.comonad(functor(), unit(), extractFn);
+    }
     
     private <T> CompletableFutureType<T> of(T value){
         return CompletableFutureType.widen(CompletableFuture.completedFuture(value));

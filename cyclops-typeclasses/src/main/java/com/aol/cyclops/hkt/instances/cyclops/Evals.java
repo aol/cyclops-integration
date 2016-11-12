@@ -7,8 +7,10 @@ import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.EvalType;
+import com.aol.cyclops.hkt.cyclops.FutureType;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.typeclasses.Unit;
+import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
@@ -241,7 +243,10 @@ public class Evals {
         return General.foldable(foldRightFn, foldLeftFn);
     }
   
-    
+    public static <T> Comonad<EvalType.µ> comonad(){
+        Function<? super Higher<EvalType.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(EvalType::narrow).get();
+        return General.comonad(functor(), unit(), extractFn);
+    }
     private <T> EvalType<T> of(T value){
         return EvalType.widen(Eval.now(value));
     }

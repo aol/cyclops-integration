@@ -10,6 +10,7 @@ import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.typeclasses.Unit;
+import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
@@ -240,6 +241,11 @@ public class Maybes {
         BiFunction<Monoid<T>,Higher<MaybeType.µ,T>,T> foldRightFn =  (m,l)-> MaybeType.narrow(l).orElse(m.zero());
         BiFunction<Monoid<T>,Higher<MaybeType.µ,T>,T> foldLeftFn = (m,l)-> MaybeType.narrow(l).orElse(m.zero());
         return General.foldable(foldRightFn, foldLeftFn);
+    }
+    
+    public static <T> Comonad<MaybeType.µ> comonad(){
+        Function<? super Higher<MaybeType.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(MaybeType::narrow).get();
+        return General.comonad(functor(), unit(), extractFn);
     }
   
     

@@ -8,8 +8,10 @@ import com.aol.cyclops.Monoids;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.FutureType;
+import com.aol.cyclops.hkt.cyclops.MaybeType;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.typeclasses.Unit;
+import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
@@ -241,7 +243,10 @@ public class FutureWs {
         BiFunction<Monoid<T>,Higher<FutureType.µ,T>,T> foldLeftFn = (m,l)->  m.apply(m.zero(), FutureType.narrow(l).get());
         return General.foldable(foldRightFn, foldLeftFn);
     }
-  
+    public static <T> Comonad<FutureType.µ> comonad(){
+        Function<? super Higher<FutureType.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(FutureType::narrow).get();
+        return General.comonad(functor(), unit(), extractFn);
+    }
     
     private <T> FutureType<T> of(T value){
         return FutureType.widen(FutureW.ofResult(value));

@@ -11,6 +11,7 @@ import com.aol.cyclops.hkt.cyclops.MaybeType;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.jdk.OptionalType;
 import com.aol.cyclops.hkt.typeclasses.Unit;
+import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
@@ -242,7 +243,10 @@ public class OptionalInstances {
         BiFunction<Monoid<T>,Higher<OptionalType.µ,T>,T> foldLeftFn = (m,l)-> OptionalType.narrow(l).orElse(m.zero());
         return General.foldable(foldRightFn, foldLeftFn);
     }
-  
+    public static <T> Comonad<OptionalType.µ> comonad(){
+        Function<? super Higher<OptionalType.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionalType::narrow).get();
+        return General.comonad(functor(), unit(), extractFn);
+    }
     
     private <T> OptionalType<T> of(T value){
         return OptionalType.widen(Optional.of(value));
