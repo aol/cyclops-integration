@@ -84,7 +84,6 @@ public interface ListType<T> extends Higher<ListType.µ, T>, List<T> {
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    
     static final class Box<T> implements ListType<T> {
 
         private final List<T> boxed;
