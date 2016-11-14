@@ -2,7 +2,6 @@ package com.aol.cyclops.reactor.hkt;
 
 
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -43,7 +42,7 @@ import reactor.util.function.Tuple2;
  */
 
 @AllArgsConstructor(access=AccessLevel.PRIVATE)
-public final class MonoType<T> implements Higher<MonoType.µ, T> {
+public final class MonoType<T> implements Higher<MonoType.µ, T>, Publisher<T> {
 
     /**
      * Witness type
