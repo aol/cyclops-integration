@@ -27,6 +27,9 @@ import reactor.core.publisher.Mono;
 
 public class ReactorTest {
 
+    static class LinkedList{
+        
+    }
     @Test
     public void amb() {
 
