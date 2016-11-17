@@ -22,7 +22,7 @@ public class OptionalsTest {
     @Test
     public void unit(){
         
-        OptionalType<String> opt = Optionals.unit()
+        OptionalType<String> opt = OptionalInstances.unit()
                                             .unit("hello")
                                             .convert(OptionalType::narrowK);
         
@@ -31,16 +31,16 @@ public class OptionalsTest {
     @Test
     public void functor(){
         
-        OptionalType<Integer> opt = Optionals.unit()
+        OptionalType<Integer> opt = OptionalInstances.unit()
                                      .unit("hello")
-                                     .then(h->Optionals.functor().map((String v) ->v.length(), h))
+                                     .then(h->OptionalInstances.functor().map((String v) ->v.length(), h))
                                      .convert(OptionalType::narrowK);
         
         assertThat(opt,equalTo(Optional.of("hello".length())));
     }
     @Test
     public void apSimple(){
-        Optionals.applicative()
+        OptionalInstances.applicative()
             .ap(widen(Optional.of(l1(this::multiplyByTwo))),widen(Optional.of(1)));
     }
     private int multiplyByTwo(int x){
@@ -49,28 +49,28 @@ public class OptionalsTest {
     @Test
     public void applicative(){
         
-        OptionalType<Function<Integer,Integer>> optFn =Optionals.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(OptionalType::narrowK);
+        OptionalType<Function<Integer,Integer>> optFn =OptionalInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(OptionalType::narrowK);
         
-        OptionalType<Integer> opt = Optionals.unit()
+        OptionalType<Integer> opt = OptionalInstances.unit()
                                              .unit("hello")
-                                             .then(h->Optionals.functor().map((String v) ->v.length(), h))
-                                             .then(h->Optionals.applicative().ap(optFn, h))
+                                             .then(h->OptionalInstances.functor().map((String v) ->v.length(), h))
+                                             .then(h->OptionalInstances.applicative().ap(optFn, h))
                                              .convert(OptionalType::narrowK);
                 
         assertThat(opt,equalTo(Optional.of("hello".length()*2)));
     }
     @Test
     public void monadSimple(){
-       OptionalType<Integer> opt  = Optionals.monad()
+       OptionalType<Integer> opt  = OptionalInstances.monad()
                                             .<Integer,Integer>flatMap(i->widen(Optional.of(i*2)), widen(Optional.of(3)))
                                             .convert(OptionalType::narrowK);
     }
     @Test
     public void monad(){
         
-        OptionalType<Integer> opt = Optionals.unit()
+        OptionalType<Integer> opt = OptionalInstances.unit()
                                      .unit("hello")
-                                     .then(h->Optionals.monad().flatMap((String v) ->Optionals.unit().unit(v.length()), h))
+                                     .then(h->OptionalInstances.monad().flatMap((String v) ->OptionalInstances.unit().unit(v.length()), h))
                                      .convert(OptionalType::narrowK);
         
         assertThat(opt,equalTo(Optional.of("hello".length())));
@@ -78,9 +78,9 @@ public class OptionalsTest {
     @Test
     public void monadZeroFilter(){
         
-        OptionalType<String> opt = Optionals.unit()
+        OptionalType<String> opt = OptionalInstances.unit()
                                      .unit("hello")
-                                     .then(h->Optionals.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .then(h->OptionalInstances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(OptionalType::narrowK);
         
         assertThat(opt,equalTo(Optional.of("hello")));
@@ -88,9 +88,9 @@ public class OptionalsTest {
     @Test
     public void monadZeroFilterOut(){
         
-        OptionalType<String> opt = Optionals.unit()
+        OptionalType<String> opt = OptionalInstances.unit()
                                      .unit("hello")
-                                     .then(h->Optionals.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .then(h->OptionalInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(OptionalType::narrowK);
         
         assertThat(opt,equalTo(Optional.absent()));
@@ -98,7 +98,7 @@ public class OptionalsTest {
     
     @Test
     public void monadPlus(){
-        OptionalType<Integer> opt = Optionals.<Integer>monadPlus()
+        OptionalType<Integer> opt = OptionalInstances.<Integer>monadPlus()
                                       .plus(OptionalType.widen(Optional.absent()), OptionalType.widen(Optional.of(10)))
                                       .convert(OptionalType::narrowK);
         assertThat(opt,equalTo(Optional.of(10)));
@@ -107,28 +107,28 @@ public class OptionalsTest {
     public void monadPlusNonEmpty(){
         
         Monoid<OptionalType<Integer>> m = Monoid.of(OptionalType.widen(Optional.absent()), (a,b)->a.isPresent() ? b : a);
-        OptionalType<Integer> opt = Optionals.<Integer>monadPlus(m)
+        OptionalType<Integer> opt = OptionalInstances.<Integer>monadPlus(m)
                                       .plus(OptionalType.widen(Optional.of(5)), OptionalType.widen(Optional.of(10)))
                                       .convert(OptionalType::narrowK);
         assertThat(opt,equalTo(Optional.of(10)));
     }
     @Test
     public void  foldLeft(){
-        int sum  = Optionals.foldable()
+        int sum  = OptionalInstances.foldable()
                         .foldLeft(0, (a,b)->a+b, OptionalType.widen(Optional.of(4)));
         
         assertThat(sum,equalTo(4));
     }
     @Test
     public void  foldRight(){
-        int sum  = Optionals.foldable()
+        int sum  = OptionalInstances.foldable()
                         .foldRight(0, (a,b)->a+b, OptionalType.widen(Optional.of(1)));
         
         assertThat(sum,equalTo(1));
     }
     @Test
     public void traverse(){
-       MaybeType<Higher<OptionalType.µ, Integer>> res = Optionals.traverse()
+       MaybeType<Higher<OptionalType.µ, Integer>> res = OptionalInstances.traverse()
                                                                  .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), OptionalType.of(1))
                                                                  .convert(MaybeType::narrowK);
        
