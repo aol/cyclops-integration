@@ -111,6 +111,9 @@ public final class StreamType<T> implements Higher<StreamType.µ, T>, Publisher<
 
     private final Stream<T> boxed;
 
+    public ReactiveSeq<T> toReactiveSeq(){
+        return ReactiveSeq.fromIterable(boxed);
+    }
     /**
      * @return wrapped Stream
      */
@@ -173,6 +176,14 @@ public final class StreamType<T> implements Higher<StreamType.µ, T>, Publisher<
      */
     public Stream<T> tail() {
         return boxed.tail();
+    }
+
+    /**
+     * @return
+     * @see javaslang.collection.Traversable#isEmpty()
+     */
+    public boolean isEmpty() {
+        return boxed.isEmpty();
     }
 
     
