@@ -17,9 +17,7 @@ import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
 import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
 import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 import com.aol.cyclops.javaslang.FromCyclopsReact;
-import com.aol.cyclops.javaslang.FromJDK;
 import com.aol.cyclops.javaslang.Javaslang;
-import com.aol.cyclops.javaslang.hkt.LazyType;
 import com.aol.cyclops.javaslang.hkt.OptionType;
 
 import javaslang.control.Option;
@@ -31,7 +29,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Options {
+public class OptionInstances {
 
     
     /**
@@ -63,7 +61,7 @@ public class Options {
      * @return A functor for Options
      */
     public static <T,R>Functor<OptionType.µ> functor(){
-        BiFunction<OptionType<T>,Function<? super T, ? extends R>,OptionType<R>> map = Options::map;
+        BiFunction<OptionType<T>,Function<? super T, ? extends R>,OptionType<R>> map = OptionInstances::map;
         return General.functor(map);
     }
     /**
@@ -82,7 +80,7 @@ public class Options {
      * @return A factory for Options
      */
     public static Unit<OptionType.µ> unit(){
-        return General.unit(Options::of);
+        return General.unit(OptionInstances::of);
     }
     /**
      * 
@@ -122,7 +120,7 @@ public class Options {
      * @return A zipper for Options
      */
     public static <T,R> Applicative<OptionType.µ> applicative(){
-        BiFunction<OptionType< Function<T, R>>,OptionType<T>,OptionType<R>> ap = Options::ap;
+        BiFunction<OptionType< Function<T, R>>,OptionType<T>,OptionType<R>> ap = OptionInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -153,7 +151,7 @@ public class Options {
      */
     public static <T,R> Monad<OptionType.µ> monad(){
   
-        BiFunction<Higher<OptionType.µ,T>,Function<? super T, ? extends Higher<OptionType.µ,R>>,Higher<OptionType.µ,R>> flatMap = Options::flatMap;
+        BiFunction<Higher<OptionType.µ,T>,Function<? super T, ? extends Higher<OptionType.µ,R>>,Higher<OptionType.µ,R>> flatMap = OptionInstances::flatMap;
         return General.monad(applicative(), flatMap);
     }
     /**
@@ -221,7 +219,7 @@ public class Options {
      */
     public static <C2,T> Traverse<OptionType.µ> traverse(){
       
-        return General.traverseByTraverse(applicative(), Options::traverseA);
+        return General.traverseByTraverse(applicative(), OptionInstances::traverseA);
     }
     
     /**

@@ -28,11 +28,11 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Vectors {
+public class VectorInstances {
 
     public static void main(String[] args){
         Vector<Integer> small = Vector.of(1,2,3);
-        VectorType<Integer> list = Vectors.functor()
+        VectorType<Integer> list = VectorInstances.functor()
                                      .map(i->i*2, VectorType.widen(small))
                                     // .then_(functor()::map, Lambda.<Integer,Integer>l1(i->i*3))
                                      .then(h-> functor().map((Integer i)->""+i,h))
@@ -40,7 +40,7 @@ public class Vectors {
                                      .convert(VectorType::narrowK);
           VectorType<Integer> string = list.convert(VectorType::narrowK);
                     
-        System.out.println(Vectors.functor().map(i->i*2, VectorType.widen(small)));
+        System.out.println(VectorInstances.functor().map(i->i*2, VectorType.widen(small)));
     }
     /**
      * 
@@ -71,7 +71,7 @@ public class Vectors {
      * @return A functor for Vectors
      */
     public static <T,R>Functor<VectorType.µ> functor(){
-        BiFunction<VectorType<T>,Function<? super T, ? extends R>,VectorType<R>> map = Vectors::map;
+        BiFunction<VectorType<T>,Function<? super T, ? extends R>,VectorType<R>> map = VectorInstances::map;
         return General.functor(map);
     }
     /**
@@ -130,7 +130,7 @@ public class Vectors {
      * @return A zipper for Vectors
      */
     public static <T,R> Applicative<VectorType.µ> zippingApplicative(){
-        BiFunction<VectorType< Function<T, R>>,VectorType<T>,VectorType<R>> ap = Vectors::ap;
+        BiFunction<VectorType< Function<T, R>>,VectorType<T>,VectorType<R>> ap = VectorInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -161,7 +161,7 @@ public class Vectors {
      */
     public static <T,R> Monad<VectorType.µ> monad(){
   
-        BiFunction<Higher<VectorType.µ,T>,Function<? super T, ? extends Higher<VectorType.µ,R>>,Higher<VectorType.µ,R>> flatMap = Vectors::flatMap;
+        BiFunction<Higher<VectorType.µ,T>,Function<? super T, ? extends Higher<VectorType.µ,R>>,Higher<VectorType.µ,R>> flatMap = VectorInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
@@ -198,7 +198,7 @@ public class Vectors {
      * @return Type class for combining Vectors by concatenation
      */
     public static <T> MonadPlus<VectorType.µ,T> monadPlus(){
-        Monoid<VectorType<T>> m = Monoid.of(VectorType.widen(Vector.empty()), Vectors::concat);
+        Monoid<VectorType<T>> m = Monoid.of(VectorType.widen(Vector.empty()), VectorInstances::concat);
         Monoid<Higher<VectorType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

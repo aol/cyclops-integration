@@ -1,11 +1,9 @@
 package com.aol.cyclops.functionaljava.hkt.typeclassess.instances;
 
 import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 import com.aol.cyclops.Monoid;
-import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.functionaljava.hkt.NonEmptyListType;
 import com.aol.cyclops.hkt.alias.Higher;
@@ -15,10 +13,7 @@ import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
 import com.aol.cyclops.hkt.typeclasses.functor.Functor;
 import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
 import com.aol.cyclops.hkt.typeclasses.monad.Monad;
-import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 
-import fj.data.List;
-import fj.data.NonEmptyList;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -27,7 +22,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class NonEmptyLists {
+public class NonEmptyListInstances {
 
     
     /**
@@ -59,7 +54,7 @@ public class NonEmptyLists {
      * @return A functor for NonEmptyLists
      */
     public static <T,R>Functor<NonEmptyListType.µ> functor(){
-        BiFunction<NonEmptyListType<T>,Function<? super T, ? extends R>,NonEmptyListType<R>> map = NonEmptyLists::map;
+        BiFunction<NonEmptyListType<T>,Function<? super T, ? extends R>,NonEmptyListType<R>> map = NonEmptyListInstances::map;
         return General.functor(map);
     }
     /**
@@ -78,7 +73,7 @@ public class NonEmptyLists {
      * @return A factory for NonEmptyLists
      */
     public static Unit<NonEmptyListType.µ> unit(){
-        return General.unit(NonEmptyLists::of);
+        return General.unit(NonEmptyListInstances::of);
     }
     /**
      * 
@@ -118,7 +113,7 @@ public class NonEmptyLists {
      * @return A zipper for NonEmptyLists
      */
     public static <T,R> Applicative<NonEmptyListType.µ> zippingApplicative(){
-        BiFunction<NonEmptyListType< Function<T, R>>,NonEmptyListType<T>,NonEmptyListType<R>> ap = NonEmptyLists::ap;
+        BiFunction<NonEmptyListType< Function<T, R>>,NonEmptyListType<T>,NonEmptyListType<R>> ap = NonEmptyListInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -149,7 +144,7 @@ public class NonEmptyLists {
      */
     public static <T,R> Monad<NonEmptyListType.µ> monad(){
   
-        BiFunction<Higher<NonEmptyListType.µ,T>,Function<? super T, ? extends Higher<NonEmptyListType.µ,R>>,Higher<NonEmptyListType.µ,R>> flatMap = NonEmptyLists::flatMap;
+        BiFunction<Higher<NonEmptyListType.µ,T>,Function<? super T, ? extends Higher<NonEmptyListType.µ,R>>,Higher<NonEmptyListType.µ,R>> flatMap = NonEmptyListInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
    

@@ -17,7 +17,7 @@ import com.aol.cyclops.hkt.instances.cyclops.Maybes;
 import com.aol.cyclops.javaslang.hkt.LazyType;
 import com.aol.cyclops.javaslang.hkt.OptionType;
 import com.aol.cyclops.javaslang.hkt.typeclasses.instances.LazyInstances;
-import com.aol.cyclops.javaslang.hkt.typeclasses.instances.Options;
+import com.aol.cyclops.javaslang.hkt.typeclasses.instances.OptionInstances;
 import com.aol.cyclops.util.function.Lambda;
 
 import javaslang.Lazy;

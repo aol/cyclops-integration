@@ -16,7 +16,7 @@ import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
 import com.aol.cyclops.hkt.instances.cyclops.Maybes;
 import com.aol.cyclops.javaslang.hkt.VectorType;
-import com.aol.cyclops.javaslang.hkt.typeclasses.instances.Vectors;
+import com.aol.cyclops.javaslang.hkt.typeclasses.instances.VectorInstances;
 import com.aol.cyclops.util.function.Lambda;
 
 import javaslang.collection.Vector;
@@ -26,7 +26,7 @@ public class VectorsTest {
     @Test
     public void unit(){
         
-        VectorType<String> list = Vectors.unit()
+        VectorType<String> list = VectorInstances.unit()
                                      .unit("hello")
                                      .convert(VectorType::narrowK);
         
@@ -35,16 +35,16 @@ public class VectorsTest {
     @Test
     public void functor(){
         
-        VectorType<Integer> list = Vectors.unit()
+        VectorType<Integer> list = VectorInstances.unit()
                                      .unit("hello")
-                                     .then(h->Vectors.functor().map((String v) ->v.length(), h))
+                                     .then(h->VectorInstances.functor().map((String v) ->v.length(), h))
                                      .convert(VectorType::narrowK);
         
         assertThat(list,equalTo(Vector.of("hello".length())));
     }
     @Test
     public void apSimple(){
-        Vectors.zippingApplicative()
+        VectorInstances.zippingApplicative()
             .ap(widen(Vector.of(l1(this::multiplyByTwo))),widen(Vector.of(1,2,3)));
     }
     private int multiplyByTwo(int x){
@@ -53,28 +53,28 @@ public class VectorsTest {
     @Test
     public void applicative(){
         
-        VectorType<Function<Integer,Integer>> listFn =Vectors.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(VectorType::narrowK);
+        VectorType<Function<Integer,Integer>> listFn =VectorInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(VectorType::narrowK);
         
-        VectorType<Integer> list = Vectors.unit()
+        VectorType<Integer> list = VectorInstances.unit()
                                      .unit("hello")
-                                     .then(h->Vectors.functor().map((String v) ->v.length(), h))
-                                     .then(h->Vectors.zippingApplicative().ap(listFn, h))
+                                     .then(h->VectorInstances.functor().map((String v) ->v.length(), h))
+                                     .then(h->VectorInstances.zippingApplicative().ap(listFn, h))
                                      .convert(VectorType::narrowK);
         
         assertThat(list,equalTo(Vector.of("hello".length()*2)));
     }
     @Test
     public void monadSimple(){
-       VectorType<Integer> list  = Vectors.monad()
+       VectorType<Integer> list  = VectorInstances.monad()
                                       .flatMap(i->widen(Vector.range(0,i)), widen(Vector.of(1,2,3)))
                                       .convert(VectorType::narrowK);
     }
     @Test
     public void monad(){
         
-        VectorType<Integer> list = Vectors.unit()
+        VectorType<Integer> list = VectorInstances.unit()
                                      .unit("hello")
-                                     .then(h->Vectors.monad().flatMap((String v) ->Vectors.unit().unit(v.length()), h))
+                                     .then(h->VectorInstances.monad().flatMap((String v) ->VectorInstances.unit().unit(v.length()), h))
                                      .convert(VectorType::narrowK);
         
         assertThat(list,equalTo(Vector.of("hello".length())));
@@ -82,9 +82,9 @@ public class VectorsTest {
     @Test
     public void monadZeroFilter(){
         
-        VectorType<String> list = Vectors.unit()
+        VectorType<String> list = VectorInstances.unit()
                                      .unit("hello")
-                                     .then(h->Vectors.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .then(h->VectorInstances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(VectorType::narrowK);
         
         assertThat(list,equalTo(Vector.of("hello")));
@@ -92,9 +92,9 @@ public class VectorsTest {
     @Test
     public void monadZeroFilterOut(){
         
-        VectorType<String> list = Vectors.unit()
+        VectorType<String> list = VectorInstances.unit()
                                      .unit("hello")
-                                     .then(h->Vectors.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .then(h->VectorInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(VectorType::narrowK);
         
         assertThat(list,equalTo(Vector.empty()));
@@ -102,7 +102,7 @@ public class VectorsTest {
     
     @Test
     public void monadPlus(){
-        VectorType<Integer> list = Vectors.<Integer>monadPlus()
+        VectorType<Integer> list = VectorInstances.<Integer>monadPlus()
                                       .plus(VectorType.widen(Vector.empty()), VectorType.widen(Vector.of(10)))
                                       .convert(VectorType::narrowK);
         assertThat(list,equalTo(Vector.of(10)));
@@ -111,21 +111,21 @@ public class VectorsTest {
     public void monadPlusNonEmpty(){
         
         Monoid<VectorType<Integer>> m = Monoid.of(VectorType.widen(Vector.empty()), (a,b)->a.isEmpty() ? b : a);
-        VectorType<Integer> list = Vectors.<Integer>monadPlus(m)
+        VectorType<Integer> list = VectorInstances.<Integer>monadPlus(m)
                                       .plus(VectorType.widen(Vector.of(5)), VectorType.widen(Vector.of(10)))
                                       .convert(VectorType::narrowK);
         assertThat(list,equalTo(Vector.of(5)));
     }
     @Test
     public void  foldLeft(){
-        int sum  = Vectors.foldable()
+        int sum  = VectorInstances.foldable()
                         .foldLeft(0, (a,b)->a+b, VectorType.widen(Vector.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
-        int sum  = Vectors.foldable()
+        int sum  = VectorInstances.foldable()
                         .foldRight(0, (a,b)->a+b, VectorType.widen(Vector.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
@@ -133,7 +133,7 @@ public class VectorsTest {
     
     @Test
     public void traverse(){
-       MaybeType<Higher<VectorType.µ, Integer>> res = Vectors.traverse()
+       MaybeType<Higher<VectorType.µ, Integer>> res = VectorInstances.traverse()
                                                          .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), VectorType.of(1,2,3))
                                                          .convert(MaybeType::narrowK);
             

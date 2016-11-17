@@ -28,11 +28,11 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Arrays {
+public class ArrayInstances {
 
     public static void main(String[] args){
         Array<Integer> small = Array.of(1,2,3);
-        ArrayType<Integer> list = Arrays.functor()
+        ArrayType<Integer> list = ArrayInstances.functor()
                                      .map(i->i*2, ArrayType.widen(small))
                                     // .then_(functor()::map, Lambda.<Integer,Integer>l1(i->i*3))
                                      .then(h-> functor().map((Integer i)->""+i,h))
@@ -40,7 +40,7 @@ public class Arrays {
                                      .convert(ArrayType::narrowK);
           ArrayType<Integer> string = list.convert(ArrayType::narrowK);
                     
-        System.out.println(Arrays.functor().map(i->i*2, ArrayType.widen(small)));
+        System.out.println(ArrayInstances.functor().map(i->i*2, ArrayType.widen(small)));
     }
     /**
      * 
@@ -71,7 +71,7 @@ public class Arrays {
      * @return A functor for Arrays
      */
     public static <T,R>Functor<ArrayType.µ> functor(){
-        BiFunction<ArrayType<T>,Function<? super T, ? extends R>,ArrayType<R>> map = Arrays::map;
+        BiFunction<ArrayType<T>,Function<? super T, ? extends R>,ArrayType<R>> map = ArrayInstances::map;
         return General.functor(map);
     }
     /**
@@ -130,7 +130,7 @@ public class Arrays {
      * @return A zipper for Arrays
      */
     public static <T,R> Applicative<ArrayType.µ> zippingApplicative(){
-        BiFunction<ArrayType< Function<T, R>>,ArrayType<T>,ArrayType<R>> ap = Arrays::ap;
+        BiFunction<ArrayType< Function<T, R>>,ArrayType<T>,ArrayType<R>> ap = ArrayInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -161,7 +161,7 @@ public class Arrays {
      */
     public static <T,R> Monad<ArrayType.µ> monad(){
   
-        BiFunction<Higher<ArrayType.µ,T>,Function<? super T, ? extends Higher<ArrayType.µ,R>>,Higher<ArrayType.µ,R>> flatMap = Arrays::flatMap;
+        BiFunction<Higher<ArrayType.µ,T>,Function<? super T, ? extends Higher<ArrayType.µ,R>>,Higher<ArrayType.µ,R>> flatMap = ArrayInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
@@ -198,7 +198,7 @@ public class Arrays {
      * @return Type class for combining Arrays by concatenation
      */
     public static <T> MonadPlus<ArrayType.µ,T> monadPlus(){
-        Monoid<ArrayType<T>> m = Monoid.of(ArrayType.widen(Array.empty()), Arrays::concat);
+        Monoid<ArrayType<T>> m = Monoid.of(ArrayType.widen(Array.empty()), ArrayInstances::concat);
         Monoid<Higher<ArrayType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

@@ -8,7 +8,6 @@ import com.aol.cyclops.Monoids;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.instances.General;
-import com.aol.cyclops.hkt.jdk.CompletableFutureType;
 import com.aol.cyclops.hkt.typeclasses.Unit;
 import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
@@ -30,7 +29,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Futures {
+public class FutureInstances {
 
     
     /**
@@ -62,7 +61,7 @@ public class Futures {
      * @return A functor for Futures
      */
     public static <T,R>Functor<FutureType.µ> functor(){
-        BiFunction<FutureType<T>,Function<? super T, ? extends R>,FutureType<R>> map = Futures::map;
+        BiFunction<FutureType<T>,Function<? super T, ? extends R>,FutureType<R>> map = FutureInstances::map;
         return General.functor(map);
     }
     /**
@@ -81,7 +80,7 @@ public class Futures {
      * @return A factory for Futures
      */
     public static Unit<FutureType.µ> unit(){
-        return General.unit(Futures::of);
+        return General.unit(FutureInstances::of);
     }
     /**
      * 
@@ -120,7 +119,7 @@ public class Futures {
      * @return A zipper for Futures
      */
     public static <T,R> Applicative<FutureType.µ> applicative(){
-        BiFunction<FutureType< Function<T, R>>,FutureType<T>,FutureType<R>> ap = Futures::ap;
+        BiFunction<FutureType< Function<T, R>>,FutureType<T>,FutureType<R>> ap = FutureInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -151,7 +150,7 @@ public class Futures {
      */
     public static <T,R> Monad<FutureType.µ> monad(){
   
-        BiFunction<Higher<FutureType.µ,T>,Function<? super T, ? extends Higher<FutureType.µ,R>>,Higher<FutureType.µ,R>> flatMap = Futures::flatMap;
+        BiFunction<Higher<FutureType.µ,T>,Function<? super T, ? extends Higher<FutureType.µ,R>>,Higher<FutureType.µ,R>> flatMap = FutureInstances::flatMap;
         return General.monad(applicative(), flatMap);
     }
     /**
@@ -221,7 +220,7 @@ public class Futures {
      */
     public static <C2,T> Traverse<FutureType.µ> traverse(){
       
-        return General.traverseByTraverse(applicative(), Futures::traverseA);
+        return General.traverseByTraverse(applicative(), FutureInstances::traverseA);
     }
     
     /**
