@@ -28,4 +28,20 @@ public class Either3Test {
                .flatMap(i->Either3.right(i*4))
                .get(),equalTo(80));
     }
+    @Test
+    public void odd() {
+        System.out.println(even(Either3.right(200000)).get());
+    }
+
+    public Either3<String,String,String> odd(Either3<String,String,Integer> n) {
+
+        return n.flatMap(x -> even(Either3.right(x - 1)));
+    }
+
+    public Either3<String,String,String> even(Either3<String,String,Integer> n) {
+        return n.flatMap(x -> {
+            return x <= 0 ? Either3.right("done") : odd(Either3.right(x - 1));
+        });
+    }
+  
 }

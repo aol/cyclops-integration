@@ -18,6 +18,7 @@ import org.reactivestreams.Subscriber;
 
 import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.Matchable.CheckValue1;
+import com.aol.cyclops.control.Maybe.Lazy;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
@@ -46,7 +47,7 @@ import lombok.EqualsAndHashCode;
  * @param <RT> Right type
  */
 public interface Either3<LT, M, RT>
-        extends Functor<RT>, BiFunctor<M, RT>, To<Either3<LT, M, RT>>, Supplier<RT>, ApplicativeFunctor<RT> {
+                extends Functor<RT>, BiFunctor<M, RT>, To<Either3<LT, M, RT>>, Supplier<RT>, ApplicativeFunctor<RT> {
 
     public static <LT, B, RT> Either3<LT, B, RT> rightEval(final Eval<RT> right) {
         return new Right<>(
@@ -60,7 +61,7 @@ public interface Either3<LT, M, RT>
 
     public static <LT, B, RT> Either3<LT, B, RT> right(final RT right) {
         return new Right<>(
-                           Eval.now(right));
+                           Eval.later(()->right));
     }
 
     public static <LT, B, RT> Either3<LT, B, RT> left(final LT left) {
@@ -83,8 +84,8 @@ public interface Either3<LT, M, RT>
 
     Maybe<RT> filter(Predicate<? super RT> test);
 
-    <LT1, M1, RT1> Either3<LT1, M1, RT1> flatMap(
-            Function<? super RT, ? extends Either3<? extends LT1, ? extends M1, ? extends RT1>> mapper);
+    < RT1> Either3<LT, M, RT1> flatMap(
+            Function<? super RT, ? extends Either3<? extends LT, ? extends M, ? extends RT1>> mapper);
 
     /**
      * @return Swap the middle and the right types
@@ -357,10 +358,11 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <LT1, M1, RT1> Either3<LT1, M1, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends LT1, ? extends M1, ? extends RT1>> mapper) {
+        public <RT1> Either3<ST, M, RT1> flatMap(
+                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
 
             return lazy(Eval.later(() -> resolve().flatMap(mapper)));
+      
 
         }
 
@@ -374,28 +376,34 @@ public interface Either3<LT, M, RT>
 
         @Override
         public PT get() {
-            return lazy.get()
-                       .get();
+            return trampoline().get();
         }
 
+        private Either3<ST,M,PT> trampoline(){
+            Either3<ST,M,PT> maybe = lazy.get();
+            while (maybe instanceof Lazy) {
+                maybe = ((Lazy<ST,M,PT>) maybe).lazy.get();
+            }
+            return maybe;
+        }
         @Override
         public ReactiveSeq<PT> stream() {
 
-            return lazy.get()
+            return trampoline()
                        .stream();
         }
 
         @Override
         public Iterator<PT> iterator() {
 
-            return lazy.get()
+            return trampoline()
                        .iterator();
         }
 
         @Override
         public <R> R visit(final Function<? super PT, ? extends R> present, final Supplier<? extends R> absent) {
 
-            return lazy.get()
+            return trampoline()
                        .visit(present, absent);
         }
 
@@ -408,7 +416,7 @@ public interface Either3<LT, M, RT>
 
         @Override
         public boolean test(final PT t) {
-            return lazy.get()
+            return trampoline()
                        .test(t);
         }
 
@@ -416,7 +424,7 @@ public interface Either3<LT, M, RT>
         public <R> R visit(final Function<? super ST, ? extends R> secondary,
                 final Function<? super M, ? extends R> mid, final Function<? super PT, ? extends R> primary) {
 
-            return lazy.get()
+            return trampoline()
                        .visit(secondary, mid, primary);
         }
 
@@ -432,19 +440,19 @@ public interface Either3<LT, M, RT>
 
         @Override
         public boolean isRight() {
-            return lazy.get()
+            return trampoline()
                        .isRight();
         }
 
         @Override
         public boolean isLeft() {
-            return lazy.get()
+            return trampoline()
                        .isLeft();
         }
 
         @Override
         public boolean isMiddle() {
-            return lazy.get()
+            return trampoline()
                        .isMiddle();
         }
 
@@ -496,11 +504,12 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <LT1, M1, RT1> Either3<LT1, M1, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends LT1, ? extends M1, ? extends RT1>> mapper) {
-            final Eval<Either3<LT1, M1, RT1>> e3 = (Eval<Either3<LT1, M1, RT1>>) value.map(mapper);
+        public <RT1> Either3<ST, M, RT1> flatMap(
+                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
+            final Eval<Either3<ST, M, RT1>> e3 = (Eval<Either3<ST, M, RT1>>) value.map(mapper);
             return new Lazy<>(
                               e3);
+          
 
         }
 
@@ -632,8 +641,8 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <LT1, M1, RT1> Either3<LT1, M1, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends LT1, ? extends M1, ? extends RT1>> mapper) {
+        public <RT1> Either3<ST, M, RT1> flatMap(
+                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
 
             return (Either3) this;
 
@@ -766,8 +775,8 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <LT1, M1, RT1> Either3<LT1, M1, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends LT1, ? extends M1, ? extends RT1>> mapper) {
+        public <RT1> Either3<ST, M, RT1> flatMap(
+                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
 
             return (Either3) this;
 

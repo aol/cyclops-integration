@@ -27,4 +27,19 @@ public class EitherTest {
                .flatMap(i->Either.right(i*4))
                .get(),equalTo(80));
     }
+    @Test
+    public void odd() {
+        System.out.println(even(Either.right(200000)).get());
+    }
+
+    public Either<String,String> odd(Either<String,Integer> n) {
+
+        return n.flatMap(x -> even(Either.right(x - 1)));
+    }
+
+    public Either<String,String> even(Either<String,Integer> n) {
+        return n.flatMap(x -> {
+            return x <= 0 ? Either.right("done") : odd(Either.right(x - 1));
+        });
+    }
 }
