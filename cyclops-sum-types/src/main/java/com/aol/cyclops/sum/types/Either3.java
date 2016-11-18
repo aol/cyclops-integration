@@ -18,7 +18,6 @@ import org.reactivestreams.Subscriber;
 
 import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.Matchable.CheckValue1;
-import com.aol.cyclops.control.Maybe.Lazy;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
