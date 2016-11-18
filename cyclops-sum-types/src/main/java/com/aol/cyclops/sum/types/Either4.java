@@ -33,7 +33,11 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 /**
- * A right biased Lazy Either3 type. map / flatMap operators are tail-call optimized
+ * A right biased Lazy Either4 type. map / flatMap operators are tail-call optimized
+ * 
+ * Note on naming convention. Left / Right / Middle becomes unweildy once we have four or more types.
+ * Right will continue to be used for the primary active type in the Either, but Left becomes first, middle second
+ * and so on.
  * 
  * Can be one of 3 types
  * 
@@ -41,121 +45,137 @@ import lombok.EqualsAndHashCode;
  * 
  * @author johnmcclean
  *
- * @param <LT> Left type
- * @param <M> Middle type
+ * @param <FIRST> First type (Left type)
+ * @param <SECOND> Second type
+ * @param <THIRD> Third Type
  * @param <RT> Right type (operations are performed on this type if present)
  */
-public interface Either3<LT, M, RT>
-                extends Functor<RT>, BiFunctor<M, RT>, To<Either3<LT, M, RT>>, Supplier<RT>, ApplicativeFunctor<RT> {
+public interface Either4<FIRST, SECOND,THIRD, RT> extends Functor<RT>, 
+                                                            BiFunctor<THIRD, RT>, 
+                                                            To<Either4<FIRST, SECOND,THIRD, RT>>, 
+                                                            Supplier<RT>, 
+                                                            ApplicativeFunctor<RT> {
 
-    static <X, LT extends X, M extends X, RT extends X,R> R visitAny(Either3<LT,M,RT> either, Function<? super X, ? extends R> fn){
-        return either.visit(fn, fn,fn);
-    }
     /**
-     * Construct a Either3#Right from an Eval
+     * Construct a Either4#Right from an Eval
      * 
-     * @param right Eval to construct Either3#Right from
-     * @return Either3 right instance
+     * @param right Eval to construct Either4#Right from
+     * @return Either4 right instance
      */
-    public static <LT, B, RT> Either3<LT, B, RT> rightEval(final Eval<RT> right) {
+    public static <LT, M1,B, RT> Either4<LT, M1,B, RT> rightEval(final Eval<RT> right) {
         return new Right<>(
                            right);
     }
 
     /**
-     * Construct a Either3#Left from an Eval
+     * Construct a Either4#First from an Eval
      * 
-     * @param left Eval to construct Either3#Left from
-     * @return Either3 left instance
+     * @param left Eval to construct Either4#First from
+     * @return Either4 first instance
      */
-    public static <LT, B, RT> Either3<LT, B, RT> leftEval(final Eval<LT> left) {
-        return new Left<>(
+    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> firstEval(final Eval<LT> left) {
+        return new First<>(
                           left);
     }
 
     /**
-     * Construct a Either3#Right
+     * Construct a Either4#Right
      * 
      * @param right Value to store
-     * @return Either3 Right instance
+     * @return Either4 Right instance
      */
-    public static <LT, B, RT> Either3<LT, B, RT> right(final RT right) {
+    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> right(final RT right) {
         return new Right<>(
                            Eval.later(()->right));
     }
 
     /**
-     * Construct a Either3#Left
+     * Construct a Either4#First
      * 
      * @param left Value to store
-     * @return Left instance
+     * @return First instance
      */
-    public static <LT, B, RT> Either3<LT, B, RT> left(final LT left) {
-        return new Left<>(
+    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> first(final LT left) {
+        return new First<>(
                           Eval.now(left));
     }
 
     /**
-     * Construct a Either3#Middle
+     * Construct a Either4#Second
      * 
      * @param middle Value to store
-     * @return Middle instance
+     * @return Second instance
      */
-    public static <LT, B, RT> Either3<LT, B, RT> middle(final B middle) {
-        return new Middle<>(
+    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> second(final M1 middle) {
+        return new Second<>(
+                            Eval.now(middle));
+    }
+    /**
+     * Construct a Either4#Third
+     * 
+     * @param middle Value to store
+     * @return Third instance
+     */
+    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> third(final B middle) {
+        return new Third<>(
                             Eval.now(middle));
     }
 
     /**
-     * Construct a Either3#Middle from an Eval
+     * Construct a Either4#Middle from an Eval
      * 
-     * @param middle Eval to construct Either3#middle from
-     * @return Either3 middle instance
+     * @param middle Eval to construct Either4#middle from
+     * @return Either4 middle instance
      */
-    public static <LT, B, RT> Either3<LT, B, RT> middleEval(final Eval<B> middle) {
-        return new Middle<>(
+    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> middleEval(final Eval<B> middle) {
+        return new Second<>(
                             middle);
     }
 
     /**
-     * Visit the types in this Either3, only one user supplied function is executed depending on the type
+     * Visit the types in this Either4, only one user supplied function is executed depending on the type
      * 
-     * @param left Function to execute if this Either3 is a Left instance
-     * @param mid Function to execute if this Either3 is a middle instance
-     * @param right Function to execute if this Either3 is a right instance
+     * @param FIRST Function to execute if this Either4 is a Left instance
+     * @param SECOND Function to execute if this Either4 is a middle1 instance
+     * @param THIRD Function to execute if this Either4 is a middle2 instance
+     * @param right Function to execute if this Either4 is a right instance
      * @return Result of executed function
      */
-    <R> R visit(final Function<? super LT, ? extends R> left, final Function<? super M, ? extends R> mid,
+    <R> R visit(final Function<? super FIRST, ? extends R> left, final Function<? super SECOND, ? extends R> mid1
+            ,final Function<? super THIRD, ? extends R> mid2,
             final Function<? super RT, ? extends R> right);
 
     /**
-     * Filter this Either3 resulting in a Maybe#none if it is not a Right instance or if the predicate does not
+     * Filter this Either4 resulting in a Maybe#none if it is not a Right instance or if the predicate does not
      * hold. Otherwise results in a Maybe containing the current value
      * 
-     * @param test Predicate to apply to filter this Either3
+     * @param test Predicate to apply to filter this Either4
      * @return Maybe containing the current value if this is a Right instance and the predicate holds, otherwise Maybe#none
      */
     Maybe<RT> filter(Predicate<? super RT> test);
 
     /**
-     * Flattening transformation on this Either3. Contains an internal trampoline so will convert tail-recursive calls
+     * Flattening transformation on this Either4. Contains an internal trampoline so will convert tail-recursive calls
      * to iteration.
      * 
      * @param mapper Mapping function
-     * @return Mapped Either3
+     * @return Mapped Either4
      */
-    < RT1> Either3<LT, M, RT1> flatMap(
-            Function<? super RT, ? extends Either3<? extends LT, ? extends M, ? extends RT1>> mapper);
-
+    < RT1> Either4<FIRST, SECOND,THIRD, RT1> flatMap(
+            Function<? super RT, ? extends Either4<? extends FIRST, ? extends SECOND, ? extends THIRD, ? extends RT1>> mapper);
     /**
-     * @return Swap the middle and the right types
+     * @return Swap the third and the right types
      */
-    Either3<LT, RT, M> swap2();
+    Either4<FIRST,SECOND, RT, THIRD> swap3();
+    /**
+     * @return Swap the second and the right types
+     */
+    Either4<FIRST, RT,THIRD, SECOND> swap2();
 
     /**
      * @return Swap the right and left types
      */
-    Either3<RT, M, LT> swap1();
+    Either4<RT, SECOND,THIRD, FIRST> swap1();
 
     /**
      * @return True if this either contains the right type
@@ -179,7 +199,8 @@ public interface Either3<LT, M, RT>
      * java.util.function.Function)
      */
     @Override
-    <R1, R2> Either3<LT, R1, R2> bimap(Function<? super M, ? extends R1> fn1, Function<? super RT, ? extends R2> fn2);
+    <R1, R2> Either4<FIRST, SECOND, R1, R2> bimap(Function<? super THIRD, ? extends R1> fn1, 
+                                                    Function<? super RT, ? extends R2> fn2);
 
     /*
      * (non-Javadoc)
@@ -187,7 +208,7 @@ public interface Either3<LT, M, RT>
      * @see com.aol.cyclops.types.Functor#map(java.util.function.Function)
      */
     @Override
-    <R> Either3<LT, M, R> map(Function<? super RT, ? extends R> fn);
+    <R> Either4<FIRST,SECOND,THIRD, R> map(Function<? super RT, ? extends R> fn);
 
     /*
      * (non-Javadoc)
@@ -196,10 +217,10 @@ public interface Either3<LT, M, RT>
      * java.util.function.BiFunction)
      */
     @Override
-    default <T2, R> Either3<LT, M, R> combine(final Value<? extends T2> app,
+    default <T2, R> Either4<FIRST, SECOND, THIRD, R> combine(final Value<? extends T2> app,
             final BiFunction<? super RT, ? super T2, ? extends R> fn) {
 
-        return (Either3<LT, M, R>) ApplicativeFunctor.super.combine(app, fn);
+        return (Either4<FIRST, SECOND, THIRD, R>) ApplicativeFunctor.super.combine(app, fn);
     }
 
     /*
@@ -210,9 +231,9 @@ public interface Either3<LT, M, RT>
      * com.aol.cyclops.types.Combiner)
      */
     @Override
-    default Either3<LT, M, RT> combine(final BinaryOperator<Combiner<RT>> combiner, final Combiner<RT> app) {
+    default Either4<FIRST, SECOND, THIRD, RT> combine(final BinaryOperator<Combiner<RT>> combiner, final Combiner<RT> app) {
 
-        return (Either3<LT, M, RT>) ApplicativeFunctor.super.combine(combiner, app);
+        return (Either4<FIRST, SECOND, THIRD, RT>) ApplicativeFunctor.super.combine(combiner, app);
     }
 
     /*
@@ -222,9 +243,9 @@ public interface Either3<LT, M, RT>
      * java.util.function.BiFunction)
      */
     @Override
-    default <U, R> Either3<LT, M, R> zip(final Seq<? extends U> other,
+    default <U, R> Either4<FIRST, SECOND, THIRD, R> zip(final Seq<? extends U> other,
             final BiFunction<? super RT, ? super U, ? extends R> zipper) {
-        return (Either3<LT, M, R>) ApplicativeFunctor.super.zip(other, zipper);
+        return (Either4<FIRST, SECOND, THIRD, R>) ApplicativeFunctor.super.zip(other, zipper);
     }
 
     /*
@@ -234,10 +255,10 @@ public interface Either3<LT, M, RT>
      * java.util.function.BiFunction)
      */
     @Override
-    default <U, R> Either3<LT, M, R> zip(final Stream<? extends U> other,
+    default <U, R> Either4<FIRST, SECOND, THIRD, R> zip(final Stream<? extends U> other,
             final BiFunction<? super RT, ? super U, ? extends R> zipper) {
 
-        return (Either3<LT, M, R>) ApplicativeFunctor.super.zip(other, zipper);
+        return (Either4<FIRST, SECOND, THIRD, R>) ApplicativeFunctor.super.zip(other, zipper);
     }
 
     /*
@@ -246,9 +267,9 @@ public interface Either3<LT, M, RT>
      * @see com.aol.cyclops.types.Zippable#zip(java.util.stream.Stream)
      */
     @Override
-    default <U> Either3<LT, M, Tuple2<RT, U>> zip(final Stream<? extends U> other) {
+    default <U> Either4<FIRST, SECOND, THIRD, Tuple2<RT, U>> zip(final Stream<? extends U> other) {
 
-        return (Either3) ApplicativeFunctor.super.zip(other);
+        return (Either4) ApplicativeFunctor.super.zip(other);
     }
 
     /*
@@ -257,9 +278,9 @@ public interface Either3<LT, M, RT>
      * @see com.aol.cyclops.types.Zippable#zip(org.jooq.lambda.Seq)
      */
     @Override
-    default <U> Either3<LT, M, Tuple2<RT, U>> zip(final Seq<? extends U> other) {
+    default <U> Either4<FIRST, SECOND, THIRD, Tuple2<RT, U>> zip(final Seq<? extends U> other) {
 
-        return (Either3) ApplicativeFunctor.super.zip(other);
+        return (Either4) ApplicativeFunctor.super.zip(other);
     }
 
     /*
@@ -268,9 +289,9 @@ public interface Either3<LT, M, RT>
      * @see com.aol.cyclops.types.Zippable#zip(java.lang.Iterable)
      */
     @Override
-    default <U> Either3<LT, M, Tuple2<RT, U>> zip(final Iterable<? extends U> other) {
+    default <U> Either4<FIRST, SECOND, THIRD, Tuple2<RT, U>> zip(final Iterable<? extends U> other) {
 
-        return (Either3) ApplicativeFunctor.super.zip(other);
+        return (Either4) ApplicativeFunctor.super.zip(other);
     }
 
     /*
@@ -279,7 +300,7 @@ public interface Either3<LT, M, RT>
      * @see com.aol.cyclops.types.Unit#unit(java.lang.Object)
      */
     @Override
-    <T> Either3<LT, M, T> unit(T unit);
+    <T> Either4<FIRST, SECOND,THIRD, T> unit(T unit);
 
     /*
      * (non-Javadoc)
@@ -288,10 +309,10 @@ public interface Either3<LT, M, RT>
      * Iterable, java.util.function.BiFunction)
      */
     @Override
-    default <T2, R> Either3<LT, M, R> zip(final Iterable<? extends T2> app,
+    default <T2, R> Either4<FIRST, SECOND, THIRD, R> zip(final Iterable<? extends T2> app,
             final BiFunction<? super RT, ? super T2, ? extends R> fn) {
 
-        return (Either3<LT, M, R>) ApplicativeFunctor.super.zip(app, fn);
+        return (Either4<FIRST, SECOND, THIRD, R>) ApplicativeFunctor.super.zip(app, fn);
     }
 
     /*
@@ -301,10 +322,10 @@ public interface Either3<LT, M, RT>
      * function.BiFunction, org.reactivestreams.Publisher)
      */
     @Override
-    default <T2, R> Either3<LT, M, R> zip(final BiFunction<? super RT, ? super T2, ? extends R> fn,
+    default <T2, R> Either4<FIRST, SECOND,THIRD, R> zip(final BiFunction<? super RT, ? super T2, ? extends R> fn,
             final Publisher<? extends T2> app) {
 
-        return (Either3<LT, M, R>) ApplicativeFunctor.super.zip(fn, app);
+        return (Either4<FIRST, SECOND, THIRD, R>) ApplicativeFunctor.super.zip(fn, app);
     }
 
     /*
@@ -314,9 +335,9 @@ public interface Either3<LT, M, RT>
      * java.util.function.Consumer)
      */
     @Override
-    default Either3<LT, M, RT> bipeek(final Consumer<? super M> c1, final Consumer<? super RT> c2) {
+    default Either4<FIRST, SECOND, THIRD, RT> bipeek(final Consumer<? super THIRD> c1, final Consumer<? super RT> c2) {
 
-        return (Either3<LT, M, RT>) BiFunctor.super.bipeek(c1, c2);
+        return (Either4<FIRST, SECOND, THIRD, RT>) BiFunctor.super.bipeek(c1, c2);
     }
 
     /*
@@ -326,9 +347,9 @@ public interface Either3<LT, M, RT>
      * java.lang.Class)
      */
     @Override
-    default <U1, U2> Either3<LT, U1, U2> bicast(final Class<U1> type1, final Class<U2> type2) {
+    default <U1, U2> Either4<FIRST, SECOND,U1, U2> bicast(final Class<U1> type1, final Class<U2> type2) {
 
-        return (Either3<LT, U1, U2>) BiFunctor.super.bicast(type1, type2);
+        return (Either4<FIRST, SECOND,U1, U2>) BiFunctor.super.bicast(type1, type2);
     }
 
     /*
@@ -339,11 +360,11 @@ public interface Either3<LT, M, RT>
      * java.util.function.Function)
      */
     @Override
-    default <R1, R2> Either3<LT, R1, R2> bitrampoline(
-            final Function<? super M, ? extends Trampoline<? extends R1>> mapper1,
+    default <R1, R2> Either4<FIRST, SECOND, R1, R2> bitrampoline(
+            final Function<? super THIRD, ? extends Trampoline<? extends R1>> mapper1,
             final Function<? super RT, ? extends Trampoline<? extends R2>> mapper2) {
 
-        return (Either3<LT, R1, R2>) BiFunctor.super.bitrampoline(mapper1, mapper2);
+        return (Either4<FIRST,SECOND, R1, R2>) BiFunctor.super.bitrampoline(mapper1, mapper2);
     }
 
     /*
@@ -352,9 +373,9 @@ public interface Either3<LT, M, RT>
      * @see com.aol.cyclops.types.Functor#cast(java.lang.Class)
      */
     @Override
-    default <U> Either3<LT, M, U> cast(final Class<? extends U> type) {
+    default <U> Either4<FIRST, SECOND, THIRD, U> cast(final Class<? extends U> type) {
 
-        return (Either3<LT, M, U>) ApplicativeFunctor.super.cast(type);
+        return (Either4<FIRST, SECOND, THIRD, U>) ApplicativeFunctor.super.cast(type);
     }
 
     /*
@@ -363,9 +384,9 @@ public interface Either3<LT, M, RT>
      * @see com.aol.cyclops.types.Functor#peek(java.util.function.Consumer)
      */
     @Override
-    default Either3<LT, M, RT> peek(final Consumer<? super RT> c) {
+    default Either4<FIRST, SECOND, THIRD, RT> peek(final Consumer<? super RT> c) {
 
-        return (Either3<LT, M, RT>) ApplicativeFunctor.super.peek(c);
+        return (Either4<FIRST, SECOND, THIRD, RT>) ApplicativeFunctor.super.peek(c);
     }
 
     /*
@@ -375,9 +396,9 @@ public interface Either3<LT, M, RT>
      * com.aol.cyclops.types.Functor#trampoline(java.util.function.Function)
      */
     @Override
-    default <R> Either3<LT, M, R> trampoline(final Function<? super RT, ? extends Trampoline<? extends R>> mapper) {
+    default <R> Either4<FIRST, SECOND, THIRD, R> trampoline(final Function<? super RT, ? extends Trampoline<? extends R>> mapper) {
 
-        return (Either3<LT, M, R>) ApplicativeFunctor.super.trampoline(mapper);
+        return (Either4<FIRST, SECOND, THIRD, R>) ApplicativeFunctor.super.trampoline(mapper);
     }
 
     /*
@@ -388,41 +409,36 @@ public interface Either3<LT, M, RT>
      * java.util.function.Supplier)
      */
     @Override
-    default <R> Either3<LT, M, R> patternMatch(final Function<CheckValue1<RT, R>, CheckValue1<RT, R>> case1,
+    default <R> Either4<FIRST, SECOND, THIRD, R> patternMatch(final Function<CheckValue1<RT, R>, CheckValue1<RT, R>> case1,
             final Supplier<? extends R> otherwise) {
 
-        return (Either3<LT, M, R>) ApplicativeFunctor.super.patternMatch(case1, otherwise);
+        return (Either4<FIRST, SECOND, THIRD, R>) ApplicativeFunctor.super.patternMatch(case1, otherwise);
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    final @EqualsAndHashCode(of = { "value" }) static class Lazy<ST, M, PT> implements Either3<ST, M, PT> {
+    final @EqualsAndHashCode(of = { "value" }) 
+    static class Lazy<ST, M,M2, PT> implements Either4<ST, M,M2, PT> {
 
-        private final Eval<Either3<ST, M, PT>> lazy;
+        private final Eval<Either4<ST, M,M2, PT>> lazy;
 
-        public Either3<ST, M, PT> resolve() {
+        public Either4<ST, M,M2, PT> resolve() {
             return lazy.get()
-                       .visit(Either3::left, Either3::middle, Either3::right);
+                       .visit(Either4::first, Either4::second,Either4::third, Either4::right);
         }
 
-        private static <ST, M, PT> Lazy<ST, M, PT> lazy(final Eval<Either3<ST, M, PT>> lazy) {
-            return new Lazy<>(
-                              lazy);
+        private static <ST, M,M2, PT> Lazy<ST, M,M2, PT> lazy(final Eval<Either4<ST, M,M2, PT>> lazy) {
+            return new Lazy<>(lazy);
         }
 
         @Override
-        public <R> Either3<ST, M, R> map(final Function<? super PT, ? extends R> mapper) {
-
+        public <R> Either4<ST, M,M2, R> map(final Function<? super PT, ? extends R> mapper) {
             return lazy(Eval.later(() -> resolve().map(mapper)));
-
         }
 
         @Override
-        public <RT1> Either3<ST, M, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
-
+        public <RT1> Either4<ST, M,M2, RT1> flatMap(
+                final Function<? super PT, ? extends Either4<? extends ST, ? extends M, ? extends M2,? extends RT1>> mapper) {
             return lazy(Eval.later(() -> resolve().flatMap(mapper)));
-      
-
         }
 
         @Override
@@ -438,10 +454,10 @@ public interface Either3<LT, M, RT>
             return trampoline().get();
         }
 
-        private Either3<ST,M,PT> trampoline(){
-            Either3<ST,M,PT> maybe = lazy.get();
+        private Either4<ST,M,M2,PT> trampoline(){
+            Either4<ST,M,M2,PT> maybe = lazy.get();
             while (maybe instanceof Lazy) {
-                maybe = ((Lazy<ST,M,PT>) maybe).lazy.get();
+                maybe = ((Lazy<ST,M,M2,PT>) maybe).lazy.get();
             }
             return maybe;
         }
@@ -480,20 +496,25 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <R> R visit(final Function<? super ST, ? extends R> secondary,
-                final Function<? super M, ? extends R> mid, final Function<? super PT, ? extends R> primary) {
+        public <R> R visit(final Function<? super ST, ? extends R> first,
+                final Function<? super M, ? extends R> second,
+                final Function<? super M2, ? extends R> third,
+                final Function<? super PT, ? extends R> primary) {
 
             return trampoline()
-                       .visit(secondary, mid, primary);
+                       .visit(first, second,third, primary);
         }
-
         @Override
-        public Either3<ST, PT, M> swap2() {
+        public Either4<ST, M, PT, M2> swap3() {
+            return lazy(Eval.later(() -> resolve().swap3()));
+        }
+        @Override
+        public Either4<ST, PT, M2, M> swap2() {
             return lazy(Eval.later(() -> resolve().swap2()));
         }
 
         @Override
-        public Either3<PT, M, ST> swap1() {
+        public Either4<PT, M,M2, ST> swap1() {
             return lazy(Eval.later(() -> resolve().swap1()));
         }
 
@@ -516,32 +537,32 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <R1, R2> Either3<ST, R1, R2> bimap(final Function<? super M, ? extends R1> fn1,
+        public <R1, R2> Either4<ST, M,R1, R2> bimap(final Function<? super M2, ? extends R1> fn1,
                 final Function<? super PT, ? extends R2> fn2) {
             return lazy(Eval.later(() -> resolve().bimap(fn1, fn2)));
         }
 
         @Override
-        public <T> Either3<ST, M, T> unit(final T unit) {
+        public <T> Either4<ST, M, M2,T> unit(final T unit) {
 
-            return Either3.right(unit);
+            return Either4.right(unit);
         }
 
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(of = { "value" })
-    static class Right<ST, M, PT> implements Either3<ST, M, PT> {
+    static class Right<ST, M,M2, PT> implements Either4<ST, M,M2, PT> {
         private final Eval<PT> value;
 
         @Override
-        public <R> Either3<ST, M, R> map(final Function<? super PT, ? extends R> fn) {
-            return new Right<ST, M, R>(
+        public <R> Either4<ST, M, M2, R> map(final Function<? super PT, ? extends R> fn) {
+            return new Right<ST, M, M2, R>(
                                        value.map(fn));
         }
 
         @Override
-        public Either3<ST, M, PT> peek(final Consumer<? super PT> action) {
+        public Either4<ST, M,M2, PT> peek(final Consumer<? super PT> action) {
             return map(i -> {
                 action.accept(i);
                 return i;
@@ -563,9 +584,9 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <RT1> Either3<ST, M, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
-            final Eval<Either3<ST, M, RT1>> e3 = (Eval<Either3<ST, M, RT1>>) value.map(mapper);
+        public <RT1> Either4<ST, M, M2, RT1> flatMap(
+                final Function<? super PT, ? extends Either4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> mapper) {
+            final Eval<Either4<ST, M, M2, RT1>> e3 = (Eval<Either4<ST, M, M2, RT1>>) value.map(mapper);
             return new Lazy<>(
                               e3);
           
@@ -589,12 +610,13 @@ public interface Either3<LT, M, RT>
 
         @Override
         public String mkString() {
-            return "Either3.right[" + value + "]";
+            return "Either4.right[" + value + "]";
         }
 
         @Override
         public <R> R visit(final Function<? super ST, ? extends R> secondary,
-                final Function<? super M, ? extends R> mid, final Function<? super PT, ? extends R> primary) {
+                final Function<? super M, ? extends R> mid,  
+                final Function<? super M2, ? extends R> mid2,final Function<? super PT, ? extends R> primary) {
             return primary.apply(value.get());
         }
 
@@ -605,7 +627,7 @@ public interface Either3<LT, M, RT>
          * cyclops.types.Value, java.util.function.BiFunction)
          */
         @Override
-        public <T2, R> Either3<ST, M, R> combine(final Value<? extends T2> app,
+        public <T2, R> Either4<ST, M,M2, R> combine(final Value<? extends T2> app,
                 final BiFunction<? super PT, ? super T2, ? extends R> fn) {
             return new Right<>(
                                value.combine(app, fn));
@@ -613,9 +635,9 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <R1, R2> Either3<ST, R1, R2> bimap(final Function<? super M, ? extends R1> fn1,
+        public <R1, R2> Either4<ST,M, R1, R2> bimap(final Function<? super M2, ? extends R1> fn1,
                 final Function<? super PT, ? extends R2> fn2) {
-            return (Either3<ST, R1, R2>) this.map(fn2);
+            return (Either4<ST, M,R1, R2>) this.map(fn2);
         }
 
         @Override
@@ -645,20 +667,20 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <T> Either3<ST, M, T> unit(final T unit) {
-            return Either3.right(unit);
+        public <T> Either4<ST, M, M2, T> unit(final T unit) {
+            return Either4.right(unit);
         }
 
         @Override
-        public Either3<ST, PT, M> swap2() {
+        public Either4<ST, PT, M2, M> swap2() {
 
-            return null;
+            return Either4.<ST, M2, PT, M>secondEval(value);
         }
 
         @Override
-        public Either3<PT, M, ST> swap1() {
+        public Either4<PT, M,M2, ST> swap1() {
 
-            return new Left<>(
+            return new First<>(
                               value);
         }
 
@@ -672,16 +694,16 @@ public interface Either3<LT, M, RT>
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(of = { "value" })
-    static class Left<ST, M, PT> implements Either3<ST, M, PT> {
+    static class First<ST, M, M2,PT> implements Either4<ST, M,M2, PT> {
         private final Eval<ST> value;
 
         @Override
-        public <R> Either3<ST, M, R> map(final Function<? super PT, ? extends R> fn) {
-            return (Either3<ST, M, R>) this;
+        public <R> Either4<ST, M, R> map(final Function<? super PT, ? extends R> fn) {
+            return (Either4<ST, M, R>) this;
         }
 
         @Override
-        public Either3<ST, M, PT> peek(final Consumer<? super PT> action) {
+        public Either4<ST, M, PT> peek(final Consumer<? super PT> action) {
             return this;
 
         }
@@ -696,14 +718,14 @@ public interface Either3<LT, M, RT>
         @Override
         public PT get() {
             throw new NoSuchElementException(
-                                             "Attempt to access right value on a Left Either3");
+                                             "Attempt to access right value on a Left Either4");
         }
 
         @Override
-        public <RT1> Either3<ST, M, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
+        public <RT1> Either4<ST, M, M2, RT1> flatMap(
+                final Function<? super PT, ? extends Either4<? extends ST, ? extends M,? extends M2, ? extends RT1>> mapper) {
 
-            return (Either3) this;
+            return (Either4) this;
 
         }
 
@@ -724,7 +746,7 @@ public interface Either3<LT, M, RT>
 
         @Override
         public String mkString() {
-            return "Either3.left[" + value + "]";
+            return "Either4.left[" + value + "]";
         }
 
         @Override
@@ -740,16 +762,16 @@ public interface Either3<LT, M, RT>
          * cyclops.types.Value, java.util.function.BiFunction)
          */
         @Override
-        public <T2, R> Either3<ST, M, R> combine(final Value<? extends T2> app,
+        public <T2, R> Either4<ST, M, R> combine(final Value<? extends T2> app,
                 final BiFunction<? super PT, ? super T2, ? extends R> fn) {
-            return (Either3<ST, M, R>) this;
+            return (Either4<ST, M, R>) this;
 
         }
 
         @Override
-        public <R1, R2> Either3<ST, R1, R2> bimap(final Function<? super M, ? extends R1> fn1,
+        public <R1, R2> Either4<ST, R1, R2> bimap(final Function<? super M, ? extends R1> fn1,
                 final Function<? super PT, ? extends R2> fn2) {
-            return (Either3<ST, R1, R2>) this;
+            return (Either4<ST, R1, R2>) this;
         }
 
         @Override
@@ -779,18 +801,18 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <T> Either3<ST, M, T> unit(final T unit) {
-            return Either3.right(unit);
+        public <T> Either4<ST, M, T> unit(final T unit) {
+            return Either4.right(unit);
         }
 
         @Override
-        public Either3<ST, PT, M> swap2() {
+        public Either4<ST, PT, M> swap2() {
 
-            return (Either3<ST, PT, M>) this;
+            return (Either4<ST, PT, M>) this;
         }
 
         @Override
-        public Either3<PT, M, ST> swap1() {
+        public Either4<PT, M, ST> swap1() {
 
             return new Right<>(
                                value);
@@ -806,16 +828,16 @@ public interface Either3<LT, M, RT>
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(of = { "value" })
-    static class Middle<ST, M, PT> implements Either3<ST, M, PT> {
+    static class Second<ST, M, PT> implements Either4<ST, M, PT> {
         private final Eval<M> value;
 
         @Override
-        public <R> Either3<ST, M, R> map(final Function<? super PT, ? extends R> fn) {
-            return (Either3<ST, M, R>) this;
+        public <R> Either4<ST, M, R> map(final Function<? super PT, ? extends R> fn) {
+            return (Either4<ST, M, R>) this;
         }
 
         @Override
-        public Either3<ST, M, PT> peek(final Consumer<? super PT> action) {
+        public Either4<ST, M, PT> peek(final Consumer<? super PT> action) {
             return this;
 
         }
@@ -830,14 +852,14 @@ public interface Either3<LT, M, RT>
         @Override
         public PT get() {
             throw new NoSuchElementException(
-                                             "Attempt to access right value on a Middle Either3");
+                                             "Attempt to access right value on a Middle Either4");
         }
 
         @Override
-        public <RT1> Either3<ST, M, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
+        public <RT1> Either4<ST, M, RT1> flatMap(
+                final Function<? super PT, ? extends Either4<? extends ST, ? extends M, ? extends RT1>> mapper) {
 
-            return (Either3) this;
+            return (Either4) this;
 
         }
 
@@ -858,7 +880,7 @@ public interface Either3<LT, M, RT>
 
         @Override
         public String mkString() {
-            return "Either3.middle[" + value + "]";
+            return "Either4.middle[" + value + "]";
         }
 
         @Override
@@ -874,16 +896,16 @@ public interface Either3<LT, M, RT>
          * cyclops.types.Value, java.util.function.BiFunction)
          */
         @Override
-        public <T2, R> Either3<ST, M, R> combine(final Value<? extends T2> app,
+        public <T2, R> Either4<ST, M, R> combine(final Value<? extends T2> app,
                 final BiFunction<? super PT, ? super T2, ? extends R> fn) {
-            return (Either3<ST, M, R>) this;
+            return (Either4<ST, M, R>) this;
 
         }
 
         @Override
-        public <R1, R2> Either3<ST, R1, R2> bimap(final Function<? super M, ? extends R1> fn1,
+        public <R1, R2> Either4<ST, R1, R2> bimap(final Function<? super M, ? extends R1> fn1,
                 final Function<? super PT, ? extends R2> fn2) {
-            return (Either3<ST, R1, R2>) this;
+            return (Either4<ST, R1, R2>) this;
         }
 
         @Override
@@ -913,20 +935,20 @@ public interface Either3<LT, M, RT>
         }
 
         @Override
-        public <T> Either3<ST, M, T> unit(final T unit) {
-            return Either3.right(unit);
+        public <T> Either4<ST, M, T> unit(final T unit) {
+            return Either4.right(unit);
         }
 
         @Override
-        public Either3<ST, PT, M> swap2() {
+        public Either4<ST, PT, M> swap2() {
             return new Right<>(
                                value);
 
         }
 
         @Override
-        public Either3<PT, M, ST> swap1() {
-            return (Either3<PT, M, ST>) this;
+        public Either4<PT, M, ST> swap1() {
+            return (Either4<PT, M, ST>) this;
 
         }
 

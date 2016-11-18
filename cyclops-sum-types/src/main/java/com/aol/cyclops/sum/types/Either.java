@@ -83,8 +83,8 @@ import lombok.EqualsAndHashCode;
  *  Instantiating an Either - Right
  *  <pre>
  *  {@code 
- *      Either.primary("hello").map(v->v+" world") 
- *    //Either.primary["hello world"]
+ *      Either.right("hello").map(v->v+" world") 
+ *    //Either.right["hello world"]
  *  }
  *  </pre>
  *  
@@ -103,7 +103,7 @@ import lombok.EqualsAndHashCode;
  *  {@code 
  *  Either.accumulateLeft(ListX.of(Either.secondary("failed1"),
                                                     Either.secondary("failed2"),
-                                                    Either.primary("success")),
+                                                    Either.right("success")),
                                                     Semigroups.stringConcat)
  *  
  *  //failed1failed2
@@ -144,6 +144,9 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
                           Eval.now(left));
     }
 
+    static <X, PT extends X, ST extends X,R> R visitAny(Either<ST,PT> either, Function<? super X, ? extends R> fn){
+        return either.visit(fn, fn);
+    }
  
     
     /**
@@ -198,7 +201,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      *   //Either.secondary[10]
      *    
      *    Either.<Integer,Integer>secondary(10).swap().map(i->i+1);
-     *    //Either.primary[11]
+     *    //Either.right[11]
      * }
      * </pre>
      * 
@@ -461,7 +464,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      * 
      * <pre>
      * {@code 
-     *  Either.primary(10)
+     *  Either.right(10)
      *     .visit(secondary->"no", primary->"yes")
      *  //Either["yes"]
         
@@ -568,7 +571,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
        import static com.aol.cyclops.control.Matchable.when;
        import static com.aol.cyclops.util.function.Predicates.instanceOf;
      * 
-     * Either.primary(10)
+     * Either.right(10)
      *    .matches(c->c.is(when("10"),then("hello")),
                    c->c.is(when(instanceOf(Integer.class)), then("error")),
                    otherwise("miss"))
