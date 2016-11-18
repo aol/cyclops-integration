@@ -62,6 +62,7 @@ public class Evals {
         BiFunction<EvalType<T>,Function<? super T, ? extends R>,EvalType<R>> map = Evals::map;
         return General.functor(map);
     }
+    
     /**
      * <pre>
      * {@code 

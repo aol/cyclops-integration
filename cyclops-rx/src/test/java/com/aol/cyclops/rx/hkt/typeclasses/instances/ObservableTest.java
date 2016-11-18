@@ -14,7 +14,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.rx.Observables;
 import com.aol.cyclops.rx.hkt.ObservableType;
 import com.aol.cyclops.rx.hkt.typeclassess.instances.ObservableInstances;
@@ -136,7 +136,7 @@ public class ObservableTest {
     @Test
     public void traverse(){
        MaybeType<Higher<ObservableType.µ, Integer>> res = ObservableInstances.traverse()
-                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), ObservableType.just(1,2,3))
+                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), ObservableType.just(1,2,3))
                                                          .convert(MaybeType::narrowK);
        
        

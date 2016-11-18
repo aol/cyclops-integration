@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.alias.Higher2;
 import com.aol.cyclops.hkt.typeclasses.Unit;
 import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
@@ -61,6 +62,7 @@ public interface General {
    
         return new GeneralUnit<CRE,A>(unitRef);
     }
+    
 
     @AllArgsConstructor
     @Builder

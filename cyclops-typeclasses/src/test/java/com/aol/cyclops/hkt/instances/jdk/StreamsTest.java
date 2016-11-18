@@ -17,7 +17,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.hkt.jdk.ListType;
 import com.aol.cyclops.hkt.jdk.StreamType;
 import com.aol.cyclops.util.function.Lambda;
@@ -136,7 +136,7 @@ public class StreamsTest {
     @Test
     public void traverse(){
        MaybeType<Higher<StreamType.µ, Integer>> res = Streams.traverse()
-                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), StreamType.of(1,2,3))
+                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), StreamType.of(1,2,3))
                                                          .convert(MaybeType::narrowK);
        
        

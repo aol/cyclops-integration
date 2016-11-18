@@ -14,7 +14,7 @@ import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.reactor.hkt.MonoType;
 import com.aol.cyclops.util.function.Lambda;
 
@@ -132,7 +132,7 @@ public class MonosTest {
     @Test
     public void traverse(){
        MaybeType<Higher<MonoType.µ, Integer>> res = MonoInstances.traverse()
-                                                                 .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), MonoType.just(1))
+                                                                 .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), MonoType.just(1))
                                                                  .convert(MaybeType::narrowK);
        
        

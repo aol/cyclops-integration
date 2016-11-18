@@ -21,7 +21,7 @@ public class MaybesTest {
     @Test
     public void unit(){
         
-        MaybeType<String> opt = Maybes.unit()
+        MaybeType<String> opt = MaybeInstances.unit()
                                             .unit("hello")
                                             .convert(MaybeType::narrowK);
         
@@ -30,16 +30,16 @@ public class MaybesTest {
     @Test
     public void functor(){
         
-        MaybeType<Integer> opt = Maybes.unit()
+        MaybeType<Integer> opt = MaybeInstances.unit()
                                      .unit("hello")
-                                     .then(h->Maybes.functor().map((String v) ->v.length(), h))
+                                     .then(h->MaybeInstances.functor().map((String v) ->v.length(), h))
                                      .convert(MaybeType::narrowK);
         
         assertThat(opt,equalTo(Maybe.of("hello".length())));
     }
     @Test
     public void apSimple(){
-        Maybes.applicative()
+        MaybeInstances.applicative()
             .ap(widen(Maybe.of(l1(this::multiplyByTwo))),widen(Maybe.of(1)));
     }
     private int multiplyByTwo(int x){
@@ -48,28 +48,28 @@ public class MaybesTest {
     @Test
     public void applicative(){
         
-        MaybeType<Function<Integer,Integer>> optFn =Maybes.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(MaybeType::narrowK);
+        MaybeType<Function<Integer,Integer>> optFn =MaybeInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(MaybeType::narrowK);
         
-        MaybeType<Integer> opt = Maybes.unit()
+        MaybeType<Integer> opt = MaybeInstances.unit()
                                      .unit("hello")
-                                     .then(h->Maybes.functor().map((String v) ->v.length(), h))
-                                     .then(h->Maybes.applicative().ap(optFn, h))
+                                     .then(h->MaybeInstances.functor().map((String v) ->v.length(), h))
+                                     .then(h->MaybeInstances.applicative().ap(optFn, h))
                                      .convert(MaybeType::narrowK);
         
         assertThat(opt,equalTo(Maybe.of("hello".length()*2)));
     }
     @Test
     public void monadSimple(){
-       MaybeType<Integer> opt  = Maybes.monad()
+       MaybeType<Integer> opt  = MaybeInstances.monad()
                                             .<Integer,Integer>flatMap(i->widen(Maybe.of(i*2)), widen(Maybe.of(3)))
                                             .convert(MaybeType::narrowK);
     }
     @Test
     public void monad(){
         
-        MaybeType<Integer> opt = Maybes.unit()
+        MaybeType<Integer> opt = MaybeInstances.unit()
                                      .unit("hello")
-                                     .then(h->Maybes.monad().flatMap((String v) ->Maybes.unit().unit(v.length()), h))
+                                     .then(h->MaybeInstances.monad().flatMap((String v) ->MaybeInstances.unit().unit(v.length()), h))
                                      .convert(MaybeType::narrowK);
         
         assertThat(opt,equalTo(Maybe.of("hello".length())));
@@ -77,9 +77,9 @@ public class MaybesTest {
     @Test
     public void monadZeroFilter(){
         
-        MaybeType<String> opt = Maybes.unit()
+        MaybeType<String> opt = MaybeInstances.unit()
                                      .unit("hello")
-                                     .then(h->Maybes.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .then(h->MaybeInstances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(MaybeType::narrowK);
         
         assertThat(opt,equalTo(Maybe.of("hello")));
@@ -87,9 +87,9 @@ public class MaybesTest {
     @Test
     public void monadZeroFilterOut(){
         
-        MaybeType<String> opt = Maybes.unit()
+        MaybeType<String> opt = MaybeInstances.unit()
                                      .unit("hello")
-                                     .then(h->Maybes.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .then(h->MaybeInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(MaybeType::narrowK);
         
         assertThat(opt,equalTo(Maybe.none()));
@@ -97,7 +97,7 @@ public class MaybesTest {
     
     @Test
     public void monadPlus(){
-        MaybeType<Integer> opt = Maybes.<Integer>monadPlus()
+        MaybeType<Integer> opt = MaybeInstances.<Integer>monadPlus()
                                       .plus(MaybeType.widen(Maybe.none()), MaybeType.widen(Maybe.of(10)))
                                       .convert(MaybeType::narrowK);
         assertThat(opt,equalTo(Maybe.of(10)));
@@ -106,29 +106,29 @@ public class MaybesTest {
     public void monadPlusNonEmpty(){
         
         Monoid<MaybeType<Integer>> m = Monoid.of(MaybeType.widen(Maybe.none()), (a,b)->a.isPresent() ? b : a);
-        MaybeType<Integer> opt = Maybes.<Integer>monadPlus(m)
+        MaybeType<Integer> opt = MaybeInstances.<Integer>monadPlus(m)
                                       .plus(MaybeType.widen(Maybe.of(5)), MaybeType.widen(Maybe.of(10)))
                                       .convert(MaybeType::narrowK);
         assertThat(opt,equalTo(Maybe.of(10)));
     }
     @Test
     public void  foldLeft(){
-        int sum  = Maybes.foldable()
+        int sum  = MaybeInstances.foldable()
                         .foldLeft(0, (a,b)->a+b, MaybeType.widen(Maybe.of(4)));
         
         assertThat(sum,equalTo(4));
     }
     @Test
     public void  foldRight(){
-        int sum  = Maybes.foldable()
+        int sum  = MaybeInstances.foldable()
                         .foldRight(0, (a,b)->a+b, MaybeType.widen(Maybe.of(1)));
         
         assertThat(sum,equalTo(1));
     }
     @Test
     public void traverse(){
-       MaybeType<Higher<MaybeType.µ, Integer>> res = Maybes.traverse()
-                                                          .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), MaybeType.just(1))
+       MaybeType<Higher<MaybeType.µ, Integer>> res = MaybeInstances.traverse()
+                                                          .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), MaybeType.just(1))
                                                           .convert(MaybeType::narrowK);
        
        

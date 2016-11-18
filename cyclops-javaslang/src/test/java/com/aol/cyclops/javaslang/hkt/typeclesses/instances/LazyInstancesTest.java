@@ -13,7 +13,7 @@ import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.javaslang.hkt.LazyType;
 import com.aol.cyclops.javaslang.hkt.OptionType;
 import com.aol.cyclops.javaslang.hkt.typeclasses.instances.LazyInstances;
@@ -135,7 +135,7 @@ public class LazyInstancesTest {
     @Test
     public void traverse(){
        MaybeType<Higher<LazyType.µ, Integer>> res = LazyInstances.traverse()
-                                                                   .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), LazyType.of(()->1))
+                                                                   .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), LazyType.of(()->1))
                                                                  .convert(MaybeType::narrowK);
        
        

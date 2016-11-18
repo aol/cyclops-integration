@@ -16,7 +16,7 @@ import com.aol.cyclops.functionaljava.hkt.ListType;
 import com.aol.cyclops.functionaljava.hkt.typeclassess.instances.ListInstances;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.util.function.Lambda;
 
 import fj.data.List;
@@ -135,7 +135,7 @@ public class ListsTest {
     @Test
     public void traverse(){
        MaybeType<Higher<ListType.µ, Integer>> res = ListInstances.traverse()
-                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), ListType.list(1,2,3))
+                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), ListType.list(1,2,3))
                                                          .convert(MaybeType::narrowK);
             
        assertThat(res,equalTo(Maybe.just(List.list(6,4,2))));

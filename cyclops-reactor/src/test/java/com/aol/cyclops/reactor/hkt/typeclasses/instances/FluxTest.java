@@ -16,7 +16,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.reactor.hkt.FluxType;
 import com.aol.cyclops.util.function.Lambda;
 
@@ -136,7 +136,7 @@ public class FluxTest {
     @Test
     public void traverse(){
        MaybeType<Higher<FluxType.µ, Integer>> res = FluxInstances.traverse()
-                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), FluxType.just(1,2,3))
+                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), FluxType.just(1,2,3))
                                                          .convert(MaybeType::narrowK);
        
        

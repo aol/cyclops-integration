@@ -6,6 +6,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.control.Try;
+import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.jdk.OptionalType;
 import com.aol.cyclops.types.MonadicValue;
@@ -33,6 +35,13 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
     public static class µ {
     }
     
+    
+    public static <ST,T> MaybeType<T> fromXor(Xor<ST,T> xor){
+        return widen(xor.toMaybe());
+    }
+    public static <X extends Throwable,T> MaybeType<T> fromXor(Try<T,X> ty){
+        return widen(ty.toMaybe());
+    }
     /**
      * @return Get the empty Maybe (single instance)
      */
@@ -65,7 +74,7 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
      * If the supplied Optional implements OptionalType it is returned already, otherwise it
      * is wrapped into a Optional implementation that does implement OptionalType
      * 
-     * @param Optional Optional to widen to a OptionalType
+     * @param Optional Optional to widen to a MaybeType
      * @return MaybeType encoding HKT info about Optionals (converts Optional to a Maybe)
      */
     public static <T> MaybeType<T> widen(final Optional<T> optional) {
@@ -80,7 +89,7 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
     /**
      * Convert the raw Higher Kinded Type for MaybeType types into the MaybeType type definition class
      * 
-     * @param future HKT encoded list into a OptionalType
+     * @param future HKT encoded list into a MaybeType
      * @return MaybeType
      */
     public static <T> MaybeType<T> narrowK(final Higher<MaybeType.µ, T> future) {
@@ -88,9 +97,9 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
     }
    
     /**
-     * Convert the HigherKindedType definition for a Optional into
+     * Convert the HigherKindedType definition for a Maybe into
      * 
-     * @param Optional Type Constructor to convert back into narrowed type
+     * @param MaybeType Constructor to convert back into narrowed type
      * @return Optional from Higher Kinded Type
      */
     public static <T> Optional<T> narrowOptional(final Higher<MaybeType.µ, T> Optional) {
@@ -197,7 +206,7 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
          * @return This back as a MaybeX
          */
         public Maybe<T> narrow() {
-            return Maybe.fromIterable(boxed);
+            return boxed;
         }
 
        
@@ -239,7 +248,7 @@ public interface MaybeType<T> extends Higher<MaybeType.µ, T>, Maybe<T> {
         }
 
         public String toString(){
-            return boxed.toString();
+            return "[MaybeType " + boxed.toString() + "]";
         }
 
 

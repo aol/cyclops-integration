@@ -12,7 +12,7 @@ import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.javaslang.hkt.OptionType;
 import com.aol.cyclops.javaslang.hkt.typeclasses.instances.OptionInstances;
 import com.aol.cyclops.util.function.Lambda;
@@ -131,7 +131,7 @@ public class OptionsTest {
     @Test
     public void traverse(){
        MaybeType<Higher<OptionType.µ, Integer>> res = OptionInstances.traverse()
-                                                                 .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), OptionType.of(1))
+                                                                 .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), OptionType.of(1))
                                                                  .convert(MaybeType::narrowK);
        
        

@@ -15,7 +15,7 @@ import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.hkt.jdk.CompletableFutureType;
 import com.aol.cyclops.hkt.jdk.OptionalType;
 import com.aol.cyclops.util.CompletableFutures;
@@ -133,7 +133,7 @@ public class CompletableFuturesTest {
     @Test
     public void traverse(){
        MaybeType<Higher<CompletableFutureType.µ, Integer>> res = CompletableFutureInstances.traverse()
-                                                                          .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), CompletableFutureType.completedFuture(1))
+                                                                          .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), CompletableFutureType.completedFuture(1))
                                                                          .convert(MaybeType::narrowK);
        
        

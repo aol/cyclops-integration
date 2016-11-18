@@ -13,7 +13,7 @@ import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.guava.hkt.OptionalType;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.util.function.Lambda;
 import com.google.common.base.Optional;
 
@@ -129,7 +129,7 @@ public class OptionalsTest {
     @Test
     public void traverse(){
        MaybeType<Higher<OptionalType.µ, Integer>> res = OptionalInstances.traverse()
-                                                                 .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), OptionalType.of(1))
+                                                                 .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), OptionalType.of(1))
                                                                  .convert(MaybeType::narrowK);
        
        

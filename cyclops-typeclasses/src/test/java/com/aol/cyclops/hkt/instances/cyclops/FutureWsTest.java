@@ -134,7 +134,7 @@ public class FutureWsTest {
     @Test
     public void traverse(){
        MaybeType<Higher<FutureType.µ, Integer>> res = FutureWs.traverse()
-                                                               .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), FutureType.ofResult(1))
+                                                               .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), FutureType.ofResult(1))
                                                               .convert(MaybeType::narrowK);
        
        

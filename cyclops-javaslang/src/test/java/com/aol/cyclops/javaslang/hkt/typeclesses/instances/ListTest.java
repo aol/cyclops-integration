@@ -15,7 +15,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.javaslang.hkt.ListType;
 import com.aol.cyclops.javaslang.hkt.typeclasses.instances.ListInstances;
 import com.aol.cyclops.util.function.Lambda;
@@ -136,7 +136,7 @@ public class ListTest {
     @Test
     public void traverse(){
        MaybeType<Higher<ListType.µ, Integer>> res = ListInstances.traverse()
-                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), ListType.just(1,2,3))
+                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), ListType.just(1,2,3))
                                                          .convert(MaybeType::narrowK);
        
        

@@ -15,7 +15,7 @@ import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.hkt.pcollections.PStackType;
 import com.aol.cyclops.util.function.Lambda;
 
@@ -132,7 +132,7 @@ public class PStacksTest {
     @Test
     public void traverse(){
        MaybeType<Higher<PStackType.µ, Integer>> res = PStacks.traverse()
-                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), PStackType.of(1,2,3))
+                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), PStackType.of(1,2,3))
                                                          .convert(MaybeType::narrowK);
        
        

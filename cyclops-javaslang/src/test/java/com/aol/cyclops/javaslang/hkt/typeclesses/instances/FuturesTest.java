@@ -15,7 +15,7 @@ import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.javaslang.hkt.FutureType;
 import com.aol.cyclops.javaslang.hkt.OptionType;
 import com.aol.cyclops.javaslang.hkt.typeclasses.instances.FutureInstances;
@@ -137,7 +137,7 @@ public class FuturesTest {
     @Test
     public void traverse(){
        MaybeType<Higher<FutureType.µ, Integer>> res = FutureInstances.traverse()
-                                                                 .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), FutureType.successful(1))
+                                                                 .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), FutureType.successful(1))
                                                                  .convert(MaybeType::narrowK);
        
        

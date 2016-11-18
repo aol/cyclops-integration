@@ -27,9 +27,10 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Maybes {
+public class MaybeInstances {
 
     
+
     /**
      * 
      * Transform a maybe, mulitplying every element by 2
@@ -59,7 +60,7 @@ public class Maybes {
      * @return A functor for Maybes
      */
     public static <T,R>Functor<MaybeType.µ> functor(){
-        BiFunction<MaybeType<T>,Function<? super T, ? extends R>,MaybeType<R>> map = Maybes::map;
+        BiFunction<MaybeType<T>,Function<? super T, ? extends R>,MaybeType<R>> map = MaybeInstances::map;
         return General.functor(map);
     }
     /**
@@ -78,7 +79,7 @@ public class Maybes {
      * @return A factory for Maybes
      */
     public static Unit<MaybeType.µ> unit(){
-        return General.unit(Maybes::of);
+        return General.unit(MaybeInstances::of);
     }
     /**
      * 
@@ -118,7 +119,7 @@ public class Maybes {
      * @return A zipper for Maybes
      */
     public static <T,R> Applicative<MaybeType.µ> applicative(){
-        BiFunction<MaybeType< Function<T, R>>,MaybeType<T>,MaybeType<R>> ap = Maybes::ap;
+        BiFunction<MaybeType< Function<T, R>>,MaybeType<T>,MaybeType<R>> ap = MaybeInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -149,7 +150,7 @@ public class Maybes {
      */
     public static <T,R> Monad<MaybeType.µ> monad(){
   
-        BiFunction<Higher<MaybeType.µ,T>,Function<? super T, ? extends Higher<MaybeType.µ,R>>,Higher<MaybeType.µ,R>> flatMap = Maybes::flatMap;
+        BiFunction<Higher<MaybeType.µ,T>,Function<? super T, ? extends Higher<MaybeType.µ,R>>,Higher<MaybeType.µ,R>> flatMap = MaybeInstances::flatMap;
         return General.monad(applicative(), flatMap);
     }
     /**
@@ -219,7 +220,7 @@ public class Maybes {
      */
     public static <C2,T> Traverse<MaybeType.µ> traverse(){
       
-        return General.traverseByTraverse(applicative(), Maybes::traverseA);
+        return General.traverseByTraverse(applicative(), MaybeInstances::traverseA);
     }
     
     /**

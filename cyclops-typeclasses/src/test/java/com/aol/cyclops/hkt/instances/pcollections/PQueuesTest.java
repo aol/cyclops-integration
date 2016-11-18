@@ -13,7 +13,7 @@ import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.data.collections.extensions.persistent.PQueueX;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.hkt.pcollections.PQueueType;
 import com.aol.cyclops.util.function.Lambda;
 
@@ -130,7 +130,7 @@ public class PQueuesTest {
     @Test
     public void traverse(){
        MaybeType<Higher<PQueueType.µ, Integer>> res = PQueues.traverse()
-                                                         .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), PQueueType.of(1,2,3))
+                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), PQueueType.of(1,2,3))
                                                          .convert(MaybeType::narrowK);
        
        

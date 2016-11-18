@@ -15,7 +15,7 @@ import com.aol.cyclops.functionaljava.hkt.OptionType;
 import com.aol.cyclops.functionaljava.hkt.typeclassess.instances.OptionInstances;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.Maybes;
+import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.hkt.instances.jdk.OptionalInstances;
 import com.aol.cyclops.hkt.jdk.OptionalType;
 import com.aol.cyclops.util.function.Lambda;
@@ -134,7 +134,7 @@ public class OptionTest {
     @Test
     public void traverse(){
        MaybeType<Higher<OptionType.µ, Integer>> res = OptionInstances.traverse()
-                                                             .traverseA(Maybes.applicative(), (Integer a)->MaybeType.just(a*2), OptionType.of(1))
+                                                             .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), OptionType.of(1))
                                                              .convert(MaybeType::narrowK);
        
        
