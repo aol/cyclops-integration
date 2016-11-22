@@ -1,5 +1,9 @@
 <img width="820" alt="screen shot 2016-02-22 at 8 44 42 pm" src="https://cloud.githubusercontent.com/assets/9964792/13232030/306b0d50-d9a5-11e5-9706-d44d7731790d.png">
 
+# Documentation
+
+* [cyclops user guide](https://github.com/aol/cyclops-react/wiki)
+
 # The cyclops-react integration modules.
 
 There are a number of integration modules for cyclops-react, they are
