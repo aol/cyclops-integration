@@ -652,7 +652,7 @@ public interface Either3<LT, M, RT>
         @Override
         public Either3<ST, PT, M> swap2() {
 
-            return null;
+            return new Middle<>(value);
         }
 
         @Override

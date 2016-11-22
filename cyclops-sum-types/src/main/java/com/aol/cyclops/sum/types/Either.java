@@ -2,6 +2,7 @@ package com.aol.cyclops.sum.types;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -24,6 +25,8 @@ import com.aol.cyclops.control.FluentFunctions;
 import com.aol.cyclops.control.Ior;
 import com.aol.cyclops.control.Matchable;
 import com.aol.cyclops.control.Matchable.CheckValue1;
+import com.aol.cyclops.control.Maybe.Just;
+import com.aol.cyclops.control.Maybe.Nothing;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.StreamUtils;
@@ -91,7 +94,7 @@ import lombok.EqualsAndHashCode;
  *  Instantiating an Either - Left
  *  <pre>
  *  {@code 
- *      Either.secondary("hello").map(v->v+" world") 
+ *      Either.left("hello").map(v->v+" world") 
  *    //Either.seconary["hello"]
  *  }
  *  </pre>
@@ -101,16 +104,16 @@ import lombok.EqualsAndHashCode;
  *   Values can be accumulated via 
  *  <pre>
  *  {@code 
- *  Either.accumulateLeft(ListX.of(Either.secondary("failed1"),
-                                                    Either.secondary("failed2"),
+ *  Xor.accumulateLeft(ListX.of(Either.left("failed1"),
+                                                    Either.left("failed2"),
                                                     Either.right("success")),
                                                     Semigroups.stringConcat)
  *  
  *  //failed1failed2
  *  
- *   Either<String,String> fail1 = Either.secondary("failed1");
+ *   Either<String,String> fail1 = Either.left("failed1");
      fail1.swap().combine((a,b)->a+b)
-                 .combine(Either.secondary("failed2").swap())
+                 .combine(Either.left("failed2").swap())
                  .combine(Either.<String,String>primary("success").swap())
  *  
  *  //failed1failed2
@@ -139,10 +142,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
 
     
 
-    public static <LT, B, RT> Either<LT, RT> left(final LT left) {
-        return new Left<>(
-                          Eval.now(left));
-    }
+    
 
     static <X, PT extends X, ST extends X,R> R visitAny(Either<ST,PT> either, Function<? super X, ? extends R> fn){
         return either.visit(fn, fn);
@@ -197,10 +197,10 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      * 
      * <pre>
      * {@code 
-     *   Either.<Integer,Integer>secondary(10).map(i->i+1);
-     *   //Either.secondary[10]
+     *   Either.<Integer,Integer>left(10).map(i->i+1);
+     *   //Either.left[10]
      *    
-     *    Either.<Integer,Integer>secondary(10).swap().map(i->i+1);
+     *    Either.<Integer,Integer>left(10).swap().map(i->i+1);
      *    //Either.right[11]
      * }
      * </pre>
@@ -209,8 +209,8 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      * @param value to wrap
      * @return Left instance of Either
      */
-    public static <ST, PT> Either<ST, PT> secondary(final ST value) {
-        return new Left<>(Eval.now( value));
+    public static <ST, PT> Either<ST, PT> left(final ST value) {
+        return new Left<>(Eval.later(()-> value));
     }
 
     /**
@@ -231,7 +231,8 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      * @return Right type instanceof Either
      */
     public static <ST, PT> Either<ST, PT> right(final PT value) {
-        return new Right<ST,PT>(Eval.now(
+        
+        return new Right<ST,PT>(Eval.later(()->
                            value));
     }
 
@@ -331,7 +332,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      */
     @Override
     default Optional<PT> toOptional() {
-        return isRight() ? Optional.of(get()) : Optional.empty();
+        return isRight() ? Optional.ofNullable(get()) : Optional.empty();
     }
 
     /*
@@ -389,11 +390,11 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      *<pre>
      *  {@code 
      *    
-     *    Either.secondary("hello")
+     *    Either.left("hello")
      *       .map(v->v+" world") 
      *    //Either.seconary["hello"]
      *    
-     *    Either.secondary("hello")
+     *    Either.left("hello")
      *       .swap()
      *       .map(v->v+" world") 
      *       .swap()
@@ -468,7 +469,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      *     .visit(secondary->"no", primary->"yes")
      *  //Either["yes"]
         
-        Either.secondary(90)
+        Either.left(90)
            .visit(secondary->"no", primary->"yes")
         //Either["no"]
          
@@ -694,8 +695,8 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      * 
      * <pre>
      * {@code 
-     *  Either<String,String> fail1 =  Either.secondary("failed1");
-        Either<PStackX<String>,String> result = fail1.list().combine(Either.secondary("failed2").list(), Semigroups.collectionConcat(),(a,b)->a+b);
+     *  Either<String,String> fail1 =  Either.left("failed1");
+        Either<PStackX<String>,String> result = fail1.list().combine(Either.left("failed2").list(), Semigroups.collectionConcat(),(a,b)->a+b);
         
         //Left of [PStackX.of("failed1","failed2")))]
      * }
@@ -709,9 +710,9 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
 
     default <T2, R> Either<ST, R> combine(final Either<? extends ST, ? extends T2> app,
             final BinaryOperator<ST> semigroup, final BiFunction<? super PT, ? super T2, ? extends R> fn) {
-        return this.visit(secondary -> app.visit(s2 -> Either.secondary(semigroup.apply(s2, secondary)),
-                                                 p2 -> Either.secondary(secondary)),
-                          primary -> app.visit(s2 -> Either.secondary(s2),
+        return this.visit(secondary -> app.visit(s2 -> Either.left(semigroup.apply(s2, secondary)),
+                                                 p2 -> Either.left(secondary)),
+                          primary -> app.visit(s2 -> Either.left(s2),
                                                p2 -> Either.right(fn.apply(primary, p2))));
     }
 
@@ -727,7 +728,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         return map(v -> Tuple.tuple(v, Curry.curry2(fn)
                                             .apply(v))).flatMap(tuple -> Either.fromIterable(app)
                                                                                .visit(i -> Either.right(tuple.v2.apply(i)),
-                                                                                      () -> Either.secondary(null)));
+                                                                                      () -> Either.left(null)));
     }
 
     /*
@@ -742,7 +743,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         return map(v -> Tuple.tuple(v, Curry.curry2(fn)
                                             .apply(v))).flatMap(tuple -> Either.fromPublisher(app)
                                                                                .visit(i -> Either.right(tuple.v2.apply(i)),
-                                                                                      () -> Either.secondary(null)));
+                                                                                      () -> Either.left(null)));
     }
 
     /*
@@ -889,7 +890,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         }
         
         private <PT> Either<ST, PT> toEither(MonadicValue2<? extends ST, ? extends PT> value) {
-            return value.visit(p -> Either.right(p), () -> Either.secondary(null));
+            return value.visit(p -> Either.right(p), () -> Either.left(null));
         }
 
         @Override
@@ -903,7 +904,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
 
         @Override
         public Either<ST, PT> filter(final Predicate<? super PT> test) {
-            return flatMap(t -> test.test(t) ? this : Either.secondary(null));
+            return flatMap(t -> test.test(t) ? this : Either.left(null));
         }
 
         /*
@@ -1142,7 +1143,27 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
                                         .matches(fn1, fn2, otherwise))
                        .flatMap(Function.identity());
         }
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            return trampoline().hashCode();
+            
+        }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(final Object obj) {
+
+            return trampoline().equals(obj);
+        }
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -1261,7 +1282,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
 
         @Override
         public String mkString() {
-            return "Either.right[" + value + "]";
+            return "Either.right[" + value.get() + "]";
         }
 
         @Override
@@ -1298,7 +1319,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         public <T2, R> Either<ST, R> combine(final Value<? extends T2> app,
                 final BiFunction<? super PT, ? super T2, ? extends R> fn) {
             return app.toXor()
-                      .visit(s -> Either.secondary(null), f -> Either.right(fn.apply(get(), app.get())));
+                      .visit(s -> Either.left(null), f -> Either.right(fn.apply(get(), app.get())));
         }
 
     }
@@ -1441,7 +1462,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
 
         @Override
         public String mkString() {
-            return "Either.left[" + value + "]";
+            return "Either.left[" + value.get() + "]";
         }
 
         /*
