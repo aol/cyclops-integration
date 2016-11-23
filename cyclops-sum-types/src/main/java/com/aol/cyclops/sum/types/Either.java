@@ -2,7 +2,6 @@ package com.aol.cyclops.sum.types;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -25,8 +24,6 @@ import com.aol.cyclops.control.FluentFunctions;
 import com.aol.cyclops.control.Ior;
 import com.aol.cyclops.control.Matchable;
 import com.aol.cyclops.control.Matchable.CheckValue1;
-import com.aol.cyclops.control.Maybe.Just;
-import com.aol.cyclops.control.Maybe.Nothing;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.StreamUtils;
@@ -34,10 +31,6 @@ import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.sum.types.Either3.Lazy;
-import com.aol.cyclops.sum.types.Either3.Left;
-import com.aol.cyclops.sum.types.Either3.Middle;
-import com.aol.cyclops.sum.types.Either3.Right;
 import com.aol.cyclops.types.Combiner;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.MonadicValue2;
@@ -150,7 +143,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
  
     
     /**
-     * Construct a Right Either from the supplied publisher
+     * Lazily construct a Right Either from the supplied publisher
      * <pre>
      * {@code 
      *   ReactiveSeq<Integer> stream =  ReactiveSeq.of(1,2,3);
@@ -167,7 +160,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
     public static <T> Either<Throwable, T> fromPublisher(final Publisher<T> pub) {
         final ValueSubscriber<T> sub = ValueSubscriber.subscriber();
         pub.subscribe(sub);
-        return null;
+        return Either.rightEval(sub.toEvalLater());
     }
 
     /**
@@ -176,7 +169,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      * {@code 
      *   List<Integer> list =  Arrays.asList(1,2,3);
         
-         Either<Throwable,Integer> future = Either.fromPublisher(stream);
+         Either<Throwable,Integer> future = Either.fromIterable(list);
         
          //Either[1]
      * 
@@ -188,7 +181,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
     public static <ST, T> Either<ST, T> fromIterable(final Iterable<T> iterable) {
 
         final Iterator<T> it = iterable.iterator();
-        return Either.right(it.hasNext() ? it.next() : null);
+        return it.hasNext() ? Either.right( it.next()) : Either.left(null);
     }
 
     /**
