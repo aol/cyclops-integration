@@ -21,12 +21,14 @@ import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
+import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.types.BiFunctor;
 import com.aol.cyclops.types.Combiner;
 import com.aol.cyclops.types.Functor;
 import com.aol.cyclops.types.To;
 import com.aol.cyclops.types.Value;
 import com.aol.cyclops.types.applicative.ApplicativeFunctor;
+import com.aol.cyclops.types.stream.reactive.ValueSubscriber;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -57,6 +59,27 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
                                                             Supplier<RT>, 
                                                             ApplicativeFunctor<RT> {
 
+    /**
+     * Lazily construct a Right Either from the supplied publisher
+     * <pre>
+     * {@code 
+     *   ReactiveSeq<Integer> stream =  ReactiveSeq.of(1,2,3);
+        
+         Either4<Throwable,String,String,Integer> either = Either4.fromPublisher(stream);
+        
+         //Either[1]
+     * 
+     * }
+     * </pre>
+     * @param pub Publisher to construct an Either from
+     * @return Either constructed from the supplied Publisher
+     */
+    public static <T1,T2,T> Either4<Throwable, T1, T2, T> fromPublisher(final Publisher<T> pub) {
+        final ValueSubscriber<T> sub = ValueSubscriber.subscriber();
+        pub.subscribe(sub);
+        Either4<Throwable, T1,T2, Xor<Throwable,T>> xor = Either4.rightEval(Eval.later(()->sub.toXor()));
+        return  xor.flatMap(x->x.visit(Either4::left1,Either4::right));
+    }
     /**
      * Construct a Right Either4 from the supplied Iterable
      * <pre>
@@ -166,6 +189,16 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
     default < RT1> Either4<LT1, LT2, LT3, RT1>  flatMapIterable(Function<? super RT, ? extends Iterable<? extends RT1>> mapper){
         return this.flatMap(a -> {
             return Either4.fromIterable(mapper.apply(a));
+
+        });
+    }
+    default < RT1> Either4<LT1, LT2, LT3,RT1>  flatMapPublisher(Function<? super RT, ? extends Publisher<? extends RT1>> mapper){
+        return this.flatMap(a -> {
+            final Publisher<? extends RT1> publisher = mapper.apply(a);
+            final ValueSubscriber<RT1> sub = ValueSubscriber.subscriber();
+
+            publisher.subscribe(sub);
+            return unit(sub.get());
 
         });
     }

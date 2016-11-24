@@ -3,6 +3,7 @@ package com.aol.cyclops.sum.types;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -16,17 +17,25 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
+import com.aol.cyclops.Monoid;
+import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.Eval;
+import com.aol.cyclops.control.Ior;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.Xor;
+import com.aol.cyclops.data.collections.extensions.CollectionX;
+import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.types.BiFunctor;
 import com.aol.cyclops.types.Combiner;
+import com.aol.cyclops.types.Filterable;
 import com.aol.cyclops.types.Functor;
+import com.aol.cyclops.types.MonadicValue3;
 import com.aol.cyclops.types.To;
 import com.aol.cyclops.types.Value;
+import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.types.applicative.ApplicativeFunctor;
 import com.aol.cyclops.types.stream.reactive.ValueSubscriber;
 
@@ -48,8 +57,99 @@ import lombok.EqualsAndHashCode;
  * @param <RT> Right type (operations are performed on this type if present)
  */
 public interface Either3<LT1, LT2, RT>
-                extends Functor<RT>, BiFunctor<LT2, RT>, To<Either3<LT1, LT2, RT>>, Supplier<RT>, ApplicativeFunctor<RT> {
+                extends Functor<RT>, BiFunctor<LT2, RT>, Filterable<RT>, MonadicValue3<LT1,LT2,RT>,To<Either3<LT1, LT2, RT>>, Supplier<RT>, ApplicativeFunctor<RT> {
+    /**
+     * Create an AnyMValue instance that wraps an Xor
+     * 
+     * @param xor Xor to wrap inside an AnyM
+     * @return AnyM instance that wraps the provided Xor
+     */
+    public static <LT1,LT2,T> AnyMValue<T> anyM(final Either3<LT1, LT2, T> xor) {
+        Objects.requireNonNull(xor);
+        return AnyM.ofValue(xor);
+    }
 
+    /**
+     * Take an iterable containing Either3s and convert them into a List of AnyMs
+     * e.g.
+     * {@code 
+     *     List<AnyM<Integer>> anyMs = AnyM.listFromXor(Arrays.asList(Either3.right(1),Either3.left(10));
+     *     
+     *     //List[AnyM[Either3:right[1],Either3:left[10]]]
+     * }
+     * 
+     * @param anyM Iterable containing Eithers
+     * @return List of AnyMs
+     */
+    public static <ST, LT2, T> ListX<AnyMValue<T>> anyMList(final Iterable<Either3<ST, LT2, T>> anyM) {
+        return ReactiveSeq.fromIterable(anyM)
+                          .map(e -> anyM(e))
+                          .toListX();
+    }
+
+    /**
+     *  Turn a collection of Xors into a single Ior with Lists of values.
+     *  
+     * <pre>
+     * {@code 
+     * 
+     * Either3<String,String,Integer> just  = Either3.right(10);
+       Either3<String,String,Integer> none = Either3.left("none");
+        
+        
+     * Either3<ListX<String>,ListX<String>,ListX<Integer>> xors =Either3.sequence(ListX.of(just,none,Either3.right(1)));
+       //Eitehr.right(ListX.of(10,1)));
+     * 
+     * }</pre>
+     *
+     * 
+     * 
+     * @param Either3 Either3 to sequence
+     * @return Either3 Sequenced
+     */
+    public static <LT1,LT2, PT> Either3<ListX<LT1>,ListX<LT2>,ListX<PT>> sequence(final CollectionX<Either3<LT1,LT2, PT>> xors) {
+        return AnyM.sequence(anyMList(xors))
+                   .unwrap();
+    }
+    /**
+     * Traverse a Collection of Either3 producting an Either3 with a ListX, applying the transformation function to every
+     * element in the list
+     * 
+     * @param xors Either3s to sequence and transform
+     * @param fn Transformation function
+     * @return An Either3 with a transformed list
+     */
+    public static <LT1,LT2, PT,R> Either3<ListX<LT1>,ListX<LT2>,ListX<R>> traverse(final CollectionX<Either3<LT1,LT2, PT>> xors, Function<? super PT, ? extends R> fn) {
+        return  sequence(xors).map(l->l.map(fn));
+    }
+   
+
+    /**
+     *  Accumulate the results only from those Either3 which have a Right type present, using the supplied Monoid (a combining BiFunction/BinaryOperator and identity element that takes two
+     * input values of the same type and returns the combined result) {@see com.aol.cyclops.Monoids }.
+     * 
+     * <pre>
+     * {@code 
+     * Either3<String,String,Integer> just  = Either3.right(10);
+       Either3<String,String,Integer> none = Either3.left("none");
+     *  
+     *  Either3<ListX<String>,ListX<String>,Integer> xors = Either3.accumulatePrimary(Monoids.intSum,ListX.of(just,none,Either3.right(1)));
+        //Either3.right(11);
+     * 
+     * }
+     * </pre>
+     * 
+     * 
+     * 
+     * @param xors Collection of Xors to accumulate primary values
+     * @param reducer  Reducer to accumulate results
+     * @return  Xor populated with the accumulate primary operation
+     */
+    public static <LT1,LT2, RT> Either3<ListX<LT1>, ListX<LT2>, RT> accumulate(final Monoid<RT> reducer,final CollectionX<Either3<LT1, LT2, RT>> xors) {
+        return sequence(xors).map(s -> s.reduce(reducer));
+    }
+ 
+  
     /**
      * Lazily construct a Right Either from the supplied publisher
      * <pre>
@@ -188,8 +288,8 @@ public interface Either3<LT1, LT2, RT>
      * @param mapper Mapping function
      * @return Mapped Either3
      */
-    < RT1> Either3<LT1, LT2, RT1> flatMap(
-            Function<? super RT, ? extends Either3<? extends LT1, ? extends LT2, ? extends RT1>> mapper);
+    <R2> Either3<LT1, LT2, R2> flatMap(Function<? super RT, ? extends MonadicValue3<? extends LT1, ?  extends LT2, ? extends R2>> mapper);
+    
 
     default < RT1> Either3<LT1, LT2, RT1>  flatMapIterable(Function<? super RT, ? extends Iterable<? extends RT1>> mapper){
         return this.flatMap(a -> {
@@ -231,6 +331,47 @@ public interface Either3<LT1, LT2, RT>
      * @return True if this either contains the left2 type
      */
     boolean isLeft2();
+
+    /**
+     * Return an Ior that can be this object or a Ior.primary or Ior.secondary
+     * @return new Ior 
+     */
+     default Ior<LT1, RT> toIor() {
+        return this.visit(l->Ior.secondary(l), 
+                          m->Ior.secondary(null),
+                          r->Ior.primary(r));
+    }
+     default Xor<LT1, RT> toXor() {
+         return this.visit(l->Xor.secondary(l), 
+                           m->Xor.secondary(null),
+                           r->Xor.primary(r));
+     }
+    
+     
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.Filterable#ofType(java.lang.Class)
+     */
+    @Override
+    default <U> Maybe<U> ofType(Class<? extends U> type) {
+        return (Maybe<U> )Filterable.super.ofType(type);
+    }
+
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.Filterable#filterNot(java.util.function.Predicate)
+     */
+    @Override
+    default Maybe<RT> filterNot(Predicate<? super RT> predicate) {
+        return (Maybe<RT>)Filterable.super.filterNot(predicate);
+    }
+
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.Filterable#notNull()
+     */
+    @Override
+    default Maybe<RT> notNull() {
+        
+        return (Maybe<RT>)Filterable.super.notNull();
+    }
 
     /*
      * (non-Javadoc)
@@ -455,7 +596,6 @@ public interface Either3<LT1, LT2, RT>
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of = { "value" })
     final static class Lazy<ST, M, PT> implements Either3<ST, M, PT> {
 
         private final Eval<Either3<ST, M, PT>> lazy;
@@ -479,7 +619,7 @@ public interface Either3<LT1, LT2, RT>
 
         @Override
         public <RT1> Either3<ST, M, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
+                final Function<? super PT, ? extends MonadicValue3<? extends ST, ? extends M, ? extends RT1>> mapper) {
 
             return lazy(Eval.later(() -> resolve().flatMap(mapper)));
       
@@ -588,10 +728,34 @@ public interface Either3<LT1, LT2, RT>
             return Either3.right(unit);
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            return this.visit(Either3::left1,Either3::left2,Either3::right).hashCode();
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+           return this.visit(Either3::left1,Either3::left2,Either3::right).equals(obj);
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return trampoline().toString();
+        }
+        
+
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of = { "value" })
     static class Right<ST, M, PT> implements Either3<ST, M, PT> {
         private final Eval<PT> value;
 
@@ -625,7 +789,7 @@ public interface Either3<LT1, LT2, RT>
 
         @Override
         public <RT1> Either3<ST, M, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
+                final Function<? super PT, ? extends MonadicValue3<? extends ST, ? extends M, ? extends RT1>> mapper) {
             final Eval<Either3<ST, M, RT1>> e3 = (Eval<Either3<ST, M, RT1>>) value.map(mapper);
             return new Lazy<>(
                               e3);
@@ -650,7 +814,7 @@ public interface Either3<LT1, LT2, RT>
 
         @Override
         public String mkString() {
-            return "Either3.right[" + value + "]";
+            return "Either3.right[" + value.get() + "]";
         }
 
         @Override
@@ -729,10 +893,44 @@ public interface Either3<LT1, LT2, RT>
             return false;
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            return result;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if(obj instanceof Lazy){
+                return ((Lazy)obj).equals(this);
+            }
+            if (getClass() != obj.getClass())
+                return false;
+            Right other = (Right) obj;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
+            return true;
+        }
+        
+
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of = { "value" })
     static class Left1<ST, M, PT> implements Either3<ST, M, PT> {
         private final Eval<ST> value;
 
@@ -762,7 +960,7 @@ public interface Either3<LT1, LT2, RT>
 
         @Override
         public <RT1> Either3<ST, M, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
+                final Function<? super PT, ? extends MonadicValue3<? extends ST, ? extends M, ? extends RT1>> mapper) {
 
             return (Either3) this;
 
@@ -785,7 +983,7 @@ public interface Either3<LT1, LT2, RT>
 
         @Override
         public String mkString() {
-            return "Either3.left[" + value + "]";
+            return "Either3.left1[" + value.get() + "]";
         }
 
         @Override
@@ -863,10 +1061,43 @@ public interface Either3<LT1, LT2, RT>
             return false;
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            return result;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if(obj instanceof Lazy){
+                return ((Lazy)obj).equals(this);
+            }
+            if (getClass() != obj.getClass())
+                return false;
+            Left1 other = (Left1) obj;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
+            return true;
+        }
+
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of = { "value" })
     static class Left2<ST, M, PT> implements Either3<ST, M, PT> {
         private final Eval<M> value;
 
@@ -896,7 +1127,7 @@ public interface Either3<LT1, LT2, RT>
 
         @Override
         public <RT1> Either3<ST, M, RT1> flatMap(
-                final Function<? super PT, ? extends Either3<? extends ST, ? extends M, ? extends RT1>> mapper) {
+                final Function<? super PT, ? extends MonadicValue3<? extends ST, ? extends M, ? extends RT1>> mapper) {
 
             return (Either3) this;
 
@@ -919,7 +1150,7 @@ public interface Either3<LT1, LT2, RT>
 
         @Override
         public String mkString() {
-            return "Either3.middle[" + value + "]";
+            return "Either3.left2[" + value.get() + "]";
         }
 
         @Override
@@ -994,6 +1225,40 @@ public interface Either3<LT1, LT2, RT>
         @Override
         public boolean isLeft2() {
 
+            return true;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            return result;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            if(obj instanceof Lazy){
+                return ((Lazy)obj).equals(this);
+            }
+            Left2 other = (Left2) obj;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
             return true;
         }
 

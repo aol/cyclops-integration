@@ -13,6 +13,7 @@ All Either implementations have the following features
 1. Accept Publisher in API calls (flatMapPublisher)
 1. Interopability via Iterable - all Eithers implement Iterable
 1. Accept Iterable in API calls (flatMapIterable)
+1. sequence, traverse, accumulate operators
 
 Either extends cyclops-react Xor, providing a lazy and tail call optimized alternative.
 
