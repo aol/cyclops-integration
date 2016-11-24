@@ -1336,10 +1336,10 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         public <LT1, RT1> Either<LT1, RT1> flatMap(
                 final Function<? super PT, ? extends MonadicValue2<? extends LT1, ? extends RT1>> mapper) {
 
-            Eval<? extends MonadicValue2<? extends LT1,  ? extends RT1>> ret = value.map(mapper);
-            Eval<? extends Either<? extends LT1,  ? extends RT1>> et = ret.map(Either::fromMonadicValue2);
+            Eval<? extends Either<? extends LT1,  ? extends RT1>> ret = value.map(mapper.andThen(Either::fromMonadicValue2));
+          
             
-           final Eval<Either<LT1, RT1>> e3 =  (Eval<Either<LT1,  RT1>>)et;
+           final Eval<Either<LT1, RT1>> e3 =  (Eval<Either<LT1,  RT1>>)ret;
            return new Lazy<>(
                              e3);
 
@@ -1554,8 +1554,13 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         @Override
         public <LT1, RT1> Either<LT1, RT1> secondaryFlatMap(
                 final Function<? super ST, ? extends Xor<LT1, RT1>> mapper) {
-            final Eval<Either<ST,  RT1>> e3 = (Eval<Either<ST,  RT1>>) value.map(mapper);
-            return (Either<LT1, RT1>)new Lazy<ST,RT1>(e3);
+            Eval<? extends MonadicValue2<? extends LT1,  ? extends RT1>> ret = value.map(mapper);
+            Eval<? extends Either<? extends LT1,  ? extends RT1>> et = ret.map(Either::fromMonadicValue2);
+            
+           final Eval<Either<LT1, RT1>> e3 =  (Eval<Either<LT1,  RT1>>)et;
+           return new Lazy<>(
+                             e3);
+           
         }
 
         @Override

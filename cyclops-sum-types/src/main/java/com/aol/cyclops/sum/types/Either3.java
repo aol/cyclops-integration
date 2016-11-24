@@ -799,8 +799,8 @@ public interface Either3<LT1, LT2, RT>
         public <RT1> Either3<ST, M, RT1> flatMap(
                 final Function<? super PT, ? extends MonadicValue3<? extends ST, ? extends M, ? extends RT1>> mapper) {
             
-             Eval<? extends MonadicValue3<? extends ST, ? extends M, ? extends RT1>> ret = value.map(mapper);
-             Eval<? extends Either3<? extends ST, ? extends M, ? extends RT1>> et = ret.map(Either3::fromMonadicValue3);
+            Eval<? extends Either3<? extends ST, ? extends M, ? extends RT1>> et = value.map(mapper.andThen(Either3::fromMonadicValue3));
+             
              
             final Eval<Either3<ST, M, RT1>> e3 =  (Eval<Either3<ST, M, RT1>>)et;
             return new Lazy<>(

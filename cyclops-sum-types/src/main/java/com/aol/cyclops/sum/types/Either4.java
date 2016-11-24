@@ -844,8 +844,8 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
         @Override
         public <RT1> Either4<ST, M, M2, RT1> flatMap(
                 final Function<? super PT, ? extends MonadicValue4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> mapper) {
-            Eval<? extends MonadicValue4<? extends ST, ? extends M,? extends M2, ? extends RT1>> ret = value.map(mapper);
-            Eval<? extends Either4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> et = ret.map(Either4::fromMonadicValue4);
+            Eval<? extends Either4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> et = value.map(mapper.andThen(Either4::fromMonadicValue4));
+           
             
            final Eval<Either4<ST, M, M2, RT1>> e3 =  (Eval<Either4<ST, M, M2, RT1>>)et;
            return new Lazy<>(
