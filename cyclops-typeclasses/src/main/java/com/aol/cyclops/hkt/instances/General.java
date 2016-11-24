@@ -24,6 +24,12 @@ import com.aol.cyclops.util.function.TriFunction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+/**
+ * General instance used to create typeclass instances from Java 8 method references
+ * 
+ * @author johnmcclean
+ *
+ */
 public interface General {
     @AllArgsConstructor
     static class GeneralFunctor<CRE,A,B> implements Functor<CRE>{
