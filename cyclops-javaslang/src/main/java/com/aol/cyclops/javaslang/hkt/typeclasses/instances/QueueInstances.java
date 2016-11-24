@@ -30,18 +30,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class QueueInstances {
 
-    public static void main(String[] args){
-        Queue<Integer> small = Queue.of(1,2,3);
-        QueueType<Integer> list = QueueInstances.functor()
-                                     .map(i->i*2, QueueType.widen(small))
-                                    // .then_(functor()::map, Lambda.<Integer,Integer>l1(i->i*3))
-                                     .then(h-> functor().map((Integer i)->""+i,h))
-                                     .then(h-> monad().flatMap(s->QueueType.widen(Queue.of(1)), h))
-                                     .convert(QueueType::narrowK);
-          QueueType<Integer> string = list.convert(QueueType::narrowK);
-                    
-        System.out.println(QueueInstances.functor().map(i->i*2, QueueType.widen(small)));
-    }
+   
     /**
      * 
      * Transform a list, mulitplying every element by 2
@@ -89,8 +78,8 @@ public class QueueInstances {
      * 
      * @return A factory for Queues
      */
-    public static Unit<QueueType.µ> unit(){
-        return General.unit(QueueType::of);
+    public static <T> Unit<QueueType.µ> unit(){
+        return General.<QueueType.µ,T>unit(QueueType::of);
     }
     /**
      * 
@@ -197,7 +186,7 @@ public class QueueInstances {
      * </pre>
      * @return Type class for combining Queues by concatenation
      */
-    public static <T> MonadPlus<QueueType.µ,T> monadPlus(){
+    public static <T> MonadPlus<QueueType.µ> monadPlus(){
         Monoid<QueueType<T>> m = Monoid.of(QueueType.widen(Queue.empty()), QueueInstances::concat);
         Monoid<Higher<QueueType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -218,7 +207,7 @@ public class QueueInstances {
      * @param m Monoid to use for combining Queues
      * @return Type class for combining Queues
      */
-    public static <T> MonadPlus<QueueType.µ,T> monadPlus(Monoid<QueueType<T>> m){
+    public static <T> MonadPlus<QueueType.µ> monadPlus(Monoid<QueueType<T>> m){
         Monoid<Higher<QueueType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

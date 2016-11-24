@@ -79,8 +79,8 @@ public class FutureInstances {
      * 
      * @return A factory for Futures
      */
-    public static Unit<FutureType.µ> unit(){
-        return General.unit(FutureInstances::of);
+    public static <T> Unit<FutureType.µ> unit(){
+        return General.<FutureType.µ,T>unit(FutureInstances::of);
     }
     /**
      * 
@@ -186,7 +186,7 @@ public class FutureInstances {
      * </pre>
      * @return Type class for combining Futures by concatenation
      */
-    public static <T> MonadPlus<FutureType.µ,T> monadPlus(){
+    public static <T> MonadPlus<FutureType.µ> monadPlus(){
         Monoid<FutureW<T>> mn = Monoids.firstSuccessfulFuture();
         Monoid<FutureType<T>> m = Monoid.of(FutureType.widen(mn.zero()), (f,g)-> FutureType.widen(
                                                                              mn.apply(Javaslang.futureW(f), Javaslang.futureW(g))));
@@ -210,7 +210,7 @@ public class FutureInstances {
      * @param m Monoid to use for combining Futures
      * @return Type class for combining Futures
      */
-    public static <T> MonadPlus<FutureType.µ,T> monadPlus(Monoid<FutureType<T>> m){
+    public static <T> MonadPlus<FutureType.µ> monadPlus(Monoid<FutureType<T>> m){
         Monoid<Higher<FutureType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

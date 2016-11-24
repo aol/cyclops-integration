@@ -158,7 +158,7 @@ public interface General {
         
 
         @Override
-        public <T> Higher<CRE, T> zero() {
+        public Higher<CRE, ?> zero() {
             return (Higher)zero;
         }
 
@@ -196,7 +196,7 @@ public interface General {
         }
 
         @Override
-        public <T> Higher<CRE, T> zero() {
+        public Higher<CRE, ?> zero() {
             return (Higher)zero.get();
         }
 
@@ -240,8 +240,8 @@ public interface General {
         
     }
     @AllArgsConstructor
-    static class GeneralMonadPlus<CRE,T,B> implements MonadPlus<CRE,T>{
-        Monoid<Higher<CRE, T>> monoid;
+    static class GeneralMonadPlus<CRE,T> implements MonadPlus<CRE>{
+        Monoid<Higher<CRE, ?>> monoid;
         Monad<CRE> monad;
         
 
@@ -268,13 +268,13 @@ public interface General {
         
 
         @Override
-        public Monoid<Higher<CRE, T>> monoid() {
+        public Monoid<Higher<CRE, ?>> monoid() {
             return (Monoid)monoid;
         }
         
     }
     @AllArgsConstructor
-    static class SupplierMonadPlus<CRE,T,B> implements MonadPlus<CRE,T>{
+    static class SupplierMonadPlus<CRE,T,B> implements MonadPlus<CRE>{
         Monoid<Higher<CRE, T>> monoid;
         MonadZero<CRE> monad;
         
@@ -300,20 +300,20 @@ public interface General {
         }
 
         @Override
-        public Higher<CRE, T> zero(){
+        public Higher<CRE, ?> zero(){
             return monad.zero();
         }
 
         @Override
-        public Monoid<Higher<CRE, T>> monoid() {
+        public Monoid<Higher<CRE, ?>> monoid() {
             return (Monoid)monoid;
         }
         
     }
-    static  <CRE,A,B> GeneralMonadPlus<CRE,A,B> monadPlus(Monad<CRE> monad,
-            Monoid<Higher<CRE, A>> monoid) {
+    static  <CRE,A,B> GeneralMonadPlus<CRE,A> monadPlus(Monad<CRE> monad,
+            Monoid<Higher<CRE, ?>> monoid) {
    
-        return new GeneralMonadPlus<CRE,A,B>(monoid,monad);
+        return new GeneralMonadPlus<CRE,A>(monoid,monad);
         
     }
     static  <CRE,A,B> SupplierMonadPlus<CRE,A,B> monadPlus(MonadZero<CRE> monad,

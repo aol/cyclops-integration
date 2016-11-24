@@ -14,6 +14,7 @@ import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.util.function.QuadFunction;
 import com.aol.cyclops.util.function.TriFunction;
 
+import fj.F0;
 import fj.P1;
 import fj.control.Trampoline;
 import fj.data.Either;
@@ -38,7 +39,7 @@ public interface FJ {
 
     
     public static <T> Maybe<T> maybe(Option<T> opt){
-        return opt.option(Maybe::none, Maybe::just);
+        return opt.isNone() ? Maybe.none() : Maybe.just(opt.some());
     }
     /**
      * Methods for making working with FJ's Trampoline a little more Java8 friendly

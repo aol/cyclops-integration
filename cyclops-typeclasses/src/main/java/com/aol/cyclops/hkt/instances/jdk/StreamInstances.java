@@ -30,7 +30,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Streams {
+public class StreamInstances {
 
    
     /**
@@ -62,7 +62,7 @@ public class Streams {
      * @return A functor for Streams
      */
     public static <T,R>Functor<StreamType.µ> functor(){
-        BiFunction<StreamType<T>,Function<? super T, ? extends R>,StreamType<R>> map = Streams::map;
+        BiFunction<StreamType<T>,Function<? super T, ? extends R>,StreamType<R>> map = StreamInstances::map;
         return General.functor(map);
     }
     /**
@@ -80,8 +80,8 @@ public class Streams {
      * 
      * @return A factory for Streams
      */
-    public static Unit<StreamType.µ> unit(){
-        return General.unit(Streams::of);
+    public static <T> Unit<StreamType.µ> unit(){
+        return General.<StreamType.µ,T>unit(StreamInstances::of);
     }
     /**
      * 
@@ -120,7 +120,7 @@ public class Streams {
      * @return A zipper for Streams
      */
     public static <T,R> Applicative<StreamType.µ> zippingApplicative(){
-        BiFunction<StreamType< Function<T, R>>,StreamType<T>,StreamType<R>> ap = Streams::ap;
+        BiFunction<StreamType< Function<T, R>>,StreamType<T>,StreamType<R>> ap = StreamInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -151,7 +151,7 @@ public class Streams {
      */
     public static <T,R> Monad<StreamType.µ> monad(){
   
-        BiFunction<Higher<StreamType.µ,T>,Function<? super T, ? extends Higher<StreamType.µ,R>>,Higher<StreamType.µ,R>> flatMap = Streams::flatMap;
+        BiFunction<Higher<StreamType.µ,T>,Function<? super T, ? extends Higher<StreamType.µ,R>>,Higher<StreamType.µ,R>> flatMap = StreamInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
@@ -172,7 +172,7 @@ public class Streams {
      * @return A filterable monad (with default value)
      */
     public static <T,R> MonadZero<StreamType.µ> monadZero(){
-        BiFunction<Higher<StreamType.µ,T>,Predicate<? super T>,Higher<StreamType.µ,T>> filter = Streams::filter;
+        BiFunction<Higher<StreamType.µ,T>,Predicate<? super T>,Higher<StreamType.µ,T>> filter = StreamInstances::filter;
         Supplier<Higher<StreamType.µ, T>> zero = ()->StreamType.widen(Stream.of());
         return General.<StreamType.µ,T,R>monadZero(monad(), zero,filter);
     }
@@ -188,8 +188,8 @@ public class Streams {
      * </pre>
      * @return Type class for combining Streams by concatenation
      */
-    public static <T> MonadPlus<StreamType.µ,T> monadPlus(){
-        Monoid<StreamType<T>> m = Monoid.of(StreamType.widen(Stream.of()), Streams::concat);
+    public static <T> MonadPlus<StreamType.µ> monadPlus(){
+        Monoid<StreamType<T>> m = Monoid.of(StreamType.widen(Stream.of()), StreamInstances::concat);
         Monoid<Higher<StreamType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
@@ -209,7 +209,7 @@ public class Streams {
      * @param m Monoid to use for combining Streams
      * @return Type class for combining Streams
      */
-    public static <T> MonadPlus<StreamType.µ,T> monadPlus(Monoid<StreamType<T>> m){
+    public static <T> MonadPlus<StreamType.µ> monadPlus(Monoid<StreamType<T>> m){
         Monoid<Higher<StreamType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

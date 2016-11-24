@@ -28,7 +28,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class PStacks {
+public class PStackInstances {
 
    
     /**
@@ -60,7 +60,7 @@ public class PStacks {
      * @return A functor for PStacks
      */
     public static <T,R>Functor<PStackType.µ> functor(){
-        BiFunction<PStackType<T>,Function<? super T, ? extends R>,PStackType<R>> map = PStacks::map;
+        BiFunction<PStackType<T>,Function<? super T, ? extends R>,PStackType<R>> map = PStackInstances::map;
         return General.functor(map);
     }
     /**
@@ -78,8 +78,8 @@ public class PStacks {
      * 
      * @return A factory for PStacks
      */
-    public static Unit<PStackType.µ> unit(){
-        return General.unit(PStacks::of);
+    public static <T> Unit<PStackType.µ> unit(){
+        return General.<PStackType.µ,T>unit(PStackInstances::of);
     }
     /**
      * 
@@ -119,7 +119,7 @@ public class PStacks {
      * @return A zipper for PStacks
      */
     public static <T,R> Applicative<PStackType.µ> zippingApplicative(){
-        BiFunction<PStackType< Function<T, R>>,PStackType<T>,PStackType<R>> ap = PStacks::ap;
+        BiFunction<PStackType< Function<T, R>>,PStackType<T>,PStackType<R>> ap = PStackInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -150,7 +150,7 @@ public class PStacks {
      */
     public static <T,R> Monad<PStackType.µ> monad(){
   
-        BiFunction<Higher<PStackType.µ,T>,Function<? super T, ? extends Higher<PStackType.µ,R>>,Higher<PStackType.µ,R>> flatMap = PStacks::flatMap;
+        BiFunction<Higher<PStackType.µ,T>,Function<? super T, ? extends Higher<PStackType.µ,R>>,Higher<PStackType.µ,R>> flatMap = PStackInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
@@ -186,8 +186,8 @@ public class PStacks {
      * </pre>
      * @return Type class for combining PStacks by concatenation
      */
-    public static <T> MonadPlus<PStackType.µ,T> monadPlus(){
-        Monoid<PStackType<T>> m = Monoid.of(PStackType.widen(PStackX.empty()), PStacks::concat);
+    public static <T> MonadPlus<PStackType.µ> monadPlus(){
+        Monoid<PStackType<T>> m = Monoid.of(PStackType.widen(PStackX.empty()), PStackInstances::concat);
         Monoid<Higher<PStackType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
@@ -207,7 +207,7 @@ public class PStacks {
      * @param m Monoid to use for combining PStacks
      * @return Type class for combining PStacks
      */
-    public static <T> MonadPlus<PStackType.µ,T> monadPlus(Monoid<PStackType<T>> m){
+    public static <T> MonadPlus<PStackType.µ> monadPlus(Monoid<PStackType<T>> m){
         Monoid<Higher<PStackType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

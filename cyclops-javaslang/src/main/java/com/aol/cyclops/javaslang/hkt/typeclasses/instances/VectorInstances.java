@@ -30,18 +30,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class VectorInstances {
 
-    public static void main(String[] args){
-        Vector<Integer> small = Vector.of(1,2,3);
-        VectorType<Integer> list = VectorInstances.functor()
-                                     .map(i->i*2, VectorType.widen(small))
-                                    // .then_(functor()::map, Lambda.<Integer,Integer>l1(i->i*3))
-                                     .then(h-> functor().map((Integer i)->""+i,h))
-                                     .then(h-> monad().flatMap(s->VectorType.widen(Vector.of(1)), h))
-                                     .convert(VectorType::narrowK);
-          VectorType<Integer> string = list.convert(VectorType::narrowK);
-                    
-        System.out.println(VectorInstances.functor().map(i->i*2, VectorType.widen(small)));
-    }
+   
     /**
      * 
      * Transform a list, mulitplying every element by 2
@@ -89,8 +78,8 @@ public class VectorInstances {
      * 
      * @return A factory for Vectors
      */
-    public static Unit<VectorType.µ> unit(){
-        return General.unit(VectorType::of);
+    public static <T> Unit<VectorType.µ> unit(){
+        return General.<VectorType.µ,T>unit(VectorType::of);
     }
     /**
      * 
@@ -197,7 +186,7 @@ public class VectorInstances {
      * </pre>
      * @return Type class for combining Vectors by concatenation
      */
-    public static <T> MonadPlus<VectorType.µ,T> monadPlus(){
+    public static <T> MonadPlus<VectorType.µ> monadPlus(){
         Monoid<VectorType<T>> m = Monoid.of(VectorType.widen(Vector.empty()), VectorInstances::concat);
         Monoid<Higher<VectorType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -218,7 +207,7 @@ public class VectorInstances {
      * @param m Monoid to use for combining Vectors
      * @return Type class for combining Vectors
      */
-    public static <T> MonadPlus<VectorType.µ,T> monadPlus(Monoid<VectorType<T>> m){
+    public static <T> MonadPlus<VectorType.µ> monadPlus(Monoid<VectorType<T>> m){
         Monoid<Higher<VectorType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

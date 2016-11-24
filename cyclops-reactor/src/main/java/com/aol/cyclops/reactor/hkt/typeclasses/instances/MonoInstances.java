@@ -80,8 +80,8 @@ public class MonoInstances {
      * 
      * @return A factory for Monos
      */
-    public static Unit<MonoType.µ> unit(){
-        return General.unit(MonoInstances::of);
+    public static <T> Unit<MonoType.µ> unit(){
+        return General.<MonoType.µ,T>unit(MonoInstances::of);
     }
     /**
      * 
@@ -190,7 +190,7 @@ public class MonoInstances {
      * </pre>
      * @return Type class for combining Monos by concatenation
      */
-    public static <T> MonadPlus<MonoType.µ,T> monadPlus(){
+    public static <T> MonadPlus<MonoType.µ> monadPlus(){
  
         
         Monoid<MonoType<T>> m = Monoid.of(MonoType.<T>widen(Mono.empty()), 
@@ -215,7 +215,7 @@ public class MonoInstances {
      * @param m Monoid to use for combining Monos
      * @return Type class for combining Monos
      */
-    public static <T> MonadPlus<MonoType.µ,T> monadPlus(Monoid<MonoType<T>> m){
+    public static <T> MonadPlus<MonoType.µ> monadPlus(Monoid<MonoType<T>> m){
         Monoid<Higher<MonoType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

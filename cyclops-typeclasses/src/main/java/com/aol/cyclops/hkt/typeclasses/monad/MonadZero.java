@@ -16,18 +16,24 @@ import com.aol.cyclops.hkt.typeclasses.Filterable;
  */
 public interface MonadZero<CRE> extends Monad<CRE>, Filterable<CRE> {
     
+    
     /**
+     * e.g. for Optional we can use Optional.empty()
      * 
-     * @return Identity value or zero value
+     * @return Identity value or zero value for the HKT type, the generic type is unknown
      */
-    public <T> Higher<CRE, T> zero();
+    public  Higher<CRE, ?> zero();
     
     /* (non-Javadoc)
      * @see com.aol.cyclops.hkt.typeclasses.Filterable#filter(java.util.function.Predicate, com.aol.cyclops.hkt.alias.Higher)
      */
     default <T> Higher<CRE,T> filter(Predicate<? super T> predicate,  Higher<CRE,T> ds){
         
-        return flatMap((T in)->predicate.test(in) ? ds : this.<T>zero(),ds);
+        return flatMap((T in)->predicate.test(in) ? ds : narrowZero(),ds);
+    }
+    
+    default <T> Higher<CRE,T> narrowZero(){
+        return  (Higher)zero();
     }
     
 }

@@ -30,11 +30,11 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Queues {
+public class QueueInstances {
 
     public static void main(String[] args){
         Queue<Integer> small = QueueX.of(1,2,3);
-        QueueType<Integer> queue = Queues.functor()
+        QueueType<Integer> queue = QueueInstances.functor()
                                      .map(i->i*2, QueueType.widen(small))
                                     // .then_(functor()::map, Lambda.<Integer,Integer>l1(i->i*3))
                                      .then(h-> functor().map((Integer i)->""+i,h))
@@ -42,7 +42,7 @@ public class Queues {
                                      .convert(QueueType::narrowK);
           QueueType<Integer> string = queue.convert(QueueType::narrowK);
                     
-        System.out.println(Queues.functor().map(i->i*2, QueueType.widen(small)));
+        System.out.println(QueueInstances.functor().map(i->i*2, QueueType.widen(small)));
     }
     /**
      * 
@@ -73,7 +73,7 @@ public class Queues {
      * @return A functor for Queues
      */
     public static <T,R>Functor<QueueType.µ> functor(){
-        BiFunction<QueueType<T>,Function<? super T, ? extends R>,QueueType<R>> map = Queues::map;
+        BiFunction<QueueType<T>,Function<? super T, ? extends R>,QueueType<R>> map = QueueInstances::map;
         return General.functor(map);
     }
     /**
@@ -91,8 +91,8 @@ public class Queues {
      * 
      * @return A factory for Queues
      */
-    public static Unit<QueueType.µ> unit(){
-        return General.unit(Queues::of);
+    public static <T> Unit<QueueType.µ> unit(){
+        return General.<QueueType.µ,T>unit(QueueInstances::of);
     }
     /**
      * 
@@ -132,7 +132,7 @@ public class Queues {
      * @return A zipper for Queues
      */
     public static <T,R> Applicative<QueueType.µ> zippingApplicative(){
-        BiFunction<QueueType< Function<T, R>>,QueueType<T>,QueueType<R>> ap = Queues::ap;
+        BiFunction<QueueType< Function<T, R>>,QueueType<T>,QueueType<R>> ap = QueueInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -163,7 +163,7 @@ public class Queues {
      */
     public static <T,R> Monad<QueueType.µ> monad(){
   
-        BiFunction<Higher<QueueType.µ,T>,Function<? super T, ? extends Higher<QueueType.µ,R>>,Higher<QueueType.µ,R>> flatMap = Queues::flatMap;
+        BiFunction<Higher<QueueType.µ,T>,Function<? super T, ? extends Higher<QueueType.µ,R>>,Higher<QueueType.µ,R>> flatMap = QueueInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
@@ -199,8 +199,8 @@ public class Queues {
      * </pre>
      * @return Type class for combining Queues by concatenation
      */
-    public static <T> MonadPlus<QueueType.µ,T> monadPlus(){
-        Monoid<QueueType<T>> m = Monoid.of(QueueType.widen(QueueX.empty()), Queues::concat);
+    public static <T> MonadPlus<QueueType.µ> monadPlus(){
+        Monoid<QueueType<T>> m = Monoid.of(QueueType.widen(QueueX.empty()), QueueInstances::concat);
         Monoid<Higher<QueueType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
@@ -220,7 +220,7 @@ public class Queues {
      * @param m Monoid to use for combining Queues
      * @return Type class for combining Queues
      */
-    public static <T> MonadPlus<QueueType.µ,T> monadPlus(Monoid<QueueType<T>> m){
+    public static <T> MonadPlus<QueueType.µ> monadPlus(Monoid<QueueType<T>> m){
         Monoid<Higher<QueueType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

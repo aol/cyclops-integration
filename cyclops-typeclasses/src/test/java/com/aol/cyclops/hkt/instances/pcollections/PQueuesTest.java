@@ -22,7 +22,7 @@ public class PQueuesTest {
     @Test
     public void unit(){
         
-        PQueueType<String> list = PQueues.unit()
+        PQueueType<String> list = PQueueInstances.unit()
                                      .unit("hello")
                                      .convert(PQueueType::narrowK);
         
@@ -31,16 +31,16 @@ public class PQueuesTest {
     @Test
     public void functor(){
         
-        PQueueType<Integer> list = PQueues.unit()
+        PQueueType<Integer> list = PQueueInstances.unit()
                                      .unit("hello")
-                                     .then(h->PQueues.functor().map((String v) ->v.length(), h))
+                                     .then(h->PQueueInstances.functor().map((String v) ->v.length(), h))
                                      .convert(PQueueType::narrowK);
         
         assertThat(list.toArray(),equalTo(PQueueX.of("hello".length()).toArray()));
     }
     @Test
     public void apSimple(){
-        PQueues.zippingApplicative()
+        PQueueInstances.zippingApplicative()
             .ap(widen(PQueueX.of(l1(this::multiplyByTwo))),widen(PQueueX.of(1,2,3)));
     }
     private int multiplyByTwo(int x){
@@ -49,28 +49,28 @@ public class PQueuesTest {
     @Test
     public void applicative(){
         
-        PQueueType<Function<Integer,Integer>> listFn =PQueues.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(PQueueType::narrowK);
+        PQueueType<Function<Integer,Integer>> listFn =PQueueInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(PQueueType::narrowK);
         
-        PQueueType<Integer> list = PQueues.unit()
+        PQueueType<Integer> list = PQueueInstances.unit()
                                      .unit("hello")
-                                     .then(h->PQueues.functor().map((String v) ->v.length(), h))
-                                     .then(h->PQueues.zippingApplicative().ap(listFn, h))
+                                     .then(h->PQueueInstances.functor().map((String v) ->v.length(), h))
+                                     .then(h->PQueueInstances.zippingApplicative().ap(listFn, h))
                                      .convert(PQueueType::narrowK);
         
         assertThat(list.toArray(),equalTo(PQueueX.of("hello".length()*2).toArray()));
     }
     @Test
     public void monadSimple(){
-       PQueueType<Integer> list  = PQueues.monad()
+       PQueueType<Integer> list  = PQueueInstances.monad()
                                       .flatMap(i->widen(PQueueX.range(0,i)), widen(PQueueX.of(1,2,3)))
                                       .convert(PQueueType::narrowK);
     }
     @Test
     public void monad(){
         
-        PQueueType<Integer> list = PQueues.unit()
+        PQueueType<Integer> list = PQueueInstances.unit()
                                      .unit("hello")
-                                     .then(h->PQueues.monad().flatMap((String v) ->PQueues.unit().unit(v.length()), h))
+                                     .then(h->PQueueInstances.monad().flatMap((String v) ->PQueueInstances.unit().unit(v.length()), h))
                                      .convert(PQueueType::narrowK);
         
         assertThat(list.toArray(),equalTo(PQueueX.of("hello".length()).toArray()));
@@ -78,9 +78,9 @@ public class PQueuesTest {
     @Test
     public void monadZeroFilter(){
         
-        PQueueType<String> list = PQueues.unit()
+        PQueueType<String> list = PQueueInstances.unit()
                                      .unit("hello")
-                                     .then(h->PQueues.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .then(h->PQueueInstances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(PQueueType::narrowK);
         
         assertThat(list.toArray(),equalTo(PQueueX.of("hello").toArray()));
@@ -88,9 +88,9 @@ public class PQueuesTest {
     @Test
     public void monadZeroFilterOut(){
         
-        PQueueType<String> list = PQueues.unit()
+        PQueueType<String> list = PQueueInstances.unit()
                                      .unit("hello")
-                                     .then(h->PQueues.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .then(h->PQueueInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(PQueueType::narrowK);
         
         assertThat(list.toArray(),equalTo(PQueueX.empty().toArray()));
@@ -98,7 +98,7 @@ public class PQueuesTest {
     
     @Test
     public void monadPlus(){
-        PQueueType<Integer> list = PQueues.<Integer>monadPlus()
+        PQueueType<Integer> list = PQueueInstances.<Integer>monadPlus()
                                       .plus(PQueueType.widen(PQueueX.empty()), PQueueType.widen(PQueueX.of(10)))
                                       .convert(PQueueType::narrowK);
         assertThat(list.toArray(),equalTo(PQueueX.of(10).toArray()));
@@ -107,21 +107,21 @@ public class PQueuesTest {
     public void monadPlusNonEmpty(){
         
         Monoid<PQueueType<Integer>> m = Monoid.of(PQueueType.widen(PQueueX.empty()), (a,b)->a.isEmpty() ? b : a);
-        PQueueType<Integer> list = PQueues.<Integer>monadPlus(m)
+        PQueueType<Integer> list = PQueueInstances.<Integer>monadPlus(m)
                                       .plus(PQueueType.widen(PQueueX.of(5)), PQueueType.widen(PQueueX.of(10)))
                                       .convert(PQueueType::narrowK);
         assertThat(list.toArray(),equalTo(PQueueX.of(5).toArray()));
     }
     @Test
     public void  foldLeft(){
-        int sum  = PQueues.foldable()
+        int sum  = PQueueInstances.foldable()
                         .foldLeft(0, (a,b)->a+b, PQueueType.widen(PQueueX.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
-        int sum  = PQueues.foldable()
+        int sum  = PQueueInstances.foldable()
                         .foldRight(0, (a,b)->a+b, PQueueType.widen(PQueueX.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
@@ -129,7 +129,7 @@ public class PQueuesTest {
     
     @Test
     public void traverse(){
-       MaybeType<Higher<PQueueType.µ, Integer>> res = PQueues.traverse()
+       MaybeType<Higher<PQueueType.µ, Integer>> res = PQueueInstances.traverse()
                                                          .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), PQueueType.of(1,2,3))
                                                          .convert(MaybeType::narrowK);
        

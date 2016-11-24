@@ -29,18 +29,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class StreamInstances {
 
-    public static void main(String[] args){
-        Stream<Integer> small = Stream.stream(1,2,3);
-        StreamType<Integer> stream = StreamInstances.functor()
-                                     .map(i->i*2, StreamType.widen(small))
-                                    // .then_(functor()::map, Lambda.<Integer,Integer>l1(i->i*3))
-                                     .then(h-> functor().map((Integer i)->""+i,h))
-                                     .then(h-> monad().flatMap(s->StreamType.widen(Stream.stream(1)), h))
-                                     .convert(StreamType::narrowK);
-          StreamType<Integer> string = stream.convert(StreamType::narrowK);
-                    
-        System.out.println(StreamInstances.functor().map(i->i*2, StreamType.widen(small)));
-    }
+    
     /**
      * 
      * Transform a stream, mulitplying every element by 2
@@ -88,8 +77,8 @@ public class StreamInstances {
      * 
      * @return A factory for Streams
      */
-    public static Unit<StreamType.µ> unit(){
-        return General.unit(StreamInstances::of);
+    public static <T> Unit<StreamType.µ> unit(){
+        return General.<StreamType.µ,T>unit(StreamInstances::of);
     }
     /**
      * 
@@ -196,7 +185,7 @@ public class StreamInstances {
      * </pre>
      * @return Type class for combining Streams by concatenation
      */
-    public static <T> MonadPlus<StreamType.µ,T> monadPlus(){
+    public static <T> MonadPlus<StreamType.µ> monadPlus(){
         Monoid<StreamType<T>> m = Monoid.of(StreamType.widen(Stream.stream()), StreamInstances::concat);
         Monoid<Higher<StreamType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -217,7 +206,7 @@ public class StreamInstances {
      * @param m Monoid to use for combining Streams
      * @return Type class for combining Streams
      */
-    public static <T> MonadPlus<StreamType.µ,T> monadPlus(Monoid<StreamType<T>> m){
+    public static <T> MonadPlus<StreamType.µ> monadPlus(Monoid<StreamType<T>> m){
         Monoid<Higher<StreamType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

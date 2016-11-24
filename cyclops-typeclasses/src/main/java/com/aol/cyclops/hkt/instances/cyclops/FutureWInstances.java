@@ -8,7 +8,6 @@ import com.aol.cyclops.Monoids;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.FutureType;
-import com.aol.cyclops.hkt.cyclops.MaybeType;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.typeclasses.Unit;
 import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
@@ -28,7 +27,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class FutureWs {
+public class FutureWInstances {
 
     
     /**
@@ -60,7 +59,7 @@ public class FutureWs {
      * @return A functor for FutureWs
      */
     public static <T,R>Functor<FutureType.µ> functor(){
-        BiFunction<FutureType<T>,Function<? super T, ? extends R>,FutureType<R>> map = FutureWs::map;
+        BiFunction<FutureType<T>,Function<? super T, ? extends R>,FutureType<R>> map = FutureWInstances::map;
         return General.functor(map);
     }
     /**
@@ -78,8 +77,8 @@ public class FutureWs {
      * 
      * @return A factory for FutureWs
      */
-    public static Unit<FutureType.µ> unit(){
-        return General.unit(FutureWs::of);
+    public static <T> Unit<FutureType.µ> unit(){
+        return General.<FutureType.µ,T>unit(FutureWInstances::of);
     }
     /**
      * 
@@ -119,7 +118,7 @@ public class FutureWs {
      * @return A zipper for FutureWs
      */
     public static <T,R> Applicative<FutureType.µ> applicative(){
-        BiFunction<FutureType< Function<T, R>>,FutureType<T>,FutureType<R>> ap = FutureWs::ap;
+        BiFunction<FutureType< Function<T, R>>,FutureType<T>,FutureType<R>> ap = FutureWInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -150,7 +149,7 @@ public class FutureWs {
      */
     public static <T,R> Monad<FutureType.µ> monad(){
   
-        BiFunction<Higher<FutureType.µ,T>,Function<? super T, ? extends Higher<FutureType.µ,R>>,Higher<FutureType.µ,R>> flatMap = FutureWs::flatMap;
+        BiFunction<Higher<FutureType.µ,T>,Function<? super T, ? extends Higher<FutureType.µ,R>>,Higher<FutureType.µ,R>> flatMap = FutureWInstances::flatMap;
         return General.monad(applicative(), flatMap);
     }
     /**
@@ -186,7 +185,7 @@ public class FutureWs {
      * </pre>
      * @return Type class for combining FutureWs by concatenation
      */
-    public static <T> MonadPlus<FutureType.µ,T> monadPlus(){
+    public static <T> MonadPlus<FutureType.µ> monadPlus(){
         Monoid<FutureW<T>> mn = Monoids.firstSuccessfulFuture();
         Monoid<FutureType<T>> m = Monoid.of(FutureType.widen(mn.zero()), (f,g)-> FutureType.widen(
                                                                                                                                    mn.apply(FutureType.narrow(f), FutureType.narrow(g))));
@@ -210,7 +209,7 @@ public class FutureWs {
      * @param m Monoid to use for combining FutureWs
      * @return Type class for combining FutureWs
      */
-    public static <T> MonadPlus<FutureType.µ,T> monadPlus(Monoid<FutureType<T>> m){
+    public static <T> MonadPlus<FutureType.µ> monadPlus(Monoid<FutureType<T>> m){
         Monoid<Higher<FutureType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
@@ -220,7 +219,7 @@ public class FutureWs {
      */
     public static <C2,T> Traverse<FutureType.µ> traverse(){
       
-        return General.traverseByTraverse(applicative(), FutureWs::traverseA);
+        return General.traverseByTraverse(applicative(), FutureWInstances::traverseA);
     }
     
     /**

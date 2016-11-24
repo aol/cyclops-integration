@@ -79,8 +79,8 @@ public class StreamInstances {
      * 
      * @return A factory for Streams
      */
-    public static Unit<StreamType.µ> unit(){
-        return General.unit(StreamInstances::of);
+    public static <T> Unit<StreamType.µ> unit(){
+        return General.<StreamType.µ,T>unit(StreamInstances::of);
     }
     /**
      * 
@@ -187,7 +187,7 @@ public class StreamInstances {
      * </pre>
      * @return Type class for combining Streams by concatenation
      */
-    public static <T> MonadPlus<StreamType.µ,T> monadPlus(){
+    public static <T> MonadPlus<StreamType.µ> monadPlus(){
         Monoid<StreamType<T>> m = Monoid.of(StreamType.widen(Stream.<T>empty()), StreamInstances::concat);
         Monoid<Higher<StreamType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -208,7 +208,7 @@ public class StreamInstances {
      * @param m Monoid to use for combining Streams
      * @return Type class for combining Streams
      */
-    public static <T> MonadPlus<StreamType.µ,T> monadPlus(Monoid<StreamType<T>> m){
+    public static <T> MonadPlus<StreamType.µ> monadPlus(Monoid<StreamType<T>> m){
         Monoid<Higher<StreamType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

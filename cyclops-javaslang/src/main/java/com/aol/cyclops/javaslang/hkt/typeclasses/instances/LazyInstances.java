@@ -79,8 +79,8 @@ public class LazyInstances {
      * 
      * @return A factory for Lazys
      */
-    public static Unit<LazyType.µ> unit(){
-        return General.unit(LazyInstances::of);
+    public static <T> Unit<LazyType.µ> unit(){
+        return General.<LazyType.µ,T>unit(LazyInstances::of);
     }
     /**
      * 
@@ -187,7 +187,7 @@ public class LazyInstances {
      * </pre>
      * @return Type class for combining Lazys by concatenation
      */
-    public static <T> MonadPlus<LazyType.µ,T> monadPlus(){
+    public static <T> MonadPlus<LazyType.µ> monadPlus(){
         Monoid<LazyType<T>> m = Monoid.of( LazyType.of(()->null),
                                             (a,b)-> a.get()==null? b: a);        
         Monoid<Higher<LazyType.µ,T>> m2= (Monoid)m;
@@ -209,7 +209,7 @@ public class LazyInstances {
      * @param m Monoid to use for combining Lazys
      * @return Type class for combining Lazys
      */
-    public static <T> MonadPlus<LazyType.µ,T> monadPlus(Monoid<LazyType<T>> m){
+    public static <T> MonadPlus<LazyType.µ> monadPlus(Monoid<LazyType<T>> m){
         Monoid<Higher<LazyType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

@@ -80,8 +80,8 @@ public class ObservableInstances {
      * 
      * @return A factory for Observables
      */
-    public static Unit<ObservableType.µ> unit(){
-        return General.unit(ObservableInstances::of);
+    public static <T> Unit<ObservableType.µ> unit(){
+        return General.<ObservableType.µ,T>unit(ObservableInstances::of);
     }
     /**
      * 
@@ -188,7 +188,7 @@ public class ObservableInstances {
      * </pre>
      * @return Type class for combining Observables by concatenation
      */
-    public static <T> MonadPlus<ObservableType.µ,T> monadPlus(){
+    public static <T> MonadPlus<ObservableType.µ> monadPlus(){
         Monoid<ObservableType<T>> m = Monoid.of(ObservableType.widen(Observable.<T>empty()), ObservableInstances::concat);
         Monoid<Higher<ObservableType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -209,7 +209,7 @@ public class ObservableInstances {
      * @param m Monoid to use for combining Observables
      * @return Type class for combining Observables
      */
-    public static <T> MonadPlus<ObservableType.µ,T> monadPlus(Monoid<ObservableType<T>> m){
+    public static <T> MonadPlus<ObservableType.µ> monadPlus(Monoid<ObservableType<T>> m){
         Monoid<Higher<ObservableType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

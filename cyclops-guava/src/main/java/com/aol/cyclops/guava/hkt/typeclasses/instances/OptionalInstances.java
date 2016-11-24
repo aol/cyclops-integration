@@ -80,8 +80,8 @@ public class OptionalInstances {
      * 
      * @return A factory for Optionals
      */
-    public static Unit<OptionalType.µ> unit(){
-        return General.unit(OptionalInstances::of);
+    public static <T> Unit<OptionalType.µ> unit(){
+        return General.<OptionalType.µ,T>unit(OptionalInstances::of);
     }
     /**
      * 
@@ -188,7 +188,7 @@ public class OptionalInstances {
      * </pre>
      * @return Type class for combining Optionals by concatenation
      */
-    public static <T> MonadPlus<OptionalType.µ,T> monadPlus(){
+    public static <T> MonadPlus<OptionalType.µ> monadPlus(){
         Monoid<Optional<T>> mn = Monoid.of(Optional.absent(), (a, b) -> a.isPresent() ? a : b);
         Monoid<OptionalType<T>> m = Monoid.of(OptionalType.widen(mn.zero()), (f,g)-> OptionalType.widen(
                                                                                 mn.apply(OptionalType.narrow(f), OptionalType.narrow(g))));
@@ -212,7 +212,7 @@ public class OptionalInstances {
      * @param m Monoid to use for combining Optionals
      * @return Type class for combining Optionals
      */
-    public static <T> MonadPlus<OptionalType.µ,T> monadPlus(Monoid<OptionalType<T>> m){
+    public static <T> MonadPlus<OptionalType.µ> monadPlus(Monoid<OptionalType<T>> m){
         Monoid<Higher<OptionalType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

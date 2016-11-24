@@ -30,18 +30,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ArrayInstances {
 
-    public static void main(String[] args){
-        Array<Integer> small = Array.of(1,2,3);
-        ArrayType<Integer> list = ArrayInstances.functor()
-                                     .map(i->i*2, ArrayType.widen(small))
-                                    // .then_(functor()::map, Lambda.<Integer,Integer>l1(i->i*3))
-                                     .then(h-> functor().map((Integer i)->""+i,h))
-                                     .then(h-> monad().flatMap(s->ArrayType.widen(Array.of(1)), h))
-                                     .convert(ArrayType::narrowK);
-          ArrayType<Integer> string = list.convert(ArrayType::narrowK);
-                    
-        System.out.println(ArrayInstances.functor().map(i->i*2, ArrayType.widen(small)));
-    }
+    
     /**
      * 
      * Transform a list, mulitplying every element by 2
@@ -89,8 +78,8 @@ public class ArrayInstances {
      * 
      * @return A factory for Arrays
      */
-    public static Unit<ArrayType.µ> unit(){
-        return General.unit(ArrayType::of);
+    public static <T> Unit<ArrayType.µ> unit(){
+        return General.<ArrayType.µ,T>unit(ArrayType::of);
     }
     /**
      * 
@@ -197,7 +186,7 @@ public class ArrayInstances {
      * </pre>
      * @return Type class for combining Arrays by concatenation
      */
-    public static <T> MonadPlus<ArrayType.µ,T> monadPlus(){
+    public static <T> MonadPlus<ArrayType.µ> monadPlus(){
         Monoid<ArrayType<T>> m = Monoid.of(ArrayType.widen(Array.empty()), ArrayInstances::concat);
         Monoid<Higher<ArrayType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -218,7 +207,7 @@ public class ArrayInstances {
      * @param m Monoid to use for combining Arrays
      * @return Type class for combining Arrays
      */
-    public static <T> MonadPlus<ArrayType.µ,T> monadPlus(Monoid<ArrayType<T>> m){
+    public static <T> MonadPlus<ArrayType.µ> monadPlus(Monoid<ArrayType<T>> m){
         Monoid<Higher<ArrayType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

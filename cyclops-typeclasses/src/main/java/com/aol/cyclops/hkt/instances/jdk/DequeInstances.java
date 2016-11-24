@@ -30,11 +30,11 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Deques {
+public class DequeInstances {
 
     public static void main(String[] args){
         Deque<Integer> small = DequeX.of(1,2,3);
-        DequeType<Integer> list = Deques.functor()
+        DequeType<Integer> list = DequeInstances.functor()
                                      .map(i->i*2, DequeType.widen(small))
                                     // .then_(functor()::map, Lambda.<Integer,Integer>l1(i->i*3))
                                      .then(h-> functor().map((Integer i)->""+i,h))
@@ -42,7 +42,7 @@ public class Deques {
                                      .convert(DequeType::narrowK);
           DequeType<Integer> string = list.convert(DequeType::narrowK);
                     
-        System.out.println(Deques.functor().map(i->i*2, DequeType.widen(small)));
+        System.out.println(DequeInstances.functor().map(i->i*2, DequeType.widen(small)));
     }
     /**
      * 
@@ -73,7 +73,7 @@ public class Deques {
      * @return A functor for Deques
      */
     public static <T,R>Functor<DequeType.µ> functor(){
-        BiFunction<DequeType<T>,Function<? super T, ? extends R>,DequeType<R>> map = Deques::map;
+        BiFunction<DequeType<T>,Function<? super T, ? extends R>,DequeType<R>> map = DequeInstances::map;
         return General.functor(map);
     }
     /**
@@ -91,8 +91,8 @@ public class Deques {
      * 
      * @return A factory for Deques
      */
-    public static Unit<DequeType.µ> unit(){
-        return General.unit(Deques::of);
+    public static <T> Unit<DequeType.µ> unit(){
+        return General.<DequeType.µ,T>unit(DequeInstances::of);
     }
     /**
      * 
@@ -132,7 +132,7 @@ public class Deques {
      * @return A zipper for Deques
      */
     public static <T,R> Applicative<DequeType.µ> zippingApplicative(){
-        BiFunction<DequeType< Function<T, R>>,DequeType<T>,DequeType<R>> ap = Deques::ap;
+        BiFunction<DequeType< Function<T, R>>,DequeType<T>,DequeType<R>> ap = DequeInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -163,7 +163,7 @@ public class Deques {
      */
     public static <T,R> Monad<DequeType.µ> monad(){
   
-        BiFunction<Higher<DequeType.µ,T>,Function<? super T, ? extends Higher<DequeType.µ,R>>,Higher<DequeType.µ,R>> flatMap = Deques::flatMap;
+        BiFunction<Higher<DequeType.µ,T>,Function<? super T, ? extends Higher<DequeType.µ,R>>,Higher<DequeType.µ,R>> flatMap = DequeInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
@@ -199,8 +199,8 @@ public class Deques {
      * </pre>
      * @return Type class for combining Deques by concatenation
      */
-    public static <T> MonadPlus<DequeType.µ,T> monadPlus(){
-        Monoid<DequeType<T>> m = Monoid.of(DequeType.widen(new ArrayDeque<T>()), Deques::concat);
+    public static <T> MonadPlus<DequeType.µ> monadPlus(){
+        Monoid<DequeType<T>> m = Monoid.of(DequeType.widen(new ArrayDeque<T>()), DequeInstances::concat);
         Monoid<Higher<DequeType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
@@ -220,7 +220,7 @@ public class Deques {
      * @param m Monoid to use for combining Deques
      * @return Type class for combining Deques
      */
-    public static <T> MonadPlus<DequeType.µ,T> monadPlus(Monoid<DequeType<T>> m){
+    public static <T> MonadPlus<DequeType.µ> monadPlus(Monoid<DequeType<T>> m){
         Monoid<Higher<DequeType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

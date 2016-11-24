@@ -78,8 +78,8 @@ public class CompletableFutureInstances {
      * 
      * @return A factory for CompletableFutures
      */
-    public static Unit<CompletableFutureType.µ> unit(){
-        return General.unit(CompletableFutureInstances::of);
+    public static <T> Unit<CompletableFutureType.µ> unit(){
+        return General.<CompletableFutureType.µ,T>unit(CompletableFutureInstances::of);
     }
     /**
      * 
@@ -185,12 +185,12 @@ public class CompletableFutureInstances {
      * </pre>
      * @return Type class for combining CompletableFutures by concatenation
      */
-    public static <T> MonadPlus<CompletableFutureType.µ,T> monadPlus(){
+    public static <T>  MonadPlus<CompletableFutureType.µ> monadPlus(){
         Monoid<CompletableFuture<T>> mn = Monoids.firstCompleteCompletableFuture();
         Monoid<CompletableFutureType<T>> m = Monoid.of(CompletableFutureType.widen(mn.zero()), (f,g)-> CompletableFutureType.widen(
                                                                                                                                    mn.apply(CompletableFutureType.narrow(f), CompletableFutureType.narrow(g))));
                 
-        Monoid<Higher<CompletableFutureType.µ,T>> m2= (Monoid)m;
+        Monoid<Higher<CompletableFutureType.µ,?>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
     /**
@@ -209,8 +209,8 @@ public class CompletableFutureInstances {
      * @param m Monoid to use for combining CompletableFutures
      * @return Type class for combining CompletableFutures
      */
-    public static <T> MonadPlus<CompletableFutureType.µ,T> monadPlus(Monoid<CompletableFutureType<T>> m){
-        Monoid<Higher<CompletableFutureType.µ,T>> m2= (Monoid)m;
+    public static  <T> MonadPlus<CompletableFutureType.µ> monadPlus(Monoid<CompletableFutureType<T>> m){
+        Monoid<Higher<CompletableFutureType.µ,?>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
  

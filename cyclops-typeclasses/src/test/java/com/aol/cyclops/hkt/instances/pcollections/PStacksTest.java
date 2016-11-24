@@ -24,7 +24,7 @@ public class PStacksTest {
     @Test
     public void unit(){
         
-        PStackType<String> list = PStacks.unit()
+        PStackType<String> list = PStackInstances.unit()
                                      .unit("hello")
                                      .convert(PStackType::narrowK);
         
@@ -33,16 +33,16 @@ public class PStacksTest {
     @Test
     public void functor(){
         
-        PStackType<Integer> list = PStacks.unit()
+        PStackType<Integer> list = PStackInstances.unit()
                                      .unit("hello")
-                                     .then(h->PStacks.functor().map((String v) ->v.length(), h))
+                                     .then(h->PStackInstances.functor().map((String v) ->v.length(), h))
                                      .convert(PStackType::narrowK);
         
         assertThat(list,equalTo(PStackX.of("hello".length())));
     }
     @Test
     public void apSimple(){
-        PStacks.zippingApplicative()
+        PStackInstances.zippingApplicative()
             .ap(widen(PStackX.of(l1(this::multiplyByTwo))),widen(PStackX.of(1,2,3)));
     }
     private int multiplyByTwo(int x){
@@ -51,28 +51,28 @@ public class PStacksTest {
     @Test
     public void applicative(){
         
-        PStackType<Function<Integer,Integer>> listFn =PStacks.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(PStackType::narrowK);
+        PStackType<Function<Integer,Integer>> listFn =PStackInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(PStackType::narrowK);
         
-        PStackType<Integer> list = PStacks.unit()
+        PStackType<Integer> list = PStackInstances.unit()
                                      .unit("hello")
-                                     .then(h->PStacks.functor().map((String v) ->v.length(), h))
-                                     .then(h->PStacks.zippingApplicative().ap(listFn, h))
+                                     .then(h->PStackInstances.functor().map((String v) ->v.length(), h))
+                                     .then(h->PStackInstances.zippingApplicative().ap(listFn, h))
                                      .convert(PStackType::narrowK);
         
         assertThat(list,equalTo(PStackX.of("hello".length()*2)));
     }
     @Test
     public void monadSimple(){
-       PStackType<Integer> list  = PStacks.monad()
+       PStackType<Integer> list  = PStackInstances.monad()
                                       .flatMap(i->widen(PStackX.range(0,i)), widen(PStackX.of(1,2,3)))
                                       .convert(PStackType::narrowK);
     }
     @Test
     public void monad(){
         
-        PStackType<Integer> list = PStacks.unit()
+        PStackType<Integer> list = PStackInstances.unit()
                                      .unit("hello")
-                                     .then(h->PStacks.monad().flatMap((String v) ->PStacks.unit().unit(v.length()), h))
+                                     .then(h->PStackInstances.monad().flatMap((String v) ->PStackInstances.unit().unit(v.length()), h))
                                      .convert(PStackType::narrowK);
         
         assertThat(list,equalTo(PStackX.of("hello".length())));
@@ -80,9 +80,9 @@ public class PStacksTest {
     @Test
     public void monadZeroFilter(){
         
-        PStackType<String> list = PStacks.unit()
+        PStackType<String> list = PStackInstances.unit()
                                      .unit("hello")
-                                     .then(h->PStacks.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .then(h->PStackInstances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(PStackType::narrowK);
         
         assertThat(list,equalTo(PStackX.of("hello")));
@@ -90,9 +90,9 @@ public class PStacksTest {
     @Test
     public void monadZeroFilterOut(){
         
-        PStackType<String> list = PStacks.unit()
+        PStackType<String> list = PStackInstances.unit()
                                      .unit("hello")
-                                     .then(h->PStacks.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .then(h->PStackInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(PStackType::narrowK);
         
         assertThat(list,equalTo(PStackX.empty()));
@@ -100,7 +100,7 @@ public class PStacksTest {
     
     @Test
     public void monadPlus(){
-        PStackType<Integer> list = PStacks.<Integer>monadPlus()
+        PStackType<Integer> list = PStackInstances.<Integer>monadPlus()
                                       .plus(PStackType.widen(PStackX.empty()), PStackType.widen(PStackX.of(10)))
                                       .convert(PStackType::narrowK);
         assertThat(list,equalTo(PStackX.of(10)));
@@ -109,21 +109,21 @@ public class PStacksTest {
     public void monadPlusNonEmpty(){
         
         Monoid<PStackType<Integer>> m = Monoid.of(PStackType.widen(PStackX.empty()), (a,b)->a.isEmpty() ? b : a);
-        PStackType<Integer> list = PStacks.<Integer>monadPlus(m)
+        PStackType<Integer> list = PStackInstances.<Integer>monadPlus(m)
                                       .plus(PStackType.widen(PStackX.of(5)), PStackType.widen(PStackX.of(10)))
                                       .convert(PStackType::narrowK);
         assertThat(list,equalTo(PStackX.of(5)));
     }
     @Test
     public void  foldLeft(){
-        int sum  = PStacks.foldable()
+        int sum  = PStackInstances.foldable()
                         .foldLeft(0, (a,b)->a+b, PStackType.widen(PStackX.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
-        int sum  = PStacks.foldable()
+        int sum  = PStackInstances.foldable()
                         .foldRight(0, (a,b)->a+b, PStackType.widen(PStackX.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
@@ -131,7 +131,7 @@ public class PStacksTest {
     
     @Test
     public void traverse(){
-       MaybeType<Higher<PStackType.µ, Integer>> res = PStacks.traverse()
+       MaybeType<Higher<PStackType.µ, Integer>> res = PStackInstances.traverse()
                                                          .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), PStackType.of(1,2,3))
                                                          .convert(MaybeType::narrowK);
        

@@ -79,8 +79,8 @@ public class ListInstances {
      * 
      * @return A factory for Lists
      */
-    public static Unit<ListType.µ> unit(){
-        return General.unit(ListInstances::of);
+    public static <T> Unit<ListType.µ> unit(){
+        return General.<ListType.µ,T>unit(ListInstances::of);
     }
     /**
      * 
@@ -187,7 +187,7 @@ public class ListInstances {
      * </pre>
      * @return Type class for combining Lists by concatenation
      */
-    public static <T> MonadPlus<ListType.µ,T> monadPlus(){
+    public static <T> MonadPlus<ListType.µ> monadPlus(){
         Monoid<ListType<T>> m = Monoid.of(ListType.widen(List.<T>empty()), ListInstances::concat);
         Monoid<Higher<ListType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -208,7 +208,7 @@ public class ListInstances {
      * @param m Monoid to use for combining Lists
      * @return Type class for combining Lists
      */
-    public static <T> MonadPlus<ListType.µ,T> monadPlus(Monoid<ListType<T>> m){
+    public static <T> MonadPlus<ListType.µ> monadPlus(Monoid<ListType<T>> m){
         Monoid<Higher<ListType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

@@ -27,7 +27,7 @@ public class StreamsTest {
     @Test
     public void unit(){
         
-        StreamType<String> list = Streams.unit()
+        StreamType<String> list = StreamInstances.unit()
                                      .unit("hello")
                                      .convert(StreamType::narrowK);
         
@@ -36,16 +36,16 @@ public class StreamsTest {
     @Test
     public void functor(){
         
-        StreamType<Integer> list = Streams.unit()
+        StreamType<Integer> list = StreamInstances.unit()
                                      .unit("hello")
-                                     .then(h->Streams.functor().map((String v) ->v.length(), h))
+                                     .then(h->StreamInstances.functor().map((String v) ->v.length(), h))
                                      .convert(StreamType::narrowK);
         
         assertThat(list.collect(Collectors.toList()),equalTo(Arrays.asList("hello".length())));
     }
     @Test
     public void apSimple(){
-        Streams.zippingApplicative()
+        StreamInstances.zippingApplicative()
             .ap(widen(Stream.of(l1(this::multiplyByTwo))),widen(Stream.of(1,2,3)));
     }
     private int multiplyByTwo(int x){
@@ -54,28 +54,28 @@ public class StreamsTest {
     @Test
     public void applicative(){
         
-        StreamType<Function<Integer,Integer>> listFn =Streams.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(StreamType::narrowK);
+        StreamType<Function<Integer,Integer>> listFn =StreamInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(StreamType::narrowK);
         
-        StreamType<Integer> list = Streams.unit()
+        StreamType<Integer> list = StreamInstances.unit()
                                      .unit("hello")
-                                     .then(h->Streams.functor().map((String v) ->v.length(), h))
-                                     .then(h->Streams.zippingApplicative().ap(listFn, h))
+                                     .then(h->StreamInstances.functor().map((String v) ->v.length(), h))
+                                     .then(h->StreamInstances.zippingApplicative().ap(listFn, h))
                                      .convert(StreamType::narrowK);
         
         assertThat(list.collect(Collectors.toList()),equalTo(Arrays.asList("hello".length()*2)));
     }
     @Test
     public void monadSimple(){
-       StreamType<Integer> list  = Streams.monad()
+       StreamType<Integer> list  = StreamInstances.monad()
                                       .flatMap(i->widen(ReactiveSeq.range(0,i)), widen(Stream.of(1,2,3)))
                                       .convert(StreamType::narrowK);
     }
     @Test
     public void monad(){
         
-        StreamType<Integer> list = Streams.unit()
+        StreamType<Integer> list = StreamInstances.unit()
                                      .unit("hello")
-                                     .then(h->Streams.monad().flatMap((String v) ->Streams.unit().unit(v.length()), h))
+                                     .then(h->StreamInstances.monad().flatMap((String v) ->StreamInstances.unit().unit(v.length()), h))
                                      .convert(StreamType::narrowK);
         
         assertThat(list.collect(Collectors.toList()),equalTo(Arrays.asList("hello".length())));
@@ -83,9 +83,9 @@ public class StreamsTest {
     @Test
     public void monadZeroFilter(){
         
-        StreamType<String> list = Streams.unit()
+        StreamType<String> list = StreamInstances.unit()
                                      .unit("hello")
-                                     .then(h->Streams.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .then(h->StreamInstances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(StreamType::narrowK);
         
         assertThat(list.collect(Collectors.toList()),equalTo(Arrays.asList("hello")));
@@ -93,9 +93,9 @@ public class StreamsTest {
     @Test
     public void monadZeroFilterOut(){
         
-        StreamType<String> list = Streams.unit()
+        StreamType<String> list = StreamInstances.unit()
                                      .unit("hello")
-                                     .then(h->Streams.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .then(h->StreamInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(StreamType::narrowK);
         
         assertThat(list.collect(Collectors.toList()),equalTo(Arrays.asList()));
@@ -103,7 +103,7 @@ public class StreamsTest {
     
     @Test
     public void monadPlus(){
-        StreamType<Integer> list = Streams.<Integer>monadPlus()
+        StreamType<Integer> list = StreamInstances.<Integer>monadPlus()
                                       .plus(StreamType.widen(Stream.of()), StreamType.widen(Stream.of(10)))
                                       .convert(StreamType::narrowK);
         assertThat(list.collect(Collectors.toList()),equalTo(Arrays.asList(10)));
@@ -121,21 +121,21 @@ public class StreamsTest {
 **/
     @Test
     public void  foldLeft(){
-        int sum  = Streams.foldable()
+        int sum  = StreamInstances.foldable()
                         .foldLeft(0, (a,b)->a+b, StreamType.widen(Stream.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
-        int sum  = Streams.foldable()
+        int sum  = StreamInstances.foldable()
                         .foldRight(0, (a,b)->a+b, StreamType.widen(Stream.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
     }
     @Test
     public void traverse(){
-       MaybeType<Higher<StreamType.µ, Integer>> res = Streams.traverse()
+       MaybeType<Higher<StreamType.µ, Integer>> res = StreamInstances.traverse()
                                                          .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), StreamType.of(1,2,3))
                                                          .convert(MaybeType::narrowK);
        

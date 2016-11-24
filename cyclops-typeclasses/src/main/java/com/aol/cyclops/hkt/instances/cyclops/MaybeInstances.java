@@ -78,8 +78,8 @@ public class MaybeInstances {
      * 
      * @return A factory for Maybes
      */
-    public static Unit<MaybeType.µ> unit(){
-        return General.unit(MaybeInstances::of);
+    public static <T> Unit<MaybeType.µ> unit(){
+        return General.<MaybeType.µ,T>unit(MaybeInstances::of);
     }
     /**
      * 
@@ -186,7 +186,7 @@ public class MaybeInstances {
      * </pre>
      * @return Type class for combining Maybes by concatenation
      */
-    public static <T> MonadPlus<MaybeType.µ,T> monadPlus(){
+    public static <T> MonadPlus<MaybeType.µ> monadPlus(){
         Monoid<Maybe<T>> mn = Monoids.firstPresentMaybe();
         Monoid<MaybeType<T>> m = Monoid.of(MaybeType.widen(mn.zero()), (f,g)-> MaybeType.widen(
                                                                                 mn.apply(MaybeType.narrow(f), MaybeType.narrow(g))));
@@ -210,7 +210,7 @@ public class MaybeInstances {
      * @param m Monoid to use for combining Maybes
      * @return Type class for combining Maybes
      */
-    public static <T> MonadPlus<MaybeType.µ,T> monadPlus(Monoid<MaybeType<T>> m){
+    public static <T> MonadPlus<MaybeType.µ> monadPlus(Monoid<MaybeType<T>> m){
         Monoid<Higher<MaybeType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

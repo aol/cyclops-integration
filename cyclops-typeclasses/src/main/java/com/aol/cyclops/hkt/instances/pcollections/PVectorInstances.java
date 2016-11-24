@@ -28,7 +28,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class PVectors {
+public class PVectorInstances {
 
    
     /**
@@ -60,7 +60,7 @@ public class PVectors {
      * @return A functor for PVectors
      */
     public static <T,R>Functor<PVectorType.µ> functor(){
-        BiFunction<PVectorType<T>,Function<? super T, ? extends R>,PVectorType<R>> map = PVectors::map;
+        BiFunction<PVectorType<T>,Function<? super T, ? extends R>,PVectorType<R>> map = PVectorInstances::map;
         return General.functor(map);
     }
     /**
@@ -78,8 +78,8 @@ public class PVectors {
      * 
      * @return A factory for PVectors
      */
-    public static Unit<PVectorType.µ> unit(){
-        return General.unit(PVectors::of);
+    public static  <T> Unit<PVectorType.µ> unit(){
+        return General.<PVectorType.µ,T>unit(PVectorInstances::of);
     }
     /**
      * 
@@ -119,7 +119,7 @@ public class PVectors {
      * @return A zipper for PVectors
      */
     public static <T,R> Applicative<PVectorType.µ> zippingApplicative(){
-        BiFunction<PVectorType< Function<T, R>>,PVectorType<T>,PVectorType<R>> ap = PVectors::ap;
+        BiFunction<PVectorType< Function<T, R>>,PVectorType<T>,PVectorType<R>> ap = PVectorInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -150,7 +150,7 @@ public class PVectors {
      */
     public static <T,R> Monad<PVectorType.µ> monad(){
   
-        BiFunction<Higher<PVectorType.µ,T>,Function<? super T, ? extends Higher<PVectorType.µ,R>>,Higher<PVectorType.µ,R>> flatMap = PVectors::flatMap;
+        BiFunction<Higher<PVectorType.µ,T>,Function<? super T, ? extends Higher<PVectorType.µ,R>>,Higher<PVectorType.µ,R>> flatMap = PVectorInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
@@ -186,8 +186,8 @@ public class PVectors {
      * </pre>
      * @return Type class for combining PVectors by concatenation
      */
-    public static <T> MonadPlus<PVectorType.µ,T> monadPlus(){
-        Monoid<PVectorType<T>> m = Monoid.of(PVectorType.widen(PVectorX.empty()), PVectors::concat);
+    public static <T> MonadPlus<PVectorType.µ> monadPlus(){
+        Monoid<PVectorType<T>> m = Monoid.of(PVectorType.widen(PVectorX.empty()), PVectorInstances::concat);
         Monoid<Higher<PVectorType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
@@ -207,7 +207,7 @@ public class PVectors {
      * @param m Monoid to use for combining PVectors
      * @return Type class for combining PVectors
      */
-    public static <T> MonadPlus<PVectorType.µ,T> monadPlus(Monoid<PVectorType<T>> m){
+    public static <T> MonadPlus<PVectorType.µ> monadPlus(Monoid<PVectorType<T>> m){
         Monoid<Higher<PVectorType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

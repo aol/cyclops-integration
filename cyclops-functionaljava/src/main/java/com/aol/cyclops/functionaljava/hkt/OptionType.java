@@ -112,7 +112,9 @@ public final class OptionType<T> implements Higher<OptionType.µ, T>, Iterable<T
     }
     
     public <R> R visit(Function<? super T, ? extends R> some, Supplier<? extends R> none){
-        return narrow().option(()->none.get(), in->some.apply(in));
+        Option<T> opt = narrow();
+        return opt.isNone() ? none.get() : some.apply(opt.some());
+       
     }
     public boolean isSome(){
         return boxed.isSome();

@@ -28,7 +28,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class PQueues {
+public class PQueueInstances {
 
    
     /**
@@ -60,7 +60,7 @@ public class PQueues {
      * @return A functor for PQueues
      */
     public static <T,R>Functor<PQueueType.µ> functor(){
-        BiFunction<PQueueType<T>,Function<? super T, ? extends R>,PQueueType<R>> map = PQueues::map;
+        BiFunction<PQueueType<T>,Function<? super T, ? extends R>,PQueueType<R>> map = PQueueInstances::map;
         return General.functor(map);
     }
     /**
@@ -78,8 +78,8 @@ public class PQueues {
      * 
      * @return A factory for PQueues
      */
-    public static Unit<PQueueType.µ> unit(){
-        return General.unit(PQueues::of);
+    public static <T> Unit<PQueueType.µ> unit(){
+        return General.<PQueueType.µ,T>unit(PQueueInstances::of);
     }
     /**
      * 
@@ -119,7 +119,7 @@ public class PQueues {
      * @return A zipper for PQueues
      */
     public static <T,R> Applicative<PQueueType.µ> zippingApplicative(){
-        BiFunction<PQueueType< Function<T, R>>,PQueueType<T>,PQueueType<R>> ap = PQueues::ap;
+        BiFunction<PQueueType< Function<T, R>>,PQueueType<T>,PQueueType<R>> ap = PQueueInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -150,7 +150,7 @@ public class PQueues {
      */
     public static <T,R> Monad<PQueueType.µ> monad(){
   
-        BiFunction<Higher<PQueueType.µ,T>,Function<? super T, ? extends Higher<PQueueType.µ,R>>,Higher<PQueueType.µ,R>> flatMap = PQueues::flatMap;
+        BiFunction<Higher<PQueueType.µ,T>,Function<? super T, ? extends Higher<PQueueType.µ,R>>,Higher<PQueueType.µ,R>> flatMap = PQueueInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
@@ -186,8 +186,8 @@ public class PQueues {
      * </pre>
      * @return Type class for combining PQueues by concatenation
      */
-    public static <T> MonadPlus<PQueueType.µ,T> monadPlus(){
-        Monoid<PQueueType<T>> m = Monoid.of(PQueueType.widen(PQueueX.empty()), PQueues::concat);
+    public static <T> MonadPlus<PQueueType.µ> monadPlus(){
+        Monoid<PQueueType<T>> m = Monoid.of(PQueueType.widen(PQueueX.empty()), PQueueInstances::concat);
         Monoid<Higher<PQueueType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
@@ -207,7 +207,7 @@ public class PQueues {
      * @param m Monoid to use for combining PQueues
      * @return Type class for combining PQueues
      */
-    public static <T> MonadPlus<PQueueType.µ,T> monadPlus(Monoid<PQueueType<T>> m){
+    public static <T> MonadPlus<PQueueType.µ> monadPlus(Monoid<PQueueType<T>> m){
         Monoid<Higher<PQueueType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

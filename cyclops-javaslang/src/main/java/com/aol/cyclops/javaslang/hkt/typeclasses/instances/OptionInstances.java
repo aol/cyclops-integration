@@ -79,8 +79,8 @@ public class OptionInstances {
      * 
      * @return A factory for Options
      */
-    public static Unit<OptionType.µ> unit(){
-        return General.unit(OptionInstances::of);
+    public static <T> Unit<OptionType.µ> unit(){
+        return General.<OptionType.µ,T>unit(OptionInstances::of);
     }
     /**
      * 
@@ -187,7 +187,7 @@ public class OptionInstances {
      * </pre>
      * @return Type class for combining Options by concatenation
      */
-    public static <T> MonadPlus<OptionType.µ,T> monadPlus(){
+    public static <T> MonadPlus<OptionType.µ> monadPlus(){
         Monoid<OptionType<T>> m = Monoid.of( OptionType.ofOptional(Monoids.<T>firstPresentOptional().zero()),
                                             (a,b)-> OptionType.ofOptional(Monoids.<T>firstPresentOptional().apply(a.toJavaOptional(),b.toJavaOptional())));        
         Monoid<Higher<OptionType.µ,T>> m2= (Monoid)m;
@@ -209,7 +209,7 @@ public class OptionInstances {
      * @param m Monoid to use for combining Options
      * @return Type class for combining Options
      */
-    public static <T> MonadPlus<OptionType.µ,T> monadPlus(Monoid<OptionType<T>> m){
+    public static <T> MonadPlus<OptionType.µ> monadPlus(Monoid<OptionType<T>> m){
         Monoid<Higher<OptionType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

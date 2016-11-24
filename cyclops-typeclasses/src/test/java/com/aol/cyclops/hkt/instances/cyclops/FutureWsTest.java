@@ -26,7 +26,7 @@ public class FutureWsTest {
     @Test
     public void unit(){
         
-        FutureType<String> opt = FutureWs.unit()
+        FutureType<String> opt = FutureWInstances.unit()
                                             .unit("hello")
                                             .convert(FutureType::narrowK);
         
@@ -35,16 +35,16 @@ public class FutureWsTest {
     @Test
     public void functor(){
         
-        FutureType<Integer> opt = FutureWs.unit()
+        FutureType<Integer> opt = FutureWInstances.unit()
                                      .unit("hello")
-                                     .then(h->FutureWs.functor().map((String v) ->v.length(), h))
+                                     .then(h->FutureWInstances.functor().map((String v) ->v.length(), h))
                                      .convert(FutureType::narrowK);
         
         assertThat(opt.join(),equalTo(FutureW.ofResult("hello".length()).join()));
     }
     @Test
     public void apSimple(){
-        FutureWs.applicative()
+        FutureWInstances.applicative()
             .ap(widen(FutureW.ofResult(l1(this::multiplyByTwo))),widen(FutureW.ofResult(1)));
     }
     private int multiplyByTwo(int x){
@@ -53,28 +53,28 @@ public class FutureWsTest {
     @Test
     public void applicative(){
         
-        FutureType<Function<Integer,Integer>> optFn =FutureWs.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(FutureType::narrowK);
+        FutureType<Function<Integer,Integer>> optFn =FutureWInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(FutureType::narrowK);
         
-        FutureType<Integer> opt = FutureWs.unit()
+        FutureType<Integer> opt = FutureWInstances.unit()
                                      .unit("hello")
-                                     .then(h->FutureWs.functor().map((String v) ->v.length(), h))
-                                     .then(h->FutureWs.applicative().ap(optFn, h))
+                                     .then(h->FutureWInstances.functor().map((String v) ->v.length(), h))
+                                     .then(h->FutureWInstances.applicative().ap(optFn, h))
                                      .convert(FutureType::narrowK);
         
         assertThat(opt.join(),equalTo(FutureW.ofResult("hello".length()*2).join()));
     }
     @Test
     public void monadSimple(){
-       FutureType<Integer> opt  = FutureWs.monad()
+       FutureType<Integer> opt  = FutureWInstances.monad()
                                             .<Integer,Integer>flatMap(i->widen(FutureW.ofResult(i*2)), widen(FutureW.ofResult(3)))
                                             .convert(FutureType::narrowK);
     }
     @Test
     public void monad(){
         
-        FutureType<Integer> opt = FutureWs.unit()
+        FutureType<Integer> opt = FutureWInstances.unit()
                                      .unit("hello")
-                                     .then(h->FutureWs.monad().flatMap((String v) ->FutureWs.unit().unit(v.length()), h))
+                                     .then(h->FutureWInstances.monad().flatMap((String v) ->FutureWInstances.unit().unit(v.length()), h))
                                      .convert(FutureType::narrowK);
         
         assertThat(opt.join(),equalTo(FutureW.ofResult("hello".length()).join()));
@@ -82,9 +82,9 @@ public class FutureWsTest {
     @Test
     public void monadZeroFilter(){
         
-        FutureType<String> opt = FutureWs.unit()
+        FutureType<String> opt = FutureWInstances.unit()
                                      .unit("hello")
-                                     .then(h->FutureWs.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .then(h->FutureWInstances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FutureType::narrowK);
         
         assertThat(opt.toCompletableFuture().join(),equalTo(FutureW.ofResult("hello").join()));
@@ -92,9 +92,9 @@ public class FutureWsTest {
     @Test
     public void monadZeroFilterOut(){
         
-        FutureType<String> opt = FutureWs.unit()
+        FutureType<String> opt = FutureWInstances.unit()
                                      .unit("hello")
-                                     .then(h->FutureWs.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .then(h->FutureWInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(FutureType::narrowK);
         
         assertFalse(opt.toCompletableFuture().isDone());
@@ -102,7 +102,7 @@ public class FutureWsTest {
     
     @Test
     public void monadPlus(){
-        FutureType<Integer> opt = FutureWs.<Integer>monadPlus()
+        FutureType<Integer> opt = FutureWInstances.<Integer>monadPlus()
                                       .plus(FutureType.widen(FutureW.future()), FutureType.widen(FutureW.ofResult(10)))
                                       .convert(FutureType::narrowK);
         assertThat(opt.get(),equalTo(FutureW.ofResult(10).get()));
@@ -111,21 +111,21 @@ public class FutureWsTest {
     public void monadPlusNonEmpty(){
         
         Monoid<FutureType<Integer>> m = Monoid.of(FutureType.widen(FutureW.future()), (a,b)->a.toCompletableFuture().isDone() ? b : a);
-        FutureType<Integer> opt = FutureWs.<Integer>monadPlus(m)
+        FutureType<Integer> opt = FutureWInstances.<Integer>monadPlus(m)
                                       .plus(FutureType.widen(FutureW.ofResult(5)), FutureType.widen(FutureW.ofResult(10)))
                                       .convert(FutureType::narrowK);
         assertThat(opt.join(),equalTo(FutureW.ofResult(10).join()));
     }
     @Test
     public void  foldLeft(){
-        int sum  = FutureWs.foldable()
+        int sum  = FutureWInstances.foldable()
                         .foldLeft(0, (a,b)->a+b, FutureType.widen(FutureW.ofResult(4)));
         
         assertThat(sum,equalTo(4));
     }
     @Test
     public void  foldRight(){
-        int sum  = FutureWs.foldable()
+        int sum  = FutureWInstances.foldable()
                         .foldRight(0, (a,b)->a+b, FutureType.widen(FutureW.ofResult(1)));
         
         assertThat(sum,equalTo(1));
@@ -133,7 +133,7 @@ public class FutureWsTest {
     
     @Test
     public void traverse(){
-       MaybeType<Higher<FutureType.µ, Integer>> res = FutureWs.traverse()
+       MaybeType<Higher<FutureType.µ, Integer>> res = FutureWInstances.traverse()
                                                                .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), FutureType.ofResult(1))
                                                               .convert(MaybeType::narrowK);
        

@@ -79,8 +79,8 @@ public class FluentIterableInstances {
      * 
      * @return A factory for FluentIterables
      */
-    public static Unit<FluentIterableType.µ> unit(){
-        return General.unit(FluentIterableInstances::of);
+    public static <T> Unit<FluentIterableType.µ> unit(){
+        return General.<FluentIterableType.µ,T>unit(FluentIterableInstances::of);
     }
     /**
      * 
@@ -187,7 +187,7 @@ public class FluentIterableInstances {
      * </pre>
      * @return Type class for combining FluentIterables by concatenation
      */
-    public static <T> MonadPlus<FluentIterableType.µ,T> monadPlus(){
+    public static <T> MonadPlus<FluentIterableType.µ> monadPlus(){
         Monoid<FluentIterableType<T>> m = Monoid.of(FluentIterableType.widen(FluentIterable.<T>of()), FluentIterableInstances::concat);
         Monoid<Higher<FluentIterableType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -208,7 +208,7 @@ public class FluentIterableInstances {
      * @param m Monoid to use for combining FluentIterables
      * @return Type class for combining FluentIterables
      */
-    public static <T> MonadPlus<FluentIterableType.µ,T> monadPlus(Monoid<FluentIterableType<T>> m){
+    public static <T> MonadPlus<FluentIterableType.µ> monadPlus(Monoid<FluentIterableType<T>> m){
         Monoid<Higher<FluentIterableType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

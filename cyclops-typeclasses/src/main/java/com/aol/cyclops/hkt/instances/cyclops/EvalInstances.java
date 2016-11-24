@@ -7,7 +7,6 @@ import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.EvalType;
-import com.aol.cyclops.hkt.cyclops.FutureType;
 import com.aol.cyclops.hkt.instances.General;
 import com.aol.cyclops.hkt.typeclasses.Unit;
 import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
@@ -27,7 +26,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Evals {
+public class EvalInstances {
 
     
     /**
@@ -59,7 +58,7 @@ public class Evals {
      * @return A functor for Evals
      */
     public static <T,R>Functor<EvalType.µ> functor(){
-        BiFunction<EvalType<T>,Function<? super T, ? extends R>,EvalType<R>> map = Evals::map;
+        BiFunction<EvalType<T>,Function<? super T, ? extends R>,EvalType<R>> map = EvalInstances::map;
         return General.functor(map);
     }
     
@@ -78,8 +77,8 @@ public class Evals {
      * 
      * @return A factory for Evals
      */
-    public static Unit<EvalType.µ> unit(){
-        return General.unit(Evals::of);
+    public static <T> Unit<EvalType.µ> unit(){
+        return General.<EvalType.µ,T>unit(EvalInstances::of);
     }
     /**
      * 
@@ -119,7 +118,7 @@ public class Evals {
      * @return A zipper for Evals
      */
     public static <T,R> Applicative<EvalType.µ> applicative(){
-        BiFunction<EvalType< Function<T, R>>,EvalType<T>,EvalType<R>> ap = Evals::ap;
+        BiFunction<EvalType< Function<T, R>>,EvalType<T>,EvalType<R>> ap = EvalInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -150,7 +149,7 @@ public class Evals {
      */
     public static <T,R> Monad<EvalType.µ> monad(){
   
-        BiFunction<Higher<EvalType.µ,T>,Function<? super T, ? extends Higher<EvalType.µ,R>>,Higher<EvalType.µ,R>> flatMap = Evals::flatMap;
+        BiFunction<Higher<EvalType.µ,T>,Function<? super T, ? extends Higher<EvalType.µ,R>>,Higher<EvalType.µ,R>> flatMap = EvalInstances::flatMap;
         return General.monad(applicative(), flatMap);
     }
     /**
@@ -186,7 +185,7 @@ public class Evals {
      * </pre>
      * @return Type class for combining Evals by concatenation
      */
-    public static <T> MonadPlus<EvalType.µ,T> monadPlus(){
+    public static <T> MonadPlus<EvalType.µ> monadPlus(){
         Monoid<Eval<T>> mn = Monoid.of(Eval.now(null), (a,b)->a.get()!=null?a :b);
         Monoid<EvalType<T>> m = Monoid.of(EvalType.widen(mn.zero()), (f,g)-> EvalType.widen(
                                                                                 mn.apply(EvalType.narrow(f), EvalType.narrow(g))));
@@ -210,7 +209,7 @@ public class Evals {
      * @param m Monoid to use for combining Evals
      * @return Type class for combining Evals
      */
-    public static <T> MonadPlus<EvalType.µ,T> monadPlus(Monoid<EvalType<T>> m){
+    public static <T> MonadPlus<EvalType.µ> monadPlus(Monoid<EvalType<T>> m){
         Monoid<Higher<EvalType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
@@ -220,7 +219,7 @@ public class Evals {
      */
     public static <C2,T> Traverse<EvalType.µ> traverse(){
       
-        return General.traverseByTraverse(applicative(), Evals::traverseA);
+        return General.traverseByTraverse(applicative(), EvalInstances::traverseA);
     }
     
     /**

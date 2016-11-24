@@ -72,8 +72,8 @@ public class NonEmptyListInstances {
      * 
      * @return A factory for NonEmptyLists
      */
-    public static Unit<NonEmptyListType.µ> unit(){
-        return General.unit(NonEmptyListInstances::of);
+    public static <T> Unit<NonEmptyListType.µ> unit(){
+        return General.<NonEmptyListType.µ,T>unit(NonEmptyListInstances::of);
     }
     /**
      * 

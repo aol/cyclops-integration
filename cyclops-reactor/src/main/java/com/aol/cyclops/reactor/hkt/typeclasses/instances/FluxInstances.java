@@ -79,8 +79,8 @@ public class FluxInstances {
      * 
      * @return A factory for Fluxs
      */
-    public static Unit<FluxType.µ> unit(){
-        return General.unit(FluxInstances::of);
+    public static <T> Unit<FluxType.µ> unit(){
+        return General.<FluxType.µ,T>unit(FluxInstances::of);
     }
     /**
      * 
@@ -187,7 +187,7 @@ public class FluxInstances {
      * </pre>
      * @return Type class for combining Fluxs by concatenation
      */
-    public static <T> MonadPlus<FluxType.µ,T> monadPlus(){
+    public static <T> MonadPlus<FluxType.µ> monadPlus(){
         Monoid<FluxType<T>> m = Monoid.of(FluxType.widen(Flux.<T>empty()), FluxInstances::concat);
         Monoid<Higher<FluxType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -208,7 +208,7 @@ public class FluxInstances {
      * @param m Monoid to use for combining Fluxs
      * @return Type class for combining Fluxs
      */
-    public static <T> MonadPlus<FluxType.µ,T> monadPlus(Monoid<FluxType<T>> m){
+    public static <T> MonadPlus<FluxType.µ> monadPlus(Monoid<FluxType<T>> m){
         Monoid<Higher<FluxType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }

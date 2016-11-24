@@ -31,11 +31,11 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class Lists {
+public class ListInstances {
 
     public static void main(String[] args){
         List<Integer> small = Arrays.asList(1,2,3);
-        ListType<Integer> list = Lists.functor()
+        ListType<Integer> list = ListInstances.functor()
                                      .map(i->i*2, ListType.widen(small))
                                     // .then_(functor()::map, Lambda.<Integer,Integer>l1(i->i*3))
                                      .then(h-> functor().map((Integer i)->""+i,h))
@@ -43,7 +43,7 @@ public class Lists {
                                      .convert(ListType::narrowK);
           ListType<Integer> string = list.convert(ListType::narrowK);
                     
-        System.out.println(Lists.functor().map(i->i*2, ListType.widen(small)));
+        System.out.println(ListInstances.functor().map(i->i*2, ListType.widen(small)));
     }
     /**
      * 
@@ -74,7 +74,7 @@ public class Lists {
      * @return A functor for Lists
      */
     public static <T,R>Functor<ListType.µ> functor(){
-        BiFunction<ListType<T>,Function<? super T, ? extends R>,ListType<R>> map = Lists::map;
+        BiFunction<ListType<T>,Function<? super T, ? extends R>,ListType<R>> map = ListInstances::map;
         return General.functor(map);
     }
     /**
@@ -92,8 +92,8 @@ public class Lists {
      * 
      * @return A factory for Lists
      */
-    public static Unit<ListType.µ> unit(){
-        return General.unit(Lists::of);
+    public static <T> Unit<ListType.µ> unit(){
+        return General.<ListType.µ,T>unit(ListInstances::of);
     }
     /**
      * 
@@ -133,7 +133,7 @@ public class Lists {
      * @return A zipper for Lists
      */
     public static <T,R> Applicative<ListType.µ> zippingApplicative(){
-        BiFunction<ListType< Function<T, R>>,ListType<T>,ListType<R>> ap = Lists::ap;
+        BiFunction<ListType< Function<T, R>>,ListType<T>,ListType<R>> ap = ListInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
@@ -164,7 +164,7 @@ public class Lists {
      */
     public static <T,R> Monad<ListType.µ> monad(){
   
-        BiFunction<Higher<ListType.µ,T>,Function<? super T, ? extends Higher<ListType.µ,R>>,Higher<ListType.µ,R>> flatMap = Lists::flatMap;
+        BiFunction<Higher<ListType.µ,T>,Function<? super T, ? extends Higher<ListType.µ,R>>,Higher<ListType.µ,R>> flatMap = ListInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
@@ -200,8 +200,8 @@ public class Lists {
      * </pre>
      * @return Type class for combining Lists by concatenation
      */
-    public static <T> MonadPlus<ListType.µ,T> monadPlus(){
-        Monoid<ListType<T>> m = Monoid.of(ListType.widen(new ArrayList<T>()), Lists::concat);
+    public static <T> MonadPlus<ListType.µ> monadPlus(){
+        Monoid<ListType<T>> m = Monoid.of(ListType.widen(new ArrayList<T>()), ListInstances::concat);
         Monoid<Higher<ListType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
@@ -221,7 +221,7 @@ public class Lists {
      * @param m Monoid to use for combining Lists
      * @return Type class for combining Lists
      */
-    public static <T> MonadPlus<ListType.µ,T> monadPlus(Monoid<ListType<T>> m){
+    public static <T> MonadPlus<ListType.µ> monadPlus(Monoid<ListType<T>> m){
         Monoid<Higher<ListType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
