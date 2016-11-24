@@ -25,6 +25,7 @@ import java.util.stream.StreamSupport;
 import org.jooq.lambda.Seq;
 import org.jooq.lambda.tuple.Tuple;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
@@ -59,6 +60,26 @@ import com.aol.cyclops.types.applicative.ApplicativeFunctor.Applicatives;
 import com.aol.cyclops.util.function.Predicates;
 
 public class EitherTest {
+    
+    
+    @Test
+    public void testTraverseLeft1() {
+        ListX<Either<Integer,String>> list = ListX.of(just,none,Either.<String,Integer>right(1)).map(Either::swap);
+        Either<ListX<Integer>,ListX<String>> xors   = Either.traverse(list,s->"hello:"+s);
+        assertThat(xors,equalTo(Either.right(ListX.of("hello:none"))));
+    }
+    @Test
+    public void testSequenceLeft1() {
+        ListX<Either<Integer,String>> list = ListX.of(just,none,Either.<String,Integer>right(1)).map(Either::swap);
+        Either<ListX<Integer>,ListX<String>> xors   = Either.sequence(list);
+        assertThat(xors,equalTo(Either.right(ListX.of("none"))));
+    }
+    @Test
+    public void testAccumulate() {
+        Either<ListX<String>,Integer> iors = Either.accumulate(Monoids.intSum,ListX.of(none,just,Either.right(10)));
+        assertThat(iors,equalTo(Either.right(20)));
+    }
+    
     boolean lazy = true;
     @Test
     public void lazyTest() {
@@ -219,6 +240,13 @@ public class EitherTest {
         assertThat(maybes,equalTo(Xor.primary(ListX.of(10,1))));
     }
 
+    @Test @Ignore  //pending https://github.com/aol/cyclops-react/issues/390
+    public void hashCodeTest(){
+       
+        System.out.println(new Integer(10).hashCode());
+        System.out.println("Xor " + Xor.primary(10).hashCode());
+        assertThat(Xor.primary(10).hashCode(),equalTo(Either.right(10).hashCode()));
+    }
     @Test
     public void testAccumulateJustCollectionXOfMaybeOfTReducerOfR() {
         Xor<?,PSetX<Integer>> maybes =Xor.accumulatePrimary(ListX.of(just,none,Either.right(1)),Reducers.toPSetX());
@@ -858,7 +886,15 @@ public class EitherTest {
         assertThat(just.trampoline(n ->sum(10,n)),equalTo(Either.right(65)));
     }
 
-    
+    @Test
+    public void equalsTest(){
+        assertTrue(just.equals(Either.right(10)
+                                     .map(i->i)));
+        assertThat(just,equalTo(Either.left(10)
+                                      .secondaryFlatMap(i->Either.right(i))));
+        assertThat(Either.left(10)
+                        .flatMap(i->Either.right(i)),equalTo(Either.left(10)));
+    }
 
     @Test
     public void testUnitT1() {

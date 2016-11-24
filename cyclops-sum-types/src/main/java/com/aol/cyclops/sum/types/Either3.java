@@ -59,10 +59,10 @@ import lombok.EqualsAndHashCode;
 public interface Either3<LT1, LT2, RT>
                 extends Functor<RT>, BiFunctor<LT2, RT>, Filterable<RT>, MonadicValue3<LT1,LT2,RT>,To<Either3<LT1, LT2, RT>>, Supplier<RT>, ApplicativeFunctor<RT> {
     /**
-     * Create an AnyMValue instance that wraps an Xor
+     * Create an AnyMValue instance that wraps an Either3
      * 
      * @param xor Xor to wrap inside an AnyM
-     * @return AnyM instance that wraps the provided Xor
+     * @return AnyM instance that wraps the provided Either3
      */
     public static <LT1,LT2,T> AnyMValue<T> anyM(final Either3<LT1, LT2, T> xor) {
         Objects.requireNonNull(xor);
@@ -73,7 +73,7 @@ public interface Either3<LT1, LT2, RT>
      * Take an iterable containing Either3s and convert them into a List of AnyMs
      * e.g.
      * {@code 
-     *     List<AnyM<Integer>> anyMs = AnyM.listFromXor(Arrays.asList(Either3.right(1),Either3.left(10));
+     *     List<AnyM<Integer>> anyMs = anyMList(Arrays.asList(Either3.right(1),Either3.left(10));
      *     
      *     //List[AnyM[Either3:right[1],Either3:left[10]]]
      * }
@@ -88,7 +88,7 @@ public interface Either3<LT1, LT2, RT>
     }
 
     /**
-     *  Turn a collection of Xors into a single Ior with Lists of values.
+     *  Turn a collection of Either3 into a single Either with Lists of values.
      *  
      * <pre>
      * {@code 
@@ -112,7 +112,7 @@ public interface Either3<LT1, LT2, RT>
                    .unwrap();
     }
     /**
-     * Traverse a Collection of Either3 producting an Either3 with a ListX, applying the transformation function to every
+     * Traverse a Collection of Either3 producing an Either3 with a ListX, applying the transformation function to every
      * element in the list
      * 
      * @param xors Either3s to sequence and transform
@@ -141,9 +141,9 @@ public interface Either3<LT1, LT2, RT>
      * 
      * 
      * 
-     * @param xors Collection of Xors to accumulate primary values
+     * @param xors Collection of Eithers to accumulate primary values
      * @param reducer  Reducer to accumulate results
-     * @return  Xor populated with the accumulate primary operation
+     * @return  Either3 populated with the accumulate primary operation
      */
     public static <LT1,LT2, RT> Either3<ListX<LT1>, ListX<LT2>, RT> accumulate(final Monoid<RT> reducer,final CollectionX<Either3<LT1, LT2, RT>> xors) {
         return sequence(xors).map(s -> s.reduce(reducer));

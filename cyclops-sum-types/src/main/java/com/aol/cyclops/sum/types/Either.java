@@ -2,6 +2,7 @@ package com.aol.cyclops.sum.types;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -29,8 +30,11 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.StreamUtils;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.Xor;
+import com.aol.cyclops.data.collections.extensions.CollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.sum.types.Either3.Lazy;
+import com.aol.cyclops.sum.types.Either3.Right;
 import com.aol.cyclops.types.Combiner;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.MonadicValue2;
@@ -123,6 +127,99 @@ import lombok.EqualsAndHashCode;
  */
 public interface Either<ST, PT> extends Xor<ST,PT> {
 
+    /**
+     * Create an AnyMValue instance that wraps an Either3
+     * 
+     * @param xor Xor to wrap inside an AnyM
+     * @return AnyM instance that wraps the provided Either
+     */
+    public static <LT1,T> AnyMValue<T> anyM(final Either<LT1, T> xor) {
+        Objects.requireNonNull(xor);
+        return AnyM.ofValue(xor);
+    }
+
+    /**
+     * Take an iterable containing Either3s and convert them into a List of AnyMs
+     * e.g.
+     * {@code 
+     *     List<AnyM<Integer>> anyMs = anyMList(Arrays.asList(Either.right(1),Either.left(10));
+     *     
+     *     //List[AnyM[Either.right[1],Either:left[10]]]
+     * }
+     * 
+     * @param anyM Iterable containing Eithers
+     * @return List of AnyMs
+     */
+    public static <ST,  T> ListX<AnyMValue<T>> anyMList(final Iterable<Either<ST, T>> anyM) {
+        Objects.requireNonNull(anyM);
+        return ReactiveSeq.fromIterable(anyM)
+                          .map(e -> anyM(e))
+                          .toListX();
+    }
+
+    /**
+     *  Turn a collection of Eithers into a single Either with Lists of values.
+     *  
+     * <pre>
+     * {@code 
+     * 
+     * Either<String,Integer> just  = Either.right(10);
+       Either<String,Integer> none = Either.left("none");
+        
+        
+     * Either<ListX<String>,ListX<Integer>> xors =Either.sequence(ListX.of(just,none,Either.right(1)));
+       //Eitehr.right(ListX.of(10,1)));
+     * 
+     * }</pre>
+     *
+     * 
+     * 
+     * @param Either Either to sequence
+     * @return Either Sequenced
+     */
+    public static <LT1, PT> Either<ListX<LT1>,ListX<PT>> sequence(final CollectionX<Either<LT1, PT>> xors) {
+        Objects.requireNonNull(xors);
+        return AnyM.sequence(anyMList(xors))
+                   .unwrap();
+    }
+    /**
+     * Traverse a Collection of Either producting an Either3 with a ListX, applying the transformation function to every
+     * element in the list
+     * 
+     * @param xors Eithers to sequence and transform
+     * @param fn Transformation function
+     * @return An Either with a transformed list
+     */
+    public static <LT1, PT,R> Either<ListX<LT1>,ListX<R>> traverse(final CollectionX<Either<LT1, PT>> xors, Function<? super PT, ? extends R> fn) {
+        return  sequence(xors).map(l->l.map(fn));
+    }
+   
+
+    /**
+     *  Accumulate the results only from those Either3 which have a Right type present, using the supplied Monoid (a combining BiFunction/BinaryOperator and identity element that takes two
+     * input values of the same type and returns the combined result) {@see com.aol.cyclops.Monoids }.
+     * 
+     * <pre>
+     * {@code 
+     * Either3<String,String,Integer> just  = Either3.right(10);
+       Either3<String,String,Integer> none = Either3.left("none");
+     *  
+     *  Either3<ListX<String>,ListX<String>,Integer> xors = Either3.accumulatePrimary(Monoids.intSum,ListX.of(just,none,Either3.right(1)));
+        //Either3.right(11);
+     * 
+     * }
+     * </pre>
+     * 
+     * 
+     * 
+     * @param xors Collection of Eithers to accumulate primary values
+     * @param reducer  Reducer to accumulate results
+     * @return  Either populated with the accumulate primary operation
+     */
+    public static <LT1, RT> Either<ListX<LT1>, RT> accumulate(final Monoid<RT> reducer,final CollectionX<Either<LT1,RT>> xors) {
+        return sequence(xors).map(s -> s.reduce(reducer));
+    }
+    
     public static <LT, B, RT> Either<LT,RT> rightEval(final Eval<RT> right) {
         return new Right<>(
                            right);
@@ -1157,10 +1254,13 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
 
             return trampoline().equals(obj);
         }
+        @Override
+        public String toString(){
+            return trampoline().toString();
+        }
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of = { "value" })
     static class Right<ST, PT> implements Either<ST, PT> {
         private final Eval<PT> value;
 
@@ -1315,10 +1415,45 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
                       .visit(s -> Either.left(null), f -> Either.right(fn.apply(get(), app.get())));
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            return value.get().hashCode();
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            
+           
+            if(obj instanceof Lazy){
+                return ((Lazy)obj).equals(this);
+            }
+            if(obj instanceof Primary){
+                return value.equals(((Primary)obj).get());
+            }
+            if (getClass() != obj.getClass())
+                return false;
+            Right other = (Right) obj;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
+            return true;
+        }
+        
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of = { "value" })
     static class Left<ST, PT> implements Either<ST, PT> {
         private final Eval<ST> value;
 
@@ -1411,8 +1546,8 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         @Override
         public <LT1, RT1> Either<LT1, RT1> secondaryFlatMap(
                 final Function<? super ST, ? extends Xor<LT1, RT1>> mapper) {
-           return new Lazy<ST, PT>(
-                    Eval.now(this)).secondaryFlatMap(mapper);
+            final Eval<Either<ST,  RT1>> e3 = (Eval<Either<ST,  RT1>>) value.map(mapper);
+            return (Either<LT1, RT1>)new Lazy<ST,RT1>(e3);
         }
 
         @Override
@@ -1485,6 +1620,42 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
             return (Either<ST, R>) this;
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            return value.hashCode();
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if(obj instanceof Lazy){
+                return ((Lazy)obj).equals(this);
+            }
+            if(obj instanceof Secondary){
+                return value.equals(((Primary)obj).get());
+            }
+            if (getClass() != obj.getClass())
+                return false;
+            Left other = (Left) obj;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
+            return true;
+        }
+
+        
+        
     }
 
 }
