@@ -9,7 +9,6 @@ import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.jdk.CompletableFutureType;
 
 /**
  * Simulates Higher Kinded Types for FutureW's

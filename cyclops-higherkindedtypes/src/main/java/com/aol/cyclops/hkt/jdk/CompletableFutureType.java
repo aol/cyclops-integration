@@ -55,7 +55,7 @@ public interface CompletableFutureType<T> extends Higher<CompletableFutureType.Â
      * @return CompletableFutureType encoding HKT info about CompletableFutures
      */
     public static <T> CompletableFutureType<T> widen(final CompletionStage<T> completableFuture) {
-        if (completableFuture instanceof CompletionStage)
+        if (completableFuture instanceof CompletableFutureType)
             return (CompletableFutureType<T>) completableFuture;
         return new Box<>(
                          completableFuture);
@@ -311,5 +311,45 @@ public interface CompletableFutureType<T> extends Higher<CompletableFutureType.Â
             return boxed.toCompletableFuture();
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "CompletableFutureType [" + boxed + "]";
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((boxed == null) ? 0 : boxed.hashCode());
+            return result;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (!(obj instanceof  CompletionStage))
+                return false;
+            CompletionStage other = ( CompletionStage) obj;
+            if (boxed == null) {
+                if (other != null)
+                    return false;
+            } else if (!boxed.equals(other))
+                return false;
+            return true;
+        }
+
+        
     }
 }

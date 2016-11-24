@@ -30,6 +30,8 @@ configurations {
 	provided
 }
 dependencies {
+    compile project(':cyclops-typeclasses')
+    compile project(':cyclops-higherkindedtypes')
 	compile "org.functionaljava:functionaljava:"+functionalJavaVersion
 	compile "org.functionaljava:functionaljava-java8:"+functionalJavaVersion
 	provided 'io.javaslang:javaslang:'+javaslangVersion

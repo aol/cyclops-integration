@@ -1,6 +1,10 @@
 package com.aol.cyclops.hkt.jdk;
 
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import com.aol.cyclops.hkt.alias.Higher;
 
@@ -74,6 +78,42 @@ public final class OptionalType<T> implements Higher<OptionalType.µ, T> {
         //has to be an OptionalType as only OptionalType can implement Higher<OptionalType.µ, T>
          return ((OptionalType<T>)Optional).boxed;
         
+    }
+    public boolean isPresent() {
+       return boxed.isPresent();
+    }
+    public T get() {
+        return boxed.get();
+    }
+    public void ifPresent(Consumer<? super T> consumer) {
+        boxed.ifPresent(consumer);
+    }
+    public Optional<T> filter(Predicate<? super T> predicate) {
+        return boxed.filter(predicate);
+    }
+    public <U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+        return boxed.map(mapper);
+    }
+    public <U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
+        return boxed.flatMap(mapper);
+    }
+    public T orElse(T other) {
+        return boxed.orElse(other);
+    }
+    public T orElseGet(Supplier<? extends T> other) {
+        return boxed.orElseGet(other);
+    }
+    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+        return boxed.orElseThrow(exceptionSupplier);
+    }
+    public boolean equals(Object obj) {
+        return boxed.equals(obj);
+    }
+    public int hashCode() {
+        return boxed.hashCode();
+    }
+    public String toString() {
+        return boxed.toString();
     }
    
 

@@ -5,22 +5,40 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.aol.cyclops.control.AnyM;
+import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.For;
+import com.aol.cyclops.control.FutureW;
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.types.anyM.AnyMSeq;
 import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.util.function.QuadFunction;
 import com.aol.cyclops.util.function.TriFunction;
 
+import javaslang.Lazy;
 import javaslang.Value;
 import javaslang.collection.Traversable;
+import javaslang.concurrent.Future;
 import javaslang.control.Either;
 import javaslang.control.Either.LeftProjection;
 import javaslang.control.Either.RightProjection;
 import javaslang.control.Option;
 import javaslang.control.Try;
-import javaslang.control.Try.Failure;
 
 public class Javaslang {
+    
+    public static <T> Maybe<T> maybe(Option<T> opt){
+        return opt.isDefined() ? Maybe.just(opt.get()) : Maybe.none();
+    }
+    public static <T> Eval<T> eval(Lazy<T> opt){
+        return Eval.later(opt);
+    }
+   
+    public static <T> FutureW<T> futureW(Future<T> future){
+        FutureW<T> res = FutureW.future();
+        future.onSuccess(v->res.complete(v))
+              .onFailure(t->res.completeExceptionally(t));
+        return res;
+    }
     public static <T> AnyMValue<T> value(Value<T> monadM) {
         return AnyM.ofValue(monadM);
     }

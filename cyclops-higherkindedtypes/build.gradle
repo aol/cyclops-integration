@@ -44,7 +44,7 @@ configurations {
     }
 }
 dependencies {
-  //  compile group: 'org.derive4j.hkt', name: 'hkt', version: '0.2'
+     compile group: 'org.derive4j.hkt', name: 'hkt', version: '0.9'
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
 
 	testCompile 'commons-io:commons-io:2.4'

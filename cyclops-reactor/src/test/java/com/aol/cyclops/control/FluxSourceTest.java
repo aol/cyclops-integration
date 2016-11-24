@@ -8,7 +8,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,6 +22,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
 
+import com.aol.cyclops.Matchables;
 import com.aol.cyclops.data.async.Queue;
 import com.aol.cyclops.data.async.QueueFactories;
 import com.aol.cyclops.data.async.Signal;
@@ -27,32 +32,38 @@ import com.aol.cyclops.reactor.collections.extensions.standard.LazyListX;
 import com.aol.cyclops.reactor.flux.pushable.MultipleFluxSource;
 import com.aol.cyclops.reactor.flux.pushable.PushableFlux;
 import com.aol.cyclops.types.futurestream.LazyFutureStream;
+import com.aol.cyclops.util.ExceptionSoftener;
 import com.aol.cyclops.util.stream.pushable.PushableLazyFutureStream;
 import com.aol.cyclops.util.stream.pushable.PushableReactiveSeq;
 import com.aol.cyclops.util.stream.pushable.PushableStream;
+import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
 
 
 public class FluxSourceTest {
-    
     @Test
-    public void listTest(){
-        ListX.of(1,2,3)
-             .forEach2(a->ListX.range(0, a), a->b->Tuple.tuple(a,b))
-             .printOut();;
-        
-   
-        ListX.of(1,2,3)
-             .zip(ListX.of('a','b','c'), (a,b)->""+b+":"+a)
-             .sliding(2,1)
-             .onEmptySwitch(()->ListX.of(ListX.of("default:1000")))
-             .printOut();
-        
-        LazyListX.of(1,2,3)
-                 .plus(10)
-                 .onePer(1, TimeUnit.MINUTES)
-                 .map(i->i+1)
-                 .printOut();
+    public void executeParallel() {
+        List<Object> result = new SimpleReact(Executors.newFixedThreadPool(1))
+                .of(getSupplier())
+                .withRetrier(new AsyncRetryExecutor(Executors.newScheduledThreadPool(1))
+                ) 
+                .retry(Supplier::get)
+                .block()
+                .collect(Collectors.toList());
+        System.out.println(result);
     }
+    AtomicInteger count = new AtomicInteger(0);
+    private Supplier<String> getSupplier() {
+        return () -> {
+            System.out.println("Attempt " + count.incrementAndGet());
+            if(count.get()<4)
+                throw ExceptionSoftener.throwSoftenedException(new TimeoutException());
+            return "success";
+        };
+    }
+
+   
+    
+    
 
     @Test
     public void testLazyFutureStream() {

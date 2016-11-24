@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.hkt.alias.Higher;
+import com.aol.cyclops.hkt.alias.Higher2;
 import com.aol.cyclops.hkt.typeclasses.Unit;
 import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
 import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
@@ -23,6 +24,12 @@ import com.aol.cyclops.util.function.TriFunction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+/**
+ * General instance used to create typeclass instances from Java 8 method references
+ * 
+ * @author johnmcclean
+ *
+ */
 public interface General {
     @AllArgsConstructor
     static class GeneralFunctor<CRE,A,B> implements Functor<CRE>{
@@ -61,6 +68,7 @@ public interface General {
    
         return new GeneralUnit<CRE,A>(unitRef);
     }
+    
 
     @AllArgsConstructor
     @Builder
@@ -150,7 +158,7 @@ public interface General {
         
 
         @Override
-        public <T> Higher<CRE, T> zero() {
+        public Higher<CRE, ?> zero() {
             return (Higher)zero;
         }
 
@@ -188,7 +196,7 @@ public interface General {
         }
 
         @Override
-        public <T> Higher<CRE, T> zero() {
+        public Higher<CRE, ?> zero() {
             return (Higher)zero.get();
         }
 
@@ -232,8 +240,8 @@ public interface General {
         
     }
     @AllArgsConstructor
-    static class GeneralMonadPlus<CRE,T,B> implements MonadPlus<CRE,T>{
-        Monoid<Higher<CRE, T>> monoid;
+    static class GeneralMonadPlus<CRE,T> implements MonadPlus<CRE>{
+        Monoid<Higher<CRE, ?>> monoid;
         Monad<CRE> monad;
         
 
@@ -260,13 +268,13 @@ public interface General {
         
 
         @Override
-        public Monoid<Higher<CRE, T>> monoid() {
+        public Monoid<Higher<CRE, ?>> monoid() {
             return (Monoid)monoid;
         }
         
     }
     @AllArgsConstructor
-    static class SupplierMonadPlus<CRE,T,B> implements MonadPlus<CRE,T>{
+    static class SupplierMonadPlus<CRE,T,B> implements MonadPlus<CRE>{
         Monoid<Higher<CRE, T>> monoid;
         MonadZero<CRE> monad;
         
@@ -292,20 +300,20 @@ public interface General {
         }
 
         @Override
-        public Higher<CRE, T> zero(){
+        public Higher<CRE, ?> zero(){
             return monad.zero();
         }
 
         @Override
-        public Monoid<Higher<CRE, T>> monoid() {
+        public Monoid<Higher<CRE, ?>> monoid() {
             return (Monoid)monoid;
         }
         
     }
-    static  <CRE,A,B> GeneralMonadPlus<CRE,A,B> monadPlus(Monad<CRE> monad,
-            Monoid<Higher<CRE, A>> monoid) {
+    static  <CRE,A,B> GeneralMonadPlus<CRE,A> monadPlus(Monad<CRE> monad,
+            Monoid<Higher<CRE, ?>> monoid) {
    
-        return new GeneralMonadPlus<CRE,A,B>(monoid,monad);
+        return new GeneralMonadPlus<CRE,A>(monoid,monad);
         
     }
     static  <CRE,A,B> SupplierMonadPlus<CRE,A,B> monadPlus(MonadZero<CRE> monad,
@@ -316,8 +324,8 @@ public interface General {
     }
     @AllArgsConstructor
     static class GeneralComonad<CRE,A,B> implements Comonad<CRE>{
-        GeneralFunctor<CRE,A,B> functor;
-        GeneralUnit<CRE,A> unit;
+        Functor<CRE> functor;
+        Unit<CRE> unit;
         Function<? super Higher<CRE, A>, ? extends A> extractFn;
         <T> Function<? super Higher<CRE, T>, ? extends T> extractFn(){
             return (Function)extractFn;
@@ -340,7 +348,7 @@ public interface General {
         }
         
     }
-    static  <CRE,T,R> GeneralComonad<CRE,T,R> comonad(GeneralFunctor<CRE,T,R> functor, GeneralUnit<CRE,T> unit,
+    static  <CRE,T,R> GeneralComonad<CRE,T,R> comonad(Functor<CRE> functor, Unit<CRE> unit,
             Function<? super Higher<CRE, T>, ? extends T> extractFn ) {
         
         return new GeneralComonad<>(functor,unit,extractFn);

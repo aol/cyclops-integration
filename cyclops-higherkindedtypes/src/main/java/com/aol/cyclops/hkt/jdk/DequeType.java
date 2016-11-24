@@ -1,8 +1,10 @@
 package com.aol.cyclops.hkt.jdk;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import com.aol.cyclops.hkt.alias.Higher;
 
@@ -28,7 +30,13 @@ public interface DequeType<T> extends Higher<DequeType.µ, T>, Deque<T> {
      */
     public static class µ {
     }
-
+    public static <T> DequeType<T> of(final T... values) {
+        LinkedList<T> list = new LinkedList<>();
+        for(T val : values){
+            list.add(val);
+        }
+        return DequeType.widen(list);
+    }
     /**
      * Convert a Deque to a simulated HigherKindedType that captures Deque nature
      * and Deque element data type separately. Recover via @see DequeType#narrow
@@ -44,7 +52,17 @@ public interface DequeType<T> extends Higher<DequeType.µ, T>, Deque<T> {
             return (DequeType<T>) deque;
         return new Box<>(deque);
     }
-
+    /**
+     * Widen a DequeType nested inside another HKT encoded type
+     * 
+     * @param deque HTK encoded type containing  a Deque to widen
+     * @return HKT encoded type with a widened Deque
+     */
+    public static <C2,T> Higher<C2, Higher<DequeType.µ,T>> widen2(Higher<C2, DequeType<T>> list){
+        //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
+        //cast seems safer as Higher<DequeType.µ,T> must be a ListType
+        return (Higher)list;
+    }
     /**
      * Convert the HigherKindedType definition for a Deque into
      * 
@@ -57,6 +75,15 @@ public interface DequeType<T> extends Higher<DequeType.µ, T>, Deque<T> {
         //this code should be unreachable due to HKT type checker
         final Box<T> type = (Box<T>) deque;
         return type.narrow();
+    }
+    /**
+     * Convert the raw Higher Kinded Type for Deque types into the DequeType type definition class
+     * 
+     * @param deque HKT encoded list into a DequeType
+     * @return DequeType
+     */
+    public static <T> DequeType<T> narrowK(final Higher<DequeType.µ, T> list) {
+       return (DequeType<T>)list;
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -220,8 +247,16 @@ public interface DequeType<T> extends Higher<DequeType.µ, T>, Deque<T> {
             return boxed.hashCode();
         }
 
-      
-      
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "DequeType [" + boxed + "]";
+        }
+
+        
 
     }
 

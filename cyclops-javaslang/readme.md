@@ -17,6 +17,8 @@ v8.0.0 of cyclops-javaslang requires v2.0.2 of Javaslang.
 5. Ability to use Javaslang types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
 6. Memoize javaslang functions with a configurable Cache (support LRU, or TTL)
 7. Stream extensions via AnyMSeq for all Javaslang traversables
+8. Higher Kinded Type encodings for Javaslang types
+9. Haskell like type classes for Javaslang types (treat Lazy as a Monad or MonadPlus!)
 
 
 # Details & Examples

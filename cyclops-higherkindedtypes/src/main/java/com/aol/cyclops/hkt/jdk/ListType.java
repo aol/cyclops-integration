@@ -1,5 +1,6 @@
 package com.aol.cyclops.hkt.jdk;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -9,7 +10,6 @@ import com.aol.cyclops.hkt.alias.Higher;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.ToString;
 
 /**
  * Simulates Higher Kinded Types for List's
@@ -29,6 +29,9 @@ public interface ListType<T> extends Higher<ListType.µ, T>, List<T> {
      *
      */
     public static class µ {
+    }
+    public static <T> ListType<T> of(final T... values) {
+        return ListType.widen(Arrays.asList(values));
     }
 
     /**
@@ -81,7 +84,6 @@ public interface ListType<T> extends Higher<ListType.µ, T>, List<T> {
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    
     static final class Box<T> implements ListType<T> {
 
         private final List<T> boxed;

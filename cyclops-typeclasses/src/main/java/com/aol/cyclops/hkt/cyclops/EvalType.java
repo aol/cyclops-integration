@@ -85,7 +85,15 @@ public interface EvalType<T> extends Higher<EvalType.µ, T>, Eval<T> {
         return widen(Eval.now(value));
 
     }
-
+    /**
+     * Convert the raw Higher Kinded Type for MaybeType types into the MaybeType type definition class
+     * 
+     * @param future HKT encoded list into a OptionalType
+     * @return MaybeType
+     */
+    public static <T> EvalType<T> narrowK(final Higher<EvalType.µ, T> future) {
+       return (EvalType<T>)future;
+    }
     /**
      * Lazily create an Eval from the specified Supplier. Supplier#get will only be called once. Return values of Eval operations will also
      * be cached (later indicates lazy and caching - characteristics can be changed using flatMap).
@@ -183,6 +191,33 @@ public interface EvalType<T> extends Higher<EvalType.µ, T>, Eval<T> {
 
         public T get() {
             return boxed.get();
+        }
+
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            return boxed.hashCode();
+        }
+
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+           return boxed.equals(obj);
+        }
+
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "EvalType [" + boxed + "]";
         }
         
               
