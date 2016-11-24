@@ -3,6 +3,7 @@ package com.aol.cyclops.sum.types;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -16,17 +17,26 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
+import com.aol.cyclops.Monoid;
+import com.aol.cyclops.control.AnyM;
 import com.aol.cyclops.control.Eval;
+import com.aol.cyclops.control.Ior;
 import com.aol.cyclops.control.Matchable.CheckValue1;
+import com.aol.cyclops.data.collections.extensions.CollectionX;
+import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.sum.types.Either3.Lazy;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.types.BiFunctor;
 import com.aol.cyclops.types.Combiner;
+import com.aol.cyclops.types.Filterable;
 import com.aol.cyclops.types.Functor;
+import com.aol.cyclops.types.MonadicValue4;
 import com.aol.cyclops.types.To;
 import com.aol.cyclops.types.Value;
+import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.types.applicative.ApplicativeFunctor;
 import com.aol.cyclops.types.stream.reactive.ValueSubscriber;
 
@@ -54,10 +64,105 @@ import lombok.EqualsAndHashCode;
  * @param <RT> Right type (operations are performed on this type if present)
  */
 public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>, 
-                                                            BiFunctor<LT3, RT>, 
-                                                            To<Either4<LT1, LT2,LT3, RT>>, 
-                                                            Supplier<RT>, 
-                                                            ApplicativeFunctor<RT> {
+                                                   Filterable<RT>,
+                                                   BiFunctor<LT3, RT>, 
+                                                   To<Either4<LT1, LT2,LT3, RT>>,
+                                                   MonadicValue4<LT1,LT2,LT3,RT>,
+                                                   Supplier<RT>, 
+                                                   ApplicativeFunctor<RT> {
+    
+    /**
+     * Create an AnyMValue instance that wraps an Either4
+     * 
+     * @param xor Either4 to wrap inside an AnyM
+     * @return AnyM instance that wraps the provided Either4
+     */
+    public static <LT1,LT2,LT3,T> AnyMValue<T> anyM(final Either4<LT1, LT2, LT3, T> xor) {
+        Objects.requireNonNull(xor);
+        return AnyM.ofValue(xor);
+    }
+
+    /**
+     * Take an iterable containing Either3s and convert them into a List of AnyMs
+     * e.g.
+     * {@code 
+     *     List<AnyM<Integer>> anyMs = anyMList(Arrays.asList(Either4.right(1),Either4.left(10));
+     *     
+     *     //List[AnyM[Either4:right[1],Either4:left[10]]]
+     * }
+     * 
+     * @param anyM Iterable containing Eithers
+     * @return List of AnyMs
+     */
+    public static <ST, LT2, LT3,T> ListX<AnyMValue<T>> anyMList(final Iterable<Either4<ST, LT2,LT3, T>> anyM) {
+        return ReactiveSeq.fromIterable(anyM)
+                          .map(e -> anyM(e))
+                          .toListX();
+    }
+
+    /**
+     *  Turn a collection of Either3 into a single Either with Lists of values.
+     *  
+     * <pre>
+     * {@code 
+     * 
+     * Either4<String,String,String,Integer> just  = Either4.right(10);
+       Either4<String,String,String,Integer> none = Either4.left("none");
+        
+        
+     * Either4<ListX<String>,ListX<String>,ListX<String>,ListX<Integer>> xors =Either4.sequence(ListX.of(just,none,Either4.right(1)));
+       //Eitehr.right(ListX.of(10,1)));
+     * 
+     * }</pre>
+     *
+     * 
+     * 
+     * @param Either3 Either3 to sequence
+     * @return Either3 Sequenced
+     */
+    public static <LT1,LT2,LT3, PT> Either4<ListX<LT1>,ListX<LT2>,ListX<LT3>,ListX<PT>> sequence(final CollectionX<Either4<LT1,LT2,LT3, PT>> xors) {
+        return AnyM.sequence(anyMList(xors))
+                   .unwrap();
+    }
+    /**
+     * Traverse a Collection of Either3 producing an Either4 with a ListX, applying the transformation function to every
+     * element in the list
+     * 
+     * @param xors Either4s to sequence and transform
+     * @param fn Transformation function
+     * @return An Either4 with a transformed list
+     */
+    public static <LT1,LT2, LT3,PT,R> Either4<ListX<LT1>,ListX<LT2>,ListX<LT3>,ListX<R>> traverse(final CollectionX<Either4<LT1,LT2,LT3, PT>> xors, Function<? super PT, ? extends R> fn) {
+        return  sequence(xors).map(l->l.map(fn));
+    }
+   
+
+    /**
+     *  Accumulate the results only from those Either3 which have a Right type present, using the supplied Monoid (a combining BiFunction/BinaryOperator and identity element that takes two
+     * input values of the same type and returns the combined result) {@see com.aol.cyclops.Monoids }.
+     * 
+     * <pre>
+     * {@code 
+     * Either4<String,String,String,Integer> just  = Either4.right(10);
+       Either4<String,String,String,Integer> none = Either4.left("none");
+     *  
+     *  Either4<ListX<String>,ListX<String>,Integer> xors = Either4.accumulatePrimary(Monoids.intSum,ListX.of(just,none,Either4.right(1)));
+        //Either4.right(11);
+     * 
+     * }
+     * </pre>
+     * 
+     * 
+     * 
+     * @param xors Collection of Eithers to accumulate primary values
+     * @param reducer  Reducer to accumulate results
+     * @return  Either4 populated with the accumulate primary operation
+     */
+    public static <LT1,LT2,LT3, RT> Either4<ListX<LT1>, ListX<LT2>,ListX<LT3>, RT> accumulate(final Monoid<RT> reducer,final CollectionX<Either4<LT1, LT2, LT3, RT>> xors) {
+        return sequence(xors).map(s -> s.reduce(reducer));
+    }
+
+    
 
     /**
      * Lazily construct a Right Either from the supplied publisher
@@ -151,7 +256,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
      * @param middle Value to store
      * @return Second instance
      */
-    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> second(final M1 middle) {
+    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> left2(final M1 middle) {
         return new Left2<>(
                             Eval.now(middle));
     }
@@ -161,7 +266,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
      * @param middle Value to store
      * @return Third instance
      */
-    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> third(final B middle) {
+    public static <LT, M1, B, RT> Either4<LT, M1, B, RT> left3(final B middle) {
         return new Left3<>(
                             Eval.now(middle));
     }
@@ -233,7 +338,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
      * @return Mapped Either4
      */
     < RT1> Either4<LT1, LT2,LT3, RT1> flatMap(
-            Function<? super RT, ? extends Either4<? extends LT1, ? extends LT2, ? extends LT3, ? extends RT1>> mapper);
+            Function<? super RT, ? extends MonadicValue4<? extends LT1, ? extends LT2, ? extends LT3, ? extends RT1>> mapper);
     /**
      * @return Swap the third and the right types
      */
@@ -267,6 +372,33 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
      */
     boolean isLeft3();
 
+    
+    
+    
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.Filterable#ofType(java.lang.Class)
+     */
+    @Override
+    default <U> Maybe<U> ofType(Class<? extends U> type) {
+        
+        return (Maybe<U>)Filterable.super.ofType(type);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.Filterable#filterNot(java.util.function.Predicate)
+     */
+    @Override
+    default Maybe<RT> filterNot(Predicate<? super RT> predicate) {
+        
+        return (Maybe<RT>)Filterable.super.filterNot(predicate);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.types.Filterable#notNull()
+     */
+    @Override
+    default Maybe<RT> notNull() {
+        
+        return (Maybe<RT>)Filterable.super.notNull();
+    }
     /*
      * (non-Javadoc)
      * 
@@ -285,6 +417,23 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
     @Override
     <R> Either4<LT1,LT2,LT3, R> map(Function<? super RT, ? extends R> fn);
 
+    /**
+     * Return an Ior that can be this object or a Ior.primary or Ior.secondary
+     * @return new Ior 
+     */
+     default Ior<LT1, RT> toIor() {
+        return this.visit(l->Ior.secondary(l), 
+                          m->Ior.secondary(null),
+                          m->Ior.secondary(null),
+                          r->Ior.primary(r));
+    }
+     default Xor<LT1, RT> toXor() {
+         return this.visit(l->Xor.secondary(l), 
+                           m->Xor.secondary(null),
+                           m->Xor.secondary(null),
+                           r->Xor.primary(r));
+     }
+    
     /*
      * (non-Javadoc)
      * 
@@ -498,7 +647,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         public Either4<ST, M,M2, PT> resolve() {
             return lazy.get()
-                       .visit(Either4::left1, Either4::second,Either4::third, Either4::right);
+                       .visit(Either4::left1, Either4::left2,Either4::left3, Either4::right);
         }
 
         private static <ST, M,M2, PT> Lazy<ST, M,M2, PT> lazy(final Eval<Either4<ST, M,M2, PT>> lazy) {
@@ -512,7 +661,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         @Override
         public <RT1> Either4<ST, M,M2, RT1> flatMap(
-                final Function<? super PT, ? extends Either4<? extends ST, ? extends M, ? extends M2,? extends RT1>> mapper) {
+                final Function<? super PT, ? extends MonadicValue4<? extends ST, ? extends M, ? extends M2,? extends RT1>> mapper) {
             return lazy(Eval.later(() -> resolve().flatMap(mapper)));
         }
 
@@ -627,11 +776,33 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
             return Either4.right(unit);
         }
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            return this.visit(Either4::left1,Either4::left2,Either4::left3,Either4::right).hashCode();
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            return this.visit(Either4::left1,Either4::left2,Either4::left3,Either4::right).equals(obj);
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return trampoline().toString();
+        }
 
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of = { "value" })
     static class Right<ST, M,M2, PT> implements Either4<ST, M,M2, PT> {
         private final Eval<PT> value;
 
@@ -665,7 +836,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         @Override
         public <RT1> Either4<ST, M, M2, RT1> flatMap(
-                final Function<? super PT, ? extends Either4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> mapper) {
+                final Function<? super PT, ? extends MonadicValue4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> mapper) {
             final Eval<Either4<ST, M, M2, RT1>> e3 = (Eval<Either4<ST, M, M2, RT1>>) value.map(mapper);
             return new Lazy<>(
                               e3);
@@ -690,7 +861,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         @Override
         public String mkString() {
-            return "Either4.right[" + value + "]";
+            return "Either4.right[" + value.get() + "]";
         }
 
         @Override
@@ -782,10 +953,44 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
             return false;
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            return result;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if(obj instanceof Lazy){
+                return ((Lazy)obj).equals(this);
+            }
+            if (getClass() != obj.getClass())
+                return false;
+            Right other = (Right) obj;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
+            return true;
+        }
+
+        
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of = { "value" })
     static class Left1<ST, M, M2,PT> implements Either4<ST, M,M2, PT> {
         private final Eval<ST> value;
 
@@ -815,7 +1020,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         @Override
         public <RT1> Either4<ST, M, M2, RT1> flatMap(
-                final Function<? super PT, ? extends Either4<? extends ST, ? extends M,? extends M2, ? extends RT1>> mapper) {
+                final Function<? super PT, ? extends MonadicValue4<? extends ST, ? extends M,? extends M2, ? extends RT1>> mapper) {
 
             return (Either4) this;
 
@@ -843,7 +1048,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         @Override
         public String mkString() {
-            return "Either4.left1[" + value + "]";
+            return "Either4.left1[" + value.get() + "]";
         }
 
         @Override
@@ -928,10 +1133,44 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
             return false;
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            return result;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if(obj instanceof Lazy){
+                return ((Lazy)obj).equals(this);
+            }
+            if (getClass() != obj.getClass())
+                return false;
+            Left1 other = (Left1) obj;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
+            return true;
+        }
+        
+
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(of = { "value" })
     static class Left2<ST, M,M2, PT> implements Either4<ST, M, M2, PT> {
         private final Eval<M> value;
 
@@ -961,7 +1200,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         @Override
         public <RT1> Either4<ST, M, M2,RT1> flatMap(
-                final Function<? super PT, ? extends Either4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> mapper) {
+                final Function<? super PT, ? extends MonadicValue4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> mapper) {
 
             return (Either4) this;
 
@@ -985,7 +1224,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         @Override
         public String mkString() {
-            return "Either4.left2[" + value + "]";
+            return "Either4.left2[" + value.get() + "]";
         }
 
         @Override
@@ -1074,9 +1313,43 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
             return false;
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            return result;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if(obj instanceof Lazy){
+                return ((Lazy)obj).equals(this);
+            }
+            if (getClass() != obj.getClass())
+                return false;
+            Left2 other = (Left2) obj;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
+            return true;
+        }
+        
+
     }
     @AllArgsConstructor(access = AccessLevel.PRIVATE) 
-    @EqualsAndHashCode(of = { "value" })
     static class Left3<ST, M,M2, PT> implements Either4<ST, M, M2, PT> {
         private final Eval<M2> value;
 
@@ -1106,7 +1379,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         @Override
         public <RT1> Either4<ST, M, M2,RT1> flatMap(
-                final Function<? super PT, ? extends Either4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> mapper) {
+                final Function<? super PT, ? extends MonadicValue4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> mapper) {
 
             return (Either4) this;
 
@@ -1133,7 +1406,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
 
         @Override
         public String mkString() {
-            return "Either4.left3[" + value + "]";
+            return "Either4.left3[" + value.get() + "]";
         }
 
         @Override
@@ -1214,8 +1487,43 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
         @Override
         public boolean isLeft2() {
 
+            return false;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if(obj instanceof Lazy){
+                return ((Lazy)obj).equals(this);
+            }
+            if (getClass() != obj.getClass())
+                return false;
+            Left3 other = (Left3) obj;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
             return true;
         }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            return result;
+        }
+        
 
     }
 
