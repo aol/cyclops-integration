@@ -63,25 +63,7 @@ public class FluxSourceTest {
 
    
     
-    @Test
-    public void listTest(){
-        ListX.of(1,2,3)
-             .forEach2(a->ListX.range(0, a), a->b->Tuple.tuple(a,b))
-             .printOut();;
-        
-   
-        ListX.of(1,2,3)
-             .zip(ListX.of('a','b','c'), (a,b)->""+b+":"+a)
-             .sliding(2,1)
-             .onEmptySwitch(()->ListX.of(ListX.of("default:1000")))
-             .printOut();
-        
-        LazyListX.of(1,2,3)
-                 .plus(10)
-                 .onePer(1, TimeUnit.MINUTES)
-                 .map(i->i+1)
-                 .printOut();
-    }
+    
 
     @Test
     public void testLazyFutureStream() {

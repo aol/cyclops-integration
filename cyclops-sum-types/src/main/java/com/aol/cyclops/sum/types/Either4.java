@@ -33,6 +33,7 @@ import com.aol.cyclops.types.BiFunctor;
 import com.aol.cyclops.types.Combiner;
 import com.aol.cyclops.types.Filterable;
 import com.aol.cyclops.types.Functor;
+import com.aol.cyclops.types.MonadicValue3;
 import com.aol.cyclops.types.MonadicValue4;
 import com.aol.cyclops.types.To;
 import com.aol.cyclops.types.Value;
@@ -71,6 +72,13 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
                                                    Supplier<RT>, 
                                                    ApplicativeFunctor<RT> {
     
+    static <LT1,LT2,LT3,RT> Either4<LT1,LT2,LT3,RT> fromMonadicValue4(MonadicValue4<LT1,LT2,LT3,RT> mv4){
+        if(mv4 instanceof Either4){
+            return (Either4)mv4;
+        }
+        return mv4.toOptional().isPresent()? Either4.right(mv4.get()) : Either4.left1(null);
+
+    }
     /**
      * Create an AnyMValue instance that wraps an Either4
      * 
@@ -640,8 +648,7 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    final @EqualsAndHashCode(of = { "value" }) 
-    static class Lazy<ST, M,M2, PT> implements Either4<ST, M,M2, PT> {
+    final static class Lazy<ST, M,M2, PT> implements Either4<ST, M,M2, PT> {
 
         private final Eval<Either4<ST, M,M2, PT>> lazy;
 
@@ -837,9 +844,12 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
         @Override
         public <RT1> Either4<ST, M, M2, RT1> flatMap(
                 final Function<? super PT, ? extends MonadicValue4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> mapper) {
-            final Eval<Either4<ST, M, M2, RT1>> e3 = (Eval<Either4<ST, M, M2, RT1>>) value.map(mapper);
-            return new Lazy<>(
-                              e3);
+            Eval<? extends MonadicValue4<? extends ST, ? extends M,? extends M2, ? extends RT1>> ret = value.map(mapper);
+            Eval<? extends Either4<? extends ST, ? extends M, ? extends M2, ? extends RT1>> et = ret.map(Either4::fromMonadicValue4);
+            
+           final Eval<Either4<ST, M, M2, RT1>> e3 =  (Eval<Either4<ST, M, M2, RT1>>)et;
+           return new Lazy<>(
+                             e3);
           
 
         }

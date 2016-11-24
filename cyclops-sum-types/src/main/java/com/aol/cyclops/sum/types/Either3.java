@@ -58,6 +58,14 @@ import lombok.EqualsAndHashCode;
  */
 public interface Either3<LT1, LT2, RT>
                 extends Functor<RT>, BiFunctor<LT2, RT>, Filterable<RT>, MonadicValue3<LT1,LT2,RT>,To<Either3<LT1, LT2, RT>>, Supplier<RT>, ApplicativeFunctor<RT> {
+    
+    static <LT1,LT2,RT> Either3<LT1,LT2,RT> fromMonadicValue3(MonadicValue3<LT1,LT2,RT> mv3){
+        if(mv3 instanceof Either3){
+            return (Either3)mv3;
+        }
+        return mv3.toOptional().isPresent()? Either3.right(mv3.get()) : Either3.left1(null);
+
+    }
     /**
      * Create an AnyMValue instance that wraps an Either3
      * 
@@ -790,7 +798,11 @@ public interface Either3<LT1, LT2, RT>
         @Override
         public <RT1> Either3<ST, M, RT1> flatMap(
                 final Function<? super PT, ? extends MonadicValue3<? extends ST, ? extends M, ? extends RT1>> mapper) {
-            final Eval<Either3<ST, M, RT1>> e3 = (Eval<Either3<ST, M, RT1>>) value.map(mapper);
+            
+             Eval<? extends MonadicValue3<? extends ST, ? extends M, ? extends RT1>> ret = value.map(mapper);
+             Eval<? extends Either3<? extends ST, ? extends M, ? extends RT1>> et = ret.map(Either3::fromMonadicValue3);
+             
+            final Eval<Either3<ST, M, RT1>> e3 =  (Eval<Either3<ST, M, RT1>>)et;
             return new Lazy<>(
                               e3);
           

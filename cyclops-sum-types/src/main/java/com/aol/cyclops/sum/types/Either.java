@@ -33,8 +33,6 @@ import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.data.collections.extensions.CollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.sum.types.Either3.Lazy;
-import com.aol.cyclops.sum.types.Either3.Right;
 import com.aol.cyclops.types.Combiner;
 import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.MonadicValue2;
@@ -45,7 +43,6 @@ import com.aol.cyclops.util.function.Curry;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 
 /**
  * A totally Lazy Either implementation with tail call optimization for map and flatMap operators.
@@ -127,6 +124,13 @@ import lombok.EqualsAndHashCode;
  */
 public interface Either<ST, PT> extends Xor<ST,PT> {
 
+    static <LT1,RT> Either<LT1,RT> fromMonadicValue2(MonadicValue2<LT1,RT> mv2){
+        if(mv2 instanceof Either){
+            return (Either)mv2;
+        }
+        return mv2.toOptional().isPresent()? Either.right(mv2.get()) : Either.left(null);
+
+    }
     /**
      * Create an AnyMValue instance that wraps an Either3
      * 
@@ -1332,8 +1336,12 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         public <LT1, RT1> Either<LT1, RT1> flatMap(
                 final Function<? super PT, ? extends MonadicValue2<? extends LT1, ? extends RT1>> mapper) {
 
-            final Eval<Either<ST,  RT1>> e3 = (Eval<Either<ST,  RT1>>) value.map(mapper);
-            return (Either<LT1, RT1>)new Lazy<ST,RT1>(e3);
+            Eval<? extends MonadicValue2<? extends LT1,  ? extends RT1>> ret = value.map(mapper);
+            Eval<? extends Either<? extends LT1,  ? extends RT1>> et = ret.map(Either::fromMonadicValue2);
+            
+           final Eval<Either<LT1, RT1>> e3 =  (Eval<Either<LT1,  RT1>>)et;
+           return new Lazy<>(
+                             e3);
 
         }
 
