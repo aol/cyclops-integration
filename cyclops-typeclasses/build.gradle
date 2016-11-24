@@ -80,7 +80,7 @@ modifyPom {
 		inceptionYear '2016'
 
 		groupId 'com.aol.cyclops'
-		artifactId 'cyclops-higherkindedtypes'
+		artifactId 'cyclops-typeclassess'
 		version "$version"
 		
 		scm {
