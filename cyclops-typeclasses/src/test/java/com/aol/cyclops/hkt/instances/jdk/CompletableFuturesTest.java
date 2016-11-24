@@ -137,7 +137,7 @@ public class CompletableFuturesTest {
                                                                          .convert(MaybeType::narrowK);
        
        
-       assertThat(res,equalTo(Maybe.just(Optional.of(2))));
+       assertThat(res.get().convert(CompletableFutureType::narrow).join(),equalTo(2));
     }
     
 }
