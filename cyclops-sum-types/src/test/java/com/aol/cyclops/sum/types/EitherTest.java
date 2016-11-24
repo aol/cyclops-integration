@@ -142,19 +142,19 @@ public class EitherTest {
     @Test
     public void testSequenceSecondary() {
         Xor<ListX<Integer>,ListX<String>> xors =Xor.sequenceSecondary(ListX.of(just,none,Either.right(1)));
-        assertThat(xors,equalTo(Xor.primary(ListX.of("none"))));
+        assertThat(xors,equalTo(Either.right(ListX.of("none"))));
     }
 
     @Test
     public void testAccumulateSecondary2() {
         Xor<?,PSetX<String>> xors = Xor.accumulateSecondary(ListX.of(just,none,Either.right(1)),Reducers.<String>toPSetX());
-        assertThat(xors,equalTo(Xor.primary(PSetX.of("none"))));
+        assertThat(xors,equalTo(Either.right(PSetX.of("none"))));
     }
 
     @Test
     public void testAccumulateSecondarySemigroup() {
         Xor<?,String> xors = Xor.accumulateSecondary(ListX.of(just,none,Either.left("1")),i->""+i,Monoids.stringConcat);
-        assertThat(xors,equalTo(Xor.primary("none1")));
+        assertThat(xors,equalTo(Either.right("none1")));
     }
     @Test
     public void testAccumulateSecondarySemigroupIntSum() {
@@ -237,7 +237,7 @@ public class EitherTest {
     @Test
     public void testSequence() {
         Xor<ListX<String>,ListX<Integer>> maybes =Xor.sequencePrimary(ListX.of(just,none,Either.right(1)));
-        assertThat(maybes,equalTo(Xor.primary(ListX.of(10,1))));
+        assertThat(maybes,equalTo(Either.right(ListX.of(10,1))));
     }
 
     @Test @Ignore  //pending https://github.com/aol/cyclops-react/issues/390
@@ -250,23 +250,23 @@ public class EitherTest {
     @Test
     public void testAccumulateJustCollectionXOfMaybeOfTReducerOfR() {
         Xor<?,PSetX<Integer>> maybes =Xor.accumulatePrimary(ListX.of(just,none,Either.right(1)),Reducers.toPSetX());
-        assertThat(maybes,equalTo(Xor.primary(PSetX.of(10,1))));
+        assertThat(maybes,equalTo(Either.right(PSetX.of(10,1))));
     }
 
     @Test
     public void testAccumulateJustCollectionXOfMaybeOfTFunctionOfQsuperTRSemigroupOfR() {
         Xor<?,String> maybes = Xor.accumulatePrimary(ListX.of(just,none,Either.right(1)),i->""+i,Monoids.stringConcat);
-        assertThat(maybes,equalTo(Xor.primary("101")));
+        assertThat(maybes,equalTo(Either.right("101")));
     }
     @Test
     public void testAccumulateJust() {
         Xor<?,Integer> maybes =Xor.accumulatePrimary(Monoids.intSum,ListX.of(just,none,Either.right(1)));
-        assertThat(maybes,equalTo(Xor.primary(11)));
+        assertThat(maybes,equalTo(Either.right(11)));
     }
     @Test
     public void testAccumulateSecondary() {
         Xor<?,String> maybes =Xor.accumulateSecondary(Monoids.stringConcat,ListX.of(just,none,Either.left("hello")));
-        assertThat(maybes,equalTo(Xor.primary("nonehello")));
+        assertThat(maybes,equalTo(Either.right("nonehello")));
     }
 
     @Test
