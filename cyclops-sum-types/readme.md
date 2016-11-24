@@ -1,5 +1,7 @@
 # Cyclops Sum Types
 
+* [![Maven Central : cyclops-sum-types](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-sum-types/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-sum-types)
+
 cyclops-sum-types defines Either implementations from Either through Either4 (to be extended).
 
 All Either implementations have the following features
