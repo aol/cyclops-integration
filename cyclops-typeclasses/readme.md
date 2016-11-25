@@ -1,7 +1,7 @@
 # Cyclops Type Classes
 
 
-* [![Maven Central : cyclops-typeclasses](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-typeclasses/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-typeclasses)
+* [![Maven Central : cyclops-typeclasses](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-typeclassess/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-typeclassess)
 
 
 A concise set of type classes designed for use with HKT encoded types. The goal is to provide an easy to use, powerful core set of classes for working with types from JDK, cyclops-react, jooλ , javaslang, Reactor, FunctionalJava & RxJava in a generic way. Integration modules will provide specific instances for library specific types.
