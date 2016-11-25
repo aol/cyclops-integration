@@ -15,7 +15,8 @@ v8.0.0 of cyclops-functionaljava and above is built using v4.5 of FunctionalJava
 3. reactive-streams support for all FunctionalJava types (via AnyM support)
 4. Compatible with cyclops-react pattern matching
 5. Ability to use FunctionalJava types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
-
+8. [Higher Kinded Type encodings](https://github.com/aol/cyclops/tree/master/cyclops-functionaljava/src/main/java/com/aol/cyclops/functionaljava/hkt) for FunctionalJava types
+9. [Haskell like type classes](https://github.com/aol/cyclops/tree/master/cyclops-functionaljava/src/main/java/com/aol/cyclops/functionaljava/hkt/typeclassess/instances) for FunctionalJava types
 
 
 Use FJ.<type> to create wrapped FunctionalJava Monads.
