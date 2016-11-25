@@ -28,7 +28,7 @@ public class PStackTest {
     }
     @Test
     public void singleton(){
-        assertThat(DexxPStack.singleton(1),equalTo(DexxPVector.singleton(1)));
+        assertThat(ConsPStack.singleton(1),equalTo(DexxPVector.singleton(1)));
     }
     
     @Test

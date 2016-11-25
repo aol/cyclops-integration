@@ -1,4 +1,4 @@
-package com.aol.cyclops.scala.collections;
+package com.aol.cyclops.javaslang.collections;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
+import org.pcollections.TreePVector;
 public class PStackTest {
 
     ConsPStack<Integer> org = null;
@@ -17,22 +18,23 @@ public class PStackTest {
     @Before
     public void setup(){
        org = ConsPStack.empty();
-       test = ScalaPStack.empty();
+       test = JavaSlangPStack.empty();
      
     }
     
     @Test
     public void empty(){
-        assertThat(ConsPStack.empty(),equalTo(ScalaPStack.empty()));
+        assertThat(ConsPStack.empty(),equalTo(JavaSlangPVector.empty()));
     }
     @Test
     public void singleton(){
-        assertThat(ConsPStack.singleton(1),equalTo(ScalaPStack.singleton(1)));
+        assertThat(ConsPStack.singleton(1),equalTo(JavaSlangPVector.singleton(1)));
     }
+    
     @Test
     public void testWith(){
-       System.out.println( ScalaPStack.of(1,2,3,4,5,6));
-       System.out.println( ScalaPStack.of(1,2,3,4,5,6).with(2, 500));
+       System.out.println( JavaSlangPStack.of(1,2,3,4,5,6));
+       System.out.println( JavaSlangPStack.of(1,2,3,4,5,6).with(2, 500));
     }
     @Test
     public void plusMinus(){

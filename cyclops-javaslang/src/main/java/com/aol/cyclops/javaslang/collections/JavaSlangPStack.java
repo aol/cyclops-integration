@@ -119,10 +119,12 @@ public class JavaSlangPStack<T> extends AbstractList<T> implements PStack<T> {
      * @return Reducer for PStack
      */
     public static <T> Reducer<PStack<T>> toPStack() {
-        return Reducer.<PStack<T>> of(JavaSlangPStack.empty(), (final PStack<T> a) -> b -> a.plusAll(b), (final T x) -> JavaSlangPStack.singleton(x));
+        return Reducer.<PStack<T>> of(JavaSlangPStack.emptyPStack(), (final PStack<T> a) -> b -> a.plusAll(b), (final T x) -> JavaSlangPStack.singleton(x));
     }
     
-    
+    public static <T> JavaSlangPStack<T> emptyPStack(){
+        return new JavaSlangPStack<T>(List.empty());
+    }
     public static <T> LazyPStackX<T> empty(){
         return LazyPStackX.fromPStack(new JavaSlangPStack<T>(List.empty()), toPStack());
     }
@@ -149,12 +151,18 @@ public class JavaSlangPStack<T> extends AbstractList<T> implements PStack<T> {
 
     @Override
     public PStack<T> plusAll(Collection<? extends T> l) {
-        return withList(list.prependAll(l));
+        List<T> use = list;
+        for(T next :  l)
+            use = use.prepend(next);
+        return withList(use);
     }
 
     @Override
     public PStack<T> with(int i, T e) {
-        return withList(list.insert(i,e));
+        List<T> front = list.take(i);
+        List<T> back = list.drop(i);
+        
+        return withList(back.prepend(e).prependAll(front));
     }
 
     @Override
@@ -164,7 +172,10 @@ public class JavaSlangPStack<T> extends AbstractList<T> implements PStack<T> {
 
     @Override
     public PStack<T> plusAll(int i, Collection<? extends T> l) {
-        return withList(list.insertAll(i,list));
+        List<T> use = list;
+        for(T next :  l)
+            use = use.insert(i,next);
+        return withList(use);
     }
 
     @Override

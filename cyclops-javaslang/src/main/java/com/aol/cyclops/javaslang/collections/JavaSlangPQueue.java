@@ -120,9 +120,12 @@ public class JavaSlangPQueue<T> extends AbstractQueue<T> implements PQueue<T> {
      * @return Reducer for PQueue
      */
     public static <T> Reducer<PQueue<T>> toPQueue() {
-        return Reducer.<PQueue<T>> of(JavaSlangPQueue.empty(), (final PQueue<T> a) -> b -> a.plusAll(b), (final T x) -> JavaSlangPQueue.singleton(x));
+        return Reducer.<PQueue<T>> of(JavaSlangPQueue.emptyPQueue(), (final PQueue<T> a) -> b -> a.plusAll(b), (final T x) -> JavaSlangPQueue.singleton(x));
     }
-    
+    public static <T> JavaSlangPQueue<T> emptyPQueue(){
+        return new JavaSlangPQueue<>(Queue.empty());
+       
+    }
     public static <T> LazyPQueueX<T> empty(){
         return LazyPQueueX.fromPQueue(new JavaSlangPQueue<>(Queue.empty()),toPQueue());
        

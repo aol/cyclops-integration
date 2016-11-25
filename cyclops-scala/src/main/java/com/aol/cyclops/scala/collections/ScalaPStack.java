@@ -198,7 +198,7 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
 
         return withList(list.drop(i + 1)
                             .$colon$colon(e)
-                            .$colon$colon$colon(list));
+                            .$colon$colon$colon((List<T>)list.dropRight(size()-i)));
     }
 
     @Override

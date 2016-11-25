@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PStack;
-import org.pcollections.PVector;
+
 
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
@@ -19,11 +19,11 @@ import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
 import com.github.andrewoma.dexx.collection.Builder;
 import com.github.andrewoma.dexx.collection.ConsList;
 import com.github.andrewoma.dexx.collection.List;
-import com.github.andrewoma.dexx.collection.Vector;
+
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.val;
+
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
@@ -213,7 +213,7 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
 
             return withList(list.append(e));
         }
-        return withList(prependAll(list.drop(i).prepend(e),list.drop(i)));
+        return withList(prependAll(list.drop(i).prepend(e),list.take(i)));
        
 
     }

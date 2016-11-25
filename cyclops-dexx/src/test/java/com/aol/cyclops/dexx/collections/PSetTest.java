@@ -1,4 +1,4 @@
-package com.aol.cyclops.scala.collections;
+package com.aol.cyclops.dexx.collections;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -7,33 +7,30 @@ import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.pcollections.ConsPStack;
-import org.pcollections.PStack;
-public class PStackTest {
+import org.pcollections.HashTreePSet;
+import org.pcollections.MapPSet;
+import org.pcollections.PSet;
+public class PSetTest {
 
-    ConsPStack<Integer> org = null;
-    PStack<Integer> test=null;
+    MapPSet<Integer> org = null;
+    PSet<Integer> test=null;
     
     @Before
     public void setup(){
-       org = ConsPStack.empty();
-       test = ScalaPStack.empty();
+       org = HashTreePSet.empty();
+       test = DexxPSet.empty();
      
     }
     
     @Test
     public void empty(){
-        assertThat(ConsPStack.empty(),equalTo(ScalaPStack.empty()));
+        assertThat(HashTreePSet.empty(),equalTo(DexxPSet.empty()));
     }
     @Test
     public void singleton(){
-        assertThat(ConsPStack.singleton(1),equalTo(ScalaPStack.singleton(1)));
+        assertThat(HashTreePSet.singleton(1),equalTo(DexxPSet.singleton(1)));
     }
-    @Test
-    public void testWith(){
-       System.out.println( ScalaPStack.of(1,2,3,4,5,6));
-       System.out.println( ScalaPStack.of(1,2,3,4,5,6).with(2, 500));
-    }
+    
     @Test
     public void plusMinus(){
         System.out.println(test.plusAll(Arrays.asList(1,2,3)));
@@ -49,21 +46,9 @@ public class PStackTest {
         assertThat(org.plusAll(Arrays.asList(1,2,3)).minusAll(Arrays.asList(2,3)),
                    equalTo(test.plusAll(Arrays.asList(1,2,3)).minusAll(Arrays.asList(2,3))));
         
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7)),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
+        
         
     }
     
-    @Test
-    public void subList(){
-        
-        
-        assertThat(org.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(3,5),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(3,5)));
-        assertThat(org.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(0,1),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(0,1)));
-        assertThat(org.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(0,6),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(0,6)));
-        
-    }
+   
 }

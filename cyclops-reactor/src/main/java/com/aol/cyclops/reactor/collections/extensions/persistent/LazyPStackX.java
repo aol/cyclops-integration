@@ -1606,7 +1606,8 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T>implements PStac
      * java.lang.Object)
      */
     public LazyPStackX<T> with(int i, T element) {
-        return stream(Fluxes.insertAt(Fluxes.deleteBetween(flux(), i, i + 1), i, element));
+        return  new LazyPStackX<T>(
+                efficientOps, getStack().with(i,element), this.collector);//stream(Fluxes.insertAt(Fluxes.deleteBetween(flux(), i, i + 1), i, element));
     }
 
     /*

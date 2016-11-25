@@ -116,16 +116,18 @@ public class JavaSlangPVector<T> extends AbstractList<T> implements PVector<T> {
      * @return Reducer for PVector
      */
     public static <T> Reducer<PVector<T>> toPVector() {
-        return Reducer.<PVector<T>> of(JavaSlangPVector.empty(), (final PVector<T> a) -> b -> a.plusAll(b), (final T x) -> JavaSlangPVector.singleton(x));
+        return Reducer.<PVector<T>> of(JavaSlangPVector.emptyPVector(), (final PVector<T> a) -> b -> a.plusAll(b), (final T x) -> JavaSlangPVector.singleton(x));
     }
-    
-    public static <T> PVector<T> empty(){
+    public static <T> JavaSlangPVector<T> emptyPVector(){
+        return new JavaSlangPVector<>(Vector.empty());
+    }
+    public static <T> LazyPVectorX<T> empty(){
         return LazyPVectorX.fromPVector(new JavaSlangPVector<>(Vector.empty()), toPVector());
     }
-    public static <T> PVector<T> singleton(T t){
+    public static <T> LazyPVectorX<T> singleton(T t){
         return LazyPVectorX.fromPVector(new JavaSlangPVector<>(Vector.of(t)), toPVector());
     }
-    public static <T> PVector<T> of(T... t){
+    public static <T> LazyPVectorX<T> of(T... t){
         return LazyPVectorX.fromPVector(new JavaSlangPVector<>(Vector.of(t)), toPVector());
     }
     public static <T> LazyPVectorX<T> PStack(Vector<T> q) {
