@@ -1,4 +1,4 @@
-package com.aol.cyclops.scala.collections;
+package com.aol.cyclops.dexx.collections;
 
 import java.util.AbstractList;
 import java.util.Collection;
@@ -11,23 +11,25 @@ import java.util.stream.Stream;
 
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PStack;
+import org.pcollections.PVector;
 
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
+import com.github.andrewoma.dexx.collection.Builder;
+import com.github.andrewoma.dexx.collection.ConsList;
+import com.github.andrewoma.dexx.collection.List;
+import com.github.andrewoma.dexx.collection.Vector;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
-import scala.collection.generic.CanBuildFrom;
-import scala.collection.immutable.List;
-import scala.collection.immutable.List$;
-import scala.collection.mutable.Builder;
+
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
+public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
 
     /**
      * Create a LazyPStackX from a Stream
@@ -122,47 +124,46 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
      * @return Reducer for PStack
      */
     public static <T> Reducer<PStack<T>> toPStack() {
-        return Reducer.<PStack<T>> of(ScalaPStack.emptyPStack(), (final PStack<T> a) -> b -> a.plusAll(b),
-                                      (final T x) -> ScalaPStack.singleton(x));
+        return Reducer.<PStack<T>> of(DexxPStack.emptyPStack(), (final PStack<T> a) -> b -> a.plusAll(b),
+                                      (final T x) -> DexxPStack.singleton(x));
     }
 
-    public static <T> ScalaPStack<T> fromList(List<T> list) {
-        return new ScalaPStack<>(
+    public static <T> DexxPStack<T> fromList(List<T> list) {
+        return new DexxPStack<>(
                                  list);
     }
 
-    public static <T> ScalaPStack<T> emptyPStack() {
+    public static <T> DexxPStack<T> emptyPStack() {
 
-        return new ScalaPStack<>(
-                                 List$.MODULE$.empty());
+        return new DexxPStack<>(
+                                ConsList.empty());
     }
 
     public static <T> LazyPStackX<T> empty() {
-        return LazyPStackX.fromPStack(new ScalaPStack<>(
-                                                        List$.MODULE$.empty()),
+        return LazyPStackX.fromPStack(new DexxPStack<>(ConsList.empty()),
                                       toPStack());
     }
 
     public static <T> LazyPStackX<T> singleton(T t) {
-        List<T> result = List$.MODULE$.empty();
-        return LazyPStackX.fromPStack(new ScalaPStack<>(
-                                                        result.$colon$colon(t)),
+        List<T> result = ConsList.empty();
+        return LazyPStackX.fromPStack(new DexxPStack<>(
+                                                        result.prepend(t)),
                                       toPStack());
     }
 
     public static <T> LazyPStackX<T> of(T... t) {
 
-        Builder<T, List<T>> lb = List$.MODULE$.newBuilder();
+        Builder<T, ConsList<T>> lb = ConsList.<T>factory().newBuilder();
         for (T next : t)
-            lb.$plus$eq(next);
-        List<T> vec = lb.result();
-        return LazyPStackX.fromPStack(new ScalaPStack<>(
+            lb.add(next);
+        List<T> vec = lb.build();
+        return LazyPStackX.fromPStack(new DexxPStack<>(
                                                         vec),
                                       toPStack());
     }
 
     public static <T> LazyPStackX<T> PStack(List<T> q) {
-        return LazyPStackX.fromPStack(new ScalaPStack<T>(
+        return LazyPStackX.fromPStack(new DexxPStack<T>(
                                                          q),
                                       toPStack());
     }
@@ -176,75 +177,72 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
     private final List<T> list;
 
     @Override
-    public ScalaPStack<T> plus(T e) {
-        return withList(list.$colon$colon(e));
+    public DexxPStack<T> plus(T e) {
+        return withList(list.prepend(e));
     }
 
     @Override
-    public ScalaPStack<T> plusAll(Collection<? extends T> l) {
+    public DexxPStack<T> plusAll(Collection<? extends T> l) {
         List<T> vec = list;
         for (T next : l) {
-            vec = vec.$colon$colon(next);
+            vec = vec.prepend(next);
         }
 
         return withList(vec);
     }
 
     @Override
-    public ScalaPStack<T> with(int i, T e) {
+    public DexxPStack<T> with(int i, T e) {
         if (i < 0 || i > size())
             throw new IndexOutOfBoundsException(
                                                 "Index " + i + " is out of bounds - size : " + size());
-
-        return withList(list.drop(i + 1)
-                            .$colon$colon(e)
-                            .$colon$colon$colon(list));
+        
+        return withList(list.set(i, e));
     }
 
     @Override
-    public ScalaPStack<T> plus(int i, T e) {
+    public DexxPStack<T> plus(int i, T e) {
         if (i < 0 || i > size())
             throw new IndexOutOfBoundsException(
                                                 "Index " + i + " is out of bounds - size : " + size());
         if (i == 0)
-            return withList(list.$colon$colon(e));
-        final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
-        final CanBuildFrom<List<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
+            return withList(list.prepend(e));
+        
+        
         if (i == size() - 1) {
 
-            return withList(list.$colon$plus(e, builder2));
+            return withList(list.append(e));
         }
-
-        val frontBack = list.splitAt(i);
-
-        val back = frontBack._2.$colon$colon(e);
-        return withList(back.$colon$colon$colon(frontBack._1));
+        return withList(prependAll(list.drop(i).prepend(e),list.drop(i)));
+       
 
     }
+    private List<T> prependAll(List<T> list,Iterable<T>... its) {
+         List<T> result = list;
+         for(Iterable<T> toprepend : its) {
+             for(T next : toprepend){
+                 result = result.prepend(next);
+             }
+         }
+         return result;
+    }
+    private List<T> prependCol(List<T> list,Collection<T> toprepend) {
+        List<T> result = list;
+        for(T next : toprepend){
+            result = result.prepend(next);
+        }
+        return result;
+   }
 
     @Override
-    public ScalaPStack<T> plusAll(int i, Collection<? extends T> l) {
+    public DexxPStack<T> plusAll(int i, Collection<? extends T> l) {
 
         if (i < 0 || i > size())
             throw new IndexOutOfBoundsException(
                                                 "Index " + i + " is out of bounds - size : " + size());
-        List<T> l2 = List$.MODULE$.empty();
-        for (T next : l) {
-            l2 = l2.$colon$colon(next);
-        }
-        if (i == 0)
-            return withList(list.$colon$colon$colon(l2));
-        final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
-        final CanBuildFrom<List<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
-        if (i == size() - 1) {
-
-            return withList(l2.$colon$colon$colon(list));
-        }
-
-        val frontBack = list.splitAt(i);
-
-        val back = frontBack._2.$colon$colon$colon(l2);
-        return withList(back.$colon$colon$colon(frontBack._1));
+        
+        return withList(prependAll(list.drop(i),(Collection<T>)l,list.take(i)));
+        
     }
 
     @Override
@@ -259,16 +257,16 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
                           .removeAll((Iterable<T>) list);
     }
 
-    public ScalaPStack<T> tail() {
-        return withList((List<T>) list.tail());
+    public DexxPStack<T> tail() {
+        return withList(list.tail());
     }
 
     public T head() {
-        return list.head();
+        return list.get(0);
     }
 
     @Override
-    public ScalaPStack<T> minus(int i) {
+    public PStack<T> minus(int i) {
 
         if (i < 0 || i > size())
             throw new IndexOutOfBoundsException(
@@ -276,20 +274,17 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
         if (i == 0)
             return withList(list.drop(1));
         if (i == size() - 1)
-            return withList(list.dropRight(1)
-                                .toList());
-        val frontBack = list.splitAt(i);
-        final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
-        final CanBuildFrom<List<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
-        val front = frontBack._1;
-
-        List<T> result = (List<T>) front.$plus$plus(frontBack._2.drop(1), builder2);
-
-        return withList(result);
+           return LazyPStackX.fromPStack(this, toPStack()).dropRight(1);
+        
+        return LazyPStackX.fromPStack(this, toPStack())
+                          .zipWithIndex()
+                          .filter(t->t.v2.intValue()!=i)
+                          .map(t->t.v1);
+      
     }
 
     @Override
-    public ScalaPStack<T> subList(int start, int end) {
+    public DexxPStack<T> subList(int start, int end) {
 
         return withList(list.drop(start)
                             .take(end - start));
@@ -297,7 +292,7 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
 
     @Override
     public T get(int index) {
-        return list.apply(index);
+        return list.get(index);
     }
 
     @Override
@@ -306,7 +301,7 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
     }
 
     @Override
-    public ScalaPStack<T> subList(int start) {
+    public DexxPStack<T> subList(int start) {
         return withList(list.drop(start));
     }
 
