@@ -21,6 +21,7 @@ cyclops-scala provides Java friendly bindings to the Scala collections API. We m
 |  HashSet | ScalaHashPSet  | PSet  | Set  | PSetX : extended Persistent Set  |
 |  TreeSet | ScalaTreePOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
 |  BitSet | ScalaBitSetPOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
+|  HashMap | ScalaHashPMap  | PMap  | Map | PMapX : extended Persistent Map  |
 
 
 

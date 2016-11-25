@@ -21,6 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.val;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
+import scala.collection.GenSeq;
 import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.List;
 import scala.collection.immutable.List$;
@@ -209,10 +210,10 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
         if (i == 0)
             return withList(list.$colon$colon(e));
         final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
-        final CanBuildFrom<List<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
+        final CanBuildFrom<GenSeq<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
         if (i == size() - 1) {
 
-            return withList(list.$colon$plus(e, builder2));
+            return withList(list.<T,List<T>>$colon$plus(e, builder2));
         }
 
         val frontBack = list.splitAt(i);
