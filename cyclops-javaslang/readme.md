@@ -1,6 +1,6 @@
 # Javaslang Integration
 
-v8.0.0 of cyclops-javaslang requires v2.0.2 of Javaslang.
+v8.3.0 of cyclops-javaslang requires v2.0.5 of Javaslang.
 
 ## Get cyclops-javaslang
 
@@ -10,15 +10,15 @@ v8.0.0 of cyclops-javaslang requires v2.0.2 of Javaslang.
 
 # Features
 
-1. Native for comprehensions for FunctionalJava types
+1. Native for comprehensions for JavaSlang types
 2. Monad wrapping via AnyM / AnyMValue / AnyMSeq
 3. reactive-streams support for all Javaslang types (via AnyM support)
 4. Compatible with cyclops-react pattern matching
 5. Ability to use Javaslang types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
 6. Memoize javaslang functions with a configurable Cache (support LRU, or TTL)
 7. Stream extensions via AnyMSeq for all Javaslang traversables
-8. Higher Kinded Type encodings for Javaslang types
-9. Haskell like type classes for Javaslang types (treat Lazy as a Monad or MonadPlus!)
+8. [Higher Kinded Type encodings](https://github.com/aol/cyclops/tree/master/cyclops-javaslang/src/main/java/com/aol/cyclops/javaslang/hkt) for Javaslang types
+9. [Haskell like type classes](https://github.com/aol/cyclops/tree/master/cyclops-javaslang/src/main/java/com/aol/cyclops/javaslang/hkt/typeclasses/instances) for Javaslang types (treat Lazy as a Monad or MonadPlus!)
 
 
 # Details & Examples
