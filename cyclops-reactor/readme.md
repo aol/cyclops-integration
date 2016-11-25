@@ -19,6 +19,8 @@ v8.2.0 of cyclops-reactor and above is built using v3.0.2.RELEASE of Project Rea
 6. Compatible with cyclops-react pattern matching
 7. Ability to use Reactor types inside cyclops-react monad transformers (as the wrapping type, requires conversion to act as the nested type).
 8. Fluxes, Monos and Publishers companion classes for working with Flux, Mono and general Publishers
+9. [Higher Kinded Type encodings](https://github.com/aol/cyclops/tree/master/cyclops-reactor/src/main/java/com/aol/cyclops/reactor/hkt) for Reactor types
+10. [Haskell like type classes](https://github.com/aol/cyclops/tree/master/cyclops-reactor/src/main/java/com/aol/cyclops/reactor/hkt/typeclasses/instances) for Reactor types
 
 # Lazy extended Collections
 
