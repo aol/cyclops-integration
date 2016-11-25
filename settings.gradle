@@ -8,4 +8,5 @@ include ':cyclops-typeclasses'
 include ':cyclops-higherkindedtypes'
 include ':cyclops-sum-types'
 include ':cyclops-dexx'
+include ':cyclops-scala'
 
