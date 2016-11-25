@@ -15,6 +15,7 @@ import org.pcollections.PVector;
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
+import com.github.andrewoma.dexx.collection.Builder;
 import com.github.andrewoma.dexx.collection.Vector;
 
 import lombok.AccessLevel;
@@ -117,17 +118,32 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
      * @return Reducer for PVector
      */
     public static <T> Reducer<PVector<T>> toPVector() {
-        return Reducer.<PVector<T>> of(DexxPVector.empty(), (final PVector<T> a) -> b -> a.plusAll(b), (final T x) -> DexxPVector.singleton(x));
+        return Reducer.<PVector<T>> of(DexxPVector.emptyPVector(), (final PVector<T> a) -> b -> a.plusAll(b), (final T x) -> DexxPVector.singleton(x));
+    }
+    public static <T> Builder<T,Vector<T>> builder(){
+        return Vector.<T>factory().newBuilder();
+    }
+    public static <T> DexxPVector<T> fromVector(Vector<T> vector){
+        return new DexxPVector<>(vector);
+    }
+    
+    public static <T> DexxPVector<T> emptyPVector(){
+        return new DexxPVector<>(Vector.empty());
     }
     
     public static <T> PVector<T> empty(){
         return LazyPVectorX.fromPVector(new DexxPVector<>(Vector.empty()), toPVector());
     }
     public static <T> PVector<T> singleton(T t){
-        return LazyPVectorX.fromPVector(new DexxPVector<>(Vector.of(t)), toPVector());
+        Builder<T, Vector<T>> builder = Vector.<T>factory().newBuilder();
+        return LazyPVectorX.fromPVector(new DexxPVector<>(builder.add(t).build()), toPVector());
     }
     public static <T> PVector<T> of(T... t){
-        return LazyPVectorX.fromPVector(new DexxPVector<>(Vector.of(t)), toPVector());
+        Builder<T, Vector<T>> builder = Vector.<T>factory().newBuilder();
+        for(T next : t){
+            builder.add(next);
+        }
+        return LazyPVectorX.fromPVector(new DexxPVector<>(builder.build()), toPVector());
     }
     public static <T> LazyPVectorX<T> PStack(Vector<T> q) {
         return LazyPVectorX.fromPVector(new DexxPVector<T>(q), toPVector());
@@ -138,6 +154,13 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
     }
     @Wither
     private final Vector<T> vector;
+
+    public DexxPVector<T> tail(){
+        return withVector(vector.tail());
+    }
+    public T head(){
+        return vector.get(0);
+    }
 
     @Override
     public DexxPVector<T> plus(T e) {
@@ -162,12 +185,19 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
      }
 
     @Override
-    public PVector<T> with(int i, T e) {
+    public DexxPVector<T> with(int i, T e) {
         return withVector(vector.set(i,e));
     }
 
     @Override
     public PVector<T> plus(int i, T e) {
+        if(i<0 || i>size())
+            throw new IndexOutOfBoundsException("Index " + i + " is out of bounds - size : " + size());
+        if(i==0)
+            return withVector(vector.prepend(e));
+        if(i==size()-1)
+            return withVector(vector.append(e));
+        
         return withVector(vector.take(i)).plus(e).plusAllVec(vector.drop(i));
        
     }
@@ -179,7 +209,7 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public PVector<T> minus(Object e) {
-        return LazyPVectorX.fromPVector(this,toPVector()).filter(i->Objects.equals(i,e));
+        return LazyPVectorX.fromPVector(this,toPVector()).filter(i->!Objects.equals(i,e));
     }
 
     @Override
@@ -188,14 +218,18 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
     }
 
     @Override
-    public PVector<T> minus(int i) {
-        vector.drop
-        return withVector(vector.removeAt(i));
+    public DexxPVector<T> minus(int i) {
+        if(i<0 || i>size())
+            throw new IndexOutOfBoundsException("Index " + i + " is out of bounds - size : " + size());
+        if(i==0)
+            return withVector(vector.drop(1));
+        
+        return withVector(vector.take(i)).plusAll(withVector(vector.drop(i+1)));
     }
 
     @Override
-    public PVector<T> subList(int start, int end) {
-        return withVector(vector.subSequence(start, end));
+    public DexxPVector<T> subList(int start, int end) {
+        return withVector(vector.drop(start).take(end-start));
     }
 
     @Override

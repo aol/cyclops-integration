@@ -21,7 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.val;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
-import scala.collection.GenTraversableOnce;
 import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.Vector;
 import scala.collection.immutable.Vector$;
@@ -122,13 +121,23 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T> {
      * @return Reducer for PVector
      */
     public static <T> Reducer<PVector<T>> toPVector() {
-        return Reducer.<PVector<T>> of(ScalaPVector.empty(), (final PVector<T> a) -> b -> a.plusAll(b), (final T x) -> ScalaPVector.singleton(x));
+        return Reducer.<PVector<T>> of(ScalaPVector.emptyPVector(), (final PVector<T> a) -> b -> a.plusAll(b), (final T x) -> ScalaPVector.singleton(x));
     }
     
-    public static <T> PVector<T> empty(){
+    public static <T> VectorBuilder<T> builder(){
+        return new VectorBuilder<T>();
+    }
+    public static <T> ScalaPVector<T> fromVector(Vector<T> vector){
+        return new ScalaPVector<>(vector);
+    }
+    
+    public static <T> ScalaPVector<T> emptyPVector(){
+        return new ScalaPVector<>(Vector$.MODULE$.empty());
+    }
+    public static <T> LazyPVectorX<T> empty(){
         return LazyPVectorX.fromPVector(new ScalaPVector<>(Vector$.MODULE$.empty()), toPVector());
     }
-    public static <T> PVector<T> singleton(T t){
+    public static <T> LazyPVectorX<T> singleton(T t){
         Vector<T> result = Vector$.MODULE$.empty();
         return LazyPVectorX.fromPVector(new ScalaPVector<>(result.appendFront(t)), toPVector());
     }
@@ -150,12 +159,12 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T> {
     private final Vector<T> vector;
 
     @Override
-    public PVector<T> plus(T e) {
+    public ScalaPVector<T> plus(T e) {
         return withVector(vector.appendBack(e));
     }
 
     @Override
-    public PVector<T> plusAll(Collection<? extends T> list) {
+    public ScalaPVector<T> plusAll(Collection<? extends T> list) {
         Vector<T> vec = vector;
         for(T next :  list){
             vec = vec.appendBack(next);
@@ -165,55 +174,96 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T> {
         return withVector(vec);
      }
  
-    private PVector<T> plusAllVec(Vector<? extends T> list) {
-        Vector<T> vec = vector;
-        for(T next :  list){
-            vec = vec.append(next);
-        }
-        return withVector(vec);
-     }
 
     @Override
-    public PVector<T> with(int i, T e) {
-  
+    public ScalaPVector<T> with(int i, T e) {
+        if(i<0 || i>size())
+            throw new IndexOutOfBoundsException("Index " + i + " is out of bounds - size : " + size());
         return withVector(vector.updateAt(i,e));
     }
 
     @Override
-    public PVector<T> plus(int i, T e) {
-        return LazyPVectorX.fromPVector(this,toPVector()).insertAt(  ).
+    public ScalaPVector<T> plus(int i, T e) {
+        if(i<0 || i>size())
+            throw new IndexOutOfBoundsException("Index " + i + " is out of bounds - size : " + size());
+        if(i==0)
+            return withVector(vector.appendFront(e));
+        if(i==size()-1)
+            return withVector(vector.appendBack(e));
+        val frontBack = vector.splitAt(i);
+        final CanBuildFrom<Vector<?>, T, Vector<T>> builder =
+                Vector.<T>canBuildFrom();
+        final CanBuildFrom<Vector<T>, T, Vector<T>> builder2 = (CanBuildFrom)builder;
+         val front = frontBack._1.appendBack(e);
+        Vector<T> result = (Vector<T>) front.$plus$plus(frontBack._2,builder2);
+             
+        return withVector(result);
        
     }
 
     @Override
-    public PVector<T> plusAll(int i, Collection<? extends T> list) {
-        return withVector(vector.take(i)).plusAll(list).plusAllVec(vector.drop(i));
+    public ScalaPVector<T> plusAll(int i, Collection<? extends T> list) {
+        val frontBack = vector.splitAt(i);
+        final CanBuildFrom<Vector<?>, T, Vector<T>> builder =
+                Vector.<T>canBuildFrom();
+        final CanBuildFrom<Vector<T>, T, Vector<T>> builder2 = (CanBuildFrom)builder;
+        
+        Vector<T> front = frontBack._1;
+        for(T next : list){
+            front = front.appendBack(next);
+        }
+        
+        Vector<T> result = (Vector<T>) front.$plus$plus(frontBack._2,builder2);
+             
+        return withVector(result);
     }
 
     @Override
     public PVector<T> minus(Object e) {
-        return LazyPVectorX.fromPVector(this,toPVector()).filter(i->Objects.equals(i,e));
+        return LazyPVectorX.fromPVector(this,toPVector()).filter(i->!Objects.equals(i,e));
     }
 
     @Override
     public PVector<T> minusAll(Collection<?> list) {
         return LazyPVectorX.fromPVector(this,toPVector()).removeAll((Iterable<T>)list);
     }
-
-    @Override
-    public PVector<T> minus(int i) {
-        vector.
-        return withVector(vector.removeAt(i));
+    
+    public ScalaPVector<T> tail(){
+        return withVector(vector.tail());
+    }
+    public T head(){
+        return vector.head();
     }
 
     @Override
-    public PVector<T> subList(int start, int end) {
-        return withVector(vector.subSequence(start, end));
+    public ScalaPVector<T> minus(int i) {
+        
+        if(i<0 || i>size())
+            throw new IndexOutOfBoundsException("Index " + i + " is out of bounds - size : " + size());
+        if(i==0)
+            return withVector(vector.drop(1));
+        if(i==size()-1)
+            return withVector(vector.dropRight(1));
+        val frontBack = vector.splitAt(i);
+        final CanBuildFrom<Vector<?>, T, Vector<T>> builder =
+                Vector.<T>canBuildFrom();
+        final CanBuildFrom<Vector<T>, T, Vector<T>> builder2 = (CanBuildFrom)builder;
+         val front = frontBack._1;
+         
+        Vector<T> result = (Vector<T>) front.$plus$plus(frontBack._2.drop(1),builder2);
+             
+        return withVector(result);
+    }
+
+    @Override
+    public ScalaPVector<T> subList(int start, int end) {
+        
+        return withVector(vector.drop(start).take(end-start));
     }
 
     @Override
     public T get(int index) {
-        return vector.get(index);
+        return vector.apply(index);
     }
 
     @Override
