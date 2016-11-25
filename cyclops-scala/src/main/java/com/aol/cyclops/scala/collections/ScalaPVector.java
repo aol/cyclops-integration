@@ -188,7 +188,7 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T> {
             throw new IndexOutOfBoundsException("Index " + i + " is out of bounds - size : " + size());
         if(i==0)
             return withVector(vector.appendFront(e));
-        if(i==size()-1)
+        if(i==size())
             return withVector(vector.appendBack(e));
         val frontBack = vector.splitAt(i);
         final CanBuildFrom<Vector<?>, T, Vector<T>> builder =

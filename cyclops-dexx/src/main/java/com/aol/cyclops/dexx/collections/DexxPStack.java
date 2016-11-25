@@ -2,6 +2,7 @@ package com.aol.cyclops.dexx.collections;
 
 import java.util.AbstractList;
 import java.util.Collection;
+import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -208,12 +209,12 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
         if (i == 0)
             return withList(list.prepend(e));
         
-        
-        if (i == size() - 1) {
+        if (i == size()) {
 
             return withList(list.append(e));
         }
-        return withList(prependAll(list.drop(i).prepend(e),list.take(i)));
+ 
+        return withList(prependAll(list.drop(i),list.take(i).prepend(e)));
        
 
     }
@@ -304,5 +305,7 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
     public DexxPStack<T> subList(int start) {
         return withList(list.drop(start));
     }
+
+    
 
 }

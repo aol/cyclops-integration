@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +12,7 @@ import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
 import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
+import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
 public class PStackTest {
 
     ConsPStack<Integer> org = null;
@@ -35,7 +37,31 @@ public class PStackTest {
     public void ofTest(){
         assertThat(PStackX.of(1,2,3),equalTo(DexxPVector.of(1,2,3)));
     }
+    @Test
+    public void plusi(){
+        List<Integer> values = Arrays.asList(1,2,3,4,5,6);
+        LazyPStackX<Integer> list = DexxPStack.empty();
+        for (Integer next : values) {
+            list = list.plus(list.size(), next);
+            System.out.println("List " + list);
+        }
+        list = list.efficientOpsOff();
+        System.out.println("List " + list);
+        
+        LazyPStackX<Integer> list2 = LazyPStackX.empty();
+        for (Integer next : values) {
+            list2 = list2.plus(list2.size(), next);
+        }
+        list2 = list2.efficientOpsOff();
+        System.out.println("List2 " + list2);
+       assertThat(list,equalTo(list2));
+    }
     
+    @Test
+    public void plusi2(){
+        assertThat(PStackX.of(1,2,3).plus(1,10),
+                   equalTo(DexxPStack.of(1,2,3).plus(1,10)));
+    }
     @Test
     public void plusMinus(){
         System.out.println(test.plusAll(Arrays.asList(1,2,3)));

@@ -28,7 +28,7 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
         for (T next : values) {
             list = list.plus(list.size(), next);
         }
-        System.out.println("List " + list);
+        
         return list.efficientOpsOff();
 
     }
