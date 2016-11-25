@@ -5,7 +5,7 @@ v8.0.0 of cyclops-javaslang requires v2.0.2 of Javaslang.
 ## Get cyclops-javaslang
 
 
-* [![Maven Central : cyclops-for-comprehensions](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang)
+* [![Maven Central : cyclops-javaslang](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang)
 * [Javadoc for Cyclops Javaslang](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-javaslang/)
 
 # Features
@@ -19,10 +19,17 @@ v8.0.0 of cyclops-javaslang requires v2.0.2 of Javaslang.
 7. Stream extensions via AnyMSeq for all Javaslang traversables
 8. Higher Kinded Type encodings for Javaslang types
 9. Haskell like type classes for Javaslang types (treat Lazy as a Monad or MonadPlus!)
-
+10. PCollections / JDK / Cyclops bindings for JavaSlang collections - use cyclops Lazy Extended Collections with your fav JavaSlang collections
 
 # Details & Examples
 
+|  JavaSlang collection | cyclops-scala   | pcollections interface   | JDK Interface  | Description  |
+|---|---|---|---|---|
+| List   | JavaSlangPStack   | PStack  | List  | PStackX  : extended persistent linkedlist |
+|  Vector | JavaSlangPVector  | PVector   | List   | PVectorX : extended persistent ArrayList   |
+|  Queue | JavaSlangPQueue  | PQueue  | Queue  | PQueueX : extended Persistent Queue  |
+|  HashSet | JavaSlangPSet  | PSet  | Set  | PSetX : extended Persistent Set  |
+|  TreeSet | JavaSlangPOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
 
 
 
@@ -75,7 +82,7 @@ Value<Integer> option = Javaslang.ForValue.each2(Option.of(10), a-> Option.<Inte
 		return "cappuccino";
 	}
 ```
-## Schedule emission from  FunctionalJava Stream
+## Schedule emission from  JavaSlang Stream
 
 ```java
 

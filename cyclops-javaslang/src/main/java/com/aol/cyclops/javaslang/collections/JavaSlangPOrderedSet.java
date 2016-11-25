@@ -153,7 +153,7 @@ public class JavaSlangPOrderedSet<T> extends AbstractSet<T>implements POrderedSe
        
     }
 
-    static <T extends Comparable<? super T>> LazyPOrderedSetX<T> of(T... t) {
+    public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> of(T... t) {
         return LazyPOrderedSetX.fromPOrderedSet(new JavaSlangPOrderedSet<>(
                                         TreeSet.of(t)),toPOrderedSet());
     }

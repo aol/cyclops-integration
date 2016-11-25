@@ -131,14 +131,14 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
         return new DexxPVector<>(Vector.empty());
     }
     
-    public static <T> PVector<T> empty(){
+    public static <T> LazyPVectorX<T> empty(){
         return LazyPVectorX.fromPVector(new DexxPVector<>(Vector.empty()), toPVector());
     }
     public static <T> PVector<T> singleton(T t){
         Builder<T, Vector<T>> builder = Vector.<T>factory().newBuilder();
         return LazyPVectorX.fromPVector(new DexxPVector<>(builder.add(t).build()), toPVector());
     }
-    public static <T> PVector<T> of(T... t){
+    public static <T> LazyPVectorX<T> of(T... t){
         Builder<T, Vector<T>> builder = Vector.<T>factory().newBuilder();
         for(T next : t){
             builder.add(next);

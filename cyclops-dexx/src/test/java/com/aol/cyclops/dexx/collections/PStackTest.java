@@ -9,7 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
-import org.pcollections.TreePVector;
+
+import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 public class PStackTest {
 
     ConsPStack<Integer> org = null;
@@ -29,6 +30,10 @@ public class PStackTest {
     @Test
     public void singleton(){
         assertThat(ConsPStack.singleton(1),equalTo(DexxPVector.singleton(1)));
+    }
+    @Test
+    public void ofTest(){
+        assertThat(PStackX.of(1,2,3),equalTo(DexxPVector.of(1,2,3)));
     }
     
     @Test
