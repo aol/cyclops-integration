@@ -27,7 +27,7 @@ import scala.collection.mutable.Builder;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaBitsetPOrderedSet extends AbstractSet<Integer>implements POrderedSet<Integer> {
+public class ScalaBitSetPOrderedSet extends AbstractSet<Integer>implements POrderedSet<Integer> {
 
     /**
      * Create a LazyPOrderedSetX from a Stream
@@ -38,7 +38,7 @@ public class ScalaBitsetPOrderedSet extends AbstractSet<Integer>implements POrde
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<Integer> fromStream(Stream<Integer> stream) {
         return new LazyPOrderedSetX(
                                   Flux.from(ReactiveSeq.fromStream(stream)), 
-                                  ScalaBitsetPOrderedSet.toPOrderedSet());
+                                  ScalaBitSetPOrderedSet.toPOrderedSet());
     }
 
     /**
@@ -112,21 +112,21 @@ public class ScalaBitsetPOrderedSet extends AbstractSet<Integer>implements POrde
      * @return Reducer for POrderedSet
      */
     public static  Reducer<POrderedSet<Integer>> toPOrderedSet() {
-        return Reducer.<POrderedSet<Integer>> of(ScalaBitsetPOrderedSet.emptyPOrderedSet(), 
+        return Reducer.<POrderedSet<Integer>> of(ScalaBitSetPOrderedSet.emptyPOrderedSet(), 
                                                  (final POrderedSet<Integer> a) -> b -> a.plusAll(b),
-                                      (final Integer x) -> ScalaBitsetPOrderedSet.singleton(x));
+                                      (final Integer x) -> ScalaBitSetPOrderedSet.singleton(x));
     }
     
   
 
-    public static  ScalaBitsetPOrderedSet fromSet(BitSet set) {
-        return new ScalaBitsetPOrderedSet(
+    public static  ScalaBitSetPOrderedSet fromSet(BitSet set) {
+        return new ScalaBitSetPOrderedSet(
                                  set);
     }
 
     
-    public static  ScalaBitsetPOrderedSet emptyPOrderedSet() {
-        return new ScalaBitsetPOrderedSet(
+    public static  ScalaBitSetPOrderedSet emptyPOrderedSet() {
+        return new ScalaBitSetPOrderedSet(
                                  BitSet$.MODULE$.empty());
     }
     
@@ -134,7 +134,7 @@ public class ScalaBitsetPOrderedSet extends AbstractSet<Integer>implements POrde
     public static LazyPOrderedSetX<Integer> empty() {
         
         
-        return LazyPOrderedSetX.fromPOrderedSet(new ScalaBitsetPOrderedSet(BitSet$.MODULE$.empty()),
+        return LazyPOrderedSetX.fromPOrderedSet(new ScalaBitSetPOrderedSet(BitSet$.MODULE$.empty()),
                                                 toPOrderedSet());
     }
 
@@ -148,7 +148,7 @@ public class ScalaBitsetPOrderedSet extends AbstractSet<Integer>implements POrde
        for (Integer next : t)
            lb.$plus$eq(next);
        BitSet vec = lb.result();
-       return LazyPOrderedSetX.fromPOrderedSet(new ScalaBitsetPOrderedSet(
+       return LazyPOrderedSetX.fromPOrderedSet(new ScalaBitSetPOrderedSet(
                                                        vec),
                                      toPOrderedSet());
    }
@@ -157,7 +157,7 @@ public class ScalaBitsetPOrderedSet extends AbstractSet<Integer>implements POrde
     
 
     public static  LazyPOrderedSetX<Integer> POrderedSet(BitSet q) {
-        return LazyPOrderedSetX.fromPOrderedSet(new ScalaBitsetPOrderedSet(
+        return LazyPOrderedSetX.fromPOrderedSet(new ScalaBitSetPOrderedSet(
                                                          q),
                                       toPOrderedSet());
     }
@@ -171,13 +171,13 @@ public class ScalaBitsetPOrderedSet extends AbstractSet<Integer>implements POrde
     private final BitSet set;
 
     @Override
-    public ScalaBitsetPOrderedSet plus(Integer e) {
+    public ScalaBitSetPOrderedSet plus(Integer e) {
        
         return withSet(set.$plus((int)e));
     }
 
     @Override
-    public ScalaBitsetPOrderedSet plusAll(Collection<? extends Integer> l) {
+    public ScalaBitSetPOrderedSet plusAll(Collection<? extends Integer> l) {
         
         
         BitSet vec = set;

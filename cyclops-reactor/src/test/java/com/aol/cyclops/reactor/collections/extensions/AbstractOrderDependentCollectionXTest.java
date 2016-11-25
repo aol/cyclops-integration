@@ -21,11 +21,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
 import org.junit.Test;
 
+import com.aol.cyclops.Reducers;
 import com.aol.cyclops.Semigroups;
 import com.aol.cyclops.control.Matchable;
 import com.aol.cyclops.control.ReactiveSeq;
@@ -39,8 +41,60 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 public abstract class AbstractOrderDependentCollectionXTest extends AbstractCollectionXTest {
-    
-  
+    @Test
+    public void testSkipLastOd(){
+        assertThat(of(1,2,3,4,5)
+                            .skipLast(2)
+                            .toListX(),equalTo(Arrays.asList(1,2,3)));
+    }
+    @Test
+    public void endsWith(){
+        assertTrue(of(1,2,3,4,5,6)
+                .endsWithIterable(Arrays.asList(5,6)));
+    }
+    @Test
+    public void endsWithStream(){
+        assertTrue(of(1,2,3,4,5,6)
+                .endsWith(Stream.of(5,6)));
+    }
+    @Test
+    public void getMultpleStreamOd(){
+        assertThat(of(1,2,3,4,5).stream().elementAt(2).v2.toList(),equalTo(Arrays.asList(1,2,3,4,5)));
+    }
+    @Test
+    public void testScanRightSumMonoidOd() {
+        assertThat(of("a", "ab", "abc").peek(System.out::println)
+                                    .map(str -> str.length())
+                                    .peek(System.out::println)
+                                    .scanRight(Reducers.toTotalInt()).toList(), is(asList(0, 3, 5, 6)));
+
+    }   
+    @Test
+    public void getAtMultpleOd(){
+        assertThat(of(1,2,3,4,5).get(2).get(),equalTo(3));
+    }
+    @Test
+    public void getMultpleOd(){
+        assertThat(of(1,2,3,4,5).stream().elementAt(2).v1,equalTo(3));
+    }
+    @Test
+    public void testScanLeftSumMonoidOd() {
+        
+        assertThat(of("a", "ab", "abc").map(str -> str.length()).
+                            peek(System.out::println).scanLeft(Reducers.toTotalInt()).toList(), is(asList(0, 1, 3, 6)));
+    }
+    @Test
+    public void testLimitLastOd(){
+        assertThat(of(1,2,3,4,5)
+                            .limitLast(2)
+                            .stream().collect(Collectors.toList()),equalTo(Arrays.asList(4,5)));
+    }
+    @Test
+    public void testTakeRightOd(){
+        assertThat(of(1,2,3,4,5)
+                            .takeRight(2)
+                            .stream().collect(Collectors.toList()),equalTo(Arrays.asList(4,5)));
+    }
     @Test
     public void whenNilOrNotJoinWithFirstElement(){
         

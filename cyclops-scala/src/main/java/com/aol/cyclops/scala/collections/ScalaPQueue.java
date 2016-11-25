@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PQueue;
-import org.pcollections.PQueue;
+
 
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
