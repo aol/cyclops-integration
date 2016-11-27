@@ -11,7 +11,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import org.jooq.lambda.tuple.Tuple2;
-import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
 import com.aol.cyclops.Reducer;

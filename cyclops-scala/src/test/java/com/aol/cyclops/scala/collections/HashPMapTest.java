@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
 import com.aol.cyclops.data.collections.extensions.standard.MapXs;
 
-public class PMapTest {
+public class HashPMapTest {
     PMapX<Integer,String> org;
     PMapX<Integer,String> test;
     

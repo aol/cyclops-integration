@@ -1,5 +1,7 @@
 package com.aol.cyclops.scala.collections;
 
+import static com.aol.cyclops.scala.collections.Converters.ordering;
+
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Comparator;
@@ -144,13 +146,10 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
                                  set);
     }
 
-    public static <T>  Ordering<T> ordering(Comparator<T> cmp){
-        return  Ordering$.MODULE$.comparatorToOrdering(cmp);
-        
-    }
+    
     public static <T extends Comparable<? super T>> ScalaTreePOrderedSet<T> emptyPOrderedSet() {
         return new ScalaTreePOrderedSet<>(
-                                 TreeSet$.MODULE$.empty(ScalaTreePOrderedSet.<T>ordering(Comparator.naturalOrder())));
+                                 TreeSet$.MODULE$.empty(Converters.<T>ordering(Comparator.naturalOrder())));
     }
     
     public static <T> ScalaTreePOrderedSet<T> emptyPOrderedSet(Comparator<T> ordering) {
@@ -161,13 +160,13 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> empty() {
         
         return LazyPOrderedSetX.fromPOrderedSet(new ScalaTreePOrderedSet<>(
-                TreeSet$.MODULE$.empty(ScalaTreePOrderedSet.<T>ordering(Comparator.naturalOrder()))),
+                TreeSet$.MODULE$.empty(Converters.<T>ordering(Comparator.naturalOrder()))),
                                                 toPOrderedSet());
     }
     public static <T> LazyPOrderedSetX<T> empty(Comparator<T> comp) {
         
         return LazyPOrderedSetX.fromPOrderedSet(new ScalaTreePOrderedSet<>(
-                TreeSet$.MODULE$.empty(ScalaTreePOrderedSet.<T>ordering(comp))),
+                TreeSet$.MODULE$.empty(Converters.<T>ordering(comp))),
                                                 toPOrderedSet(comp));
     }
 
@@ -179,7 +178,7 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
     }
     public static <T> LazyPOrderedSetX<T> of(Comparator<T> comp,T... t) {
 
-        Builder<T, TreeSet<T>> lb = TreeSet$.MODULE$.newBuilder(ScalaTreePOrderedSet.<T>ordering(comp));
+        Builder<T, TreeSet<T>> lb = TreeSet$.MODULE$.newBuilder(Converters.<T>ordering(comp));
        for (T next : t)
            lb.$plus$eq(next);
        TreeSet<T> vec = lb.result();

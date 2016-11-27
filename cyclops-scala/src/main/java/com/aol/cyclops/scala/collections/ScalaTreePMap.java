@@ -2,6 +2,7 @@ package com.aol.cyclops.scala.collections;
 
 import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -21,40 +22,43 @@ import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConverters;
 import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.HashMap;
-import scala.collection.immutable.HashMap$;
 import scala.collection.immutable.MapLike;
 import scala.collection.immutable.TreeMap;
+import scala.collection.immutable.TreeMap$;
 import scala.collection.mutable.Builder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, HasScalaCollection {
+public class ScalaTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, HasScalaCollection {
     
     @Wither
-    HashMap<K,V> map;
-    public static <K, V> Reducer<PMapX<K, V>> toPMapX() {
-        return Reducer.<PMapX<K, V>> of(empty(), (final PMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
+    TreeMap<K,V> map;
+    public static <K, V> Reducer<PMapX<K, V>> toPMapX(Comparator<? super K> c) {
+        return Reducer.<PMapX<K, V>> of(empty(c), (final PMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
             final List w = ((TupleWrapper) () -> in).values();
-            return singleton((K) w.get(0), (V) w.get(1));
+            return singleton(c,(K) w.get(0), (V) w.get(1));
         });
     }
-    public static <K,V> ScalaHashPMap<K,V> fromMap(HashMap<K,V> map){
-        return new ScalaHashPMap<>(map);
+    public static <K,V> ScalaTreePMap<K,V> fromMap(TreeMap<K,V> map){
+        return new ScalaTreePMap<>(map);
     }
-    public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(HashMap$.MODULE$.empty()),null);
+    public static <K,V> PMapX<K,V> empty(Comparator<? super K> c){
+        Comparator<K> comp = (Comparator<K>)c;
+       return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),null);
     }
-    public static <K,V> PMap<K,V> singletonPMap(K key,V value){
-        Builder<Tuple2<K, V>, HashMap> builder = HashMap$.MODULE$.newBuilder();
-        HashMap<K,V> map = builder.$plus$eq(Tuple2.apply(key,value)).result();
+    public static <K,V> PMap<K,V> singletonPMap(Comparator<? super K> c,K key,V value){
+        Comparator<K> comp = (Comparator<K>)c;
+        Builder<Tuple2<K, V>, TreeMap> builder = TreeMap$.MODULE$.newBuilder(Converters.ordering(comp));
+        TreeMap<K,V> map = builder.$plus$eq(Tuple2.apply(key,value)).result();
         return fromMap(map);
      }
-    public static <K,V> PMapX<K,V> singleton(K key,V value){
-        Builder<Tuple2<K, V>, HashMap> builder = HashMap$.MODULE$.newBuilder();
-        HashMap<K,V> map = builder.$plus$eq(Tuple2.apply(key,value)).result();
-        return new ExtensiblePMapX<K,V>(fromMap(map),ScalaHashPMap.<K,V>toPMapX());
+    public static <K,V> PMapX<K,V> singleton(Comparator<? super K> c,K key,V value){
+        Comparator<K> comp = (Comparator<K>)c;
+        Builder<Tuple2<K, V>, TreeMap> builder = TreeMap$.MODULE$.newBuilder(Converters.ordering(comp));
+        TreeMap<K,V> map = builder.$plus$eq(Tuple2.apply(key,value)).result();
+        return new ExtensiblePMapX<K,V>(fromMap(map),ScalaTreePMap.<K,V>toPMapX(c));
      }
     
-    public static <K,V> PMapX<K,V> fromStream(ReactiveSeq<Tuple2<K,V>> stream){
-        return stream.mapReduce(toPMapX());
+    public static <K,V> PMapX<K,V> fromStream(Comparator<? super K> c,ReactiveSeq<Tuple2<K,V>> stream){
+        return stream.mapReduce(toPMapX(c));
     }
     
     @Override
@@ -63,15 +67,15 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
     }
     @Override
     public PMap<K, V> plusAll(java.util.Map<? extends K, ? extends V> m) {
-         HashMap<K,V> use = map;
+         TreeMap<K,V> use = map;
          
-         if(m instanceof ScalaHashPMap){
-             HashMap<K,V> add = ((ScalaHashPMap)m).map;
-             use = (HashMap<K, V>) use.$plus$plus(map, this.canBuildFrom());
-         }
          if(m instanceof ScalaTreePMap){
              TreeMap<K,V> add = ((ScalaTreePMap)m).map;
-             use = (HashMap<K, V>) use.$plus$plus(map, this.canBuildFrom());
+             use = (TreeMap<K, V>) use.$plus$plus(map);
+         }
+         if(m instanceof ScalaHashPMap){
+             HashMap<K,V> add = ((ScalaHashPMap)m).map;
+             use = (TreeMap<K, V>) use.$plus$plus(map);
          }
          else{
              for(java.util.Map.Entry<? extends K, ? extends V> next : m.entrySet()){
@@ -83,8 +87,8 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
     @Override
     public PMap<K, V> minus(Object key) {
       
-        HashMap m = map;
-        return withMap((HashMap)m.$minus(key));
+        TreeMap m = map;
+        return withMap((TreeMap)m.$minus(key));
      
     }
    
@@ -92,7 +96,7 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
     public PMap<K, V> minusAll(Collection<?> keys) {
         GenTraversableOnce gen =  HasScalaCollection.traversable(keys);
         MapLike m = map;
-        return withMap((HashMap)m.$minus$minus(gen));
+        return withMap((TreeMap)m.$minus$minus(gen));
         
     }
     @Override
@@ -107,7 +111,7 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
     }
     @Override
     public CanBuildFrom canBuildFrom() {
-       return HashMap.canBuildFrom();
+       return TreeMap.canBuildFrom(map.ordering());
     }
    
    
