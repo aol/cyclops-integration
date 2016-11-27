@@ -219,6 +219,7 @@ public class ClojurePStack<T> extends AbstractList<T>implements PStack<T> {
         if (i < 0 || i > size())
             throw new IndexOutOfBoundsException(
                                                 "Index " + i + " is out of bounds - size : " + size());
+        
         if (i == 0)
             return plusAll(l);
         return withList((IPersistentList) tail().plusAll(i - 1, l).list.cons(head()));
@@ -248,7 +249,16 @@ public class ClojurePStack<T> extends AbstractList<T>implements PStack<T> {
         return withList((IPersistentList) newRest.cons(nel.first()));
 
     }
-
+    /**
+    if(size==0)
+        return this;
+    if(list.contains(first)) // get rid of current element
+        return rest.minusAll(list); // recursively delete all
+    // either way keep looking:
+    ConsPStack<E> newRest = rest.minusAll(list);
+    if(newRest==rest) return this;
+    return new ConsPStack<E>(first, newRest);
+    **/
     @Override
     public ClojurePStack<T> minusAll(Collection<?> l) {
         if (size() == 0)
@@ -261,9 +271,7 @@ public class ClojurePStack<T> extends AbstractList<T>implements PStack<T> {
             return tail().minusAll(l);
         }
        
-        IPersistentList res2 = (IPersistentList)nel.next();
-        if(res2==null)
-            return withList(PersistentList.create(Arrays.asList()));
+       
         IPersistentList newRest = tail().minusAll(l).list;
         if (newRest == nel.next())
             return this;

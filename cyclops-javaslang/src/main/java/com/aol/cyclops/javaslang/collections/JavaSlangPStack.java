@@ -172,6 +172,7 @@ public class JavaSlangPStack<T> extends AbstractList<T> implements PStack<T> {
 
     @Override
     public PStack<T> plusAll(int i, Collection<? extends T> l) {
+       //use same behaviour as pCollections
         List<T> use = list;
         for(T next :  l)
             use = use.insert(i,next);
