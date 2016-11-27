@@ -211,6 +211,7 @@ public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public PVector<T> minus(int i) {
+      
         return LazyPVectorX.fromPVector(this,toPVector())
                         .zipWithIndex()
                         .filter(t->t.v2.intValue()!=i)
