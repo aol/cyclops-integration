@@ -19,12 +19,13 @@ import lombok.experimental.Wither;
 import scala.Tuple2;
 import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConverters;
+import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.HashMap;
 import scala.collection.immutable.HashMap$;
 import scala.collection.immutable.MapLike;
 import scala.collection.mutable.Builder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V> {
+public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, HasScalaCollection {
     
     @Wither
     HashMap<K,V> map;
@@ -62,8 +63,15 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V> {
     @Override
     public PMap<K, V> plusAll(java.util.Map<? extends K, ? extends V> m) {
          HashMap<K,V> use = map;
-         for(java.util.Map.Entry<? extends K, ? extends V> next : m.entrySet()){
-             use = use.$plus(Tuple2.apply(next.getKey(),next.getValue()));
+         
+         if(m instanceof ScalaHashPMap){
+             HashMap<K,V> add = ((ScalaHashPMap)m).map;
+             use = (HashMap<K, V>) use.$plus$plus(map, this.canBuildFrom());
+         }
+         else{
+             for(java.util.Map.Entry<? extends K, ? extends V> next : m.entrySet()){
+                 use = use.$plus(Tuple2.apply(next.getKey(),next.getValue()));
+             }
          }
         return withMap(use);
     }
@@ -74,9 +82,10 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V> {
         return withMap((HashMap)m.$minus(key));
      
     }
+   
     @Override
     public PMap<K, V> minusAll(Collection<?> keys) {
-        GenTraversableOnce gen =  JavaConverters.collectionAsScalaIterable(keys);
+        GenTraversableOnce gen =  HasScalaCollection.traversable(keys);
         MapLike m = map;
         return withMap((HashMap)m.$minus$minus(gen));
         
@@ -86,6 +95,14 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V> {
         return ReactiveSeq.fromIterable(JavaConverters.asJavaIterable(map))
                         .map(t->(java.util.Map.Entry<K,V>)new SimpleEntry<K,V>(t._1,t._2))
                         .toSet();
+    }
+    @Override
+    public GenTraversableOnce traversable() {
+        return map;
+    }
+    @Override
+    public CanBuildFrom canBuildFrom() {
+       return HashMap.canBuildFrom();
     }
    
    

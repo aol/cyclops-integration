@@ -11,6 +11,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import org.jooq.lambda.tuple.Tuple2;
+import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
 import com.aol.cyclops.Reducer;
@@ -253,12 +254,13 @@ public class ClojurePStack<T> extends AbstractList<T>implements PStack<T> {
         if (size() == 0)
             return this;
         PersistentList nel = (PersistentList) list;
-        if (nel.contains(head())){
+        if (l.contains(head())){
             IPersistentList res1 = (IPersistentList)nel.next();
             if(res1==null)
                 return withList(PersistentList.create(Arrays.asList()));
             return tail().minusAll(l);
         }
+       
         IPersistentList res2 = (IPersistentList)nel.next();
         if(res2==null)
             return withList(PersistentList.create(Arrays.asList()));

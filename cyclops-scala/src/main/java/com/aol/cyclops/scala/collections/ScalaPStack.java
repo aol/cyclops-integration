@@ -1,6 +1,7 @@
 package com.aol.cyclops.scala.collections;
 
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,13 +23,14 @@ import lombok.val;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 import scala.collection.GenSeq;
+import scala.collection.GenTraversableOnce;
 import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.List;
 import scala.collection.immutable.List$;
 import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
+public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScalaCollection<T> {
 
     /**
      * Create a LazyPStackX from a Stream
@@ -174,7 +176,7 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
     }
 
     @Wither
-    private final List<T> list;
+    final List<T> list;
 
     @Override
     public ScalaPStack<T> plus(T e) {
@@ -183,6 +185,13 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
 
     @Override
     public ScalaPStack<T> plusAll(Collection<? extends T> l) {
+        if(l instanceof ScalaPStack){ //if a ScalaList is passed in use Scala diretly
+            final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
+            final CanBuildFrom<List<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
+            List<T> toAdd = ((ScalaPStack)l).list;
+            
+            return withList(list.$plus$plus(toAdd, builder2));
+        }
         List<T> vec = list;
         for (T next : l) {
             vec = vec.$colon$colon(next);
@@ -204,14 +213,14 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
 
     @Override
     public ScalaPStack<T> plus(int i, T e) {
-        if (i < 0 || i > size())
+        if (i < 0 || i > size()+1)
             throw new IndexOutOfBoundsException(
                                                 "Index " + i + " is out of bounds - size : " + size());
         if (i == 0)
             return withList(list.$colon$colon(e));
         final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
         final CanBuildFrom<GenSeq<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
-        if (i == size() - 1) {
+        if (i == size()) {
 
             return withList(list.<T,List<T>>$colon$plus(e, builder2));
         }
@@ -226,18 +235,29 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
     @Override
     public ScalaPStack<T> plusAll(int i, Collection<? extends T> l) {
 
-        if (i < 0 || i > size())
+        if (i < 0 || i > size()+1)
             throw new IndexOutOfBoundsException(
                                                 "Index " + i + " is out of bounds - size : " + size());
-        List<T> l2 = List$.MODULE$.empty();
-        for (T next : l) {
-            l2 = l2.$colon$colon(next);
+        
+      
+        if(l instanceof ScalaPStack){ //if a ScalaList is passed in use Scala diretly
+            final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
+            final CanBuildFrom<List<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
+            List<T> toAdd = ((ScalaPStack)l).list;
+            
+            return withList(list.$plus$plus(toAdd, builder2));
+        }
+        List<T> l2 = l instanceof ScalaPStack ? ((ScalaPStack)l).list : List$.MODULE$.empty();
+        if(!(l instanceof ScalaPStack)){
+            for (T next : l) {
+                l2 = l2.$colon$colon(next);
+            }
         }
         if (i == 0)
             return withList(list.$colon$colon$colon(l2));
         final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
         final CanBuildFrom<List<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
-        if (i == size() - 1) {
+        if (i == size()) {
 
             return withList(l2.$colon$colon$colon(list));
         }
@@ -249,15 +269,43 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
     }
 
     @Override
-    public PStack<T> minus(Object e) {
-        return LazyPStackX.fromPStack(this, toPStack())
-                          .filter(i -> !Objects.equals(i, e));
+    public ScalaPStack<T> minus(Object e) {
+        if (size() == 0)
+            return this;
+        if (head().equals(e)){
+            List<T> tail = (List<T>)list.tail();
+            if(tail==null)
+                return emptyPStack();
+            return withList(tail);
+        }
+        List<T> newRest = tail().minus(e).list;
+
+        if (newRest == (List<T>)list.tail())
+            return this;
+       
+        return withList(newRest.$colon$colon(head()));
     }
 
     @Override
-    public PStack<T> minusAll(Collection<?> list) {
-        return LazyPStackX.fromPStack(this, toPStack())
-                          .removeAll((Iterable<T>) list);
+    public ScalaPStack<T> minusAll(Collection<?> l) {
+        if (size() == 0)
+            return this;
+       
+        if (l.contains(head())){
+            List<T> res1 = (List<T>)list.tail();
+            if(res1==null)
+                return withList(List$.MODULE$.empty());
+            return tail().minusAll(l);
+        }
+       
+        List<T> res2 = (List<T>)list.tail();
+        if(res2==null)
+            return withList(List$.MODULE$.empty());
+        List<T> newRest = tail().minusAll(l).list;
+        if (newRest == list.tail())
+            return this;
+        return withList(newRest.$colon$colon(head()));
+        
     }
 
     public ScalaPStack<T> tail() {
@@ -283,7 +331,7 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
         final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
         final CanBuildFrom<List<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
         val front = frontBack._1;
-
+        
         List<T> result = (List<T>) front.$plus$plus(frontBack._2.drop(1), builder2);
 
         return withList(result);
@@ -309,6 +357,16 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T> {
     @Override
     public ScalaPStack<T> subList(int start) {
         return withList(list.drop(start));
+    }
+
+    @Override
+    public GenTraversableOnce<T> traversable() {
+       return list;
+    }
+
+    @Override
+    public CanBuildFrom canBuildFrom() {
+       return List.canBuildFrom();
     }
 
 }

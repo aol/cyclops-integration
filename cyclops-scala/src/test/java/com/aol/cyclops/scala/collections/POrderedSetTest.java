@@ -49,6 +49,11 @@ public class POrderedSetTest {
         
         
     }
+    @Test
+    public void plusAllScala(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(Arrays.asList(5,6,7)).toArray(),
+                   equalTo(test.plusAll(ScalaTreePOrderedSet.of(1,2,3)).plusAll(Arrays.asList(5,6,7)).toArray()));
+    }
     
    
 }

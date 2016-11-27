@@ -20,14 +20,16 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
+import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConversions;
+import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.HashSet;
 import scala.collection.immutable.HashSet$;
 import scala.collection.mutable.Builder;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T> {
+public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScalaCollection<T> {
 
     /**
      * Create a LazyPSetX from a Stream
@@ -181,14 +183,18 @@ public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T> {
 
     @Override
     public ScalaHashPSet<T> plusAll(Collection<? extends T> l) {
-        
-        
-        HashSet<T> vec = set;
-        for (T next : l) {
-              vec = vec.$plus(next);
-        }
+       
+        HashSet<T> res = HasScalaCollection.<T,HashSet<T>>visit(HasScalaCollection.narrow(l), scala->
+            (HashSet<T>) set.$plus$plus(scala.traversable(),  scala.canBuildFrom())
+        , java->{
+            HashSet<T> vec = set;
+            for (T next : l) {
+                vec = vec.$plus(next);
+          }
+            return vec;
+        });
 
-        return withSet(vec);
+        return withSet(res);
        
     }
 
@@ -205,8 +211,8 @@ public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T> {
 
     @Override
     public PSet<T> minusAll(Collection<?> s) {
-        
-        return withSet((HashSet)set.$minus$minus(JavaConversions.collectionAsScalaIterable(s)));        
+        GenTraversableOnce<T> col = HasScalaCollection.<T>traversable((Collection)s);
+        return withSet((HashSet)set.$minus$minus(col));        
     }
 
   
@@ -220,6 +226,17 @@ public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T> {
     @Override
     public Iterator<T> iterator() {
         return JavaConversions.asJavaIterator(set.iterator());
+    }
+
+    @Override
+    public GenTraversableOnce<T> traversable() {
+       return set;
+    }
+
+    @Override
+    public CanBuildFrom canBuildFrom() {
+       return HashSet.canBuildFrom();
+      
     }
 
    

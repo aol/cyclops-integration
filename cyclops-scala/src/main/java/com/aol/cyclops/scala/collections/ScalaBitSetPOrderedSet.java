@@ -20,14 +20,19 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
+import scala.Int;
+import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConversions;
+import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.BitSet;
 import scala.collection.immutable.BitSet$;
 import scala.collection.mutable.Builder;
 
-
+/*
+ * BitSet is experimental / not ready for prime time
+ */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaBitSetPOrderedSet extends AbstractSet<Integer>implements POrderedSet<Integer> {
+class ScalaBitSetPOrderedSet extends AbstractSet<Integer>implements POrderedSet<Integer>, HasScalaCollection {
 
     /**
      * Create a LazyPOrderedSetX from a Stream
@@ -181,6 +186,10 @@ public class ScalaBitSetPOrderedSet extends AbstractSet<Integer>implements POrde
         
         
         BitSet vec = set;
+        if(l instanceof HasScalaCollection){
+            HasScalaCollection<Integer> sc = (HasScalaCollection)l;
+            return withSet((BitSet)vec.$plus$plus(sc.traversable(), sc.canBuildFrom()));
+        }
         for (Integer next : l) {
               vec = vec.$plus((int)next);
         }
@@ -207,8 +216,8 @@ public class ScalaBitSetPOrderedSet extends AbstractSet<Integer>implements POrde
 
     @Override
     public POrderedSet<Integer> minusAll(Collection<?> s) {
-        
-        return withSet((BitSet)set.$minus$minus(JavaConversions.collectionAsScalaIterable(s)));        
+        GenTraversableOnce gen =  HasScalaCollection.traversable(s);
+        return withSet((BitSet)set.$minus$minus(gen));        
     }
 
   
@@ -232,6 +241,17 @@ public class ScalaBitSetPOrderedSet extends AbstractSet<Integer>implements POrde
     @Override
     public int indexOf(Object o) {
         return set.toIndexedSeq().toVector().indexOf(o);
+    }
+
+    @Override
+    public GenTraversableOnce traversable() {
+        
+        return this.set;
+    }
+
+    @Override
+    public CanBuildFrom canBuildFrom() {
+       return BitSet.canBuildFrom();
     }
 
    

@@ -21,12 +21,13 @@ import lombok.AllArgsConstructor;
 import lombok.val;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
+import scala.collection.GenTraversableOnce;
 import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.Vector;
 import scala.collection.immutable.Vector$;
 import scala.collection.immutable.VectorBuilder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPVector<T> extends AbstractList<T> implements PVector<T> {
+public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasScalaCollection<T> {
     
     /**
      * Create a LazyPVectorX from a Stream
@@ -156,7 +157,7 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T> {
         return LazyPVectorX.fromPVector(of(elements),toPVector());
     }
     @Wither
-    private final Vector<T> vector;
+    final Vector<T> vector;
 
     @Override
     public ScalaPVector<T> plus(T e) {
@@ -166,9 +167,19 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T> {
     @Override
     public ScalaPVector<T> plusAll(Collection<? extends T> list) {
         Vector<T> vec = vector;
-        for(T next :  list){
-            vec = vec.appendBack(next);
+        if(list instanceof ScalaPVector){
+            final CanBuildFrom<Vector<?>, T, Vector<T>> builder =
+                    Vector.<T>canBuildFrom();
+            final CanBuildFrom<Vector<T>, T, Vector<T>> builder2 = (CanBuildFrom)builder;
+            Vector<T> toUse = ((ScalaPVector)list).vector;
+            vec = vec.$plus$plus(toUse, builder2);
         }
+        else {
+            for(T next :  list){
+                vec = vec.appendBack(next);
+            }
+        }
+        
         
         
         return withVector(vec);
@@ -203,14 +214,21 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public ScalaPVector<T> plusAll(int i, Collection<? extends T> list) {
+        
         val frontBack = vector.splitAt(i);
         final CanBuildFrom<Vector<?>, T, Vector<T>> builder =
                 Vector.<T>canBuildFrom();
         final CanBuildFrom<Vector<T>, T, Vector<T>> builder2 = (CanBuildFrom)builder;
         
         Vector<T> front = frontBack._1;
-        for(T next : list){
-            front = front.appendBack(next);
+        if(list instanceof ScalaPVector){
+            Vector<T> toUse = ((ScalaPVector)list).vector;
+            front = front.$plus$plus(toUse, builder2);
+        }
+        else {
+            for(T next : list){
+                front = front.appendBack(next);
+            }
         }
         
         Vector<T> result = (Vector<T>) front.$plus$plus(frontBack._2,builder2);
@@ -269,6 +287,16 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T> {
     @Override
     public int size() {
         return vector.size();
+    }
+
+    @Override
+    public GenTraversableOnce<T> traversable() {
+        return vector;
+    }
+
+    @Override
+    public CanBuildFrom canBuildFrom() {
+        return Vector.canBuildFrom();
     }
 
    

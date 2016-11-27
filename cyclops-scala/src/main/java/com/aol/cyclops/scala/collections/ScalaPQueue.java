@@ -22,14 +22,16 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
+import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConversions;
 import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.Queue;
 import scala.collection.immutable.Queue$;
+import scala.collection.immutable.Vector;
 import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T> {
+public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasScalaCollection<T> {
 
     /**
      * Create a LazyPQueueX from a Stream
@@ -186,10 +188,19 @@ public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T> {
         final CanBuildFrom<Queue<?>, T, Queue<T>> builder = Queue.<T> canBuildFrom();
         final CanBuildFrom<Queue<T>, T, Queue<T>> builder2 = (CanBuildFrom) builder;
         Queue<T> vec = queue;
-        for (T next : l) {
-            vec = vec.$colon$plus(next, builder2);
+        if(l instanceof ScalaPQueue){
+           
+            Queue<T> toUse = ((ScalaPQueue)l).queue;
+           
+            vec = (Queue<T>)vec.$plus$plus(toUse, (CanBuildFrom) builder);
         }
-
+        else {
+  
+           
+            for (T next : l) {
+                vec = vec.$colon$plus(next, builder2);
+            }
+        }
         return withQueue(vec);
     }
 
@@ -250,6 +261,16 @@ public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T> {
     @Override
     public Iterator<T> iterator() {
         return JavaConversions.asJavaIterator(queue.iterator());
+    }
+
+    @Override
+    public GenTraversableOnce<T> traversable() {
+        return queue;
+    }
+
+    @Override
+    public CanBuildFrom canBuildFrom() {
+        return Queue.canBuildFrom();
     }
 
     

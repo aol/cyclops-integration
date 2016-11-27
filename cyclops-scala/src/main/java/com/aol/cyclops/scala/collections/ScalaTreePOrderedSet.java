@@ -22,7 +22,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
+import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConversions;
+import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.TreeSet;
 import scala.collection.immutable.TreeSet$;
 import scala.collection.mutable.Builder;
@@ -31,7 +33,7 @@ import scala.math.Ordering$;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSet<T> {
+public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSet<T>, HasScalaCollection<T> {
 
     /**
      * Create a LazyPOrderedSetX from a Stream
@@ -215,13 +217,16 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
     @Override
     public ScalaTreePOrderedSet<T> plusAll(Collection<? extends T> l) {
         
+        TreeSet<T> use =HasScalaCollection.visit(l, scala->set, java->{
+            TreeSet<T> vec = set;
+            for (T next : l) {
+                  vec = vec.$plus(next);
+            }
+            return vec;
+        });
         
-        TreeSet<T> vec = set;
-        for (T next : l) {
-              vec = vec.$plus(next);
-        }
 
-        return withSet(vec);
+        return withSet(use);
        
     }
 
@@ -239,7 +244,8 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
     @Override
     public POrderedSet<T> minusAll(Collection<?> s) {
         
-        return withSet((TreeSet)set.$minus$minus(JavaConversions.collectionAsScalaIterable(s)));        
+        GenTraversableOnce<T> col = HasScalaCollection.<T>traversable((Collection)s);
+        return withSet((TreeSet)set.$minus$minus(col));        
     }
 
   
@@ -263,6 +269,16 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
     @Override
     public int indexOf(Object o) {
         return set.toIndexedSeq().toVector().indexOf(o);
+    }
+
+    @Override
+    public GenTraversableOnce<T> traversable() {
+        return set;
+    }
+
+    @Override
+    public CanBuildFrom canBuildFrom() {
+        return TreeSet.newCanBuildFrom(set.ordering());
     }
 
    

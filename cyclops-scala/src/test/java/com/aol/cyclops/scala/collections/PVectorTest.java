@@ -49,7 +49,73 @@ public class PVectorTest {
                    equalTo(test.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
         
     }
-    
+    @Test
+    public void plusAll(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plusAll(Arrays.asList(5,6,7))));
+    }
+    @Test
+    public void plusAllScala(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(ScalaPVector.of(1,2,3)).plusAll(Arrays.asList(5,6,7))));
+    }
+    @Test
+    public void plusIndex0(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plus(0,5),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plus(0,5)));
+    }
+    @Test
+    public void plusIndex1(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plus(1,5),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plus(1,5)));
+    }
+    @Test
+    public void plusIndex2(){
+        System.out.println(org.plusAll(Arrays.asList(1,2,3)).plus(2,5));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plus(2,5),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plus(2,5)));
+    }
+    @Test
+    public void plusIndex3(){
+        System.out.println(org.plusAll(Arrays.asList(1,2,3)).plus(3,5));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plus(3,5),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plus(3,5)));
+    }
+    @Test
+    public void plusAllIndex0(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
+    }
+    @Test
+    public void plusAllIndex1(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
+    }
+    @Test
+    public void plusAllIndex2(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(2,Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plusAll(2,Arrays.asList(5,6,7))));
+    }
+    @Test
+    public void plusAllIndex3(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(3,Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).plusAll(3,Arrays.asList(5,6,7))));
+    }
+    @Test
+    public void plusAllIndexScala0(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(ScalaPVector.of(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
+    }
+    @Test
+    public void plusAllIndexScala1(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(ScalaPVector.of(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
+    }
+    @Test
+    public void plusAllIndexScala2(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(2,Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(ScalaPVector.of(1,2,3)).plusAll(2,Arrays.asList(5,6,7))));
+    }
     @Test
     public void subList(){
         

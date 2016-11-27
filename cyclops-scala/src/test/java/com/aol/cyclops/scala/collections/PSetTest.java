@@ -49,6 +49,10 @@ public class PSetTest {
         
         
     }
-    
+    @Test
+    public void plusAllScala(){
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(Arrays.asList(5,6,7)),
+                   equalTo(test.plusAll(ScalaHashPSet.of(1,2,3)).plusAll(Arrays.asList(5,6,7))));
+    }
    
 }
