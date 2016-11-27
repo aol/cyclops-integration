@@ -83,6 +83,10 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
     public static <T> LazyPVectorX<T> fromPVector(PVector<T> vec,Reducer<PVector<T>> collector){
         return new LazyPVectorX<T>(vec,collector);
     }
+    
+    public static <T> LazyPVectorX<T> fromFlux(Flux<T> vec,Reducer<PVector<T>> collector){
+        return new LazyPVectorX<T>(vec,collector);
+    }
     /**
      * Create a LazyPVectorX from a Stream
      * 
