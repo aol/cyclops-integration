@@ -41,7 +41,7 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
         return new ScalaHashPMap<>(map);
     }
     public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(HashMap$.MODULE$.empty()),null);
+       return new ExtensiblePMapX<K,V>(fromMap(HashMap$.MODULE$.empty()),toPMapX());
     }
     public static <K,V> PMap<K,V> singletonPMap(K key,V value){
         Builder<Tuple2<K, V>, HashMap> builder = HashMap$.MODULE$.newBuilder();

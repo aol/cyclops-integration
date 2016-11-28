@@ -20,6 +20,7 @@ import clojure.lang.PersistentArrayMap;
 import clojure.lang.PersistentVector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClojureArrayPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
@@ -32,15 +33,15 @@ public class ClojureArrayPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>
             return singleton((K) w.get(0), (V) w.get(1));
         });
     }
-    public static <K,V> ClojureArrayPMap<K,V> fromMap(PersistentArrayMap map){
+    public static <K,V> ClojureArrayPMap<K,V> fromMap(@NonNull PersistentArrayMap map){
         return new ClojureArrayPMap<>(map);
     }
-    public static <K,V> ClojureArrayPMap<K,V> fromJavaMap(Map<K,V> map){
+    public static <K,V> ClojureArrayPMap<K,V> fromJavaMap(@NonNull Map<K,V> map){
         PersistentArrayMap res = ( PersistentArrayMap)PersistentArrayMap.create(map);
         return fromMap(res);
     }
     public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(PersistentArrayMap.EMPTY),null);
+       return new ExtensiblePMapX<K,V>(fromMap(PersistentArrayMap.EMPTY),toPMapX());
     }
     public static <K,V> PMap<K,V> singletonPMap(K key,V value){
         PersistentArrayMap map = ( PersistentArrayMap)PersistentArrayMap.create(MapXs.of(key, value));
@@ -51,7 +52,7 @@ public class ClojureArrayPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>
         return new ExtensiblePMapX<K,V>(fromMap(map),ClojureArrayPMap.<K,V>toPMapX());
      }
     
-    public static <K,V> PMapX<K,V> fromStream(ReactiveSeq<Tuple2<K,V>> stream){
+    public static <K,V> PMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){
         return stream.mapReduce(toPMapX());
     }
     

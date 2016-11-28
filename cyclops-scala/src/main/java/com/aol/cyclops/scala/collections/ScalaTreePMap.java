@@ -42,11 +42,11 @@ public class ScalaTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
     }
     public static <K extends Comparable<? super K>,V> PMapX<K,V> empty(){
         Comparator<K> comp = Comparator.naturalOrder();
-       return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),null);
+       return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),toPMapX(Comparator.naturalOrder()));
     }
     public static <K,V> PMapX<K,V> empty(Comparator<? super K> c){
         Comparator<K> comp = (Comparator<K>)c;
-       return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),null);
+       return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),toPMapX(comp));
     }
     public static <K,V> PMap<K,V> singletonPMap(Comparator<? super K> c,K key,V value){
         Comparator<K> comp = (Comparator<K>)c;

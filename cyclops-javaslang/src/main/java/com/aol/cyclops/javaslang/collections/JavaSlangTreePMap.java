@@ -12,13 +12,13 @@ import org.pcollections.PMap;
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
-import com.aol.cyclops.data.collections.extensions.standard.MapXs;
 import com.aol.cyclops.reactor.collections.extensions.base.ExtensiblePMapX;
 import com.aol.cyclops.types.mixins.TupleWrapper;
 
 import javaslang.collection.TreeMap;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class JavaSlangTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
@@ -31,7 +31,7 @@ public class JavaSlangTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
             return singleton((K) w.get(0), (V) w.get(1));
         });
     }
-    public static <K,V> JavaSlangTreePMap<K,V> fromMap(TreeMap<K,V> map){
+    public static <K,V> JavaSlangTreePMap<K,V> fromMap(@NonNull TreeMap<K,V> map){
         return new JavaSlangTreePMap<>(map);
     }
     public static <K extends Comparable<? super K>,V> JavaSlangTreePMap<K,V> fromJavaMap(Map<? extends K,? extends V> map){
@@ -39,7 +39,7 @@ public class JavaSlangTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
         return fromMap(res);
     }
     public static <K extends Comparable<? super K>,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(TreeMap.<K,V>empty()),null);
+       return new ExtensiblePMapX<K,V>(fromMap(TreeMap.<K,V>empty()),toPMapX());
     }
     public static <K extends Comparable<? super K>,V> PMap<K,V> singletonPMap(K key,V value){
         TreeMap<K,V> map = TreeMap.of(key, value);
@@ -50,7 +50,7 @@ public class JavaSlangTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
         return new ExtensiblePMapX<K,V>(fromMap(map),JavaSlangTreePMap.<K,V>toPMapX());
      }
     
-    public static <K extends Comparable<? super K>,V> PMapX<K,V> fromStream(ReactiveSeq<Tuple2<K,V>> stream){
+    public static <K extends Comparable<? super K>,V> PMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){
         return stream.mapReduce(toPMapX());
     }
     

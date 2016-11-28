@@ -15,6 +15,7 @@ import org.pcollections.PStack;
 
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
 
 import clojure.lang.IPersistentList;
@@ -207,9 +208,14 @@ public class ClojurePStack<T> extends AbstractList<T>implements PStack<T> {
         if (i < 0 || i > size())
             throw new IndexOutOfBoundsException();
         
-        if (i == 0 || tail().list==null) // insert at beginning
+        if(size()==0){
+            return withList((IPersistentList) PersistentList.create(Arrays.asList(e)));
+        }
+        if( tail().list==null){
+            return withList((IPersistentList) PersistentList.create(Arrays.asList(e)).cons(head()));
+        }
+        if (i == 0) // insert at beginning
             return plus(e);
-        
         return withList((IPersistentList) tail().plus(i - 1, e).list.cons(head()));
 
     }
@@ -221,6 +227,12 @@ public class ClojurePStack<T> extends AbstractList<T>implements PStack<T> {
             throw new IndexOutOfBoundsException(
                                                 "Index " + i + " is out of bounds - size : " + size());
         
+        if(size()==0){
+            return withList((IPersistentList) PersistentList.create(ListX.fromIterable(l)));
+        }
+        if( tail().list==null){
+            return withList((IPersistentList) PersistentList.create(ListX.fromIterable(l)).cons(head()));
+        }
         if (i == 0 || tail().list==null)
             return plusAll(l);
         return withList((IPersistentList) tail().plusAll(i - 1, l).list.cons(head()));

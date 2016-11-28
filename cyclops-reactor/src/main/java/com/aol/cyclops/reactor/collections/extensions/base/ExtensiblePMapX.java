@@ -8,11 +8,13 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapXImpl;
 
+import lombok.NonNull;
+
 public class ExtensiblePMapX<K,V> extends PMapXImpl<K,V> {
     
     private final Reducer<PMapX<K, V>>  reducer;
     
-    public ExtensiblePMapX(PMap<K, V> map,Reducer<PMapX<K, V>>  reducer) {
+    public ExtensiblePMapX(@NonNull PMap<K, V> map,@NonNull Reducer<PMapX<K, V>>  reducer) {
         super(
               map);
         this.reducer = reducer;

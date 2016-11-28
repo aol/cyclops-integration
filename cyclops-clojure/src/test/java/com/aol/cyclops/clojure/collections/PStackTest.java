@@ -1,7 +1,6 @@
 package com.aol.cyclops.clojure.collections;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
@@ -11,6 +10,7 @@ import org.junit.Test;
 import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
+import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
 public class PStackTest {
 
@@ -48,6 +48,7 @@ public class PStackTest {
         for (Integer next : Arrays.asList(1,2,3)) {
             list = list.plus(list.size(), next);
         }
+        assertThat(PStackX.of(1,2,3),equalTo(list));
 
     }
     @Test

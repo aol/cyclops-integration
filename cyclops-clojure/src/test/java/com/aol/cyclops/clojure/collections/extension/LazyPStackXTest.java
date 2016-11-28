@@ -11,10 +11,12 @@ import java.util.function.UnaryOperator;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
+import com.aol.cyclops.Semigroups;
 import com.aol.cyclops.clojure.collections.ClojurePStack;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
+import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
 
@@ -31,6 +33,13 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
         System.out.println("List " + list);
         return list.efficientOpsOff();
 
+    }
+    @Test
+    public void combineNoOrderOd(){
+        assertThat(of(1,2,3)
+                   .combine((a, b)->a.equals(b),Semigroups.intSum)
+                   .toListX(),equalTo(ListX.of(1,2,3))); 
+                   
     }
 
     @Test

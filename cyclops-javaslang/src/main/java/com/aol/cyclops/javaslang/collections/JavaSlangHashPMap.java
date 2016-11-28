@@ -39,7 +39,7 @@ public class JavaSlangHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
         return fromMap(res);
     }
     public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(HashMap.empty()),null);
+       return new ExtensiblePMapX<K,V>(fromMap(HashMap.empty()),toPMapX());
     }
     public static <K,V> PMap<K,V> singletonPMap(K key,V value){
         HashMap<K,V> map = HashMap.of(key, value);
