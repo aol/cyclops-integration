@@ -3,6 +3,7 @@ package com.aol.cyclops.scala.collections;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.pcollections.PMap;
@@ -80,6 +81,8 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
          }
         return withMap(use);
     }
+    
+    
     @Override
     public PMap<K, V> minus(Object key) {
       
@@ -109,6 +112,14 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
     public CanBuildFrom canBuildFrom() {
        return HashMap.canBuildFrom();
     }
+    /* (non-Javadoc)
+     * @see java.util.AbstractMap#get(java.lang.Object)
+     */
+    @Override
+    public V get(Object key) {
+        return map.apply((K)key);
+    }
+   
    
    
 }

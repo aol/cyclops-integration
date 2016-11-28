@@ -113,6 +113,13 @@ public class ScalaTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
     public CanBuildFrom canBuildFrom() {
        return TreeMap.canBuildFrom(map.ordering());
     }
-   
+    /* (non-Javadoc)
+     * @see java.util.AbstractMap#get(java.lang.Object)
+     */
+    @Override
+    public V get(Object key) {
+        
+        return map.apply((K)key);
+    }
    
 }

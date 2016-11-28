@@ -1,11 +1,10 @@
-package com.aol.cyclops.clojure.collections;
+package com.aol.cyclops.javaslang.collections;
 
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
@@ -17,40 +16,38 @@ import com.aol.cyclops.data.collections.extensions.standard.MapXs;
 import com.aol.cyclops.reactor.collections.extensions.base.ExtensiblePMapX;
 import com.aol.cyclops.types.mixins.TupleWrapper;
 
-import clojure.lang.IPersistentMap;
-import clojure.lang.PersistentHashMap;
-import clojure.lang.PersistentVector;
+import javaslang.collection.HashMap;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClojureHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
+public class JavaSlangHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
     
     @Wither
-    PersistentHashMap map;
+    HashMap<K,V> map;
     public static <K, V> Reducer<PMapX<K, V>> toPMapX() {
         return Reducer.<PMapX<K, V>> of(empty(), (final PMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
             final List w = ((TupleWrapper) () -> in).values();
             return singleton((K) w.get(0), (V) w.get(1));
         });
     }
-    public static <K,V> ClojureHashPMap<K,V> fromMap(PersistentHashMap map){
-        return new ClojureHashPMap<>(map);
+    public static <K,V> JavaSlangHashPMap<K,V> fromMap(HashMap<K,V> map){
+        return new JavaSlangHashPMap<>(map);
     }
-    public static <K,V> ClojureHashPMap<K,V> fromJavaMap(Map<K,V> map){
-        PersistentHashMap res = ( PersistentHashMap)PersistentHashMap.create(map);
+    public static <K,V> JavaSlangHashPMap<K,V> fromJavaMap(Map<K,V> map){
+        HashMap<K,V> res = HashMap.ofAll(map);
         return fromMap(res);
     }
     public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(PersistentHashMap.EMPTY),null);
+       return new ExtensiblePMapX<K,V>(fromMap(HashMap.empty()),null);
     }
     public static <K,V> PMap<K,V> singletonPMap(K key,V value){
-        PersistentHashMap map = ( PersistentHashMap)PersistentHashMap.create(MapXs.of(key, value));
+        HashMap<K,V> map = HashMap.of(key, value);
         return fromMap(map);
      }
     public static <K,V> PMapX<K,V> singleton(K key,V value){
-        PersistentHashMap map = ( PersistentHashMap)PersistentHashMap.create(MapXs.of(key, value));
-        return new ExtensiblePMapX<K,V>(fromMap(map),ClojureHashPMap.<K,V>toPMapX());
+        HashMap<K,V> map = HashMap.of(key, value);
+        return new ExtensiblePMapX<K,V>(fromMap(map),JavaSlangHashPMap.<K,V>toPMapX());
      }
     
     public static <K,V> PMapX<K,V> fromStream(ReactiveSeq<Tuple2<K,V>> stream){
@@ -59,13 +56,14 @@ public class ClojureHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
     
     @Override
     public PMap<K, V> plus(K key, V value) {
-        return withMap((PersistentHashMap)map.cons(PersistentVector.create(key,value)));
+        return withMap(map.put(key, value));
     }
     @Override
     public PMap<K, V> plusAll(java.util.Map<? extends K, ? extends V> m2) {
-        PersistentHashMap m = map;
-        for(Object next : m2.entrySet()){
-            m = (PersistentHashMap)m.cons(next);
+        
+        HashMap<K,V> m = map;
+        for(Map.Entry<? extends K, ? extends V> next : m2.entrySet()){
+            m = m.put(next.getKey(), next.getValue());
         }
         return withMap(m);
     }
@@ -73,24 +71,20 @@ public class ClojureHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
     public PMap<K, V> minus(Object key) {
       
         
-        return withMap((PersistentHashMap)map.without(key));
+        return withMap(map.remove((K)key));
      
     }
    
     @Override
     public PMap<K, V> minusAll(Collection<?> keys) {
       
-       PersistentHashMap m = map;
-       for(Object key : keys){
-          
-           m = (PersistentHashMap)m.without(key);
-       }
-       return withMap(m);
+      return withMap(map.removeAll((Iterable)keys));
+      
         
     }
     @Override
     public Set<java.util.Map.Entry<K, V>> entrySet() {
-        return map.entrySet();
+        return map.toJavaMap().entrySet();
         
     }
     /* (non-Javadoc)
@@ -98,7 +92,7 @@ public class ClojureHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
      */
     @Override
     public V get(Object key) {
-       return (V)map.valAt(key);
+       return (V)map.get((K)key);
     }
    
     

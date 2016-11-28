@@ -11,6 +11,9 @@ import org.junit.Test;
 import org.pcollections.HashTreePSet;
 import org.pcollections.OrderedPSet;
 import org.pcollections.POrderedSet;
+
+import clojure.lang.PersistentTreeSet;
+import clojure.lang.PersistentVector;
 public class POrderedSetTest {
 
     OrderedPSet<Integer> org = null;
