@@ -10,6 +10,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
 import com.aol.cyclops.Reducer;
+import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
 import com.aol.cyclops.reactor.collections.extensions.base.ExtensiblePMapX;
@@ -39,7 +40,7 @@ public class JavaSlangTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
         return fromMap(res);
     }
     public static <K extends Comparable<? super K>,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(TreeMap.<K,V>empty()),toPMapX());
+       return new ExtensiblePMapX<K,V>(fromMap(TreeMap.<K,V>empty()),Eval.later(()->toPMapX()));
     }
     public static <K extends Comparable<? super K>,V> PMap<K,V> singletonPMap(K key,V value){
         TreeMap<K,V> map = TreeMap.of(key, value);
@@ -47,7 +48,7 @@ public class JavaSlangTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
      }
     public static <K extends Comparable<? super K>,V> PMapX<K,V> singleton(K key,V value){
         TreeMap<K,V> map = TreeMap.of(key, value);
-        return new ExtensiblePMapX<K,V>(fromMap(map),JavaSlangTreePMap.<K,V>toPMapX());
+        return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()->JavaSlangTreePMap.<K,V>toPMapX()));
      }
     
     public static <K extends Comparable<? super K>,V> PMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){

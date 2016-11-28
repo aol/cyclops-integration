@@ -50,7 +50,7 @@ dependencies {
 	testCompile group: 'org.mockito', name: 'mockito-all', version:'1.9.5'
 	testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0'
 	testCompile 'org.assertj:assertj-core:3.2.0'
-    testCompile project(':cyclops-reactor').sourceSets.test.output
+    testCompile project(path: ':cyclops-reactor', configuration: 'testArtifacts')
 }
 sourceSets {
 	main.compileClasspath += [configurations.provided]

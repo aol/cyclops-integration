@@ -24,11 +24,11 @@ public class PQueueTest {
     
     @Test
     public void empty(){
-        assertThat(TreePVector.empty(),equalTo(ScalaPQueue.empty()));
+        assertThat(TreePVector.empty().toArray(),equalTo(ScalaPQueue.empty().toArray()));
     }
     @Test
     public void singleton(){
-        assertThat(TreePVector.singleton(1),equalTo(ScalaPQueue.singleton(1)));
+        assertThat(TreePVector.singleton(1).toArray(),equalTo(ScalaPQueue.singleton(1).toArray()));
     }
     
     @Test

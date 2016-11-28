@@ -20,7 +20,7 @@ public interface HasScalaCollection<T> {
     
     public static <T,R> R visit(Collection<T> col,Function<HasScalaCollection<T>,R> scala, Function<Collection<T>,R> java){
         if(col instanceof HasScalaCollection){
-            return scala.apply((HasScalaCollection)col);
+            return (R)scala.apply((HasScalaCollection)col);
         }
         return java.apply(col);
     }

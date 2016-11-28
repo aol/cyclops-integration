@@ -10,9 +10,9 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
 import com.aol.cyclops.Reducer;
+import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
-import com.aol.cyclops.data.collections.extensions.standard.MapXs;
 import com.aol.cyclops.reactor.collections.extensions.base.ExtensiblePMapX;
 import com.aol.cyclops.types.mixins.TupleWrapper;
 
@@ -39,7 +39,7 @@ public class JavaSlangHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
         return fromMap(res);
     }
     public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(HashMap.empty()),toPMapX());
+       return new ExtensiblePMapX<K,V>(fromMap(HashMap.empty()),Eval.later(()->toPMapX()));
     }
     public static <K,V> PMap<K,V> singletonPMap(K key,V value){
         HashMap<K,V> map = HashMap.of(key, value);
@@ -47,7 +47,7 @@ public class JavaSlangHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
      }
     public static <K,V> PMapX<K,V> singleton(K key,V value){
         HashMap<K,V> map = HashMap.of(key, value);
-        return new ExtensiblePMapX<K,V>(fromMap(map),JavaSlangHashPMap.<K,V>toPMapX());
+        return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()->JavaSlangHashPMap.<K,V>toPMapX()));
      }
     
     public static <K,V> PMapX<K,V> fromStream(ReactiveSeq<Tuple2<K,V>> stream){

@@ -9,6 +9,7 @@ import java.util.Set;
 import org.pcollections.PMap;
 
 import com.aol.cyclops.Reducer;
+import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
 import com.aol.cyclops.reactor.collections.extensions.base.ExtensiblePMapX;
@@ -42,11 +43,13 @@ public class ScalaTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
     }
     public static <K extends Comparable<? super K>,V> PMapX<K,V> empty(){
         Comparator<K> comp = Comparator.naturalOrder();
-       return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),toPMapX(Comparator.naturalOrder()));
+       return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),
+               Eval.later (()->ScalaTreePMap.<K,V>toPMapX(Comparator.naturalOrder())));
     }
     public static <K,V> PMapX<K,V> empty(Comparator<? super K> c){
         Comparator<K> comp = (Comparator<K>)c;
-       return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),toPMapX(comp));
+       return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),
+               Eval.later (()->ScalaTreePMap.<K,V>toPMapX(comp)));
     }
     public static <K,V> PMap<K,V> singletonPMap(Comparator<? super K> c,K key,V value){
         Comparator<K> comp = (Comparator<K>)c;
@@ -58,7 +61,7 @@ public class ScalaTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
         Comparator<K> comp = (Comparator<K>)c;
         Builder<Tuple2<K, V>, TreeMap> builder = TreeMap$.MODULE$.newBuilder(Converters.ordering(comp));
         TreeMap<K,V> map = builder.$plus$eq(Tuple2.apply(key,value)).result();
-        return new ExtensiblePMapX<K,V>(fromMap(map),ScalaTreePMap.<K,V>toPMapX(c));
+        return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later (()->ScalaTreePMap.<K,V>toPMapX(c)));
      }
     
     public static <K,V> PMapX<K,V> fromStream(Comparator<? super K> c,ReactiveSeq<Tuple2<K,V>> stream){
