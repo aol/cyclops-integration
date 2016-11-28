@@ -24,7 +24,6 @@ import org.jooq.lambda.Seq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
-import org.pcollections.PStack;
 import org.pcollections.PVector;
 import org.reactivestreams.Publisher;
 
@@ -34,7 +33,6 @@ import com.aol.cyclops.Reducers;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
-import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
@@ -44,6 +42,7 @@ import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -78,13 +77,21 @@ import reactor.core.publisher.Flux;
 public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVectorX<T> {
     private final LazyFluentCollection<T, PVector<T>> lazy;
     @Getter
+    @Wither
     private final Reducer<PVector<T>> collector;
 
+    public static <T> LazyPVectorX<T> fromPVector(PVector<T> vec,Reducer<PVector<T>> collector){
+        return new LazyPVectorX<T>(vec,collector);
+    }
+    
+    public static <T> LazyPVectorX<T> fromFlux(Flux<T> vec,Reducer<PVector<T>> collector){
+        return new LazyPVectorX<T>(vec,collector);
+    }
     /**
-     * Create a LazyPStackX from a Stream
+     * Create a LazyPVectorX from a Stream
      * 
      * @param stream to construct a LazyQueueX from
-     * @return LazyPStackX
+     * @return LazyPVectorX
      */
     public static <T> LazyPVectorX<T> fromStreamS(Stream<T> stream) {
         return new LazyPVectorX<T>(
@@ -92,7 +99,7 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
     }
 
     /**
-     * Create a LazyPStackX that contains the Integers between start and end
+     * Create a LazyPVectorX that contains the Integers between start and end
      * 
      * @param start
      *            Number of range to start from
@@ -105,7 +112,7 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
     }
 
     /**
-     * Create a LazyPStackX that contains the Longs between start and end
+     * Create a LazyPVectorX that contains the Longs between start and end
      * 
      * @param start
      *            Number of range to start from
@@ -122,7 +129,7 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
      * 
      * <pre>
      * {@code 
-     *  LazyPStackX.unfold(1,i->i<=6 ? Optional.of(Tuple.tuple(i,i+1)) : Optional.empty());
+     *  LazyPVectorX.unfold(1,i->i<=6 ? Optional.of(Tuple.tuple(i,i+1)) : Optional.empty());
      * 
      * //(1,2,3,4,5)
      * 
@@ -137,7 +144,7 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
     }
 
     /**
-     * Generate a LazyPStackX from the provided Supplier up to the provided limit number of times
+     * Generate a LazyPVectorX from the provided Supplier up to the provided limit number of times
      * 
      * @param limit Max number of elements to generate
      * @param s Supplier to generate ListX elements
@@ -150,7 +157,7 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
     }
 
     /**
-     * Create a LazyPStackX by iterative application of a function to an initial element up to the supplied limit number of times
+     * Create a LazyPVectorX by iterative application of a function to an initial element up to the supplied limit number of times
      * 
      * @param limit Max number of elements to generate
      * @param seed Initial element
@@ -163,14 +170,14 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
     }
 
     /**
-     * @return A collector that generates a LazyPStackX
+     * @return A collector that generates a LazyPVectorX
      */
     public static <T> Collector<T, ?, LazyPVectorX<T>> lazyListXCollector() {
         return Collectors.toCollection(() -> LazyPVectorX.of());
     }
 
     /**
-     * @return An empty LazyPStackX
+     * @return An empty LazyPVectorX
      */
     public static <T> LazyPVectorX<T> empty() {
         return fromIterable((List<T>) ListX.<T> defaultCollector()
@@ -179,10 +186,10 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
     }
 
     /**
-     * Create a LazyPStackX from the specified values
+     * Create a LazyPVectorX from the specified values
      * <pre>
      * {@code 
-     *     ListX<Integer> lazy = LazyPStackX.of(1,2,3,4,5);
+     *     ListX<Integer> lazy = LazyPVectorX.of(1,2,3,4,5);
      *     
      *     //lazily map List
      *     ListX<String> mapped = lazy.map(i->"mapped " +i); 
@@ -191,8 +198,8 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
      * }
      * </pre>
      * 
-     * @param values To populate LazyPStackX with
-     * @return LazyPStackX
+     * @param values To populate LazyPVectorX with
+     * @return LazyPVectorX
      */
     @SafeVarargs
     public static <T> LazyPVectorX<T> of(T... values) {
@@ -205,27 +212,27 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
     }
 
     /**
-     * Construct a LazyPStackX with a single value
+     * Construct a LazyPVectorX with a single value
      * <pre>
      * {@code 
-     *    ListX<Integer> lazy = LazyPStackX.singleton(5);
+     *    ListX<Integer> lazy = LazyPVectorX.singleton(5);
      *    
      * }
      * </pre>
      * 
      * 
-     * @param value To populate LazyPStackX with
-     * @return LazyPStackX with a single value
+     * @param value To populate LazyPVectorX with
+     * @return LazyPVectorX with a single value
      */
     public static <T> LazyPVectorX<T> singleton(T value) {
         return LazyPVectorX.<T> of(value);
     }
 
     /**
-     * Construct a LazyPStackX from an Publisher
+     * Construct a LazyPVectorX from an Publisher
      * 
      * @param publisher
-     *            to construct LazyPStackX from
+     *            to construct LazyPVectorX from
      * @return ListX
      */
     public static <T> LazyPVectorX<T> fromPublisher(Publisher<? extends T> publisher) {
@@ -233,21 +240,21 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
     }
 
     /**
-     * Construct LazyPStackX from an Iterable
+     * Construct LazyPVectorX from an Iterable
      * 
-     * @param it to construct LazyPStackX from
-     * @return LazyPStackX from Iterable
+     * @param it to construct LazyPVectorX from
+     * @return LazyPVectorX from Iterable
      */
     public static <T> LazyPVectorX<T> fromIterable(Iterable<T> it) {
         return fromIterable(Reducers.toPVector(), it);
     }
 
     /**
-     * Construct a LazyPStackX from an Iterable, using the specified Collector.
+     * Construct a LazyPVectorX from an Iterable, using the specified Collector.
      * 
      * @param collector To generate Lists from, this can be used to create mutable vs immutable Lists (for example), or control List type (ArrayList, LinkedList)
-     * @param it Iterable to construct LazyPStackX from
-     * @return Newly constructed LazyPStackX
+     * @param it Iterable to construct LazyPVectorX from
+     * @return Newly constructed LazyPVectorX
      */
     public static <T> LazyPVectorX<T> fromIterable(Reducer<PVector<T>> collector, Iterable<T> it) {
         if (it instanceof LazyPVectorX)
@@ -273,13 +280,15 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
         this.collector = collector;
     }
 
+    
+
     private LazyPVectorX(PVector<T> list) {
         this.collector = Reducers.toPVector();
         this.lazy = new PersistentLazyCollection<T, PVector<T>>(
                                                                 list, null, Reducers.toPVector());
     }
-
-    private LazyPVectorX(Flux<T> stream, Reducer<PVector<T>> collector) {
+    
+    public LazyPVectorX(Flux<T> stream, Reducer<PVector<T>> collector) {
         this.collector = collector;
         this.lazy = new PersistentLazyCollection<>(
                                                    null, stream, Reducers.toPVector());

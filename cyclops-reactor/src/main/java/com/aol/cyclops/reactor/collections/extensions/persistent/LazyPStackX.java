@@ -25,6 +25,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
 import org.pcollections.PStack;
+import org.pcollections.PVector;
 import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.Monoid;
@@ -89,7 +90,9 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T>implements PStac
     public LazyPStackX<T> efficientOpsOff() {
         return this.withEfficientOps(false);
     }
-
+    public static <T> LazyPStackX<T> fromPStack(PStack<T> list,Reducer<PStack<T>> collector){
+        return new LazyPStackX<T>(list,collector);
+    }
     /**
      * Create a LazyPStackX from a Stream
      * 
@@ -291,8 +294,9 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T>implements PStac
         this.lazy = new PersistentLazyCollection<T, PStack<T>>(
                                                                list, null, Reducers.toPStack());
     }
+   
 
-    private LazyPStackX(Flux<T> stream, Reducer<PStack<T>> collector) {
+    public LazyPStackX(Flux<T> stream, Reducer<PStack<T>> collector) {
         this.efficientOps = true;
         this.collector = collector;
         this.lazy = new PersistentLazyCollection<>(
@@ -1602,7 +1606,8 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T>implements PStac
      * java.lang.Object)
      */
     public LazyPStackX<T> with(int i, T element) {
-        return stream(Fluxes.insertAt(Fluxes.deleteBetween(flux(), i, i + 1), i, element));
+        return  new LazyPStackX<T>(
+                efficientOps, getStack().with(i,element), this.collector);//stream(Fluxes.insertAt(Fluxes.deleteBetween(flux(), i, i + 1), i, element));
     }
 
     /*

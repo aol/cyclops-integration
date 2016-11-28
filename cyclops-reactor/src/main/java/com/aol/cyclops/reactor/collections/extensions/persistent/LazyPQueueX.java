@@ -26,6 +26,7 @@ import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
 import org.pcollections.PCollection;
 import org.pcollections.PQueue;
+import org.pcollections.PStack;
 import org.pcollections.PVector;
 import org.reactivestreams.Publisher;
 
@@ -80,6 +81,9 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T>implements PQueu
     @Getter
     private final Reducer<PQueue<T>> collector;
 
+    public static <T> LazyPQueueX<T> fromPQueue(PQueue<T> list,Reducer<PQueue<T>> collector){
+        return new LazyPQueueX<T>(list,collector);
+    }
     /**
      * Create a LazyPStackX from a Stream
      * 
@@ -279,7 +283,7 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T>implements PQueu
                                                                list, null, Reducers.toPQueue());
     }
 
-    private LazyPQueueX(Flux<T> stream, Reducer<PQueue<T>> collector) {
+    public LazyPQueueX(Flux<T> stream, Reducer<PQueue<T>> collector) {
         this.collector = collector;
         this.lazy = new PersistentLazyCollection<>(
                                                    null, stream, Reducers.toPQueue());

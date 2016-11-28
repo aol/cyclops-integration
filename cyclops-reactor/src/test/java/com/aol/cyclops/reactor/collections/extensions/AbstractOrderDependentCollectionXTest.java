@@ -17,21 +17,30 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
 import org.junit.Test;
 
+import com.aol.cyclops.CyclopsCollectors;
+import com.aol.cyclops.Reducers;
 import com.aol.cyclops.Semigroups;
 import com.aol.cyclops.control.Matchable;
+import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.control.Streamable;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.CollectionX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
+import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest.MyCase;
+import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest.MyCase2;
 import com.aol.cyclops.types.stream.HeadAndTail;
 import com.aol.cyclops.util.function.Predicates;
 
@@ -39,8 +48,211 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 public abstract class AbstractOrderDependentCollectionXTest extends AbstractCollectionXTest {
+    @Test
+    public void combineNoOrderOd(){
+        assertThat(of(1,2,3)
+                   .combine((a, b)->a.equals(b),Semigroups.intSum)
+                   .toListX(),equalTo(ListX.of(1,2,3))); 
+                   
+    }
+    @Test
+    public void testSplitAtHeadOd() {
+        assertEquals(Optional.empty(), of().headAndTail().headOptional());
+        assertEquals(asList(), of().headAndTail().tail().toList());
+
+        assertEquals(Optional.of(1), of(1).headAndTail().headOptional());
+        assertEquals(asList(), of(1).headAndTail().tail().toList());
+
+        assertEquals(Maybe.of(1), of(1, 2).headAndTail().headMaybe());
+        assertEquals(asList(2), of(1, 2).headAndTail().tail().toList());
+
+        assertEquals(Arrays.asList(1), of(1, 2, 3).headAndTail().headStream().toList());
+        assertEquals((Integer)2, of(1, 2, 3).headAndTail().tail().headAndTail().head());
+        assertEquals(Optional.of(3), of(1, 2, 3).headAndTail().tail().headAndTail().tail().headAndTail().headOptional());
+        assertEquals(asList(2, 3), of(1, 2, 3).headAndTail().tail().toList());
+        assertEquals(asList(3), of(1, 2, 3).headAndTail().tail().headAndTail().tail().toList());
+        assertEquals(asList(), of(1, 2, 3).headAndTail().tail().headAndTail().tail().headAndTail().tail().toList());
+    }
+    @Test
+    public void groupedFunctionCollectorNoOrderOd(){
+        assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b",CyclopsCollectors.toListX()).count(),equalTo((2L)));
+        assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b",CyclopsCollectors.toListX()).filter(t->t.v1.equals("a"))
+                .map(t->t.v2).single(),
+                    equalTo((Arrays.asList(1,2))));
+    }
+    @Test
+    public void concurrentLazyStreamableOd(){
+        Streamable<Integer> repeat = of(1,2,3,4,5,6)
+                                                .map(i->i*2)
+                                                .toConcurrentLazyStreamable();
+        
+        assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
+        assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
+    }
+    @Test
+    public void patternTestPojoNoOrderOd(){
+        
+        List<String> result = of(new MyCase2(1,2),new MyCase2(3,4))
+                                              .patternMatch(
+                                                      c->c.is(when(new MyCase2(1,2)),then("one"))
+                                                           .is(when(new MyCase2(3,4)),then("two"))
+                                                           .is(when(new MyCase2(3,5)),then("three"))
+                                                           .is(when(Predicates.type(MyCase.class).isGuard(3,4)),then(()->"two"))
+                                                           ,Matchable.otherwise("n/a")
+                                                      )
+                                              .toListX();
+        assertThat(result,equalTo(Arrays.asList("one","two")));
+    }
+    @Test
+    public void forEach2Od() {
+
+        assertThat(of(1, 2, 3).forEach2(a -> Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), a -> b -> a + b).toList(),
+                equalTo(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 3, 4, 5, 6, 7, 8,
+                        9, 10, 11, 12)));
+    }
+
+    @Test
+    public void forEach2FilterOd() {
+
+        assertThat(of(1, 2, 3).forEach2(a -> Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), a -> b -> a > 2 && b < 8,
+                a -> b -> a + b).toList(), equalTo(Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10)));
+    }
+    @Test
+    public void visitOd(){
+        
+        String res= of(1,2,3).visit((x,xs)-> xs.join(x>2? "hello" : "world"),
+                                                              ()->"boo!");
+                    
+        assertThat(res,equalTo("2world3"));
+    }
+   
+    @Test
+    public void dropRightOd(){
+        assertThat(of(1,2,3).dropRight(1).toList(),hasItems(1,2));
+    }
+    @Test
+    public void flatMapPublisherOd() throws InterruptedException{
+        
+        assertThat(of(1,2,3)
+                        .flatMapPublisher(i->Maybe.of(i))
+                        .toListX(),equalTo(Arrays.asList(1,2,3)));
+        
+        
+    }
+    @Test
+    public void groupedFunctionNoOrderOd(){
+        
+        assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").count(),equalTo((2L)));
+        assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").filter(t->t.v1.equals("a"))
+                        .map(t->t.v2).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).single(),
+                            equalTo((ListX.of(1,2))));
+    }
+    @Test
+    public void combineNoOrder(){
+        assertThat(of(1,2,3)
+                   .combine((a, b)->a.equals(b),Semigroups.intSum)
+                   .toListX().size(),equalTo(ListX.of(1,2,3).size())); 
+                   
+    }
+    @Test
+    public void streamableOd(){
+        Streamable<Integer> repeat = (of(1,2,3,4,5,6)
+                                                .map(i->i*2)
+                                                )
+                                                .toStreamable();
+        
+        assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
+        assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
+    }
+    @Test
+    public void testScanLeftStringConcatMonoidOd() {
+        assertThat(of("a", "b", "c").scanLeft(Reducers.toString("")).toList(), is(asList("", "a", "ab", "abc")));
+    }
+
+    @Test
+    public void takeWhileTest(){
+        
+        List<Integer> list = new ArrayList<>();
+        while(list.size()==0){
+            list = of(1,2,3,4,5,6).takeWhile(it -> it<4)
+                        .peek(it -> System.out.println(it)).collect(Collectors.toList());
     
-  
+        }
+        assertThat(Arrays.asList(1,2,3,4,5,6),hasItem(list.get(0)));
+        
+        
+        
+        
+    }
+    @Test
+    public void limitWhileTest(){
+        
+        List<Integer> list = new ArrayList<>();
+        while(list.size()==0){
+            list = of(1,2,3,4,5,6).limitWhile(it -> it<4)
+                        .toListX();
+    
+        }
+        assertThat(Arrays.asList(1,2,3,4,5,6),hasItem(list.get(0)));
+        
+        
+        
+        
+    }
+    @Test
+    public void testSkipLastOd(){
+        assertThat(of(1,2,3,4,5)
+                            .skipLast(2)
+                            .toListX(),equalTo(Arrays.asList(1,2,3)));
+    }
+    @Test
+    public void endsWith(){
+        assertTrue(of(1,2,3,4,5,6)
+                .endsWithIterable(Arrays.asList(5,6)));
+    }
+    @Test
+    public void endsWithStream(){
+        assertTrue(of(1,2,3,4,5,6)
+                .endsWith(Stream.of(5,6)));
+    }
+    @Test
+    public void getMultpleStreamOd(){
+        assertThat(of(1,2,3,4,5).stream().elementAt(2).v2.toList(),equalTo(Arrays.asList(1,2,3,4,5)));
+    }
+    @Test
+    public void testScanRightSumMonoidOd() {
+        assertThat(of("a", "ab", "abc").peek(System.out::println)
+                                    .map(str -> str.length())
+                                    .peek(System.out::println)
+                                    .scanRight(Reducers.toTotalInt()).toList(), is(asList(0, 3, 5, 6)));
+
+    }   
+    @Test
+    public void getAtMultpleOd(){
+        assertThat(of(1,2,3,4,5).get(2).get(),equalTo(3));
+    }
+    @Test
+    public void getMultpleOd(){
+        assertThat(of(1,2,3,4,5).stream().elementAt(2).v1,equalTo(3));
+    }
+    @Test
+    public void testScanLeftSumMonoidOd() {
+        
+        assertThat(of("a", "ab", "abc").map(str -> str.length()).
+                            peek(System.out::println).scanLeft(Reducers.toTotalInt()).toList(), is(asList(0, 1, 3, 6)));
+    }
+    @Test
+    public void testLimitLastOd(){
+        assertThat(of(1,2,3,4,5)
+                            .limitLast(2)
+                            .stream().collect(Collectors.toList()),equalTo(Arrays.asList(4,5)));
+    }
+    @Test
+    public void testTakeRightOd(){
+        assertThat(of(1,2,3,4,5)
+                            .takeRight(2)
+                            .stream().collect(Collectors.toList()),equalTo(Arrays.asList(4,5)));
+    }
     @Test
     public void whenNilOrNotJoinWithFirstElement(){
         
@@ -116,6 +328,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
     }
     @Test
     public void sliding() {
+        
         ListX<ListX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).toListX();
 
         System.out.println(list);

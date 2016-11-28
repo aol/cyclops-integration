@@ -25,6 +25,7 @@ import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
 import org.pcollections.PCollection;
 import org.pcollections.POrderedSet;
+import org.pcollections.PSet;
 import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.Monoid;
@@ -82,6 +83,9 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T>implements 
     @Getter
     private final Reducer<POrderedSet<T>> collector;
 
+    public static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> list,Reducer<POrderedSet<T>> collector){
+        return new LazyPOrderedSetX<T>(list,collector);
+    }
     /**
      * Create a LazyPStackX from a Stream
      * 
@@ -281,7 +285,7 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T>implements 
                                                                     list, null, Reducers.toPOrderedSet());
     }
 
-    private LazyPOrderedSetX(Flux<T> stream, Reducer<POrderedSet<T>> collector) {
+    public LazyPOrderedSetX(Flux<T> stream, Reducer<POrderedSet<T>> collector) {
         this.collector = collector;
         this.lazy = new PersistentLazyCollection<>(
                                                    null, stream, Reducers.toPOrderedSet());
