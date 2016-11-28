@@ -6,12 +6,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
 import com.aol.cyclops.Reducer;
+import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
 import com.aol.cyclops.data.collections.extensions.standard.MapXs;
@@ -59,10 +59,10 @@ public class ClojureTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
         return fromMap(res);
     }
     public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY),toPMapX());
+       return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY),Eval.later(()->toPMapX()));
     }
     public static <K,V> PMapX<K,V> empty(@NonNull Comparator<K> comp){
-        return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY),toPMapX(comp));
+        return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY),Eval.later(()->toPMapX(comp)));
      }
     public static <K,V> PMap<K,V> singletonPMap(K key,V value){
         PersistentTreeMap map = ( PersistentTreeMap)PersistentTreeMap.create(MapXs.of(key, value));
@@ -70,11 +70,11 @@ public class ClojureTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
      }
     public static <K,V> PMapX<K,V> singleton(K key,V value){
         PersistentTreeMap map = ( PersistentTreeMap)PersistentTreeMap.create(MapXs.of(key, value));
-        return new ExtensiblePMapX<K,V>(fromMap(map),ClojureTreePMap.<K,V>toPMapX());
+        return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()->ClojureTreePMap.<K,V>toPMapX()));
      }
     public static <K,V> PMapX<K,V> singleton(@NonNull Comparator<K> comp,K key,V value){
         PersistentTreeMap map = ( PersistentTreeMap)PersistentTreeMap.create(MapXs.of(key, value));
-        return new ExtensiblePMapX<K,V>(fromMap(map),ClojureTreePMap.<K,V>toPMapX(comp));//ClojureTreePMap.<K,V>toPMapX()
+        return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()->ClojureTreePMap.<K,V>toPMapX(comp)));//ClojureTreePMap.<K,V>toPMapX()
      }
     
     

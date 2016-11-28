@@ -1,5 +1,7 @@
 package com.aol.cyclops.reactor.collections.extensions.base;
 
+import java.util.function.Supplier;
+
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
@@ -12,9 +14,9 @@ import lombok.NonNull;
 
 public class ExtensiblePMapX<K,V> extends PMapXImpl<K,V> {
     
-    private final Reducer<PMapX<K, V>>  reducer;
+    private final Supplier<Reducer<PMapX<K, V>>>  reducer;
     
-    public ExtensiblePMapX(@NonNull PMap<K, V> map,@NonNull Reducer<PMapX<K, V>>  reducer) {
+    public ExtensiblePMapX(@NonNull PMap<K, V> map,@NonNull Supplier<Reducer<PMapX<K, V>>>  reducer) {
         super(
               map);
         this.reducer = reducer;
@@ -22,7 +24,7 @@ public class ExtensiblePMapX<K,V> extends PMapXImpl<K,V> {
     }
     
     public PMapX<K, V> fromStream(final ReactiveSeq<Tuple2<K, V>> stream) {
-        return stream.mapReduce(reducer);
+        return stream.mapReduce(reducer.get());
     }
 
     /* (non-Javadoc)

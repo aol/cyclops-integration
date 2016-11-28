@@ -42,6 +42,7 @@ configurations {
     doc {
         transitive false
     }
+    testArtifacts.extendsFrom testRuntime
 }
 dependencies {
     doc  'com.aol.simplereact:cyclops-react:'+cyclopsReactVersion+':sources'
@@ -73,7 +74,14 @@ javadoc {
     include '**/*.java'
     options.addStringOption('Xdoclint:none', '-quiet')
 }
-
+task packageTests(type: Jar) {
+    from sourceSets.test.output
+    classifier = 'tests'
+}
+artifacts {
+    testArtifacts packageTests
+}
+//artifacts.archives packageTests
 
 modifyPom {
 	project {
