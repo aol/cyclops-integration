@@ -1,4 +1,4 @@
-package com.aol.cyclops.scala.collections;
+package com.aol.cyclops.clojure.collections;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -9,7 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.AmortizedPQueue;
 import org.pcollections.PQueue;
-import org.pcollections.TreePVector;
+
+import com.aol.cyclops.data.collections.extensions.persistent.PQueueX;
 public class PQueueTest {
 
     AmortizedPQueue<Integer> org = null;
@@ -18,17 +19,17 @@ public class PQueueTest {
     @Before
     public void setup(){
        org = AmortizedPQueue.empty();
-       test = ScalaPQueue.empty();
+       test = ClojurePQueue.empty();
      
     }
     
     @Test
     public void empty(){
-        assertThat(TreePVector.empty(),equalTo(ScalaPQueue.empty()));
+        assertThat(AmortizedPQueue.empty().toArray(),equalTo(ClojurePQueue.empty().toArray()));
     }
     @Test
     public void singleton(){
-        assertThat(TreePVector.singleton(1),equalTo(ScalaPQueue.singleton(1)));
+        assertThat(PQueueX.singleton(1).toArray(),equalTo(ClojurePQueue.singleton(1).toArray()));
     }
     
     @Test
@@ -57,7 +58,7 @@ public class PQueueTest {
     @Test
     public void plusAllScala(){
         assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(Arrays.asList(5,6,7)).toArray(),
-                   equalTo(test.plusAll(ScalaPQueue.of(1,2,3)).plusAll(Arrays.asList(5,6,7)).toArray()));
+                   equalTo(test.plusAll(ClojurePQueue.of(1,2,3)).plusAll(Arrays.asList(5,6,7)).toArray()));
     }
    
 }

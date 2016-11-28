@@ -2,7 +2,6 @@ package com.aol.cyclops.clojure.collections;
 
 import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
@@ -17,9 +16,7 @@ import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
 
-import clojure.lang.IPersistentSet;
 import clojure.lang.PersistentHashSet;
-import clojure.lang.PersistentVector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
