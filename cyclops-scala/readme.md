@@ -6,7 +6,7 @@ v8.4.0 of cyclops uses 2.12.0 of Scala
 
 
 * [![Maven Central : cyclops-scala](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-scala/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-scala)
-* [Javadoc for Cyclops Javaslang](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-scala/)
+* [Javadoc for Cyclops Scala](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-scala/)
 
 # Features
 
