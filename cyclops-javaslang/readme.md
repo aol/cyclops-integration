@@ -30,7 +30,8 @@ v8.0.0 of cyclops-javaslang requires v2.0.2 of Javaslang.
 |  Queue | JavaSlangPQueue  | PQueue  | Queue  | PQueueX : extended Persistent Queue  |
 |  HashSet | JavaSlangPSet  | PSet  | Set  | PSetX : extended Persistent Set  |
 |  TreeSet | JavaSlangPOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
-
+|  TreeMap | JavaSlangTreePMap  | PMap  | Map | PMapX : extended Persistent Map  |
+|  HashMap | JavaSlangHashPMap  | PMap  | Map | PMapX : extended Persistent Map  |
 
 
 ## For Comprehensions

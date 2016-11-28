@@ -21,6 +21,7 @@ cyclops-clojure provides Java friendly bindings to the Clojure collections API. 
 |  PersistentHashSet | ClojureHashPSet  | PSet  | Set  | PSetX : extended Persistent Set  |
 |  PersistentTreeSet | ClojureTreePOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
 |  PersistentArrayMap | ClojureArrayPMap  | PMap  | Map | PMapX : extended Persistent Map  |
+|  PersistentTreeMap | ClojureTreePMap  | PMap  | Map | PMapX : extended Persistent Map  |
 |  PersistentHashMap | ClojureHashPMap  | PMap  | Map | PMapX : extended Persistent Map  |
 
 
