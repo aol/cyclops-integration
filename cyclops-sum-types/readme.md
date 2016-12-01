@@ -2,7 +2,7 @@
 
 * [![Maven Central : cyclops-sum-types](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-sum-types/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-sum-types)
 
-cyclops-sum-types defines Either implementations from Either through Either4 (to be extended).
+cyclops-sum-types defines Either implementations from Either, Either3, Either4, to Either5 (to be extended).
 
 All Either implementations have the following features
 
@@ -29,3 +29,30 @@ Left1,Left2,Right
 
 ### Either4
 Left1,Left2,Left3,Right
+
+### Either5
+Left1,Left2,Left3,Left5,Right
+
+
+# Use cases
+
+## Pattern matching against sub-types
+
+![OS Model](https://cloud.githubusercontent.com/assets/9964792/20805590/3b3384e6-b7ef-11e6-8542-10d934d15ddf.png)
+
+```java
+
+interface OS {
+	Either3<iOS,Windows,Linux> match();
+}
+OS os;
+
+os.match()
+  .visit(this::handleiOS,this::handleWindows,this::handleLinux);
+  
+```
+Of course iOs, Windows and Linux don't even have to inherit from a common super-type for this technique to work, we just need to define a method that returns an Either with an exhaustive set of cases we would like the user to handle.
+
+
+
+

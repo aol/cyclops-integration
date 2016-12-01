@@ -1,3 +1,4 @@
 com.aol.cyclops.sum.types.comprehenders.EitherComprehender
 com.aol.cyclops.sum.types.comprehenders.Either3Comprehender
 com.aol.cyclops.sum.types.comprehenders.Either4Comprehender
+com.aol.cyclops.sum.types.comprehenders.Either5Comprehender

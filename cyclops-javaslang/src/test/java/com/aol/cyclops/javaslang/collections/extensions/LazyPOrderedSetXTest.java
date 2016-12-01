@@ -18,6 +18,8 @@ import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPOrderedSetX;
 
+import fj.data.Option;
+import javaslang.API;
 import reactor.core.publisher.Flux;
 
 public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
