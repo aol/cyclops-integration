@@ -1740,5 +1740,13 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T>implements PQueu
         PCollection<T> res = getQueue().minusAll(list);
         return LazyPQueueX.fromIterable(this.collector, res);
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyPQueueX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
 
 }

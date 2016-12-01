@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.Spliterator;
@@ -1717,5 +1716,15 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T>implements SetX<T> 
     public LazySetX<T> onEmptySwitch(Supplier<? extends Set<T>> supplier) {
         return stream(Fluxes.onEmptySwitch(flux(), () -> Flux.fromIterable(supplier.get())));
     }
+    
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazySetX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
+
 
 }

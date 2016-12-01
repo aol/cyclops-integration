@@ -2,8 +2,10 @@ package com.aol.cyclops.reactor.collections.extensions.persistent;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -11,11 +13,11 @@ import java.util.function.UnaryOperator;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
+import com.aol.cyclops.control.LazyReact;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
 
 import reactor.core.publisher.Flux;
 
@@ -39,6 +41,36 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
                    equalTo(PStackX.of(1, 2, 3)));
     }
 
+    @Test
+    public void testWith(){
+        LazyPStackX.of(1,2,3).with(1, 10).printOut();
+    }
+    AtomicInteger executing = new AtomicInteger(-1);
+    @Test
+    public void threadSpinLockTest(){
+        LazyReact react = new LazyReact(20,20);
+        for (int x = 0; x < 100; x++) {
+            executing.set(-1);
+            System.out.println("------------------------------");
+            final int run = x;
+            LazyPStackX<Integer> list = LazyPStackX.of(1, 2, 3)
+                                                   .map(i -> i + 2)
+                                                   .limit(1)
+                                                   .peek(c->{
+                                                       if(executing.get()!=-1)
+                                                           fail("already set! " + executing.get() + " run is " + run);
+                                                       executing.set(run);
+                                                   });
+            
+            react.ofAsync(()->list)
+                    .cycle(20)
+                    .map(s -> Thread.currentThread()
+                                  .getId()
+                          + " " + s.size())
+                  .forEach(System.out::println);
+            System.out.println("------------------------------");
+        }
+    }
     /*
      * (non-Javadoc)
      * 

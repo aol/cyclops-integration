@@ -39,6 +39,7 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -296,6 +297,7 @@ public class LazyPBagX<T> extends AbstractFluentCollectionX<T>implements PBagX<T
                                                    (PBag) this.collector.zero(), null, collector);
     }
 
+    
     /*
      * (non-Javadoc)
      * 
@@ -1674,6 +1676,15 @@ public class LazyPBagX<T> extends AbstractFluentCollectionX<T>implements PBagX<T
     public LazyPBagX<T> minusAll(Collection<?> list) {
         PCollection<T> res = getBag().minusAll(list);
         return LazyPBagX.fromIterable(this.collector, res);
+    }
+
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyPBagX<T> materialize() {
+       this.lazy.get();
+       return this;
     }
 
 }

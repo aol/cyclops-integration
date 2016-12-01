@@ -1,8 +1,12 @@
 package com.aol.cyclops.reactor.collections.extensions.base;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
+import com.aol.cyclops.data.collections.extensions.CollectionX;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
+import com.aol.cyclops.util.ExceptionSoftener;
 
 import reactor.core.publisher.Flux;
 
@@ -17,6 +21,11 @@ import reactor.core.publisher.Flux;
  */
 public interface LazyFluentCollectionX<T> extends FluentCollectionX<T> {
 
+
+    /**
+     * @return This collection with any queued Lazy Operations materialized
+     */
+    LazyFluentCollectionX<T> materialize();
     /**
      * Create a LazyFluentCollection from a Flux. 
      * The created LazyFluentCollection will be of the same type as the object this method is called on.

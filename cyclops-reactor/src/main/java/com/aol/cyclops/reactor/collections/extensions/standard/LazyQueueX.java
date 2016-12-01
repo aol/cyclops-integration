@@ -1771,5 +1771,13 @@ public class LazyQueueX<T> extends AbstractFluentCollectionX<T>implements QueueX
     public T peek() {
         return getQueue().peek();
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyQueueX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
 
 }

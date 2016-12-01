@@ -1863,5 +1863,12 @@ public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVec
         return new LazyPVectorX<T>(
                                    getVector().minus(i), this.collector);
     }
-
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyPVectorX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
 }

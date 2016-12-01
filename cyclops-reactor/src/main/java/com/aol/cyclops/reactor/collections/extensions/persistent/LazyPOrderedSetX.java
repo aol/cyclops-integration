@@ -1709,5 +1709,13 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T>implements 
         PCollection<T> res = getSet().minusAll(list);
         return LazyPOrderedSetX.fromIterable(this.collector, res);
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyPOrderedSetX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
 
 }

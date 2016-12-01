@@ -36,7 +36,6 @@ import com.aol.cyclops.control.Streamable;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
-import com.aol.cyclops.data.collections.extensions.standard.SortedSetX.Comparables;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
@@ -1814,4 +1813,14 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T>implements So
 
         }
     }
+    
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazySortedSetX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
+
 }

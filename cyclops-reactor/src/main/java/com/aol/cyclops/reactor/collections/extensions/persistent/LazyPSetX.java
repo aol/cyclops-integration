@@ -1686,5 +1686,12 @@ public class LazyPSetX<T> extends AbstractFluentCollectionX<T>implements PSetX<T
         PCollection<T> res = getSet().minusAll(list);
         return LazyPSetX.fromIterable(this.collector, res);
     }
-
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyPSetX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
 }

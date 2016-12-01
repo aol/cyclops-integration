@@ -1914,5 +1914,14 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T>implements ListX<T
     public LazyListX<T> onEmptySwitch(Supplier<? extends List<T>> supplier) {
         return stream(Fluxes.onEmptySwitch(flux(), () -> Flux.fromIterable(supplier.get())));
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyListX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
+
 
 }

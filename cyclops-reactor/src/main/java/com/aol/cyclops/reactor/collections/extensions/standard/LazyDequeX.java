@@ -31,7 +31,6 @@ import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.standard.DequeX;
-import com.aol.cyclops.data.collections.extensions.standard.DequeXImpl;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
@@ -1898,6 +1897,14 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T>implements DequeX
      */
     public Iterator<T> descendingIterator() {
         return getDeque().descendingIterator();
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyDequeX<T> materialize() {
+       this.lazy.get();
+       return this;
     }
 
 }

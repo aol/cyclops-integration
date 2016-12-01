@@ -30,7 +30,7 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
         }
         System.out.println("List " + list);
         return list.efficientOpsOff();
-
+        
     }
 
     @Test
