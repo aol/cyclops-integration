@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -14,6 +15,9 @@ import org.pcollections.PVector;
 
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
+import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
+import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
 
 import lombok.AccessLevel;
@@ -27,7 +31,26 @@ import scala.collection.immutable.Vector;
 import scala.collection.immutable.Vector$;
 import scala.collection.immutable.VectorBuilder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasScalaCollection<T> {
+public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasScalaCollection<T>, NativePlusLoop<T> {
+    
+    public LazyPVectorX<T> plusLoop(int max, IntFunction<T> value){
+        
+            Vector<T> toUse = vector;
+            for(int i=0;i<max;i++){
+                toUse = toUse.appendBack(value.apply(i));
+            }
+            return lazyVector(toUse);
+
+    }
+    public LazyPVectorX<T> plusLoop(Supplier<Optional<T>> supplier){
+        Vector<T> toUse = vector;
+        Optional<T> next =  supplier.get();
+        while(next.isPresent()){
+            toUse = toUse.appendBack(next.get());
+            next = supplier.get();
+        }
+        return lazyVector(toUse);
+    }
     
     /**
      * Create a LazyPVectorX from a Stream
@@ -130,6 +153,9 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasS
     }
     public static <T> ScalaPVector<T> fromVector(Vector<T> vector){
         return new ScalaPVector<>(vector);
+    }
+    public static <T> LazyPVectorX<T> lazyVector(Vector<T> vector){
+        return LazyPVectorX.fromPVector(fromVector(vector), toPVector());
     }
     
     public static <T> ScalaPVector<T> emptyPVector(){

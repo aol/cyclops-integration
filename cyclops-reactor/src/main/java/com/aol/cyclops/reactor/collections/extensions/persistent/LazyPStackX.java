@@ -13,6 +13,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -39,6 +40,7 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
+import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -83,6 +85,25 @@ public class LazyPStackX<T> extends AbstractFluentCollectionX<T>implements PStac
     @Getter
     private final boolean efficientOps;
 
+    
+    @Override
+    public LazyPStackX<T> plusLoop(int max, IntFunction<T> value){
+        PStack<T> list = lazy.get();
+        if(list instanceof NativePlusLoop){
+            return (LazyPStackX<T>) ((NativePlusLoop)list).plusLoop(max, value);
+        }else{
+            return (LazyPStackX<T>) super.plusLoop(max, value);
+        }
+    }
+    @Override
+    public LazyPStackX<T> plusLoop(Supplier<Optional<T>> supplier){
+        PStack<T> list = lazy.get();
+        if(list instanceof NativePlusLoop){
+            return (LazyPStackX<T>) ((NativePlusLoop)list).plusLoop(supplier);
+        }else{
+            return (LazyPStackX<T>) super.plusLoop(supplier);
+        }
+    }
     public LazyPStackX<T> efficientOpsOn() {
         return this.withEfficientOps(true);
     }

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -14,6 +15,7 @@ import org.pcollections.PSet;
 
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
 
 import lombok.AccessLevel;
@@ -29,8 +31,26 @@ import scala.collection.mutable.Builder;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScalaCollection<T> {
+public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScalaCollection<T>,NativePlusLoop<T> {
 
+    public LazyPSetX<T> plusLoop(int max, IntFunction<T> value) {
+        HashSet<T> toUse = set;
+        for (int i = 0; i < max; i++) {
+            toUse = toUse.$plus(value.apply(i));
+        }
+        return lazySet(toUse);
+
+    }
+
+    public LazyPSetX<T> plusLoop(Supplier<Optional<T>> supplier) {
+        HashSet<T> toUse = set;
+        Optional<T> next = supplier.get();
+        while (next.isPresent()) {
+            toUse = toUse.$plus(next.get());
+            next = supplier.get();
+        }
+        return lazySet(toUse);
+    }
     /**
      * Create a LazyPSetX from a Stream
      * 
@@ -127,7 +147,9 @@ public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScala
         return Reducer.<PSet<T>> of(ScalaHashPSet.emptyPSet(), (final PSet<T> a) -> b -> a.plusAll(b),
                                       (final T x) -> ScalaHashPSet.singleton(x));
     }
-
+    public static <T> LazyPSetX<T> lazySet(HashSet<T> set){
+        return LazyPSetX.fromPSet(fromSet(set), toPSet());
+    }
     public static <T> ScalaHashPSet<T> fromSet(HashSet<T> set) {
         return new ScalaHashPSet<>(
                                  set);

@@ -12,6 +12,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -40,6 +41,7 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
+import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -85,6 +87,25 @@ public class LazyPSetX<T> extends AbstractFluentCollectionX<T>implements PSetX<T
     private final Reducer<PSet<T>> collector;
     public static <T> LazyPSetX<T> fromPSet(PSet<T> list,Reducer<PSet<T>> collector){
         return new LazyPSetX<T>(list,collector);
+    }
+    
+    @Override
+    public LazyPSetX<T> plusLoop(int max, IntFunction<T> value){
+        PSet<T> list = lazy.get();
+        if(list instanceof NativePlusLoop){
+            return (LazyPSetX<T>) ((NativePlusLoop)list).plusLoop(max, value);
+        }else{
+            return (LazyPSetX<T>) super.plusLoop(max, value);
+        }
+    }
+    @Override
+    public LazyPSetX<T> plusLoop(Supplier<Optional<T>> supplier){
+        PSet<T> list = lazy.get();
+        if(list instanceof NativePlusLoop){
+            return (LazyPSetX<T>) ((NativePlusLoop)list).plusLoop(supplier);
+        }else{
+            return (LazyPSetX<T>) super.plusLoop(supplier);
+        }
     }
     /**
      * Create a LazyPStackX from a Stream

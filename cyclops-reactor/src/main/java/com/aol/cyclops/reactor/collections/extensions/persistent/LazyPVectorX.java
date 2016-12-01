@@ -13,6 +13,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -33,11 +34,13 @@ import com.aol.cyclops.Reducers;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
+import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
+import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -74,12 +77,31 @@ import reactor.core.publisher.Flux;
  * @param <T> the type of elements held in this collection
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVectorX<T> {
+public class LazyPVectorX<T> extends AbstractFluentCollectionX<T>implements PVectorX<T>, NativePlusLoop<T> {
     private final LazyFluentCollection<T, PVector<T>> lazy;
     @Getter
     @Wither
     private final Reducer<PVector<T>> collector;
 
+    @Override
+    public LazyPVectorX<T> plusLoop(int max, IntFunction<T> value){
+        PVector<T> vector = lazy.get();
+        if(vector instanceof NativePlusLoop){
+            return (LazyPVectorX<T>) ((NativePlusLoop)vector).plusLoop(max, value);
+        }else{
+            return (LazyPVectorX<T>) super.plusLoop(max, value);
+        }
+    }
+    @Override
+    public LazyPVectorX<T> plusLoop(Supplier<Optional<T>> supplier){
+        PVector<T> vector = lazy.get();
+        if(vector instanceof NativePlusLoop){
+            return (LazyPVectorX<T>) ((NativePlusLoop)vector).plusLoop(supplier);
+        }else{
+            return (LazyPVectorX<T>) super.plusLoop(supplier);
+        }
+    }
+    
     public static <T> LazyPVectorX<T> fromPVector(PVector<T> vec,Reducer<PVector<T>> collector){
         return new LazyPVectorX<T>(vec,collector);
     }
