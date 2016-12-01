@@ -12,6 +12,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -34,6 +35,7 @@ import com.aol.cyclops.Reducers;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
+import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
@@ -79,6 +81,15 @@ public class LazyPBagX<T> extends AbstractFluentCollectionX<T>implements PBagX<T
     private final LazyFluentCollection<T, PBag<T>> lazy;
     @Getter
     private final Reducer<PBag<T>> collector;
+    
+    @Override
+    public LazyPBagX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazyPBagX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazyPBagX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazyPBagX<T>)super.plusLoop(supplier);
+    }
 
     /**
      * Create a LazyPStackX from a Stream

@@ -15,6 +15,7 @@ import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.dexx.collections.DexxPOrderedSet;
 import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPOrderedSetX;
 
 import reactor.core.publisher.Flux;
@@ -22,7 +23,7 @@ import reactor.core.publisher.Flux;
 public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         LazyPOrderedSetX<T> list = (LazyPOrderedSetX)DexxPOrderedSet.empty();
         for (T next : values) {
             list = list.plus(next);

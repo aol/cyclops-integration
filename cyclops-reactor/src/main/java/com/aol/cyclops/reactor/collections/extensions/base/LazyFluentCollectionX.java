@@ -24,7 +24,7 @@ public interface LazyFluentCollectionX<T> extends FluentCollectionX<T> {
     default FluentCollectionX<T> plusLoop(int max, IntFunction<T> value){
         FluentCollectionX<T> toUse = this;
         for(int i=0;i<max;i++){
-            toUse = plus(value.apply(i));
+            toUse = toUse.plus(value.apply(i));
         }
         return toUse;
     }
@@ -32,7 +32,7 @@ public interface LazyFluentCollectionX<T> extends FluentCollectionX<T> {
        FluentCollectionX<T> toUse = this;
        Optional<T> next =  supplier.get();
        while(next.isPresent()){
-           toUse = plus(next.get());
+           toUse = toUse.plus(next.get());
            next = supplier.get();
        }
        return toUse;

@@ -66,6 +66,7 @@ import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.ListXImpl;
 import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 import com.aol.cyclops.util.SimpleTimer;
 import com.aol.cyclops.util.function.Predicates;
 
@@ -76,7 +77,7 @@ import reactor.core.publisher.Mono;
 
 public abstract class AbstractCollectionXTest {
     public abstract <T> FluentCollectionX<T> empty();
-    public abstract <T> FluentCollectionX<T> of(T... values);
+    public abstract <T> LazyFluentCollectionX<T> of(T... values);
     public abstract  FluentCollectionX<Integer> range(int start, int end);
     public abstract  FluentCollectionX<Long> rangeLong(long start, long end);
     public abstract <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn);
@@ -86,6 +87,15 @@ public abstract class AbstractCollectionXTest {
     
     int captured=-1;
    
+    @Test
+    public void plusLoop(){
+       assertThat(of(0,1,2).plusLoop(10,i->i+100).size(),equalTo(13));
+    }
+    @Test
+    public void plusLoopOpt(){
+       int[] i = {10};
+       assertThat(of(0,1,2).plusLoop(()->i[0]!=20? Optional.of(i[0]++) : Optional.empty()).size(),equalTo(13));
+    }
     @Test
     public void testRange(){
         assertThat(range(0,2).size(),equalTo(2));

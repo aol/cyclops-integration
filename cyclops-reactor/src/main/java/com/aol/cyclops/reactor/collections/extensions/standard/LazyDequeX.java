@@ -13,6 +13,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -35,6 +36,7 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
+import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPBagX;
 
 import lombok.Getter;
 import reactor.core.publisher.Flux;
@@ -70,6 +72,14 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T>implements DequeX
     @Getter
     private final Collector<T, ?, Deque<T>> collector;
 
+    @Override
+    public LazyDequeX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazyDequeX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazyDequeX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazyDequeX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazyDequeX from a Stream
      * 

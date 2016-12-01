@@ -16,6 +16,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -78,6 +79,14 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T>implements So
     @Getter
     private final Collector<T, ?, SortedSet<T>> collector;
 
+    @Override
+    public LazySortedSetX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazySortedSetX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazySortedSetX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazySortedSetX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazySortedSetX from a Stream
      * 

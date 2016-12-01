@@ -9,11 +9,12 @@ import org.jooq.lambda.tuple.Tuple2;
 
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 
 public class LazyDequeXTest extends AbstractCollectionXTest{
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         return LazyDequeX.of(values);
     }
 

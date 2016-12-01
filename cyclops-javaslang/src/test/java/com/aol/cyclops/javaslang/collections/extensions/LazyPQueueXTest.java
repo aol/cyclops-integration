@@ -15,6 +15,7 @@ import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.javaslang.collections.JavaSlangPQueue;
 import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPQueueX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
 
@@ -23,7 +24,7 @@ import reactor.core.publisher.Flux;
 public class LazyPQueueXTest extends AbstractCollectionXTest  {
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         LazyPQueueX<T> list = JavaSlangPQueue.empty();
         for (T next : values) {
             list = list.plus(next);

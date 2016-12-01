@@ -13,6 +13,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -73,7 +74,14 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T>implements SetX<T> 
     private final LazyFluentCollection<T, Set<T>> lazy;
     @Getter
     private final Collector<T, ?, Set<T>> collector;
-
+    @Override
+    public LazySetX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazySetX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazySetX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazySetX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazySetX from a Stream
      * 

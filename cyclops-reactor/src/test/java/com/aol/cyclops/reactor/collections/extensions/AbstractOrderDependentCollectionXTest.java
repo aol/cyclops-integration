@@ -48,6 +48,8 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 public abstract class AbstractOrderDependentCollectionXTest extends AbstractCollectionXTest {
+    
+    
     @Test
     public void combineNoOrderOd(){
         assertThat(of(1,2,3)

@@ -13,6 +13,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -72,6 +73,14 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T>implements ListX<T
     @Getter
     private final Collector<T, ?, List<T>> collector;
 
+    @Override
+    public LazyListX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazyListX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazyListX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazyListX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazyListX from a Stream
      * 

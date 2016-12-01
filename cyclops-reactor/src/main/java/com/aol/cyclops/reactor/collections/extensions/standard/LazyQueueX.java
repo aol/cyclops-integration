@@ -14,6 +14,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -71,6 +72,14 @@ public class LazyQueueX<T> extends AbstractFluentCollectionX<T>implements QueueX
     @Getter
     private final Collector<T, ?, Queue<T>> collector;
 
+    @Override
+    public LazyQueueX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazyQueueX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazyQueueX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazyQueueX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazyQueueX from a Stream
      * 

@@ -1,17 +1,12 @@
 package com.aol.cyclops.scala.collections.extension;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
@@ -19,6 +14,7 @@ import org.junit.Test;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
 import com.aol.cyclops.scala.collections.ScalaHashPSet;
 
@@ -27,7 +23,7 @@ import reactor.core.publisher.Flux;
 public class LazyPSetXTest extends AbstractCollectionXTest  {
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         LazyPSetX<T> list = ScalaHashPSet.empty();
         for (T next : values) {
             list = list.plus(next);

@@ -16,6 +16,7 @@ import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
 import com.aol.cyclops.dexx.collections.DexxPVector;
 import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
 
 import reactor.core.publisher.Flux;
@@ -23,7 +24,7 @@ import reactor.core.publisher.Flux;
 public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         LazyPVectorX<T> list = DexxPVector.empty();
         for (T next : values) {
             list = list.plus(list.size(), next);
