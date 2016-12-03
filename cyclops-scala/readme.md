@@ -17,7 +17,8 @@ v8.4.0 of cyclops uses 2.12.0 of Scala
     <artifactId>cyclops-scala</artifactId>
     <version>8.4.0</version>
 </dependency>
-``
+```
+
 ### Gradle
 
 ```groovy
