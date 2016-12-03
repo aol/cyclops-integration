@@ -6,7 +6,23 @@ v8.4.0 of cyclops uses 2.12.0 of Scala
 
 
 * [![Maven Central : cyclops-scala](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-scala/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-scala)
+* [mvnrepository link](http://mvnrepository.com/artifact/com.aol.cyclops/cyclops-scala) - Maven Central not always up to date
 * [Javadoc for Cyclops Scala](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-scala/)
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>com.aol.cyclops</groupId>
+    <artifactId>cyclops-scala</artifactId>
+    <version>8.4.0</version>
+</dependency>
+``
+### Gradle
+
+```groovy
+compile group: 'com.aol.cyclops', name: 'cyclops-scala', version: '8.4.0'
+```
 
 # Features
 
