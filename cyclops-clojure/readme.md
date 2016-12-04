@@ -5,7 +5,7 @@ v8.4.0 of cyclops uses 1.8.0 of Clojure
 ## Get cyclops-clojure
 
 
-* [![Maven Central : cyclops-scala](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-clojure/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-clojure)
+* [![Maven Central : cyclops-scala](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-clojure/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-clojure)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-clojure/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-clojure)
 * [Javadoc for Cyclops Clojure](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-clojure/)
 
 # Features
