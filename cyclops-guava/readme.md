@@ -2,7 +2,7 @@
 
 ## Getting cyclops-guava
 
-* [![Maven Central : cyclops-guava](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-guava/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-guava)
+* [![Maven Central : cyclops-guava](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-guava/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-guava)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-guava/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-guava)
 
 
 ## Gradle
