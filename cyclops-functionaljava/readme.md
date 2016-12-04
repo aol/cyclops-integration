@@ -21,27 +21,14 @@ v8.0.0 of cyclops-functionaljava and above is built using v4.5 of FunctionalJava
 
 Use FJ.<type> to create wrapped FunctionalJava Monads.
 
-Package com.aol.cyclops.functionaljava contains converters for types from various functional libraries for Java
 
-* JDK
-* Guava
-* Javaslang
-* jooλ
-* cyclops-react
+## For comprehensions with Option
 
-Supported Functional Java Monads include
+ ```java
+FJ.ForOption.each2(Option.some(10), a->Option.none(), (a,b)->"failed")
 
-* IO
-* Either
-* Option
-* Stream
-* List
-* State
-* Reader
-* Writer
-* Trampoline
-* Validation
-
+//Option.none
+ ```
 
 
 
@@ -66,7 +53,7 @@ stream(Stream.stream(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThrea
 			    .toList()
  ```
  
- ## Use a FuctionalJava type inside a ListTransformer
+## Use a FuctionalJava type inside a ListTransformer
  
  ```java
  
@@ -75,13 +62,7 @@ stream(Stream.stream(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThrea
  listT.map(a->a*2);
 ```	
 	
-## For comprehensions with Option
 
- ```java
-FJ.ForOption.each2(Option.some(10), a->Option.none(), (a,b)->"failed")
-
-//Option.none
- ```
  
 ## Use a Functional Java List as a reactive-streams publisher
  
@@ -95,4 +76,23 @@ sub.stream()
     .forEachWithError(System.out::println, System.err::println);
 ```
 			
+Package com.aol.cyclops.functionaljava contains converters for types from various functional libraries for Java
 
+* JDK
+* Guava
+* Javaslang
+* jooλ
+* cyclops-react
+
+Supported Functional Java Monads include
+
+* IO
+* Either
+* Option
+* Stream
+* List
+* State
+* Reader
+* Writer
+* Trampoline
+* Validation
