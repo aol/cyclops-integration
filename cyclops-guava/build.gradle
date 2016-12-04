@@ -56,7 +56,7 @@ test {
 
 modifyPom {
 	project {
-		name 'cyclops-javaslang'
+		name 'cyclops-guava'
 		description 'Converters and Comprehenders for Guava'
 		url 'https://github.com/aol/cyclops'
 		inceptionYear '2015'
