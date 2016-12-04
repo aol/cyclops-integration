@@ -5,7 +5,7 @@ v8.3.0 of cyclops-javaslang requires v2.0.5 of Javaslang.
 ## Get cyclops-javaslang
 
 
-* [![Maven Central : cyclops-javaslang](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang)
+* [![Maven Central : cyclops-javaslang](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-javaslang)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-javaslang/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-javaslang)
 * [Javadoc for Cyclops Javaslang](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-javaslang/)
 
 # Features
