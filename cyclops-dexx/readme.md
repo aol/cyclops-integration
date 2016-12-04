@@ -7,7 +7,7 @@ v8.4.0 of cyclops uses 0.6 of Dexx
 ## Get cyclops-dexx
 
 
-* [![Maven Central : cyclops-dexx](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-dexx/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-dexx)
+* [![Maven Central : cyclops-dexx](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-dexx/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-dexx)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-dexx/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-dexx)
 * [Javadoc for Cyclops Dexx](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-dexx/)
 
 # Features
