@@ -5,7 +5,7 @@ v8.0.0 of cyclops-functionaljava and above is built using v4.5 of FunctionalJava
 ## Get cyclops-functionaljava
 
 
-* [![Maven Central : cyclops-functionaljava](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-functionaljava/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-functionaljava)
+* [![Maven Central : cyclops-functionaljava](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-functionaljava/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-functionaljava)  [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-functionaljava/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-functionaljava)
 * [Javadoc for cyclops-functionaljava](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-functionaljava)
 
 # cyclops-functionaljava features include
