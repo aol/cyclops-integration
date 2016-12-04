@@ -1,6 +1,6 @@
 # Cyclops Higher Kinded Types
 
-* [![Maven Central : cyclops-higherkindedtypes](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-higherkindedtypes/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-higherkindedtypes)
+* [![Maven Central : cyclops-higherkindedtypes](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-higherkindedtypes/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-higherkindedtypes)  [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-higherkindedtypes/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-higherkindedtypes)
 
 cyclops-higher-kinded-types integrates with [derive4j HKT](https://github.com/derive4j/hkt) to provide, [HighJ](https://github.com/highj/highj) compatible, type safe higher kinded type classes for core JDK types including
 
