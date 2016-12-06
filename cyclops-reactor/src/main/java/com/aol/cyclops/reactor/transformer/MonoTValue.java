@@ -27,7 +27,6 @@ import com.aol.cyclops.reactor.Monos;
 import com.aol.cyclops.types.ConvertableFunctor;
 import com.aol.cyclops.types.Filterable;
 import com.aol.cyclops.types.MonadicValue;
-import com.aol.cyclops.types.MonadicValue1;
 import com.aol.cyclops.types.Value;
 import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.types.applicative.ApplicativeFunctor;
@@ -35,7 +34,7 @@ import com.aol.cyclops.types.applicative.ApplicativeFunctor;
 import lombok.val;
 import reactor.core.publisher.Mono;
 
-public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValue1<A>, Supplier<A>,
+public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValue<A>, Supplier<A>,
         ConvertableFunctor<A>, Filterable<A>, ApplicativeFunctor<A>, Matchable.ValueAndOptionalMatcher<A> {
 
     private final AnyMValue<Mono<A>> run;
@@ -502,7 +501,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      */
     @Override
     public MonoTValue<MonadicValue<A>> nest() {
-        return (MonoTValue<MonadicValue<A>>) MonadicValue1.super.nest();
+        return (MonoTValue<MonadicValue<A>>) TransformerValue.super.nest();
     }
 
     /*
@@ -514,7 +513,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      */
     @Override
     public <R> MonoTValue<R> coflatMap(final Function<? super MonadicValue<A>, R> mapper) {
-        return (MonoTValue<R>) MonadicValue1.super.coflatMap(mapper);
+        return (MonoTValue<R>) TransformerValue.super.coflatMap(mapper);
     }
 
     /*
@@ -526,7 +525,7 @@ public class MonoTValue<A> implements MonoT<A>, TransformerValue<A>, MonadicValu
      */
     @Override
     public MonoTValue<A> combineEager(final Monoid<A> monoid, final MonadicValue<? extends A> v2) {
-        return (MonoTValue<A>) MonadicValue1.super.combineEager(monoid, v2);
+        return (MonoTValue<A>) TransformerValue.super.combineEager(monoid, v2);
     }
 
     /*

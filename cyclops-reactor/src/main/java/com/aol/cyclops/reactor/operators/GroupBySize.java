@@ -3,9 +3,7 @@ package com.aol.cyclops.reactor.operators;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
-import com.aol.cyclops.control.StreamUtils;
 import com.aol.cyclops.data.collections.extensions.standard.ListXImpl;
 import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
 
@@ -30,8 +28,8 @@ public class GroupBySize<T, C extends Collection<? super T>> {
         if (groupSize < 1)
             throw new IllegalArgumentException(
                                                "Batch size must be 1 or more");
-        SeqSubscriber<T> sub = SeqSubscriber.subscriber();
-        Iterator<T> it = stream.subscribeWith(sub)
+          SeqSubscriber<T> sub = SeqSubscriber.subscriber();
+           Iterator<T> it = stream.subscribeWith(sub)
                                .iterator();
 
         return Flux.fromIterable(() -> new Iterator<C>() {

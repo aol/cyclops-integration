@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.Spliterator;
@@ -14,6 +13,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -37,7 +37,10 @@ import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -70,11 +73,19 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazySetX<T> extends AbstractFluentCollectionX<T>implements SetX<T> {
     private final LazyFluentCollection<T, Set<T>> lazy;
-    @Getter
+    @Getter @Wither
     private final Collector<T, ?, Set<T>> collector;
-
+    @Override
+    public LazySetX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazySetX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazySetX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazySetX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazySetX from a Stream
      * 
@@ -1717,5 +1728,15 @@ public class LazySetX<T> extends AbstractFluentCollectionX<T>implements SetX<T> 
     public LazySetX<T> onEmptySwitch(Supplier<? extends Set<T>> supplier) {
         return stream(Fluxes.onEmptySwitch(flux(), () -> Flux.fromIterable(supplier.get())));
     }
+    
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazySetX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
+
 
 }

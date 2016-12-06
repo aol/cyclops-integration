@@ -18,6 +18,7 @@ import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
 
 import reactor.core.publisher.Flux;
@@ -25,7 +26,7 @@ import reactor.core.publisher.Flux;
 public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         LazyPStackX<T> list = ClojurePStack.empty();
         for (T next : values) {
             list = list.plus(list.size(), next);

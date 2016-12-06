@@ -8,13 +8,13 @@ import java.util.function.UnaryOperator;
 import org.jooq.lambda.tuple.Tuple2;
 
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops.data.collections.extensions.standard.DequeX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 
 public class LazySetXTest extends AbstractCollectionXTest{
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         return LazySetX.of(values);
     }
 

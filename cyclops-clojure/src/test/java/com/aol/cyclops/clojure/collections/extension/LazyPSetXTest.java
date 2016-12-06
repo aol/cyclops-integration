@@ -1,6 +1,6 @@
 package com.aol.cyclops.clojure.collections.extension;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertThat;
 
 import java.util.Optional;
@@ -15,6 +15,7 @@ import com.aol.cyclops.clojure.collections.ClojureHashPSet;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
 
 import reactor.core.publisher.Flux;
@@ -22,7 +23,7 @@ import reactor.core.publisher.Flux;
 public class LazyPSetXTest extends AbstractCollectionXTest  {
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         LazyPSetX<T> list = ClojureHashPSet.empty();
         for (T next : values) {
             list = list.plus(next);

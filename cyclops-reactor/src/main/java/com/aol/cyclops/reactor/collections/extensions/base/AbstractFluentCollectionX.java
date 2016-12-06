@@ -6,6 +6,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
@@ -36,6 +39,7 @@ import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.types.ReactorConvertable;
 import com.aol.cyclops.types.IterableFunctor;
 import com.aol.cyclops.types.Zippable;
+import com.aol.cyclops.util.ExceptionSoftener;
 
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -49,18 +53,47 @@ import reactor.core.publisher.Mono;
  * @param <T>
  */
 public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollectionX<T>, ReactorConvertable<T> {
-    @AllArgsConstructor
+   
+   
+   
     public static class LazyCollection<T, C extends Collection<T>> implements LazyFluentCollection<T, C> {
         private volatile C list;
-        private volatile Flux<T> seq;
+        private final AtomicReference<Flux<T>> seq;
         private final Collector<T, ?, C> collector;
+        AtomicBoolean updating = new AtomicBoolean(false);
+        AtomicReference<Throwable> error = new AtomicReference<>(null);
+        
+        public LazyCollection(C list, Flux<T> seq, Collector<T, ?, C> collector) {
+            this.list = list;
+            this.seq = new AtomicReference<>(seq);
+            this.collector = collector;
+        }
 
         @Override
         public C get() {
-            if (seq != null) {
-                list = seq.collect(collector)
-                          .block();
-                seq = null;
+            if (seq.get() != null) {
+                if(updating.compareAndSet(false, true)) { //check if can materialize
+                    try{
+                        Flux<T> toUse = seq.get();
+                        if(toUse!=null){//dbl check - as we may pass null check on on thread and set updating false on another
+                           list = toUse.collect(collector)
+                                       .block();
+                           seq.set(null);
+                        }
+                    }catch(Throwable t){
+                        error.set(t); //catch any errors for propagation on access
+                       
+                    }finally{
+                        updating.set(false); //finished updating
+                    }
+                }
+                while(updating.get()){ //Check if another thread updating
+                    LockSupport.parkNanos(0l); //spin until updating thread completes
+                }
+                if(error.get()!=null) //if updating thread failed, throw error
+                    throw ExceptionSoftener.throwSoftenedException(error.get());
+                
+                return list;
             }
 
             return list;
@@ -69,27 +102,62 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
 
         @Override
         public Flux<T> flux() {
-            if (seq != null) {
-                return seq;
+            Flux<T> toUse = seq.get();
+            if (toUse != null) {
+                return toUse;
             }
             return Flux.fromIterable(list);
         }
     }
 
-    @AllArgsConstructor
+    
     public static class PersistentLazyCollection<T, C extends Collection<T>> implements LazyFluentCollection<T, C> {
         private volatile C list;
-        private volatile Flux<T> seq;
+        private final AtomicReference<Flux<T>> seq;
         private final Reducer<C> reducer;
+        private final AtomicBoolean updating = new AtomicBoolean(false);
+        private final AtomicReference<Throwable> error = new AtomicReference<>(null);
+        
+        
+        
+        public PersistentLazyCollection(C list, Flux<T> seq, Reducer<C> reducer) {
+            super();
+            this.list = list;
+            this.seq = new AtomicReference<>(seq);
+            this.reducer = reducer;
+        }
 
         @Override
         public C get() {
-            if (seq != null) {
-                list = reducer.mapReduce(seq.toStream());
-                seq = null;
+            if (seq.get() != null) { //need to materialize
+                
+                if(updating.compareAndSet(false, true)) { //check if can materialize
+                    try{
+                        Flux<T> toUse = seq.get();
+                        if(toUse!=null){//dbl check - as we may pass null check on on thread and set updating false on another
+                           list = reducer.mapReduce(toUse.toStream());
+                           seq.set(null);
+                        }
+                    }catch(Throwable t){
+                        error.set(t); //catch any errors for propagation on access
+                       
+                    }finally{
+                        updating.set(false); //finished updating
+                    }
+                }
+                
+                while(updating.get()){ //Check if another thread updating
+                   
+                    LockSupport.parkNanos(0l); //spin until updating thread completes
+                }
+                if(error.get()!=null) //if updating thread failed, throw error
+                    throw ExceptionSoftener.throwSoftenedException(error.get());
+               
+                return list;
             }
 
             return list;
+            
 
         }
 
@@ -101,8 +169,10 @@ public abstract class AbstractFluentCollectionX<T> implements LazyFluentCollecti
          */
         @Override
         public Flux<T> flux() {
-            if (seq != null)
-                return seq;
+            Flux<T> toUse = seq.get();
+            if (toUse != null) {
+                return toUse;
+            }
             return Flux.fromIterable(list);
         }
     }

@@ -5,7 +5,6 @@ import java.util.stream.Stream;
 import com.aol.cyclops.control.FutureW;
 import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.types.MonadicValue;
-import com.aol.cyclops.types.MonadicValue2;
 
 import javaslang.Lazy;
 import javaslang.concurrent.Future;
@@ -43,13 +42,14 @@ public class FromCyclopsReact {
     public static <T> Option<T> option(com.aol.cyclops.types.Value<T> value){
         return value.visit(Option::some, Option::none);
      }
-
-    public static <L, R> Either<L, R> either(MonadicValue2<L, R> value) {
+    
+    
+    public static <L, R> Either<L, R> either(Xor<L, R> value) {
         Xor<L, R> xor = (Xor) value.toXor();
         return xor.visit(l -> Either.left(l), r -> Either.right(r));
     }
 
-    public static <L, R> Validation<L, R> validation(MonadicValue2<L, R> value) {
+    public static <L, R> Validation<L, R> validation(Xor<L, R> value) {
         return Validation.fromEither(either(value));
     }
 

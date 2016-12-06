@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -15,7 +16,9 @@ import org.pcollections.PStack;
 
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
+import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,11 +30,31 @@ import scala.collection.GenTraversableOnce;
 import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.List;
 import scala.collection.immutable.List$;
+import scala.collection.immutable.Vector;
 import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScalaCollection<T> {
+public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScalaCollection<T>,NativePlusLoop<T> {
 
+    public LazyPStackX<T> plusLoop(int max, IntFunction<T> value) {
+
+        List<T> toUse = list;
+        for (int i = 0; i < max; i++) {
+            toUse = toUse.$colon$colon(value.apply(i));
+        }
+        return lazyList(toUse);
+
+    }
+
+    public LazyPStackX<T> plusLoop(Supplier<Optional<T>> supplier) {
+        List<T> toUse = list;
+        Optional<T> next = supplier.get();
+        while (next.isPresent()) {
+            toUse = toUse.$colon$colon(next.get());
+            next = supplier.get();
+        }
+        return lazyList(toUse);
+    }
     /**
      * Create a LazyPStackX from a Stream
      * 
@@ -133,6 +156,10 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScal
         return new ScalaPStack<>(
                                  list);
     }
+    public static <T> LazyPStackX<T> lazyList(List<T> vector){
+        return LazyPStackX.fromPStack(fromList(vector), toPStack());
+    }
+
 
     public static <T> ScalaPStack<T> emptyPStack() {
 

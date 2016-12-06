@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Random;
@@ -14,6 +13,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -37,7 +37,10 @@ import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -66,11 +69,20 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazyQueueX<T> extends AbstractFluentCollectionX<T>implements QueueX<T> {
     private final LazyFluentCollection<T, Queue<T>> lazy;
-    @Getter
+    @Getter @Wither
     private final Collector<T, ?, Queue<T>> collector;
 
+    @Override
+    public LazyQueueX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazyQueueX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazyQueueX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazyQueueX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazyQueueX from a Stream
      * 
@@ -1770,6 +1782,14 @@ public class LazyQueueX<T> extends AbstractFluentCollectionX<T>implements QueueX
      */
     public T peek() {
         return getQueue().peek();
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyQueueX<T> materialize() {
+       this.lazy.get();
+       return this;
     }
 
 }

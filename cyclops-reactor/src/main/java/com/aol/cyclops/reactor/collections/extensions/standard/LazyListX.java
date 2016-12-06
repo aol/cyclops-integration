@@ -13,6 +13,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -30,15 +31,15 @@ import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
-import com.aol.cyclops.control.monads.transformers.seq.ListTSeq;
-import com.aol.cyclops.data.async.QueueFactory;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.data.collections.extensions.standard.ListXImpl;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -67,11 +68,20 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazyListX<T> extends AbstractFluentCollectionX<T>implements ListX<T> {
     private final LazyFluentCollection<T, List<T>> lazy;
-    @Getter
+    @Getter @Wither
     private final Collector<T, ?, List<T>> collector;
 
+    @Override
+    public LazyListX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazyListX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazyListX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazyListX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazyListX from a Stream
      * 
@@ -1914,5 +1924,14 @@ public class LazyListX<T> extends AbstractFluentCollectionX<T>implements ListX<T
     public LazyListX<T> onEmptySwitch(Supplier<? extends List<T>> supplier) {
         return stream(Fluxes.onEmptySwitch(flux(), () -> Flux.fromIterable(supplier.get())));
     }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyListX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
+
 
 }

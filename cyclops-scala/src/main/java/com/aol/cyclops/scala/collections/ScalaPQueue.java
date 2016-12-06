@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -13,10 +14,11 @@ import java.util.stream.Stream;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PQueue;
 
-
 import com.aol.cyclops.Reducer;
 import com.aol.cyclops.control.ReactiveSeq;
+import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
 import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPQueueX;
+import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,14 +27,37 @@ import reactor.core.publisher.Flux;
 import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConversions;
 import scala.collection.generic.CanBuildFrom;
+import scala.collection.immutable.HashSet;
+import scala.collection.immutable.List;
 import scala.collection.immutable.Queue;
 import scala.collection.immutable.Queue$;
-import scala.collection.immutable.Vector;
 import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasScalaCollection<T> {
+public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasScalaCollection<T>,NativePlusLoop<T> {
+    public LazyPQueueX<T> plusLoop(int max, IntFunction<T> value) {
+        Queue<T> toUse = this.queue;
+        final CanBuildFrom<Queue<?>, T, Queue<T>> builder = Queue.<T> canBuildFrom();
+        final CanBuildFrom<Queue<T>, T, Queue<T>> builder2 = (CanBuildFrom) builder;
+       
+        for (int i = 0; i < max; i++) {
+            toUse = toUse.$colon$plus(value.apply(i), builder2);
+        }
+        return lazyQueue(toUse);
 
+    }
+
+    public LazyPQueueX<T> plusLoop(Supplier<Optional<T>> supplier) {
+        Queue<T> toUse = this.queue;
+        final CanBuildFrom<Queue<?>, T, Queue<T>> builder = Queue.<T> canBuildFrom();
+        final CanBuildFrom<Queue<T>, T, Queue<T>> builder2 = (CanBuildFrom) builder;
+        Optional<T> next = supplier.get();
+        while (next.isPresent()) {
+            toUse = toUse.$colon$plus(next.get(), builder2);
+            next = supplier.get();
+        }
+        return lazyQueue(toUse);
+    }
     /**
      * Create a LazyPQueueX from a Stream
      * 
@@ -134,7 +159,9 @@ public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
         return new ScalaPQueue<>(
                                  queue);
     }
-
+    public static <T> LazyPQueueX<T> lazyQueue(Queue<T> queue){
+        return LazyPQueueX.fromPQueue(fromQueue(queue), toPQueue());
+    }
     public static <T> ScalaPQueue<T> emptyPQueue() {
 
         return new ScalaPQueue<>(

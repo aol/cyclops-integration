@@ -16,6 +16,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -36,12 +37,14 @@ import com.aol.cyclops.control.Streamable;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
-import com.aol.cyclops.data.collections.extensions.standard.SortedSetX.Comparables;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -74,11 +77,20 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazySortedSetX<T> extends AbstractFluentCollectionX<T>implements SortedSetX<T> {
     private final LazyFluentCollection<T, SortedSet<T>> lazy;
-    @Getter
+    @Getter @Wither
     private final Collector<T, ?, SortedSet<T>> collector;
 
+    @Override
+    public LazySortedSetX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazySortedSetX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazySortedSetX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazySortedSetX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazySortedSetX from a Stream
      * 
@@ -1814,4 +1826,14 @@ public class LazySortedSetX<T> extends AbstractFluentCollectionX<T>implements So
 
         }
     }
+    
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazySortedSetX<T> materialize() {
+       this.lazy.get();
+       return this;
+    }
+
 }

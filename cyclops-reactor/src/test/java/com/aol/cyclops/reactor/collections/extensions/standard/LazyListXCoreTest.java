@@ -22,7 +22,7 @@ import com.aol.cyclops.data.async.QueueFactories;
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.standard.LazyListX;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 
 public class LazyListXCoreTest extends AbstractOrderDependentCollectionXTest {
 
@@ -43,7 +43,7 @@ public class LazyListXCoreTest extends AbstractOrderDependentCollectionXTest {
     }
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         return LazyListX.of(values);
     }
 

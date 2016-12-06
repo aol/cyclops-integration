@@ -13,15 +13,15 @@ import org.junit.Test;
 
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
-import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
 import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
 
 import reactor.core.publisher.Flux;
 
 public class LazyPQueueXTest extends AbstractCollectionXTest  {
 
     @Override
-    public <T> FluentCollectionX<T> of(T... values) {
+    public <T> LazyFluentCollectionX<T> of(T... values) {
         LazyPQueueX<T> list = LazyPQueueX.empty();
         for (T next : values) {
             list = list.plus(next);

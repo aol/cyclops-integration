@@ -1,6 +1,9 @@
 package com.aol.cyclops.reactor.collections.extensions.base;
 
 import java.util.Collection;
+import java.util.Optional;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
 
@@ -16,7 +19,29 @@ import reactor.core.publisher.Flux;
  * @param <T> the type of elements held in this collection
  */
 public interface LazyFluentCollectionX<T> extends FluentCollectionX<T> {
-
+    
+   
+    default FluentCollectionX<T> plusLoop(int max, IntFunction<T> value){
+        FluentCollectionX<T> toUse = this;
+        for(int i=0;i<max;i++){
+            toUse = toUse.plus(value.apply(i));
+        }
+        return toUse;
+    }
+    default FluentCollectionX<T> plusLoop(Supplier<Optional<T>> supplier){
+       FluentCollectionX<T> toUse = this;
+       Optional<T> next =  supplier.get();
+       while(next.isPresent()){
+           toUse = toUse.plus(next.get());
+           next = supplier.get();
+       }
+       return toUse;
+    }
+   
+    /**
+     * @return This collection with any queued Lazy Operations materialized
+     */
+    LazyFluentCollectionX<T> materialize();
     /**
      * Create a LazyFluentCollection from a Flux. 
      * The created LazyFluentCollection will be of the same type as the object this method is called on.

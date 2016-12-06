@@ -12,6 +12,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -39,6 +40,7 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
+import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -83,6 +85,25 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T>implements 
     @Getter
     private final Reducer<POrderedSet<T>> collector;
 
+    
+    @Override
+    public LazyPOrderedSetX<T> plusLoop(int max, IntFunction<T> value){
+        POrderedSet<T> list = lazy.get();
+        if(list instanceof NativePlusLoop){
+            return (LazyPOrderedSetX<T>) ((NativePlusLoop)list).plusLoop(max, value);
+        }else{
+            return (LazyPOrderedSetX<T>) super.plusLoop(max, value);
+        }
+    }
+    @Override
+    public LazyPOrderedSetX<T> plusLoop(Supplier<Optional<T>> supplier){
+        POrderedSet<T> list = lazy.get();
+        if(list instanceof NativePlusLoop){
+            return (LazyPOrderedSetX<T>) ((NativePlusLoop)list).plusLoop(supplier);
+        }else{
+            return (LazyPOrderedSetX<T>) super.plusLoop(supplier);
+        }
+    }
     public static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> list,Reducer<POrderedSet<T>> collector){
         return new LazyPOrderedSetX<T>(list,collector);
     }
@@ -1708,6 +1729,14 @@ public class LazyPOrderedSetX<T> extends AbstractFluentCollectionX<T>implements 
     public LazyPOrderedSetX<T> minusAll(Collection<?> list) {
         PCollection<T> res = getSet().minusAll(list);
         return LazyPOrderedSetX.fromIterable(this.collector, res);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyPOrderedSetX<T> materialize() {
+       this.lazy.get();
+       return this;
     }
 
 }

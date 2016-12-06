@@ -13,6 +13,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -31,13 +32,15 @@ import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
 import com.aol.cyclops.data.collections.extensions.standard.DequeX;
-import com.aol.cyclops.data.collections.extensions.standard.DequeXImpl;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -66,11 +69,20 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazyDequeX<T> extends AbstractFluentCollectionX<T>implements DequeX<T> {
     private final LazyFluentCollection<T, Deque<T>> lazy;
-    @Getter
+    @Getter @Wither
     private final Collector<T, ?, Deque<T>> collector;
 
+    @Override
+    public LazyDequeX<T> plusLoop(int max, IntFunction<T> value){
+       return (LazyDequeX<T>)super.plusLoop(max, value);
+    }
+    @Override
+    public LazyDequeX<T> plusLoop(Supplier<Optional<T>> supplier){
+       return (LazyDequeX<T>)super.plusLoop(supplier);
+    }
     /**
      * Create a LazyDequeX from a Stream
      * 
@@ -1898,6 +1910,14 @@ public class LazyDequeX<T> extends AbstractFluentCollectionX<T>implements DequeX
      */
     public Iterator<T> descendingIterator() {
         return getDeque().descendingIterator();
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyDequeX<T> materialize() {
+       this.lazy.get();
+       return this;
     }
 
 }

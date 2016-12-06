@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Spliterator;
@@ -13,6 +12,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -25,9 +25,8 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
 import org.pcollections.PCollection;
+import org.pcollections.POrderedSet;
 import org.pcollections.PQueue;
-import org.pcollections.PStack;
-import org.pcollections.PVector;
 import org.reactivestreams.Publisher;
 
 import com.aol.cyclops.Monoid;
@@ -41,6 +40,7 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
+import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -83,6 +83,24 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T>implements PQueu
 
     public static <T> LazyPQueueX<T> fromPQueue(PQueue<T> list,Reducer<PQueue<T>> collector){
         return new LazyPQueueX<T>(list,collector);
+    }
+    @Override
+    public LazyPQueueX<T> plusLoop(int max, IntFunction<T> value){
+        PQueue<T> list = lazy.get();
+        if(list instanceof NativePlusLoop){
+            return (LazyPQueueX<T>) ((NativePlusLoop)list).plusLoop(max, value);
+        }else{
+            return (LazyPQueueX<T>) super.plusLoop(max, value);
+        }
+    }
+    @Override
+    public LazyPQueueX<T> plusLoop(Supplier<Optional<T>> supplier){
+        PQueue<T> list = lazy.get();
+        if(list instanceof NativePlusLoop){
+            return (LazyPQueueX<T>) ((NativePlusLoop)list).plusLoop(supplier);
+        }else{
+            return (LazyPQueueX<T>) super.plusLoop(supplier);
+        }
     }
     /**
      * Create a LazyPStackX from a Stream
@@ -1739,6 +1757,14 @@ public class LazyPQueueX<T> extends AbstractFluentCollectionX<T>implements PQueu
     public LazyPQueueX<T> minusAll(Collection<?> list) {
         PCollection<T> res = getQueue().minusAll(list);
         return LazyPQueueX.fromIterable(this.collector, res);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX#materialize()
+     */
+    @Override
+    public LazyPQueueX<T> materialize() {
+       this.lazy.get();
+       return this;
     }
 
 }

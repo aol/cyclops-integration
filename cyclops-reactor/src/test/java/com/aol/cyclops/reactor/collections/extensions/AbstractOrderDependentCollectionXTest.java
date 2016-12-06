@@ -48,6 +48,8 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 public abstract class AbstractOrderDependentCollectionXTest extends AbstractCollectionXTest {
+    
+    
     @Test
     public void combineNoOrderOd(){
         assertThat(of(1,2,3)
@@ -106,7 +108,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
     @Test
     public void forEach2Od() {
 
-        assertThat(of(1, 2, 3).forEach2(a -> Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), a -> b -> a + b).toList(),
+        assertThat(of(1, 2, 3).forEach2(a -> Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), (a,b) -> a + b).toList(),
                 equalTo(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 3, 4, 5, 6, 7, 8,
                         9, 10, 11, 12)));
     }
@@ -114,8 +116,8 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
     @Test
     public void forEach2FilterOd() {
 
-        assertThat(of(1, 2, 3).forEach2(a -> Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), a -> b -> a > 2 && b < 8,
-                a -> b -> a + b).toList(), equalTo(Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10)));
+        assertThat(of(1, 2, 3).forEach2(a -> Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), (a,b) -> a > 2 && b < 8,
+                (a, b) -> a + b).toList(), equalTo(Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10)));
     }
     @Test
     public void visitOd(){
