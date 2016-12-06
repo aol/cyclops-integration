@@ -201,10 +201,32 @@ public interface Either3<LT1, LT2, RT>
         return it.hasNext() ? Either3.right( it.next()) : Either3.left1(null);
     }
     
+    /**
+     * Static method useful as a method reference for fluent consumption of any value type stored in this Either 
+     * (will capture the lowest common type)
+     * 
+     * <pre>
+     * {@code 
+     * 
+     *   myEither.to(Either3::consumeAny)
+                 .accept(System.out::println);
+     * }
+     * </pre>
+     * 
+     * @param either Either to consume value for
+     * @return Consumer we can apply to consume value
+     */
+    static <X, LT extends X, M extends X, RT extends X>  Consumer<Consumer<? super X>> consumeAny(Either3<LT,M,RT> either){
+        return in->visitAny(in,either);
+    }
+    
+    static <X, LT extends X, M extends X, RT extends X,R>  Function<Function<? super X, R>,R> applyAny(Either3<LT,M,RT> either){
+        return in->visitAny(either,in);
+    }
     static <X, LT extends X, M extends X, RT extends X,R> R visitAny(Either3<LT,M,RT> either, Function<? super X, ? extends R> fn){
         return either.visit(fn, fn,fn);
     }
-    static <X, LT extends X, M extends X, RT extends X> X visitAny(Either3<LT,M,RT> either, Consumer<? super X> c){
+    static <X, LT extends X, M extends X, RT extends X> X visitAny(Consumer<? super X> c,Either3<LT,M,RT> either){
         Function<? super X, X> fn = x ->{
             c.accept(x);
             return x;

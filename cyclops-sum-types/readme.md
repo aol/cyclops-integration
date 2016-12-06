@@ -68,10 +68,23 @@ interface OS {
 OS os;
 
 os.match()
-  .to(e->Either3.visitAny(e,System.out::println));
+  .to(e->Either3.visitAny(System.out::println,e));
   
  //prints OS details
   
+```
+
+applyAny and consumeAny can be used with method references
+
+```java
+//apply a function to any of the types
+test.to(Either3::applyAny)
+    .apply(b->b.toString());
+
+//consume any of the types      
+just.to(Either3::consumeAny)
+    .accept(System.out::println);
+
 ```
 
 

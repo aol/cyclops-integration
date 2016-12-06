@@ -237,14 +237,34 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
     }
 
     
-
+    /**
+     * Static method useful as a method reference for fluent consumption of any value type stored in this Either 
+     * (will capture the lowest common type)
+     * 
+     * <pre>
+     * {@code 
+     * 
+     *   myEither.to(Either::consumeAny)
+                 .accept(System.out::println);
+     * }
+     * </pre>
+     * 
+     * @param either Either to consume value for
+     * @return Consumer we can apply to consume value
+     */
+    static <X, LT extends X, M extends X, RT extends X>  Consumer<Consumer<? super X>> consumeAny(Either<LT,RT> either){
+        return in->visitAny(in,either);
+    }
     
+    static <X, LT extends X, M extends X, RT extends X,R>  Function<Function<? super X, R>,R> applyAny(Either<LT,RT> either){
+        return in->visitAny(either,in);
+    }
 
     static <X, PT extends X, ST extends X,R> R visitAny(Either<ST,PT> either, Function<? super X, ? extends R> fn){
         return either.visit(fn, fn);
     }
  
-    static <X, LT extends X, RT extends X> X visitAny(Either<LT,RT> either, Consumer<? super X> c){
+    static <X, LT extends X, RT extends X> X visitAny(Consumer<? super X> c,Either<LT,RT> either){
         Function<? super X, X> fn = x ->{
             c.accept(x);
             return x;

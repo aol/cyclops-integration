@@ -71,24 +71,52 @@ public interface Either5<LT1, LT2,LT3, LT4,RT> extends Functor<RT>,
                                                    MonadicValue<RT>,
                                                    Supplier<RT>, 
                                                    ApplicativeFunctor<RT> {
-    
-    
-    static <X, LT1 extends X, LT2 extends X,LT3 extends X,LT4 extends X, RT extends X,R> R visitAny(Either5<LT1,LT2,LT3,LT4,RT> either, Function<? super X, ? extends R> fn){
-        return either.visit(fn, fn,fn,fn,fn);
+
+    /**
+     * Static method useful as a method reference for fluent consumption of any value type stored in this Either 
+     * (will capture the lowest common type)
+     * 
+     * <pre>
+     * {@code 
+     * 
+     *   myEither.to(Either5::consumeAny)
+                 .accept(System.out::println);
+     * }
+     * </pre>
+     * 
+     * @param either Either to consume value for
+     * @return Consumer we can apply to consume value
+     */
+    static <X, LT1 extends X, LT2 extends X, LT3 extends X, LT4 extends X, RT extends X> Consumer<Consumer<? super X>> consumeAny(
+            Either5<LT1, LT2, LT3, LT4, RT> either) {
+        return in -> visitAny(in, either);
     }
-    static <X, LT1 extends X, LT2 extends X, LT3 extends X,LT4 extends X, RT extends X> X visitAny(Either5<LT1,LT2,LT3,LT4,RT> either, Consumer<? super X> c){
-        Function<? super X, X> fn = x ->{
+
+    static <X, LT1 extends X, LT2 extends X, LT3 extends X, LT4 extends X, RT extends X, R> Function<Function<? super X, R>, R> applyAny(
+            Either5<LT1, LT2, LT3, LT4, RT> either) {
+        return in -> visitAny(either, in);
+    }
+
+    static <X, LT1 extends X, LT2 extends X, LT3 extends X, LT4 extends X, RT extends X, R> R visitAny(
+            Either5<LT1, LT2, LT3, LT4, RT> either, Function<? super X, ? extends R> fn) {
+        return either.visit(fn, fn, fn, fn, fn);
+    }
+
+    static <X, LT1 extends X, LT2 extends X, LT3 extends X, LT4 extends X, RT extends X> X visitAny(
+            Consumer<? super X> c, Either5<LT1, LT2, LT3, LT4, RT> either) {
+        Function<? super X, X> fn = x -> {
             c.accept(x);
             return x;
         };
-        return visitAny(either,fn);
+        return visitAny(either, fn);
     }
-    
-    static <LT1,LT2,LT3,LT4,RT> Either5<LT1,LT2,LT3,LT4,RT> fromMonadicValue(MonadicValue<RT> mv5){
-        if(mv5 instanceof Either5){
-            return (Either5)mv5;
+
+    static <LT1, LT2, LT3, LT4, RT> Either5<LT1, LT2, LT3, LT4, RT> fromMonadicValue(MonadicValue<RT> mv5) {
+        if (mv5 instanceof Either5) {
+            return (Either5) mv5;
         }
-        return mv5.toOptional().isPresent()? Either5.right(mv5.get()) : Either5.left1(null);
+        return mv5.toOptional()
+                  .isPresent() ? Either5.right(mv5.get()) : Either5.left1(null);
 
     }
     /**

@@ -73,10 +73,16 @@ public class Either3Test {
                .flatMap(i->Either3.right(i*4))
                .get(),equalTo(80));
     }
-    
+    static class Base{ }
+    static class One extends Base{ }
+    static class Two extends Base{}
     @Test
     public void visitAny(){
-        just.to(e->Either3.visitAny(e,System.out::println));
+       
+        Either3<One,Two,Two> test = Either3.right(new Two());
+        test.to(Either3::applyAny).apply(b->b.toString());
+        just.to(Either3::consumeAny).accept(System.out::println);
+        just.to(e->Either3.visitAny(System.out::println,e));
         Object value = just.to(e->Either3.visitAny(e,x->x));
         assertThat(value,equalTo(10));
     }

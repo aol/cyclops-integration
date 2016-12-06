@@ -70,22 +70,52 @@ public interface Either4<LT1, LT2,LT3, RT> extends Functor<RT>,
                                                    MonadicValue<RT>,
                                                    Supplier<RT>, 
                                                    ApplicativeFunctor<RT> {
-    static <X, LT1 extends X, LT2 extends X,LT3 extends X, RT extends X,R> R visitAny(Either4<LT1,LT2,LT3,RT> either, Function<? super X, ? extends R> fn){
-        return either.visit(fn, fn,fn,fn);
+    
+    /**
+     * Static method useful as a method reference for fluent consumption of any value type stored in this Either 
+     * (will capture the lowest common type)
+     * 
+     * <pre>
+     * {@code 
+     * 
+     *   myEither.to(Either4::consumeAny)
+                 .accept(System.out::println);
+     * }
+     * </pre>
+     * 
+     * @param either Either to consume value for
+     * @return Consumer we can apply to consume value
+     */
+    static <X, LT1 extends X, LT2 extends X, LT3 extends X, RT extends X> Consumer<Consumer<? super X>> consumeAny(
+            Either4<LT1, LT2, LT3, RT> either) {
+        return in -> visitAny(in, either);
     }
-    static <X, LT1 extends X, LT2 extends X, LT3 extends X, RT extends X> X visitAny(Either4<LT1,LT2,LT3,RT> either, Consumer<? super X> c){
-        Function<? super X, X> fn = x ->{
+
+    static <X, LT1 extends X, LT2 extends X, LT3 extends X, RT extends X, R> Function<Function<? super X, R>, R> applyAny(
+            Either4<LT1, LT2, LT3, RT> either) {
+        return in -> visitAny(either, in);
+    }
+
+    static <X, LT1 extends X, LT2 extends X, LT3 extends X, RT extends X, R> R visitAny(
+            Either4<LT1, LT2, LT3, RT> either, Function<? super X, ? extends R> fn) {
+        return either.visit(fn, fn, fn, fn);
+    }
+
+    static <X, LT1 extends X, LT2 extends X, LT3 extends X, RT extends X> X visitAny(Consumer<? super X> c,
+            Either4<LT1, LT2, LT3, RT> either) {
+        Function<? super X, X> fn = x -> {
             c.accept(x);
             return x;
         };
-        return visitAny(either,fn);
+        return visitAny(either, fn);
     }
-    
-    static <LT1,LT2,LT3,RT> Either4<LT1,LT2,LT3,RT> fromMonadicValue(MonadicValue<RT> mv4){
-        if(mv4 instanceof Either4){
-            return (Either4)mv4;
+
+    static <LT1, LT2, LT3, RT> Either4<LT1, LT2, LT3, RT> fromMonadicValue(MonadicValue<RT> mv4) {
+        if (mv4 instanceof Either4) {
+            return (Either4) mv4;
         }
-        return mv4.toOptional().isPresent()? Either4.right(mv4.get()) : Either4.left1(null);
+        return mv4.toOptional()
+                  .isPresent() ? Either4.right(mv4.get()) : Either4.left1(null);
 
     }
     /**
