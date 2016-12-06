@@ -3,6 +3,7 @@ package com.aol.cyclops.javaslang.collections.extensions;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -38,6 +39,12 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
         assertThat(JavaSlangPSet.empty()
                           .onEmptySwitch(() -> LazyPSetX.of(1, 2, 3)).toList(),
                    equalTo(JavaSlangPSet.of(1, 2, 3).toList()));
+    }
+    @Test
+    public void forEach2() {
+
+        assertThat(of(1, 2, 3).forEach2(a -> Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), (a, b) -> a + b).size(),
+                equalTo(12));
     }
 
     /*

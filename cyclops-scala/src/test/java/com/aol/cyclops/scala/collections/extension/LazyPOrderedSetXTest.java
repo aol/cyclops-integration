@@ -3,6 +3,7 @@ package com.aol.cyclops.scala.collections.extension;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -22,6 +23,12 @@ import reactor.core.publisher.Flux;
 
 public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
+    @Test
+    public void forEach2() {
+
+        assertThat(of(1, 2, 3).forEach2(a -> Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), (a, b) -> a + b).size(),
+                equalTo(12));
+    }
     @Override
     public <T> LazyFluentCollectionX<T> of(T... values) {
         LazyPOrderedSetX<T> list = (LazyPOrderedSetX)ScalaTreePOrderedSet.empty();
