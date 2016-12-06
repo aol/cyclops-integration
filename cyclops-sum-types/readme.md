@@ -11,11 +11,16 @@ All Either implementations have the following features
 1. Rich API
 1. Totally lazy
 1. Tail recursive map / flatMap methods
+1. Applicative combine
+1. coflatMap & nest
+1. Fluent custom operators (via Either<X>#to)
 1. Interopability via Reactive Streams Publisher - all Eithers implement Publisher
 1. Accept Publisher in API calls (flatMapPublisher)
 1. Interopability via Iterable - all Eithers implement Iterable
 1. Accept Iterable in API calls (flatMapIterable)
+1. For Comprehensions (forEach2-4)
 1. sequence, traverse, accumulate operators
+
 
 Either extends cyclops-react Xor, providing a lazy and tail call optimized alternative.
 
@@ -53,6 +58,21 @@ os.match()
 ```
 Of course iOs, Windows and Linux don't even have to inherit from a common super-type for this technique to work, we just need to define a method that returns an Either with an exhaustive set of cases we would like the user to handle.
 
+### Execute a method against any type
+
+```java
+
+interface OS {
+	Either3<iOS,Windows,Linux> match();
+}
+OS os;
+
+os.match()
+  .to(e->Either3.visitAny(e,System.out::println));
+  
+ //prints OS details
+  
+```
 
 
 

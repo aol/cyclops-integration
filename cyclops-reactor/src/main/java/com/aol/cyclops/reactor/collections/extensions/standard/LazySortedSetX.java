@@ -41,7 +41,10 @@ import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -74,9 +77,10 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazySortedSetX<T> extends AbstractFluentCollectionX<T>implements SortedSetX<T> {
     private final LazyFluentCollection<T, SortedSet<T>> lazy;
-    @Getter
+    @Getter @Wither
     private final Collector<T, ?, SortedSet<T>> collector;
 
     @Override

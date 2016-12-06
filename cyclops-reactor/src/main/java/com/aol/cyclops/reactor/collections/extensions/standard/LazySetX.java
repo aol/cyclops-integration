@@ -37,7 +37,10 @@ import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -70,9 +73,10 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazySetX<T> extends AbstractFluentCollectionX<T>implements SetX<T> {
     private final LazyFluentCollection<T, Set<T>> lazy;
-    @Getter
+    @Getter @Wither
     private final Collector<T, ?, Set<T>> collector;
     @Override
     public LazySetX<T> plusLoop(int max, IntFunction<T> value){

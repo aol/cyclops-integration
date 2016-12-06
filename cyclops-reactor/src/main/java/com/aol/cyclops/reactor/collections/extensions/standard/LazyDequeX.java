@@ -36,9 +36,11 @@ import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPBagX;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -67,9 +69,10 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazyDequeX<T> extends AbstractFluentCollectionX<T>implements DequeX<T> {
     private final LazyFluentCollection<T, Deque<T>> lazy;
-    @Getter
+    @Getter @Wither
     private final Collector<T, ?, Deque<T>> collector;
 
     @Override

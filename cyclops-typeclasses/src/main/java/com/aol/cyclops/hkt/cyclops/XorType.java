@@ -14,7 +14,7 @@ import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.alias.Higher2;
-import com.aol.cyclops.types.MonadicValue2;
+import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.Value;
 
 import lombok.AccessLevel;
@@ -216,15 +216,17 @@ public interface XorType<ST, PT> extends Higher2<XorType.µ, ST, PT>, Xor<ST, PT
         public ReactiveSeq<ST> secondaryToStream() {
             return boxed.secondaryToStream();
         }
-
+        /* (non-Javadoc)
+         * @see com.aol.cyclops.control.Xor#flatMap(java.util.function.Function)
+         */
         @Override
-        public <LT1, RT1> Xor<LT1, RT1> flatMap(
-                final Function<? super PT, ? extends MonadicValue2<? extends LT1, ? extends RT1>> mapper) {
+        public <RT1> Xor<ST, RT1> flatMap(Function<? super PT, ? extends MonadicValue<? extends RT1>> mapper) {
             return boxed.flatMap(mapper);
         }
+        
 
         @Override
-        public <LT1, RT1> Xor<LT1, RT1> secondaryFlatMap(final Function<? super ST, ? extends Xor<LT1, RT1>> mapper) {
+        public <LT1> Xor<LT1, PT> secondaryFlatMap(final Function<? super ST, ? extends Xor<LT1,PT>> mapper) {
             return boxed.secondaryFlatMap(mapper);
         }
 
@@ -253,6 +255,8 @@ public interface XorType<ST, PT> extends Higher2<XorType.µ, ST, PT>, Xor<ST, PT
                 final BiFunction<? super PT, ? super T2, ? extends R> fn) {
             return boxed.combine(app, fn);
         }
+
+        
 
     }
 

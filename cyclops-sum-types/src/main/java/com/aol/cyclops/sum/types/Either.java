@@ -35,11 +35,13 @@ import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.types.Combiner;
 import com.aol.cyclops.types.MonadicValue;
-import com.aol.cyclops.types.MonadicValue2;
+import com.aol.cyclops.types.MonadicValue;
 import com.aol.cyclops.types.Value;
 import com.aol.cyclops.types.anyM.AnyMValue;
 import com.aol.cyclops.types.stream.reactive.ValueSubscriber;
 import com.aol.cyclops.util.function.Curry;
+import com.aol.cyclops.util.function.QuadFunction;
+import com.aol.cyclops.util.function.TriFunction;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -124,7 +126,7 @@ import lombok.AllArgsConstructor;
  */
 public interface Either<ST, PT> extends Xor<ST,PT> {
 
-    static <LT1,RT> Either<LT1,RT> fromMonadicValue2(MonadicValue2<LT1,RT> mv2){
+    static <LT1,RT> Either<LT1,RT> fromMonadicValue(MonadicValue<RT> mv2){
         if(mv2 instanceof Either){
             return (Either)mv2;
         }
@@ -242,7 +244,94 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         return either.visit(fn, fn);
     }
  
-    
+    static <X, LT extends X, RT extends X> X visitAny(Either<LT,RT> either, Consumer<? super X> c){
+        Function<? super X, X> fn = x ->{
+            c.accept(x);
+            return x;
+        };
+        return visitAny(either,fn);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.Xor#forEach4(java.util.function.Function, java.util.function.BiFunction, com.aol.cyclops.util.function.TriFunction, com.aol.cyclops.util.function.QuadFunction)
+     */
+    @Override
+    default <T2, R1, R2, R3, R> Either<ST, R> forEach4(Function<? super PT, ? extends MonadicValue<R1>> value1,
+            BiFunction<? super PT, ? super R1, ? extends MonadicValue<R2>> value2,
+            TriFunction<? super PT, ? super R1, ? super R2, ? extends MonadicValue<R3>> value3,
+            QuadFunction<? super PT, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+        
+        return (Either<ST, R>)Xor.super.forEach4(value1, value2, value3, yieldingFunction);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.Xor#forEach4(java.util.function.Function, java.util.function.BiFunction, com.aol.cyclops.util.function.TriFunction, com.aol.cyclops.util.function.QuadFunction, com.aol.cyclops.util.function.QuadFunction)
+     */
+    @Override
+    default <T2, R1, R2, R3, R> Either<ST, R> forEach4(Function<? super PT, ? extends MonadicValue<R1>> value1,
+            BiFunction<? super PT, ? super R1, ? extends MonadicValue<R2>> value2,
+            TriFunction<? super PT, ? super R1, ? super R2, ? extends MonadicValue<R3>> value3,
+            QuadFunction<? super PT, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+            QuadFunction<? super PT, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+        
+        return (Either<ST, R>)Xor.super.forEach4(value1, value2, value3, filterFunction, yieldingFunction);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.Xor#forEach3(java.util.function.Function, java.util.function.BiFunction, com.aol.cyclops.util.function.TriFunction)
+     */
+    @Override
+    default <T2, R1, R2, R> Either<ST, R> forEach3(Function<? super PT, ? extends MonadicValue<R1>> value1,
+            BiFunction<? super PT, ? super R1, ? extends MonadicValue<R2>> value2,
+            TriFunction<? super PT, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+        
+        return (Either<ST, R>)Xor.super.forEach3(value1, value2, yieldingFunction);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.Xor#forEach3(java.util.function.Function, java.util.function.BiFunction, com.aol.cyclops.util.function.TriFunction, com.aol.cyclops.util.function.TriFunction)
+     */
+    @Override
+    default <T2, R1, R2, R> Either<ST, R> forEach3(Function<? super PT, ? extends MonadicValue<R1>> value1,
+            BiFunction<? super PT, ? super R1, ? extends MonadicValue<R2>> value2,
+            TriFunction<? super PT, ? super R1, ? super R2, Boolean> filterFunction,
+            TriFunction<? super PT, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+        
+        return (Either<ST, R>)Xor.super.forEach3(value1, value2, filterFunction, yieldingFunction);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.Xor#forEach2(java.util.function.Function, java.util.function.BiFunction)
+     */
+    @Override
+    default <R1, R> Either<ST, R> forEach2(Function<? super PT, ? extends MonadicValue<R1>> value1,
+            BiFunction<? super PT, ? super R1, ? extends R> yieldingFunction) {
+        
+        return (Either<ST, R>)Xor.super.forEach2(value1, yieldingFunction);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.Xor#forEach2(java.util.function.Function, java.util.function.BiFunction, java.util.function.BiFunction)
+     */
+    @Override
+    default <R1, R> Either<ST, R> forEach2(Function<? super PT, ? extends MonadicValue<R1>> value1,
+            BiFunction<? super PT, ? super R1, Boolean> filterFunction,
+            BiFunction<? super PT, ? super R1, ? extends R> yieldingFunction) {
+        
+        return (Either<ST, R>)Xor.super.forEach2(value1, filterFunction, yieldingFunction);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.Xor#combineToList(com.aol.cyclops.control.Xor, java.util.function.BiFunction)
+     */
+    @Override
+    default <T2, R> Either<PStackX<ST>, R> combineToList(Xor<ST, ? extends T2> app,
+            BiFunction<? super PT, ? super T2, ? extends R> fn) {
+        
+        return (Either<PStackX<ST>, R>)Xor.super.combineToList(app, fn);
+    }
+    /* (non-Javadoc)
+     * @see com.aol.cyclops.control.Xor#combine(com.aol.cyclops.control.Xor, java.util.function.BinaryOperator, java.util.function.BiFunction)
+     */
+    @Override
+    default <T2, R> Either<ST, R> combine(Xor<? extends ST, ? extends T2> app, BinaryOperator<ST> semigroup,
+            BiFunction<? super PT, ? super T2, ? extends R> fn) {
+        
+        return (Either<ST, R>)Xor.super.combine(app, semigroup, fn);
+    }
     /**
      * Lazily construct a Right Either from the supplied publisher
      * <pre>
@@ -356,7 +445,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      * (non-Javadoc)
      * 
      * @see
-     * com.aol.cyclops.types.MonadicValue2#flatMapIterable(java.util.function.
+     * com.aol.cyclops.types.MonadicValue#flatMapIterable(java.util.function.
      * Function)
      */
     @Override
@@ -368,7 +457,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      * (non-Javadoc)
      * 
      * @see
-     * com.aol.cyclops.types.MonadicValue2#flatMapPublisher(java.util.function.
+     * com.aol.cyclops.types.MonadicValue#flatMapPublisher(java.util.function.
      * Function)
      */
     @Override
@@ -401,18 +490,18 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
     /*
      * (non-Javadoc)
      * 
-     * @see com.aol.cyclops.types.MonadicValue2#combine(com.aol.cyclops.Monoid,
-     * com.aol.cyclops.types.MonadicValue2)
-     */
+     * @see com.aol.cyclops.types.MonadicValue#combine(com.aol.cyclops.Monoid,
+     * com.aol.cyclops.types.MonadicValue)
+     */ 
     @Override
-    default Either<ST, PT> combineEager(final Monoid<PT> monoid, final MonadicValue2<? extends ST, ? extends PT> v2) {
+    default Either<ST, PT> combineEager(final Monoid<PT> monoid, final MonadicValue<? extends PT> v2) {
         return (Either<ST, PT>) Xor.super.combineEager(monoid, v2);
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see com.aol.cyclops.types.MonadicValue2#unit(java.lang.Object)
+     * @see com.aol.cyclops.types.MonadicValue#unit(java.lang.Object)
      */
     @Override
     default <T> Either<ST, T> unit(final T unit) {
@@ -458,7 +547,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
     /*
      * (non-Javadoc)
      * 
-     * @see com.aol.cyclops.types.MonadicValue2#map(java.util.function.Function)
+     * @see com.aol.cyclops.types.MonadicValue#map(java.util.function.Function)
      */
     @Override
     <R> Either<ST, R> map(Function<? super PT, ? extends R> fn);
@@ -718,20 +807,23 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
      * (non-Javadoc)
      * 
      * @see
-     * com.aol.cyclops.types.MonadicValue2#flatMap(java.util.function.Function)
+     * com.aol.cyclops.types.MonadicValue#flatMap(java.util.function.Function)
      */
     @Override
-    <LT1, RT1> Either<LT1, RT1> flatMap(
-            Function<? super PT, ? extends MonadicValue2<? extends LT1, ? extends RT1>> mapper);
+    <RT1> Either<ST, RT1> flatMap(
+            Function<? super PT, ? extends MonadicValue<? extends RT1>> mapper);
 
+    
+    
     /**
      * Perform a flatMap operation on the Left type
      * 
      * @param mapper Flattening transformation function
      * @return Either containing the value inside the result of the transformation function as the Left value, if the Left type was present
      */
-    <LT1, RT1> Either<LT1, RT1> secondaryFlatMap(Function<? super ST, ? extends Xor<LT1, RT1>> mapper);
+    <LT1> Either<LT1, PT> secondaryFlatMap(Function<? super ST, ? extends Xor<LT1, PT>> mapper);
 
+    
     /**
      * A flatMap operation that keeps the Left and Right types the same
      * 
@@ -983,13 +1075,13 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
          
         }
         
-        private <PT> Either<ST, PT> toEither(MonadicValue2<? extends ST, ? extends PT> value) {
+        private <PT> Either<ST, PT> toEither(MonadicValue<? extends PT> value) {
             return value.visit(p -> Either.right(p), () -> Either.left(null));
         }
 
         @Override
-        public <ST, RT1> Either<ST, RT1> flatMap(
-                final Function<? super PT, ? extends MonadicValue2<? extends ST, ? extends RT1>> mapper) {
+        public <RT1> Either<ST, RT1> flatMap(
+                final Function<? super PT, ? extends MonadicValue<? extends RT1>> mapper) {
 
            
             return lazy(Eval.later( () -> resolve().flatMap(mapper)));
@@ -1156,7 +1248,7 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
          * Function)
          */
         @Override
-        public <LT1, RT1> Either<LT1, RT1> secondaryFlatMap(Function<? super ST, ? extends Xor<LT1, RT1>> mapper) {
+        public <LT1> Either<LT1, PT> secondaryFlatMap(Function<? super ST, ? extends Xor<LT1, PT>> mapper) {
             return lazy(Eval.later(() -> resolve()
                                              .secondaryFlatMap(mapper)));
         }
@@ -1333,22 +1425,22 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         }
 
         @Override
-        public <LT1, RT1> Either<LT1, RT1> flatMap(
-                final Function<? super PT, ? extends MonadicValue2<? extends LT1, ? extends RT1>> mapper) {
+        public < RT1> Either<ST, RT1> flatMap(
+                final Function<? super PT, ? extends MonadicValue<? extends RT1>> mapper) {
 
-            Eval<? extends Either<? extends LT1,  ? extends RT1>> ret = value.map(mapper.andThen(Either::fromMonadicValue2));
+            Eval<? extends Either<? extends ST,  ? extends RT1>> ret = value.map(mapper.andThen(Either::fromMonadicValue));
           
             
-           final Eval<Either<LT1, RT1>> e3 =  (Eval<Either<LT1,  RT1>>)ret;
+           final Eval<Either<ST, RT1>> e3 =  (Eval<Either<ST,  RT1>>)ret;
            return new Lazy<>(
                              e3);
 
         }
 
         @Override
-        public <LT1, RT1> Either<LT1, RT1> secondaryFlatMap(
-                final Function<? super ST, ? extends Xor<LT1, RT1>> mapper) {
-            return (Either<LT1, RT1>) this;
+        public <LT1> Either<LT1, PT> secondaryFlatMap(
+                final Function<? super ST, ? extends Xor<LT1, PT>> mapper) {
+            return (Either<LT1, PT>) this;
         }
 
         @Override
@@ -1546,18 +1638,18 @@ public interface Either<ST, PT> extends Xor<ST,PT> {
         }
 
         @Override
-        public <LT1, RT1> Either<LT1, RT1> flatMap(
-                final Function<? super PT, ? extends MonadicValue2<? extends LT1, ? extends RT1>> mapper) {
-            return (Either<LT1, RT1>) this;
+        public <RT1> Either<ST, RT1> flatMap(
+                final Function<? super PT, ? extends MonadicValue<? extends RT1>> mapper) {
+            return (Either<ST, RT1>) this;
         }
 
         @Override
-        public <LT1, RT1> Either<LT1, RT1> secondaryFlatMap(
-                final Function<? super ST, ? extends Xor<LT1, RT1>> mapper) {
-            Eval<? extends MonadicValue2<? extends LT1,  ? extends RT1>> ret = value.map(mapper);
-            Eval<? extends Either<? extends LT1,  ? extends RT1>> et = ret.map(Either::fromMonadicValue2);
+        public <LT1> Either<LT1, PT> secondaryFlatMap(
+                final Function<? super ST, ? extends Xor<LT1, PT>> mapper) {
+            Eval<? extends MonadicValue<? extends PT>> ret = value.map(mapper);
+            Eval<? extends Either<? extends LT1,  ? extends PT>> et = ret.map(Either::fromMonadicValue);
             
-           final Eval<Either<LT1, RT1>> e3 =  (Eval<Either<LT1,  RT1>>)et;
+           final Eval<Either<LT1, PT>> e3 =  (Eval<Either<LT1,  PT>>)et;
            return new Lazy<>(
                              e3);
            

@@ -2,7 +2,6 @@ package com.aol.cyclops.functionaljava;
 
 import com.aol.cyclops.control.Xor;
 import com.aol.cyclops.types.MonadicValue;
-import com.aol.cyclops.types.MonadicValue2;
 
 import fj.data.Either;
 import fj.data.Option;
@@ -18,12 +17,12 @@ public class FromCyclopsReact {
         return Option.fromNull(value.orElse(null));
     }
 
-    public static <L, R> Either<L, R> either(MonadicValue2<L, R> value) {
+    public static <L, R> Either<L, R> either(Xor<L, R> value) {
         Xor<L, R> xor = (Xor) value.toXor();
         return xor.visit(l -> Either.left(l), r -> Either.right(r));
     }
 
-    public static <L, R> Validation<L, R> validation(MonadicValue2<L, R> value) {
+    public static <L, R> Validation<L, R> validation(Xor<L, R> value) {
         return Validation.validation(either(value));
     }
 

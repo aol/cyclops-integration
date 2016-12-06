@@ -73,6 +73,13 @@ public class Either3Test {
                .flatMap(i->Either3.right(i*4))
                .get(),equalTo(80));
     }
+    
+    @Test
+    public void visitAny(){
+        just.to(e->Either3.visitAny(e,System.out::println));
+        Object value = just.to(e->Either3.visitAny(e,x->x));
+        assertThat(value,equalTo(10));
+    }
     @Test
     public void odd() {
         System.out.println(even(Either3.right(200000)).get());

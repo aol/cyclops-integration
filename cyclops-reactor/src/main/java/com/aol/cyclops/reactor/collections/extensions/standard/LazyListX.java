@@ -31,15 +31,15 @@ import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Matchable.CheckValue1;
 import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.control.Trampoline;
-import com.aol.cyclops.control.monads.transformers.seq.ListTSeq;
-import com.aol.cyclops.data.async.QueueFactory;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.data.collections.extensions.standard.ListXImpl;
 import com.aol.cyclops.reactor.Fluxes;
 import com.aol.cyclops.reactor.collections.extensions.base.AbstractFluentCollectionX;
 import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollection;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Wither;
 import reactor.core.publisher.Flux;
 
 /**
@@ -68,9 +68,10 @@ import reactor.core.publisher.Flux;
  *
  * @param <T> the type of elements held in this collection
  */
+@AllArgsConstructor(access=AccessLevel.PRIVATE)
 public class LazyListX<T> extends AbstractFluentCollectionX<T>implements ListX<T> {
     private final LazyFluentCollection<T, List<T>> lazy;
-    @Getter
+    @Getter @Wither
     private final Collector<T, ?, List<T>> collector;
 
     @Override
