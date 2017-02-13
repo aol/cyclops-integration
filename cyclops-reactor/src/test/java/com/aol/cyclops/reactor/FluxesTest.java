@@ -3,11 +3,12 @@ package com.aol.cyclops.reactor;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import cyclops.collections.ListX;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
-import com.aol.cyclops.data.collections.extensions.standard.ListX;
+
 
 import reactor.core.publisher.Flux;
 
@@ -33,12 +34,5 @@ public class FluxesTest {
                           .subscribe(System.out::println);
     }
     
-    @Test
-    public void groupedWhile(){
-        Fluxs.groupedWhile(Flux.just(1,2,3,4,5,6), i->i%3!=0).subscribe(System.out::println);
-    }
-    @Test
-    public void groupedUntil(){
-        Fluxs.groupedUntil(Flux.just(1,2,3,4,5,6), i->i%3!=0).subscribe(System.out::println);
-    }
+
 }
