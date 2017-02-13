@@ -48,10 +48,10 @@ public class FluxTs {
     }
 
     /**
-     * Construct a FluxT from a Publisher containing Fluxes.
+     * Construct a FluxT from a Publisher containing Fluxs.
      * 
-     * @param nested Publisher of Fluxes
-     * @return Flux Transformer for manipulating nested Fluxes
+     * @param nested Publisher of Fluxs
+     * @return Flux Transformer for manipulating nested Fluxs
      */
     public static <T> FluxTSeq<T> fluxT(Publisher<Flux<T>> nested) {
         return FluxT.fromPublisher(nested);

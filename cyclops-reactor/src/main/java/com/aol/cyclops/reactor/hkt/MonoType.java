@@ -11,12 +11,12 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.async.Future;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
-import com.aol.cyclops.control.FutureW;
-import com.aol.cyclops.hkt.alias.Higher;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -74,7 +74,7 @@ public final class MonoType<T> implements Higher<MonoType.µ, T>, Publisher<T> {
      * If the supplied Mono implements MonoType it is returned already, otherwise it
      * is wrapped into a Mono implementation that does implement MonoType
      * 
-     * @param Mono Mono to widen to a MonoType
+     * @param completableMono Mono to widen to a MonoType
      * @return MonoType encoding HKT info about Monos
      */
     public static <T> MonoType<T> widen(final Mono<T> completableMono) {
@@ -103,7 +103,7 @@ public final class MonoType<T> implements Higher<MonoType.µ, T>, Publisher<T> {
     /**
      * Convert the HigherKindedType definition for a Mono into
      * 
-     * @param Mono Type Constructor to convert back into narrowed type
+     * @param completableMono Type Constructor to convert back into narrowed type
      * @return Mono from Higher Kinded Type
      */
     public static <T> Mono<T> narrow(final Higher<MonoType.µ, T> completableMono) {
@@ -126,8 +126,8 @@ public final class MonoType<T> implements Higher<MonoType.µ, T>, Publisher<T> {
         }
 
         
-        public FutureW<T> toFuture(){
-            return FutureW.of(boxed.toFuture());
+        public Future<T> toFuture(){
+            return Future.of(boxed.toFuture());
         }
         /**
          * @param s
@@ -922,7 +922,7 @@ public final class MonoType<T> implements Higher<MonoType.µ, T>, Publisher<T> {
          * @return
          * @see reactor.core.publisher.Mono#transform(java.util.function.Function)
          */
-        public final <V> Mono<V> transform(Function<? super Mono<T>, ? extends Publisher<V>> transformer) {
+        public final <V> Mono<V> transformMono(Function<? super Mono<T>, ? extends Publisher<V>> transformer) {
             return boxed.transform(transformer);
         }
         /**

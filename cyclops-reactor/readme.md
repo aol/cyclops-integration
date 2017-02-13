@@ -185,7 +185,7 @@ Supported Reactor Monads include
 ## Example for comprehensions with Flux
 
 ```java
-import static com.aol.cyclops.reactor.Fluxes.forEach;
+import static com.aol.cyclops.reactor.Fluxs.forEach;
 
 Flux<Integer> result = forEach(Flux.just(10,20),a->Flux.<Integer>just(a+10)
                                              ,(a,b)->a+b);

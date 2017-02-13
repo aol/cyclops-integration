@@ -4,16 +4,14 @@ import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.aol.cyclops.reactor.ReactorWitness.mono;
+import com.aol.cyclops2.types.anyM.AnyMValue;
+import cyclops.function.Fn3;
+import cyclops.function.Fn4;
+import cyclops.monads.AnyM;
 import org.reactivestreams.Publisher;
 
-import com.aol.cyclops.control.AnyM;
-import com.aol.cyclops.control.For;
-import com.aol.cyclops.control.FutureW;
-import com.aol.cyclops.types.Value;
-import com.aol.cyclops.types.anyM.AnyMValue;
-import com.aol.cyclops.types.stream.reactive.ValueSubscriber;
-import com.aol.cyclops.util.function.QuadFunction;
-import com.aol.cyclops.util.function.TriFunction;
+
 
 import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
@@ -36,7 +34,7 @@ public class Monos {
      * <pre>
      * {@code 
      *    
-     *    AnyMSeq<Integer> mono = Fluxes.anyM(Mono.just(1,2,3));
+     *    AnyMSeq<Integer> mono = Fluxs.anyM(Mono.just(1,2,3));
      *    AnyMSeq<Integer> transformedMono = myGenericOperation(mono);
      *    
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
@@ -46,8 +44,8 @@ public class Monos {
      * @param mono To wrap inside an AnyM
      * @return AnyMSeq wrapping a Mono
      */
-    public static <T> AnyMValue<T> anyM(Mono<T> mono) {
-        return AnyM.ofValue(mono);
+    public static <T> AnyMValue<mono,T> anyM(Mono<T> mono) {
+        return AnyM.ofValue(mono, ReactorWitness.mono.INSTANCE);
     }
 
     /**
@@ -78,8 +76,8 @@ public class Monos {
     public static <T1, T2, T3, R1, R2, R3, R> Mono<R> forEach4(Mono<? extends T1> value1,
             Function<? super T1, ? extends Mono<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Mono<R2>> value3,
-            TriFunction<? super T1, ? super R1, ? super R2, ? extends Mono<R3>> value4,
-            QuadFunction<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+            Fn3<? super T1, ? super R1, ? super R2, ? extends Mono<R3>> value4,
+            Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return AnyM.ofValue(For.anyM(anyM(value1))
                                .anyM(a -> anyM(value2.apply(a)))

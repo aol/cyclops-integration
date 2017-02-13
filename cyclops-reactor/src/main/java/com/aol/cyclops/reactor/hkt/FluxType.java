@@ -1,45 +1,25 @@
 package com.aol.cyclops.reactor.hkt;
 
 
-import java.time.Duration;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.LongConsumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.stream.Collector;
-import java.util.stream.Stream;
-
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.stream.ReactiveSeq;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.hkt.alias.Higher;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import reactor.core.Cancellation;
-import reactor.core.publisher.ConnectableFlux;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.GroupedFlux;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.ParallelFlux;
-import reactor.core.publisher.Signal;
-import reactor.core.publisher.SignalType;
-import reactor.core.publisher.SynchronousSink;
+import reactor.core.publisher.*;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.TimedScheduler;
 import reactor.util.function.Tuple2;
+
+import java.time.Duration;
+import java.util.*;
+import java.util.function.*;
+import java.util.logging.Level;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 /**
  * Simulates Higher Kinded Types for Reactor Flux's
@@ -88,7 +68,7 @@ public final class FluxType<T> implements Higher<FluxType.µ, T>, Publisher<T> {
      * If the supplied Flux implements FluxType it is returned already, otherwise it
      * is wrapped into a Flux implementation that does implement FluxType
      * 
-     * @param Flux Flux to widen to a FluxType
+     * @param completableFlux Flux to widen to a FluxType
      * @return FluxType encoding HKT info about Fluxs
      */
     public static <T> FluxType<T> widen(final Flux<T> completableFlux) {
@@ -127,7 +107,7 @@ public final class FluxType<T> implements Higher<FluxType.µ, T>, Publisher<T> {
     /**
      * Convert the HigherKindedType definition for a Flux into
      * 
-     * @param Flux Type Constructor to convert back into narrowed type
+     * @param completableFlux Type Constructor to convert back into narrowed type
      * @return Flux from Higher Kinded Type
      */
     public static <T> Flux<T> narrow(final Higher<FluxType.µ, T> completableFlux) {
@@ -2143,7 +2123,7 @@ public final class FluxType<T> implements Higher<FluxType.µ, T>, Publisher<T> {
          * @return
          * @see reactor.core.publisher.Flux#transform(java.util.function.Function)
          */
-        public final <V> Flux<V> transform(Function<? super Flux<T>, ? extends Publisher<V>> transformer) {
+        public final <V> Flux<V> transformMono(Function<? super Flux<T>, ? extends Publisher<V>> transformer) {
             return boxed.transform(transformer);
         }
         /**

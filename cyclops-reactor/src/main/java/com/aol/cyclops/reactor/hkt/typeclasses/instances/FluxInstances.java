@@ -1,27 +1,20 @@
 package com.aol.cyclops.reactor.hkt.typeclasses.instances;
 
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.instances.General;
-import com.aol.cyclops.hkt.typeclasses.Unit;
-import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
-import com.aol.cyclops.hkt.typeclasses.functor.Functor;
-import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
-import com.aol.cyclops.hkt.typeclasses.monad.Monad;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
-import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 import com.aol.cyclops.reactor.hkt.FluxType;
-
+import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.types.Unit;
+import cyclops.function.Monoid;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.instances.General;
+import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
+
+import java.util.function.*;
 
 /**
  * Companion class for creating Type Class instances for working with Fluxs
@@ -79,7 +72,7 @@ public class FluxInstances {
      * 
      * @return A factory for Fluxs
      */
-    public static <T> Unit<FluxType.µ> unit(){
+    public static <T> Pure<FluxType.µ> unit(){
         return General.<FluxType.µ,T>unit(FluxInstances::of);
     }
     /**
@@ -223,7 +216,7 @@ public class FluxInstances {
 
             BiFunction<Higher<C2,FluxType<T>>,Higher<C2,T>,Higher<C2,FluxType<T>>> combineToFlux =   (acc,next) -> ap.apBiFn(ap.unit((a,b) -> FluxType.widen(Flux.concat(a,Flux.just(b)))),acc,next);
 
-            BinaryOperator<Higher<C2,FluxType<T>>> combineFluxs = (a,b)-> ap.apBiFn(ap.unit((l1,l2)-> { return FluxType.widen(Flux.concat(l1.narrow(),l2.narrow()));}),a,b); ;  
+            BinaryOperator<Higher<C2,FluxType<T>>> combineFluxs = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> { return FluxType.widen(Flux.concat(l1.narrow(),l2.narrow()));}),a,b); ;
 
             return ReactiveSeq.fromPublisher(flux).reduce(identity,
                                                             combineToFlux,

@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  *
  */
 @UtilityClass
-public class Fluxes {
+public class Fluxs {
 
     /**
      * Construct an AnyM type from a Flux. This allows the Flux to be manipulated according to a standard interface
@@ -34,7 +34,7 @@ public class Fluxes {
      * <pre>
      * {@code 
      *    
-     *    AnyMSeq<Integer> flux = Fluxes.anyM(Flux.just(1,2,3));
+     *    AnyMSeq<Integer> flux = Fluxs.anyM(Flux.just(1,2,3));
      *    AnyMSeq<Integer> transformedFlux = myGenericOperation(flux);
      *    
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
@@ -55,7 +55,7 @@ public class Fluxes {
      *  <pre>
       * {@code
       *    
-      *   import static com.aol.cyclops.reactor.Fluxes.forEach4;
+      *   import static com.aol.cyclops.reactor.Fluxs.forEach4;
       *    
           forEach4(Flux.range(1,10), 
                   a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -103,7 +103,7 @@ public class Fluxes {
      * <pre>
      * {@code
      * 
-     *  import static com.aol.cyclops.reactor.Fluxes.forEach4;
+     *  import static com.aol.cyclops.reactor.Fluxs.forEach4;
      *   
      *  forEach4(Flux.range(1,10), 
                             a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -153,7 +153,7 @@ public class Fluxes {
      * <pre>
      * {@code 
      * 
-     * import static com.aol.cyclops.reactor.Fluxes.forEach;
+     * import static com.aol.cyclops.reactor.Fluxs.forEach;
      * 
      * forEach(Flux.range(1,10), 
                             a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -193,7 +193,7 @@ public class Fluxes {
          * <pre>
          * {@code
          *
-         * import static com.aol.cyclops.reactor.Fluxes.forEach;
+         * import static com.aol.cyclops.reactor.Fluxs.forEach;
          *
          * forEach(Flux.range(1,10),
                        a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -238,7 +238,7 @@ public class Fluxes {
      * <pre>
      * {@code 
      * 
-     *  import static com.aol.cyclops.reactor.Fluxes.forEach;
+     *  import static com.aol.cyclops.reactor.Fluxs.forEach;
      *  forEach(Flux.range(1, 10), i -> Flux.range(i, 10), Tuple::tuple)
               .subscribe(System.out::println);
               
@@ -271,7 +271,7 @@ public class Fluxes {
      * <pre>
      * {@code 
      * 
-     *   import static com.aol.cyclops.reactor.Fluxes.forEach;
+     *   import static com.aol.cyclops.reactor.Fluxs.forEach;
      * 
      *   forEach(Flux.range(1, 10), i -> Flux.range(i, 10),(a,b) -> a>2 && b<10,Tuple::tuple)
                .subscribe(System.out::println);

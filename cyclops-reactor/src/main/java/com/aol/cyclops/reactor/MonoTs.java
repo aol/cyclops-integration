@@ -34,7 +34,7 @@ public class MonoTs {
      * <pre>
      * {@code 
      *    
-     *    AnyMSeq<Integer> mono = Fluxes.anyM(Mono.just(1,2,3));
+     *    AnyMSeq<Integer> mono = Fluxs.anyM(Mono.just(1,2,3));
      *    AnyMSeq<Integer> transformedMono = myGenericOperation(mono);
      *    
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);

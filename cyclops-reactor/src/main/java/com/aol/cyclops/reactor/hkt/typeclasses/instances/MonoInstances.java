@@ -3,24 +3,18 @@ package com.aol.cyclops.reactor.hkt.typeclasses.instances;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.Monoids;
-import com.aol.cyclops.control.FutureW;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.instances.General;
-import com.aol.cyclops.hkt.jdk.CompletableFutureType;
-import com.aol.cyclops.hkt.typeclasses.Unit;
-import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
-import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
-import com.aol.cyclops.hkt.typeclasses.functor.Functor;
-import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
-import com.aol.cyclops.hkt.typeclasses.monad.Monad;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
-import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
+
 import com.aol.cyclops.reactor.Monos;
 import com.aol.cyclops.reactor.hkt.MonoType;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.function.Monoid;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.instances.General;
+import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Mono;
 
@@ -80,7 +74,7 @@ public class MonoInstances {
      * 
      * @return A factory for Monos
      */
-    public static <T> Unit<MonoType.µ> unit(){
+    public static <T> Pure<MonoType.µ> unit(){
         return General.<MonoType.µ,T>unit(MonoInstances::of);
     }
     /**
@@ -193,7 +187,7 @@ public class MonoInstances {
     public static <T> MonadPlus<MonoType.µ> monadPlus(){
  
         
-        Monoid<MonoType<T>> m = Monoid.of(MonoType.<T>widen(Mono.empty()), 
+        Monoid<MonoType<T>> m = Monoid.of(MonoType.<T>widen(Mono.empty()),
                                               (f,g)-> MonoType.widen(Mono.first(f.narrow(),g.narrow())));
                 
         Monoid<Higher<MonoType.µ,T>> m2= (Monoid)m;
