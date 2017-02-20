@@ -11,14 +11,13 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PStack;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
+
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -30,11 +29,12 @@ import scala.collection.GenTraversableOnce;
 import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.List;
 import scala.collection.immutable.List$;
+import scala.collection.Seq;
 import scala.collection.immutable.Vector;
 import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScalaCollection<T>,NativePlusLoop<T> {
+public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScalaCollection<T> {
 
     public LazyPStackX<T> plusLoop(int max, IntFunction<T> value) {
 
@@ -62,8 +62,7 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScal
      * @return LazyPStackX
      */
     public static <T> LazyPStackX<T> fromStream(Stream<T> stream) {
-        return new LazyPStackX<T>(
-                                  Flux.from(ReactiveSeq.fromStream(stream)), toPStack());
+        return new LazyPStackX<T>(null,ReactiveSeq.fromStream(stream), true,toPStack());
     }
 
     /**
@@ -157,7 +156,11 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScal
                                  list);
     }
     public static <T> LazyPStackX<T> lazyList(List<T> vector){
-        return LazyPStackX.fromPStack(fromList(vector), toPStack());
+        return fromPStack(fromList(vector), toPStack());
+    }
+
+    private static <T> LazyPStackX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
+        return new LazyPStackX<T>(s,null,true, pStackReducer);
     }
 
 
@@ -168,14 +171,14 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScal
     }
 
     public static <T> LazyPStackX<T> empty() {
-        return LazyPStackX.fromPStack(new ScalaPStack<>(
+        return fromPStack(new ScalaPStack<>(
                                                         List$.MODULE$.empty()),
                                       toPStack());
     }
 
     public static <T> LazyPStackX<T> singleton(T t) {
         List<T> result = List$.MODULE$.empty();
-        return LazyPStackX.fromPStack(new ScalaPStack<>(
+        return fromPStack(new ScalaPStack<>(
                                                         result.$colon$colon(t)),
                                       toPStack());
     }
@@ -186,20 +189,20 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScal
         for (T next : t)
             lb.$plus$eq(next);
         List<T> vec = lb.result();
-        return LazyPStackX.fromPStack(new ScalaPStack<>(
+        return fromPStack(new ScalaPStack<>(
                                                         vec),
                                       toPStack());
     }
 
     public static <T> LazyPStackX<T> PStack(List<T> q) {
-        return LazyPStackX.fromPStack(new ScalaPStack<T>(
+        return fromPStack(new ScalaPStack<T>(
                                                          q),
                                       toPStack());
     }
 
     @SafeVarargs
     public static <T> LazyPStackX<T> PStack(T... elements) {
-        return LazyPStackX.fromPStack(of(elements), toPStack());
+        return fromPStack(of(elements),  toPStack());
     }
 
     @Wither
@@ -246,7 +249,7 @@ public class ScalaPStack<T> extends AbstractList<T>implements PStack<T>, HasScal
         if (i == 0)
             return withList(list.$colon$colon(e));
         final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
-        final CanBuildFrom<GenSeq<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
+        final CanBuildFrom<Seq<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
         if (i == size()) {
 
             return withList(list.<T,List<T>>$colon$plus(e, builder2));

@@ -10,15 +10,13 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
+import cyclops.collections.immutable.PVectorX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PVector;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
-import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -31,7 +29,7 @@ import scala.collection.immutable.Vector;
 import scala.collection.immutable.Vector$;
 import scala.collection.immutable.VectorBuilder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasScalaCollection<T>, NativePlusLoop<T> {
+public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasScalaCollection<T> {
     
     public LazyPVectorX<T> plusLoop(int max, IntFunction<T> value){
         
@@ -59,8 +57,7 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasS
      * @return LazyPVectorX
      */
     public static <T> LazyPVectorX<T> fromStream(Stream<T> stream) {
-        return new LazyPVectorX<T>(
-                                   Flux.from(ReactiveSeq.fromStream(stream)),toPVector());
+        return new LazyPVectorX<T>(null, ReactiveSeq.fromStream(stream),toPVector());
     }
 
     /**
@@ -155,32 +152,36 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasS
         return new ScalaPVector<>(vector);
     }
     public static <T> LazyPVectorX<T> lazyVector(Vector<T> vector){
-        return LazyPVectorX.fromPVector(fromVector(vector), toPVector());
+        return fromPVector(fromVector(vector), toPVector());
     }
-    
+
+    private static <T> LazyPVectorX<T> fromPVector(PVector<T> vec, Reducer<PVector<T>> pVectorReducer) {
+        return new LazyPVectorX<T>(vec,null, pVectorReducer);
+    }
+
     public static <T> ScalaPVector<T> emptyPVector(){
         return new ScalaPVector<>(Vector$.MODULE$.empty());
     }
     public static <T> LazyPVectorX<T> empty(){
-        return LazyPVectorX.fromPVector(new ScalaPVector<>(Vector$.MODULE$.empty()), toPVector());
+        return fromPVector(new ScalaPVector<>(Vector$.MODULE$.empty()), toPVector());
     }
     public static <T> LazyPVectorX<T> singleton(T t){
         Vector<T> result = Vector$.MODULE$.empty();
-        return LazyPVectorX.fromPVector(new ScalaPVector<>(result.appendFront(t)), toPVector());
+        return fromPVector(new ScalaPVector<>(result.appendFront(t)), toPVector());
     }
     public static <T> LazyPVectorX<T> of(T... t){
         VectorBuilder<T> vb = new VectorBuilder<T>();
         for(T next : t)
             vb.$plus$eq(next);
         Vector<T> vec = vb.result();
-        return LazyPVectorX.fromPVector(new ScalaPVector<>(vec), toPVector());
+        return fromPVector(new ScalaPVector<>(vec), toPVector());
     }
     public static <T> LazyPVectorX<T> PVector(Vector<T> q) {
-        return LazyPVectorX.fromPVector(new ScalaPVector<T>(q), toPVector());
+        return fromPVector(new ScalaPVector<T>(q), toPVector());
     }
     @SafeVarargs
     public static <T> LazyPVectorX<T> PVector(T... elements){
-        return LazyPVectorX.fromPVector(of(elements),toPVector());
+        return fromPVector(of(elements),toPVector());
     }
     @Wither
     final Vector<T> vector;
@@ -240,7 +241,7 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasS
 
     @Override
     public ScalaPVector<T> plusAll(int i, Collection<? extends T> list) {
-        
+
         val frontBack = vector.splitAt(i);
         final CanBuildFrom<Vector<?>, T, Vector<T>> builder =
                 Vector.<T>canBuildFrom();
@@ -264,12 +265,12 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasS
 
     @Override
     public PVector<T> minus(Object e) {
-        return LazyPVectorX.fromPVector(this,toPVector()).filter(i->!Objects.equals(i,e));
+        return fromPVector(this,toPVector()).filter(i->!Objects.equals(i,e));
     }
 
     @Override
     public PVector<T> minusAll(Collection<?> list) {
-        return LazyPVectorX.fromPVector(this,toPVector()).removeAll((Iterable<T>)list);
+        return fromPVector(this,toPVector()).removeAllS((Iterable<T>)list);
     }
     
     public ScalaPVector<T> tail(){
