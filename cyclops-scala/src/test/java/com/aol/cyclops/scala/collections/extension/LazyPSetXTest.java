@@ -14,6 +14,7 @@ import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import cyclops.collections.immutable.PBagX;
+import cyclops.collections.immutable.PSetX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
     }
     @Override
     public <T> LazyFluentCollectionX<T> of(T... values) {
-        LazyPSetX<T> list = ScalaHashPSet.empty();
+        PSetX<T> list = ScalaHashPSet.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -43,7 +44,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
     @Test
     public void onEmptySwitch() {
         assertThat(ScalaHashPSet.empty()
-                          .onEmptySwitch(() -> LazyPSetX.of(1, 2, 3)).toList(),
+                          .onEmptySwitch(() -> PSetX.of(1, 2, 3)).toList(),
                    equalTo(ScalaHashPSet.of(1, 2, 3).toList()));
     }
 

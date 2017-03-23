@@ -48,6 +48,10 @@ public class Fluxs {
         return AnyM.ofSeq(flux, ReactorWitness.flux.INSTANCE);
     }
 
+    public static <T> Flux<T> flux(AnyM<flux,T> flux) {
+        return (Flux<T>)flux.unwrap();
+    }
+
     /**
      * Perform a For Comprehension over a Flux, accepting 3 generating functions. 
      * This results in a four level nested internal iteration over the provided Publishers.
