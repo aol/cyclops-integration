@@ -2,6 +2,7 @@ package com.aol.cyclops.reactor;
 
 import com.aol.cyclops.reactor.ReactorWitness.flux;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
+import cyclops.control.Try;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.monads.AnyM;
@@ -49,6 +50,7 @@ public class Fluxs {
     }
 
     public static <T> Flux<T> flux(AnyM<flux,T> flux) {
+
         return (Flux<T>)flux.unwrap();
     }
 

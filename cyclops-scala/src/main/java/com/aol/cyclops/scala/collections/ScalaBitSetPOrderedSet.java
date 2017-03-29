@@ -1,20 +1,19 @@
 package com.aol.cyclops.scala.collections;
 
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import cyclops.Reducers;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.POrderedSet;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPOrderedSetX;
+
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -41,9 +40,10 @@ class ScalaBitSetPOrderedSet extends AbstractSet<Integer>implements POrderedSet<
      * @return LazyPOrderedSetX
      */
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<Integer> fromStream(Stream<Integer> stream) {
-        return new LazyPOrderedSetX(
-                                  Flux.from(ReactiveSeq.fromStream(stream)), 
-                                  ScalaBitSetPOrderedSet.toPOrderedSet());
+        Reducer<POrderedSet<Integer>> reducer = ScalaBitSetPOrderedSet.toPOrderedSet();
+        return new LazyPOrderedSetX( null, ReactiveSeq.<Integer>fromStream(stream),
+                                  reducer
+                                   );
     }
 
     /**
@@ -139,7 +139,7 @@ class ScalaBitSetPOrderedSet extends AbstractSet<Integer>implements POrderedSet<
     public static LazyPOrderedSetX<Integer> empty() {
         
         
-        return LazyPOrderedSetX.fromPOrderedSet(new ScalaBitSetPOrderedSet(BitSet$.MODULE$.empty()),
+        return fromPOrderedSet(new ScalaBitSetPOrderedSet(BitSet$.MODULE$.empty()),
                                                 toPOrderedSet());
     }
 
@@ -153,23 +153,25 @@ class ScalaBitSetPOrderedSet extends AbstractSet<Integer>implements POrderedSet<
        for (Integer next : t)
            lb.$plus$eq(next);
        BitSet vec = lb.result();
-       return LazyPOrderedSetX.fromPOrderedSet(new ScalaBitSetPOrderedSet(
+       return fromPOrderedSet(new ScalaBitSetPOrderedSet(
                                                        vec),
                                      toPOrderedSet());
    }
 
-  
-    
 
+
+    private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
+        return  new LazyPOrderedSetX<T>(ordered,null,reducer);
+    }
     public static  LazyPOrderedSetX<Integer> POrderedSet(BitSet q) {
-        return LazyPOrderedSetX.fromPOrderedSet(new ScalaBitSetPOrderedSet(
+        return fromPOrderedSet(new ScalaBitSetPOrderedSet(
                                                          q),
                                       toPOrderedSet());
     }
 
     @SafeVarargs
     public static  LazyPOrderedSetX<Integer> POrderedSet(Integer... elements) {
-        return LazyPOrderedSetX.fromPOrderedSet(of(elements), toPOrderedSet());
+        return fromPOrderedSet(of(elements), toPOrderedSet());
     }
 
     @Wither

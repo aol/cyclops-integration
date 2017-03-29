@@ -1,6 +1,6 @@
 package com.aol.cyclops.reactor.hkt.typeclasses.instances;
 import static com.aol.cyclops.reactor.hkt.FluxType.widen;
-import static com.aol.cyclops.util.function.Lambda.l1;
+import static cyclops.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -8,17 +8,16 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.collections.ListX;
+import cyclops.control.Maybe;
+import cyclops.function.Fn1;
+import cyclops.function.Lambda;
+import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.control.Maybe;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.reactor.hkt.FluxType;
-import com.aol.cyclops.util.function.Lambda;
+
 
 import reactor.core.publisher.Flux;
 
@@ -38,7 +37,7 @@ public class FluxTest {
         
         FluxType<Integer> list = FluxInstances.unit()
                                      .unit("hello")
-                                     .then(h->FluxInstances.functor().map((String v) ->v.length(), h))
+                                     .transform(h->FluxInstances.functor().map((String v) ->v.length(), h))
                                      .convert(FluxType::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length())));
@@ -53,13 +52,15 @@ public class FluxTest {
     }
     @Test
     public void applicative(){
-        
-        FluxType<Function<Integer,Integer>> listFn =FluxInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(FluxType::narrowK);
+
+        FluxType<Fn1<Integer, Integer>> listFn = FluxInstances.unit()
+                                                              .unit(Lambda.l1((Integer i) -> i * 2))
+                                                              .convert(FluxType::narrowK);
         
         FluxType<Integer> list = FluxInstances.unit()
                                      .unit("hello")
-                                     .then(h->FluxInstances.functor().map((String v) ->v.length(), h))
-                                     .then(h->FluxInstances.zippingApplicative().ap(listFn, h))
+                                     .transform(h->FluxInstances.functor().map((String v) ->v.length(), h))
+                                     .transform(h->FluxInstances.zippingApplicative().ap(listFn, h))
                                      .convert(FluxType::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length()*2)));
@@ -75,7 +76,7 @@ public class FluxTest {
         
         FluxType<Integer> list = FluxInstances.unit()
                                      .unit("hello")
-                                     .then(h->FluxInstances.monad().flatMap((String v) ->FluxInstances.unit().unit(v.length()), h))
+                                     .transform(h->FluxInstances.monad().flatMap((String v) ->FluxInstances.unit().unit(v.length()), h))
                                      .convert(FluxType::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length())));
@@ -85,7 +86,7 @@ public class FluxTest {
         
         FluxType<String> list = FluxInstances.unit()
                                      .unit("hello")
-                                     .then(h->FluxInstances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .transform(h->FluxInstances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FluxType::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello")));
@@ -95,7 +96,7 @@ public class FluxTest {
         
         FluxType<String> list = FluxInstances.unit()
                                      .unit("hello")
-                                     .then(h->FluxInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .transform(h->FluxInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(FluxType::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList()));
@@ -135,9 +136,10 @@ public class FluxTest {
     }
     @Test
     public void traverse(){
-       MaybeType<Higher<FluxType.µ, Integer>> res = FluxInstances.traverse()
-                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), FluxType.just(1,2,3))
-                                                         .convert(MaybeType::narrowK);
+
+       Maybe<Higher<FluxType.µ, Integer>> res = FluxInstances.traverse()
+                                                         .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), FluxType.just(1,2,3))
+                                                         .convert(Maybe::narrowK);
        
        
        assertThat(res.map(i->i.convert(FluxType::narrowK).collect(Collectors.toList()).block()),

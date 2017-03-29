@@ -1,8 +1,9 @@
 package com.aol.cyclops.control;
 
+import cyclops.async.QueueFactories;
+
 import java.util.stream.Stream;
 
-import com.aol.cyclops.data.async.QueueFactories;
 
 public class ParallelTest {
     public static void main(String args[])
@@ -12,7 +13,7 @@ public class ParallelTest {
 
         for(int k=0; k < 10;k++) {
 
-            com.aol.cyclops.data.async.Queue<Integer> queue = QueueFactories.<Integer>boundedQueue(5000).build();
+            cyclops.async.Queue<Integer> queue = QueueFactories.<Integer>boundedQueue(5000).build();
 
             new Thread(() -> {
                 while(queue.isOpen()){

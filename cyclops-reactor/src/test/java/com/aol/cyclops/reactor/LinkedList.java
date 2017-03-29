@@ -2,9 +2,9 @@ package com.aol.cyclops.reactor;
 
 import java.util.function.BinaryOperator;
 
-import com.aol.cyclops.control.Maybe;
-import com.aol.cyclops.control.Xor;
 
+import cyclops.control.Maybe;
+import cyclops.control.Xor;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 

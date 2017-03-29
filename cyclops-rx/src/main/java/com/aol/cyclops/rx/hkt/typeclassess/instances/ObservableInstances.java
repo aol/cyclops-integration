@@ -1,28 +1,19 @@
 package com.aol.cyclops.rx.hkt.typeclassess.instances;
 
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.instances.General;
-import com.aol.cyclops.hkt.typeclasses.Unit;
-import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
-import com.aol.cyclops.hkt.typeclasses.functor.Functor;
-import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
-import com.aol.cyclops.hkt.typeclasses.monad.Monad;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
-import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 import com.aol.cyclops.rx.hkt.ObservableType;
-
+import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.types.Unit;
+import cyclops.function.Monoid;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.instances.General;
+import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
 import rx.Observable;
 import rx.functions.Func1;
+
+import java.util.function.*;
 
 /**
  * Companion class for creating Type Class instances for working with Observables
@@ -218,7 +209,7 @@ public class ObservableInstances {
      * @return Type class for traversables with traverse / sequence operations
      */
     public static <C2,T> Traverse<ObservableType.µ> traverse(){
-        BiFunction<Applicative<C2>,ObservableType<Higher<C2, T>>,Higher<C2, ObservableType<T>>> sequenceFn = (ap,observable) -> {
+        BiFunction<Applicative<C2>,ObservableType<Higher<C2, T>>,Higher<C2, ObservableType<T>>> sequenceFn = (ap, observable) -> {
         
             Higher<C2,ObservableType<T>> identity = ap.unit(ObservableType.widen(Observable.empty()));
 

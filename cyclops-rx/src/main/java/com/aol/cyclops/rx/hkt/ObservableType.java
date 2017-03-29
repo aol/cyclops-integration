@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.aol.cyclops2.hkt.Higher;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
-import com.aol.cyclops.hkt.alias.Higher;
+
 import com.aol.cyclops.rx.Observables;
 
 import lombok.AccessLevel;
