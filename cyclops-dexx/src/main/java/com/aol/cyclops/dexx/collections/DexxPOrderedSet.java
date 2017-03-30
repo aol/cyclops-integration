@@ -10,12 +10,13 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.POrderedSet;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPOrderedSetX;
+
 import com.github.andrewoma.dexx.collection.Builder;
 import com.github.andrewoma.dexx.collection.TreeSet;
 
@@ -35,9 +36,9 @@ public class DexxPOrderedSet<T> extends AbstractSet<T>implements POrderedSet<T> 
      * @return LazyPOrderedSetX
      */
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPOrderedSetX<T>(
-                                  Flux.from(ReactiveSeq.fromStream(stream)), 
-                                  DexxPOrderedSet.<T>toPOrderedSet(Comparator.naturalOrder()));
+        Reducer<POrderedSet<T>> r = DexxPOrderedSet.<T>toPOrderedSet(Comparator.naturalOrder());
+        return new LazyPOrderedSetX<T>(null, ReactiveSeq.fromStream(stream),
+                                  r);
     }
 
     /**
@@ -149,12 +150,12 @@ public class DexxPOrderedSet<T> extends AbstractSet<T>implements POrderedSet<T> 
 
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> empty() {
         
-        return LazyPOrderedSetX.fromPOrderedSet(new DexxPOrderedSet<>(new TreeSet<T>(Comparator.naturalOrder())),
+        return fromPOrderedSet(new DexxPOrderedSet<>(new TreeSet<T>(Comparator.naturalOrder())),
                                                 toPOrderedSet());
     }
     public static <T> LazyPOrderedSetX<T> empty(Comparator<T> comp) {
         
-        return LazyPOrderedSetX.fromPOrderedSet(new DexxPOrderedSet<>(new TreeSet<T>(comp)),
+        return fromPOrderedSet(new DexxPOrderedSet<>(new TreeSet<T>(comp)),
                                                 toPOrderedSet(comp));
     }
 
@@ -170,7 +171,7 @@ public class DexxPOrderedSet<T> extends AbstractSet<T>implements POrderedSet<T> 
        for (T next : t)
            lb.add(next);
        TreeSet<T> vec = lb.build();
-       return LazyPOrderedSetX.fromPOrderedSet(new DexxPOrderedSet<>(
+       return fromPOrderedSet(new DexxPOrderedSet<>(
                                                        vec),
                                      toPOrderedSet(comp));
    }
@@ -183,16 +184,18 @@ public class DexxPOrderedSet<T> extends AbstractSet<T>implements POrderedSet<T> 
 
     public static <T> LazyPOrderedSetX<T> POrderedSet(TreeSet<T> q) {
         Reducer<POrderedSet<T>> local = toPOrderedSet((Comparator<T>)q.comparator());
-        return LazyPOrderedSetX.fromPOrderedSet(new DexxPOrderedSet<T>(
+        return fromPOrderedSet(new DexxPOrderedSet<T>(
                                                          q),
                                       local);
     }
 
     @SafeVarargs
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> POrderedSet(T... elements) {
-        return LazyPOrderedSetX.fromPOrderedSet(of(elements), toPOrderedSet());
+        return fromPOrderedSet(of(elements), toPOrderedSet());
     }
-
+    private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
+        return  new LazyPOrderedSetX<T>(ordered,null,reducer);
+    }
     @Wither
     private final TreeSet<T> set;
 

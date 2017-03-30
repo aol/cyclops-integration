@@ -9,12 +9,13 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PVector;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
+
 import com.github.andrewoma.dexx.collection.Builder;
 import com.github.andrewoma.dexx.collection.Vector;
 
@@ -32,8 +33,8 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
      * @return LazyPVectorX
      */
     public static <T> LazyPVectorX<T> fromStream(Stream<T> stream) {
-        return new LazyPVectorX<T>(
-                                   Flux.from(ReactiveSeq.fromStream(stream)),toPVector());
+        Reducer<PVector<T>> r = toPVector();
+        return new LazyPVectorX<T>(null, ReactiveSeq.fromStream(stream),r);
     }
 
     /**
@@ -132,25 +133,28 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
     }
     
     public static <T> LazyPVectorX<T> empty(){
-        return LazyPVectorX.fromPVector(new DexxPVector<>(Vector.empty()), toPVector());
+        return fromPVector(new DexxPVector<>(Vector.empty()), toPVector());
     }
     public static <T> PVector<T> singleton(T t){
         Builder<T, Vector<T>> builder = Vector.<T>factory().newBuilder();
-        return LazyPVectorX.fromPVector(new DexxPVector<>(builder.add(t).build()), toPVector());
+        return fromPVector(new DexxPVector<>(builder.add(t).build()), toPVector());
     }
     public static <T> LazyPVectorX<T> of(T... t){
         Builder<T, Vector<T>> builder = Vector.<T>factory().newBuilder();
         for(T next : t){
             builder.add(next);
         }
-        return LazyPVectorX.fromPVector(new DexxPVector<>(builder.build()), toPVector());
+        return fromPVector(new DexxPVector<>(builder.build()), toPVector());
     }
     public static <T> LazyPVectorX<T> PStack(Vector<T> q) {
-        return LazyPVectorX.fromPVector(new DexxPVector<T>(q), toPVector());
+        return fromPVector(new DexxPVector<T>(q), toPVector());
+    }
+    private static <T> LazyPVectorX<T> fromPVector(PVector<T> vec, Reducer<PVector<T>> pVectorReducer) {
+        return new LazyPVectorX<T>(vec,null, pVectorReducer);
     }
     @SafeVarargs
     public static <T> LazyPVectorX<T> PVector(T... elements){
-        return LazyPVectorX.fromPVector(of(elements),toPVector());
+        return fromPVector(of(elements),toPVector());
     }
     @Wither
     private final Vector<T> vector;
@@ -209,12 +213,12 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public PVector<T> minus(Object e) {
-        return LazyPVectorX.fromPVector(this,toPVector()).filter(i->!Objects.equals(i,e));
+        return fromPVector(this,toPVector()).filter(i->!Objects.equals(i,e));
     }
 
     @Override
     public PVector<T> minusAll(Collection<?> list) {
-        return LazyPVectorX.fromPVector(this,toPVector()).removeAll((Iterable<T>)list);
+        return fromPVector(this,toPVector()).removeAllS((Iterable<T>)list);
     }
 
     @Override

@@ -10,13 +10,14 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PStack;
 
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
+
 import com.github.andrewoma.dexx.collection.Builder;
 import com.github.andrewoma.dexx.collection.ConsList;
 import com.github.andrewoma.dexx.collection.List;
@@ -39,8 +40,8 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
      * @return LazyPStackX
      */
     public static <T> LazyPStackX<T> fromStream(Stream<T> stream) {
-        return new LazyPStackX<T>(
-                                  Flux.from(ReactiveSeq.fromStream(stream)), toPStack());
+        Reducer<PStack<T>> r = toPStack();
+        return new LazyPStackX<T>(null, ReactiveSeq.fromStream(stream), true, r);
     }
 
     /**
@@ -141,13 +142,13 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
     }
 
     public static <T> LazyPStackX<T> empty() {
-        return LazyPStackX.fromPStack(new DexxPStack<>(ConsList.empty()),
+        return fromPStack(new DexxPStack<>(ConsList.empty()),
                                       toPStack());
     }
 
     public static <T> LazyPStackX<T> singleton(T t) {
         List<T> result = ConsList.empty();
-        return LazyPStackX.fromPStack(new DexxPStack<>(
+        return fromPStack(new DexxPStack<>(
                                                         result.prepend(t)),
                                       toPStack());
     }
@@ -158,20 +159,23 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
         for (T next : t)
             lb.add(next);
         List<T> vec = lb.build();
-        return LazyPStackX.fromPStack(new DexxPStack<>(
+        return fromPStack(new DexxPStack<>(
                                                         vec),
                                       toPStack());
     }
 
     public static <T> LazyPStackX<T> PStack(List<T> q) {
-        return LazyPStackX.fromPStack(new DexxPStack<T>(
+        return fromPStack(new DexxPStack<T>(
                                                          q),
                                       toPStack());
+    }
+    private static <T> LazyPStackX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
+        return new LazyPStackX<T>(s,null,true, pStackReducer);
     }
 
     @SafeVarargs
     public static <T> LazyPStackX<T> PStack(T... elements) {
-        return LazyPStackX.fromPStack(of(elements), toPStack());
+        return fromPStack(of(elements), toPStack());
     }
 
     @Wither
@@ -248,14 +252,14 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
 
     @Override
     public PStack<T> minus(Object e) {
-        return LazyPStackX.fromPStack(this, toPStack())
+        return fromPStack(this, toPStack())
                           .filter(i -> !Objects.equals(i, e));
     }
 
     @Override
     public PStack<T> minusAll(Collection<?> list) {
-        return LazyPStackX.fromPStack(this, toPStack())
-                          .removeAll((Iterable<T>) list);
+        return fromPStack(this, toPStack())
+                          .removeAllS((Iterable<T>) list);
     }
 
     public DexxPStack<T> tail() {
@@ -275,9 +279,9 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
         if (i == 0)
             return withList(list.drop(1));
         if (i == size() - 1)
-           return LazyPStackX.fromPStack(this, toPStack()).dropRight(1);
+           return fromPStack(this, toPStack()).dropRight(1);
         
-        return LazyPStackX.fromPStack(this, toPStack())
+        return fromPStack(this, toPStack())
                           .zipWithIndex()
                           .filter(t->t.v2.intValue()!=i)
                           .map(t->t.v1);

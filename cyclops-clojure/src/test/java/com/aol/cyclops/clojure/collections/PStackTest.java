@@ -5,13 +5,14 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
+import cyclops.collections.immutable.PStackX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
-import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
+
 public class PStackTest {
 
     ConsPStack<Integer> org = null;

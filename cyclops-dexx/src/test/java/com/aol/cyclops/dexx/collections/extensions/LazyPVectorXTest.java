@@ -8,16 +8,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
+import cyclops.collections.immutable.PBagX;
+import cyclops.collections.immutable.PVectorX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
-import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
-import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
 import com.aol.cyclops.dexx.collections.DexxPVector;
 import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
+
 
 import reactor.core.publisher.Flux;
 
@@ -60,7 +61,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
         DexxPVector.of(1, 2, 3)
                .minusAll(PBagX.of(2, 3))
-               .flatMapPublisher(i -> Flux.just(10 + i, 20 + i, 30 + i));
+               .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 

@@ -9,12 +9,13 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PSet;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
+
 import com.github.andrewoma.dexx.collection.Builder;
 import com.github.andrewoma.dexx.collection.Set;
 import com.github.andrewoma.dexx.collection.Sets;
@@ -34,8 +35,8 @@ public class DexxPSet<T> extends AbstractSet<T>implements PSet<T> {
      * @return LazyPSetX
      */
     public static <T> LazyPSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPSetX<T>(
-                                Flux.from(ReactiveSeq.fromStream(stream)), toPSet());
+        Reducer<PSet<T>> r = toPSet();
+        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream), r);
     }
 
     /**
@@ -137,9 +138,12 @@ public class DexxPSet<T> extends AbstractSet<T>implements PSet<T> {
 
     public static <T> LazyPSetX<T> empty() {
 
-        return LazyPSetX.fromPSet(new DexxPSet<T>(
+        return fromPSet(new DexxPSet<T>(
                                                   Sets.of()),
                                   toPSet());
+    }
+    private static <T> LazyPSetX<T> fromPSet(PSet<T> ts, Reducer<PSet<T>> pSetReducer) {
+        return new LazyPSetX<T>(ts,null,pSetReducer);
     }
 
     public static <T> LazyPSetX<T> singleton(T t) {
@@ -152,20 +156,20 @@ public class DexxPSet<T> extends AbstractSet<T>implements PSet<T> {
         for (T next : t)
             lb.add(next);
         Set<T> vec = lb.build();
-        return LazyPSetX.fromPSet(new DexxPSet<>(
+        return fromPSet(new DexxPSet<>(
                                                  vec),
                                   toPSet());
     }
 
     public static <T> LazyPSetX<T> PSet(Set<T> q) {
-        return LazyPSetX.fromPSet(new DexxPSet<T>(
+        return fromPSet(new DexxPSet<T>(
                                                   q),
                                   toPSet());
     }
 
     @SafeVarargs
     public static <T> LazyPSetX<T> PSet(T... elements) {
-        return LazyPSetX.fromPSet(of(elements), toPSet());
+        return fromPSet(of(elements), toPSet());
     }
 
     @Wither

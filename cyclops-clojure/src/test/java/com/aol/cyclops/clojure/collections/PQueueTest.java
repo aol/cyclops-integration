@@ -5,12 +5,13 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.immutable.PQueueX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.AmortizedPQueue;
 import org.pcollections.PQueue;
 
-import com.aol.cyclops.data.collections.extensions.persistent.PQueueX;
+
 public class PQueueTest {
 
     AmortizedPQueue<Integer> org = null;
