@@ -10,12 +10,12 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PQueue;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPQueueX;
 
 import clojure.lang.PersistentQueue;
 import lombok.AccessLevel;
@@ -33,8 +33,8 @@ public class ClojurePQueue<T> extends AbstractQueue<T> implements PQueue<T> {
      * @return LazyPQueueX
      */
     public static <T> LazyPQueueX<T> fromStream(Stream<T> stream) {
-        return new LazyPQueueX<T>(
-                                  Flux.from(ReactiveSeq.fromStream(stream)), toPQueue());
+        Reducer<PQueue<T>> q = toPQueue();
+        return new LazyPQueueX<T>(null, ReactiveSeq.fromStream(stream), q);
     }
 
     /**
@@ -134,8 +134,11 @@ public class ClojurePQueue<T> extends AbstractQueue<T> implements PQueue<T> {
     }
 
     public static <T> LazyPQueueX<T> empty() {
-        return LazyPQueueX.fromPQueue(new ClojurePQueue<>(PersistentQueue.EMPTY),
+        return fromPQueue(new ClojurePQueue<>(PersistentQueue.EMPTY),
                                       toPQueue());
+    }
+    private static <T> LazyPQueueX<T> fromPQueue(PQueue<T> ts, Reducer<PQueue<T>> pQueueReducer) {
+        return new LazyPQueueX<T>(ts,null,pQueueReducer);
     }
 
     public static <T> LazyPQueueX<T> singleton(T t) {
@@ -148,19 +151,19 @@ public class ClojurePQueue<T> extends AbstractQueue<T> implements PQueue<T> {
         for (T next : t)
             use = (PersistentQueue) use.cons(next);
        
-        return LazyPQueueX.fromPQueue(new ClojurePQueue<>(use),
+        return fromPQueue(new ClojurePQueue<>(use),
                                       toPQueue());
     }
 
     public static <T> LazyPQueueX<T> PQueue(PersistentQueue q) {
-        return LazyPQueueX.fromPQueue(new ClojurePQueue<T>(
+        return fromPQueue(new ClojurePQueue<T>(
                                                          q),
                                       toPQueue());
     }
 
     @SafeVarargs
     public static <T> LazyPQueueX<T> PQueue(T... elements) {
-        return LazyPQueueX.fromPQueue(of(elements), toPQueue());
+        return fromPQueue(of(elements), toPQueue());
     }
 
     @Wither
@@ -186,14 +189,14 @@ public class ClojurePQueue<T> extends AbstractQueue<T> implements PQueue<T> {
 
     @Override
     public PQueue<T> minus(Object e) {
-        return LazyPQueueX.fromPQueue(this, toPQueue())
+        return fromPQueue(this, toPQueue())
                           .filter(i -> !Objects.equals(i, e));
     }
 
     @Override
     public PQueue<T> minusAll(Collection<?> queue) {
-        return LazyPQueueX.fromPQueue(this, toPQueue())
-                          .removeAll((Iterable<T>) queue);
+        return fromPQueue(this, toPQueue())
+                          .removeAllS((Iterable<T>) queue);
     }
 
     

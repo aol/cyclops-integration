@@ -10,13 +10,13 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
+import cyclops.collections.ListX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PStack;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
 
 import clojure.lang.IPersistentList;
 import clojure.lang.PersistentList;
@@ -35,8 +35,9 @@ public class ClojurePStack<T> extends AbstractList<T>implements PStack<T> {
      * @return LazyPStackX
      */
     public static <T> LazyPStackX<T> fromStream(Stream<T> stream) {
-        return new LazyPStackX<T>(
-                                  Flux.from(ReactiveSeq.fromStream(stream)), toPStack());
+        Reducer<PStack<T>> s = toPStack();
+        return new LazyPStackX<T>(null,
+                                  ReactiveSeq.fromStream(stream),true, s);
     }
 
     /**
@@ -146,20 +147,24 @@ public class ClojurePStack<T> extends AbstractList<T>implements PStack<T> {
 
     public static <T> LazyPStackX<T> of(T... t) {
 
-        return LazyPStackX.fromPStack(new ClojurePStack<T>(
+        return fromPStack(new ClojurePStack<T>(
                                                            PersistentList.create(Arrays.asList(t))),
                                       toPStack());
     }
 
     public static <T> LazyPStackX<T> PStack(List<T> q) {
-        return LazyPStackX.fromPStack(new ClojurePStack<T>(
+        return fromPStack(new ClojurePStack<T>(
                                                            PersistentList.create(q)),
                                       toPStack());
     }
 
+    private static <T> LazyPStackX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
+        return new LazyPStackX<T>(s,null,true, pStackReducer);
+    }
+
     @SafeVarargs
     public static <T> LazyPStackX<T> PStack(T... elements) {
-        return LazyPStackX.fromPStack(of(elements), toPStack());
+        return fromPStack(of(elements), toPStack());
     }
 
     @Wither

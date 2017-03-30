@@ -10,13 +10,7 @@ import java.util.Set;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.Eval;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
-import com.aol.cyclops.data.collections.extensions.standard.MapXs;
-import com.aol.cyclops.reactor.collections.extensions.base.ExtensiblePMapX;
-import com.aol.cyclops.types.mixins.TupleWrapper;
+
 
 import clojure.lang.PersistentTreeMap;
 import clojure.lang.PersistentTreeMap;

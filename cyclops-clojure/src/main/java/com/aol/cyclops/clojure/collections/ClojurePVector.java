@@ -9,12 +9,12 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PVector;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
 
 import clojure.lang.PersistentVector;
 import lombok.AccessLevel;
@@ -31,8 +31,8 @@ public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
      * @return LazyPVectorX
      */
     public static <T> LazyPVectorX<T> fromStream(Stream<T> stream) {
-        return new LazyPVectorX<T>(
-                                   Flux.from(ReactiveSeq.fromStream(stream)),toPVector());
+        Reducer<PVector<T>> v = toPVector();
+        return new LazyPVectorX<T>(null, ReactiveSeq.fromStream(stream),v);
     }
 
     /**
@@ -129,23 +129,23 @@ public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
         return new ClojurePVector<>(PersistentVector.EMPTY);
     }
     public static <T> LazyPVectorX<T> empty(){
-        return LazyPVectorX.fromPVector(new ClojurePVector<>(PersistentVector.EMPTY), toPVector());
+        return fromPVector(new ClojurePVector<>(PersistentVector.EMPTY), toPVector());
     }
     public static <T> LazyPVectorX<T> singleton(T t){
         PersistentVector result = PersistentVector.EMPTY;
-        return LazyPVectorX.fromPVector(new ClojurePVector<>(result.cons(t)), toPVector());
+        return fromPVector(new ClojurePVector<>(result.cons(t)), toPVector());
     }
     public static <T> LazyPVectorX<T> of(T... t){
         PersistentVector vb = PersistentVector.create(t);
         
-        return LazyPVectorX.fromPVector(new ClojurePVector<>(vb), toPVector());
+        return fromPVector(new ClojurePVector<>(vb), toPVector());
     }
     public static <T> LazyPVectorX<T> PVector(PersistentVector q) {
-        return LazyPVectorX.fromPVector(new ClojurePVector<T>(q), toPVector());
+        return fromPVector(new ClojurePVector<T>(q), toPVector());
     }
     @SafeVarargs
     public static <T> LazyPVectorX<T> PVector(T... elements){
-        return LazyPVectorX.fromPVector(of(elements),toPVector());
+        return fromPVector(of(elements),toPVector());
     }
     @Wither
     private final PersistentVector vector;
@@ -173,33 +173,34 @@ public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public PVector<T>  plus(int i, T e){
-       Flux<T> flux = LazyPVectorX.fromPVector(this,toPVector()).flux();
-       Flux<T> inserted = Flux.from(ReactiveSeq.fromPublisher(flux)
-                              .insertAt(i, e));
+
+       ReactiveSeq<T> flux = fromPVector(this,toPVector()).reactiveSeq();
+       ReactiveSeq<T> inserted = flux.insertAt(i, e);
        
-       return LazyPVectorX.fromFlux(inserted,toPVector());
+       return fromStream(inserted);
                   
        
     }
-
+    private static <T> LazyPVectorX<T> fromPVector(PVector<T> vec, Reducer<PVector<T>> pVectorReducer) {
+        return new LazyPVectorX<T>(vec,null, pVectorReducer);
+    }
     @Override
     public PVector<T> plusAll(int i, Collection<? extends T> list) {
-        Flux<T> flux = LazyPVectorX.fromPVector(this,toPVector()).flux();
-        Flux<T> inserted = Flux.from(ReactiveSeq.fromPublisher(flux)
-                               .insertStreamAt(i, (Stream<T>)list.stream()));
+        ReactiveSeq<T> flux = fromPVector(this,toPVector()).reactiveSeq();
+        ReactiveSeq<T> inserted = flux.insertAtS(i, (Stream<T>)list.stream());
         
-        return LazyPVectorX.fromFlux(inserted,toPVector());
+        return fromStream(inserted);
     }
 
     @Override
     public PVector<T> minus(Object e) {
      
-        return LazyPVectorX.fromPVector(this,toPVector()).filter(i->!Objects.equals(i,e));
+        return fromPVector(this,toPVector()).filter(i->!Objects.equals(i,e));
     }
 
     @Override
     public PVector<T> minusAll(Collection<?> list) {
-        return LazyPVectorX.fromPVector(this,toPVector()).removeAll((Iterable<T>)list);
+        return fromPVector(this,toPVector()).removeAllS((Iterable<T>)list);
     }
     
     public ClojurePVector<T> tail(){
@@ -212,7 +213,7 @@ public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
     @Override
     public PVector<T> minus(int i) {
       
-        return LazyPVectorX.fromPVector(this,toPVector())
+        return fromPVector(this,toPVector())
                         .zipWithIndex()
                         .filter(t->t.v2.intValue()!=i)
                         .map(t->t.v1);
@@ -220,7 +221,7 @@ public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public PVector<T> subList(int start, int end) {
-        return LazyPVectorX.fromPVector(this,toPVector())
+        return fromPVector(this,toPVector())
                 .skip((long)start)
                 .limit(end-start);
         
