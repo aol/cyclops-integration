@@ -12,20 +12,17 @@ import javaslang.control.Option;
 public class EitherComprehender implements ValueComprehender<Either> {
 
     public Object filter(Either t, Predicate p) {
-        return t.right()
-                .filter(x -> p.test(x));
+        return t.filter(p);
     }
 
     @Override
     public Object map(Either t, Function fn) {
-        return t.right()
-                .map(e -> fn.apply(e));
+        return t.map(fn);
     }
 
     @Override
     public Object flatMap(Either t, Function fn) {
-        return t.right()
-                .flatMap(e -> fn.apply(e));
+        return t.flatMap(fn);
     }
 
     @Override
@@ -44,9 +41,6 @@ public class EitherComprehender implements ValueComprehender<Either> {
     }
 
     public Object resolveForCrossTypeFlatMap(Comprehender comp, Either apply) {
-        if (apply.isRight())
-            return comp.of(apply.right()
-                                .get());
-        return comp.empty();
+        return apply.isRight() ? comp.of(apply.get()) : comp.empty();
     }
 }
