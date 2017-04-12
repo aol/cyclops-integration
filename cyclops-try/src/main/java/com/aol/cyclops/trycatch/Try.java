@@ -144,7 +144,7 @@ public interface Try<T,X extends Throwable> extends Supplier<T>, ValueObject, To
 	 * Flatten a nested Try Structure
 	 * @return Lowest nested Try
 	 */
-	public Try<T,X> flatten();
+	public <T> Try<T,X> flatten();
 	
 	/**
 	 * @return Optional present if Success, Optional empty if failure
@@ -319,24 +319,25 @@ public interface Try<T,X extends Throwable> extends Supplier<T>, ValueObject, To
 		private final Class<X>[] classes;
 		private final CheckedSupplier<V,X> inputSupplier;
 		private final CheckedFunction<V, T, X> catchBlock;
-		
+
 		private void invokeClose(Object in) {
-			if(in instanceof Iterable)
+			if(in instanceof Closeable || in instanceof AutoCloseable)
+				_invokeClose(in);
+			else if(in instanceof Iterable)
 				invokeClose((Iterable)in);
-			invokeClose((Closeable)in);
 		}
-		private void invokeClose(Iterable<Closeable> in){
-			for(Closeable next : in)
+		private void invokeClose(Iterable in){
+			for(Object next : in)
 				invokeClose(next);
-			
-		
-	}
-		private void invokeClose(Closeable in){
-			
-				Try.withCatch(()->in.getClass().getMethod("close")).filter(m->m!=null)
-						.flatMap(m->Try.withCatch(()->m.invoke(in))
-											.filter(o->o!=null));
-			
+
+
+		}
+		private void _invokeClose(Object in){
+
+			Try.withCatch(()->in.getClass().getMethod("close")).filter(m->m!=null)
+					.flatMap(m->Try.withCatch(()->m.invoke(in))
+							.filter(o->o!=null));
+
 		}
 		public Try<T,X> close(){
 			

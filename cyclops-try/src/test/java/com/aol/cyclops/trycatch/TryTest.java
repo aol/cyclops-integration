@@ -15,7 +15,17 @@ import org.junit.Test;
 import com.aol.cyclops.lambda.tuple.PTuple2;
 import com.aol.cyclops.lambda.tuple.PowerTuples;
 public class TryTest {
- 
+
+
+	@Test
+	public void compileError(){
+		Try<String, Throwable> r = Try.of(Try.of("r"))
+                                     .flatten();
+
+
+
+
+	}
 	@Test(expected=IOException.class)
 	public void test(){
 		Try.runWithCatch(this::exceptional,IOException.class)
