@@ -5,10 +5,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.aol.cyclops.control.FutureW;
-import com.aol.cyclops.hkt.alias.Higher;
+
 import com.aol.cyclops.javaslang.FromCyclopsReact;
 
+import com.aol.cyclops2.hkt.Higher;
 import javaslang.collection.Iterator;
 import javaslang.concurrent.Future;
 import javaslang.concurrent.Promise;
@@ -58,7 +58,7 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, Future<T> {
      * If the supplied Future implements FutureType it is returned already, otherwise it
      * is wrapped into a Future implementation that does implement FutureType
      * 
-     * @param Future Future to widen to a FutureType
+     * @param completableFuture Future to widen to a FutureType
      * @return FutureType encoding HKT info about Futures
      */
     public static <T> FutureType<T> widen(final Future<T> completableFuture) {
@@ -67,7 +67,8 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, Future<T> {
         return new Box<>(
                          completableFuture);
     }
-    public static <T> FutureType<T> widen(final FutureW<T> future) {
+    public static <T> FutureType<T> widen(final cyclops.async.Future<T> future) {
+
         return widen(FromCyclopsReact.future(future));
     }
     public static <T> FutureType<T> promise(){
@@ -87,7 +88,7 @@ public interface FutureType<T> extends Higher<FutureType.µ, T>, Future<T> {
     /**
      * Convert the HigherKindedType definition for a Future into
      * 
-     * @param Future Type Constructor to convert back into narrowed type
+     * @param completableFuture Type Constructor to convert back into narrowed type
      * @return Future from Higher Kinded Type
      */
     public static <T> Future<T> narrow(final Higher<FutureType.µ, T> completableFuture) {

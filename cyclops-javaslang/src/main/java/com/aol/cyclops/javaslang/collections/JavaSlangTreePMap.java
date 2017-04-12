@@ -6,15 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.aol.cyclops2.types.mixins.TupleWrapper;
+import cyclops.collections.immutable.PMapX;
+import cyclops.control.Eval;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
-
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.Eval;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
-import com.aol.cyclops.reactor.collections.extensions.base.ExtensiblePMapX;
-import com.aol.cyclops.types.mixins.TupleWrapper;
 
 import javaslang.collection.TreeMap;
 import lombok.AccessLevel;
@@ -40,7 +38,7 @@ public class JavaSlangTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
         return fromMap(res);
     }
     public static <K extends Comparable<? super K>,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(TreeMap.<K,V>empty()),Eval.later(()->toPMapX()));
+       return new ExtensiblePMapX<K,V>(fromMap(TreeMap.<K,V>empty()), Eval.later(()->toPMapX()));
     }
     public static <K extends Comparable<? super K>,V> PMap<K,V> singletonPMap(K key,V value){
         TreeMap<K,V> map = TreeMap.of(key, value);

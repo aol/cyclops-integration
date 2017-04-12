@@ -9,14 +9,12 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PQueue;
 
-
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPOrderedSetX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPQueueX;
 
 import javaslang.collection.Queue;
 import javaslang.collection.SortedSet;
@@ -34,8 +32,7 @@ public class JavaSlangPQueue<T> extends AbstractQueue<T> implements PQueue<T> {
      * @return LazyPQueueX
      */
     public static <T> LazyPQueueX<T> fromStream(Stream<T> stream) {
-        return new LazyPQueueX<T>(
-                                   Flux.from(ReactiveSeq.fromStream(stream)),toPQueue());
+        return new LazyPQueueX<T>(null, ReactiveSeq.fromStream(stream),toPQueue());
     }
 
     /**
@@ -127,21 +124,24 @@ public class JavaSlangPQueue<T> extends AbstractQueue<T> implements PQueue<T> {
        
     }
     public static <T> LazyPQueueX<T> empty(){
-        return LazyPQueueX.fromPQueue(new JavaSlangPQueue<>(Queue.empty()),toPQueue());
+        return fromPQueue(new JavaSlangPQueue<>(Queue.empty()),toPQueue());
        
     }
+    private static <T> LazyPQueueX<T> fromPQueue(PQueue<T> ts, Reducer<PQueue<T>> pQueueReducer) {
+        return new LazyPQueueX<T>(ts,null,pQueueReducer);
+    }
     public static <T> LazyPQueueX<T> singleton(T t){
-        return  LazyPQueueX.fromPQueue(new JavaSlangPQueue<>(Queue.of(t)),toPQueue());
+        return  fromPQueue(new JavaSlangPQueue<>(Queue.of(t)),toPQueue());
     }
     public static <T> LazyPQueueX<T> of(T... t){
-       return  LazyPQueueX.fromPQueue(new JavaSlangPQueue<>(Queue.of(t)),toPQueue());
+       return  fromPQueue(new JavaSlangPQueue<>(Queue.of(t)),toPQueue());
     }
     public static <T> LazyPQueueX<T> PQueue(Queue<T> q) {
-        return LazyPQueueX.fromPQueue(new JavaSlangPQueue<>(q), toPQueue());
+        return fromPQueue(new JavaSlangPQueue<>(q), toPQueue());
     }
     @SafeVarargs
     public static <T> LazyPQueueX<T> PQueue(T... elements){
-        return LazyPQueueX.fromPQueue(of(elements),toPQueue());
+        return fromPQueue(of(elements),toPQueue());
     }
     @Wither
     private final Queue<T> list;

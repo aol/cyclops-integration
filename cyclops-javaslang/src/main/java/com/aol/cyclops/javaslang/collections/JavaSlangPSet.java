@@ -9,13 +9,14 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PSet;
 import org.pcollections.PSet;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
+
 
 import javaslang.collection.HashSet;
 import javaslang.collection.Set;
@@ -33,8 +34,7 @@ public class JavaSlangPSet<T> extends AbstractSet<T>  implements PSet<T> {
      * @return LazyPSetX
      */
     public static <T> LazyPSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPSetX<T>(
-                                   Flux.from(ReactiveSeq.fromStream(stream)),toPSet());
+        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream),toPSet());
     }
 
     /**
@@ -121,21 +121,24 @@ public class JavaSlangPSet<T> extends AbstractSet<T>  implements PSet<T> {
     public static <T> Reducer<PSet<T>> toPSet() {
         return Reducer.<PSet<T>> of(JavaSlangPSet.emptyPSet(), (final PSet<T> a) -> b -> a.plusAll(b), (final T x) -> JavaSlangPSet.singleton(x));
     }
-    
+
     public static <T> LazyPSetX<T> PSet(Set<T> q) {
-        return LazyPSetX.fromPSet(new JavaSlangPSet<>(q), toPSet());
+        return fromPSet(new JavaSlangPSet<>(q), toPSet());
     }
     public static <T> JavaSlangPSet<T> emptyPSet(){
         return  new JavaSlangPSet<>(HashSet.empty());
     }
     public static <T> LazyPSetX<T> empty(){
-        return LazyPSetX.fromPSet( new JavaSlangPSet<>(HashSet.empty()), toPSet());
+        return fromPSet( new JavaSlangPSet<>(HashSet.empty()), toPSet());
+    }
+    private static <T> LazyPSetX<T> fromPSet(PSet<T> ts, Reducer<PSet<T>> pSetReducer) {
+        return new LazyPSetX<T>(ts,null,pSetReducer);
     }
     public static <T> LazyPSetX<T> singleton(T t){
-        return LazyPSetX.fromPSet(new JavaSlangPSet<>(HashSet.of(t)), toPSet());
+        return fromPSet(new JavaSlangPSet<>(HashSet.of(t)), toPSet());
     }
     public static <T> LazyPSetX<T> of(T... t){
-        return LazyPSetX.fromPSet( new JavaSlangPSet<>(HashSet.of(t)), toPSet());
+        return fromPSet( new JavaSlangPSet<>(HashSet.of(t)), toPSet());
     }
     @SafeVarargs
     public static <T> LazyPSetX<T> PSet(T... elements){

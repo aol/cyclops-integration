@@ -4,20 +4,14 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.aol.cyclops.control.AnyM;
-import com.aol.cyclops.control.Eval;
-import com.aol.cyclops.control.For;
-import com.aol.cyclops.control.FutureW;
-import com.aol.cyclops.control.Maybe;
-import com.aol.cyclops.types.anyM.AnyMSeq;
-import com.aol.cyclops.types.anyM.AnyMValue;
-import com.aol.cyclops.util.function.QuadFunction;
-import com.aol.cyclops.util.function.TriFunction;
 
+import com.aol.cyclops2.types.anyM.AnyMValue;
+import cyclops.async.Future;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
 import javaslang.Lazy;
 import javaslang.Value;
 import javaslang.collection.Traversable;
-import javaslang.concurrent.Future;
 import javaslang.control.Either;
 import javaslang.control.Either.LeftProjection;
 import javaslang.control.Either.RightProjection;
@@ -33,8 +27,8 @@ public class Javaslang {
         return Eval.later(opt);
     }
    
-    public static <T> FutureW<T> futureW(Future<T> future){
-        FutureW<T> res = FutureW.future();
+    public static <T> Future<T> future(javaslang.concurrent.Future<T> future){
+        Future<T> res = Future.future();
         future.onSuccess(v->res.complete(v))
               .onFailure(t->res.completeExceptionally(t));
         return res;

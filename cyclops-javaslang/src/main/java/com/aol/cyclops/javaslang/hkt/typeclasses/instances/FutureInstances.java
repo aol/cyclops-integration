@@ -1,27 +1,16 @@
 package com.aol.cyclops.javaslang.hkt.typeclasses.instances;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.Monoids;
-import com.aol.cyclops.control.FutureW;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.instances.General;
-import com.aol.cyclops.hkt.typeclasses.Unit;
-import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
-import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
-import com.aol.cyclops.hkt.typeclasses.functor.Functor;
-import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
-import com.aol.cyclops.hkt.typeclasses.monad.Monad;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
-import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.instances.General;
+import cyclops.typeclasses.monad.*;
 import com.aol.cyclops.javaslang.Javaslang;
 import com.aol.cyclops.javaslang.hkt.FutureType;
-
 import javaslang.concurrent.Future;
 import lombok.experimental.UtilityClass;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Companion class for creating Type Class instances for working with Futures

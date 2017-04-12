@@ -10,13 +10,14 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.POrderedSet;
 import org.pcollections.POrderedSet;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPOrderedSetX;
+
 
 import javaslang.collection.HashSet;
 import javaslang.collection.SortedSet;
@@ -36,8 +37,7 @@ public class JavaSlangPOrderedSet<T> extends AbstractSet<T>implements POrderedSe
      * @return LazyPOrderedSetX
      */
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPOrderedSetX<T>(
-                                       Flux.from(ReactiveSeq.fromStream(stream)), toPOrderedSet());
+        return new LazyPOrderedSetX<T>(null,ReactiveSeq.fromStream(stream), toPOrderedSet());
     }
 
     /**
@@ -136,35 +136,38 @@ public class JavaSlangPOrderedSet<T> extends AbstractSet<T>implements POrderedSe
         return new JavaSlangPOrderedSet<T>(TreeSet.empty(comparator));
     }
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> empty() {
-        return LazyPOrderedSetX.fromPOrderedSet(new JavaSlangPOrderedSet<T>(
+        return fromPOrderedSet(new JavaSlangPOrderedSet<T>(
                 TreeSet.empty()),toPOrderedSet());
     }
+    private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
+        return  new LazyPOrderedSetX<T>(ordered,null,reducer);
+    }
     public static <T> LazyPOrderedSetX<T> empty(Comparator<? super T> comparator) {
-        return LazyPOrderedSetX.fromPOrderedSet(new JavaSlangPOrderedSet<T>(
+        return fromPOrderedSet(new JavaSlangPOrderedSet<T>(
                 TreeSet.empty(comparator)),toPOrderedSet(comparator));
     }
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> singleton(T t) {
-        return LazyPOrderedSetX.fromPOrderedSet(new JavaSlangPOrderedSet<>(
+        return fromPOrderedSet(new JavaSlangPOrderedSet<>(
                 TreeSet.of(t)),toPOrderedSet());
     }
     public static <T>  LazyPOrderedSetX<T> singleton(Comparator<? super T> comparator,T t) {
-        return LazyPOrderedSetX.fromPOrderedSet(new JavaSlangPOrderedSet<T>(
+        return fromPOrderedSet(new JavaSlangPOrderedSet<T>(
                 TreeSet.of(comparator,t)),toPOrderedSet(comparator));
        
     }
 
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> of(T... t) {
-        return LazyPOrderedSetX.fromPOrderedSet(new JavaSlangPOrderedSet<>(
+        return fromPOrderedSet(new JavaSlangPOrderedSet<>(
                                         TreeSet.of(t)),toPOrderedSet());
     }
     
 
     public static <T> LazyPOrderedSetX<T> POrderedSet(SortedSet<T> set) {
-        return LazyPOrderedSetX.fromPOrderedSet(new JavaSlangPOrderedSet<>(set), toPOrderedSet(set.comparator()));
+        return fromPOrderedSet(new JavaSlangPOrderedSet<>(set), toPOrderedSet(set.comparator()));
     }
 
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> POrderedSet(T... elements) {
-        return LazyPOrderedSetX.fromPOrderedSet(of(elements), toPOrderedSet());
+        return fromPOrderedSet(of(elements), toPOrderedSet());
     }
 
     @Wither

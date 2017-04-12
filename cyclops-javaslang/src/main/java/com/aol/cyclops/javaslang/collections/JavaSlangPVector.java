@@ -8,12 +8,12 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PVector;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
 
 import javaslang.collection.Vector;
 import lombok.AccessLevel;
@@ -30,8 +30,7 @@ public class JavaSlangPVector<T> extends AbstractList<T> implements PVector<T> {
      * @return LazyPVectorX
      */
     public static <T> LazyPVectorX<T> fromStream(Stream<T> stream) {
-        return new LazyPVectorX<T>(
-                                   Flux.from(ReactiveSeq.fromStream(stream)),toPVector());
+        return new LazyPVectorX<T>(null, ReactiveSeq.fromStream(stream),toPVector());
     }
 
     /**
@@ -122,20 +121,23 @@ public class JavaSlangPVector<T> extends AbstractList<T> implements PVector<T> {
         return new JavaSlangPVector<>(Vector.empty());
     }
     public static <T> LazyPVectorX<T> empty(){
-        return LazyPVectorX.fromPVector(new JavaSlangPVector<>(Vector.empty()), toPVector());
+        return fromPVector(new JavaSlangPVector<>(Vector.empty()), toPVector());
+    }
+    private static <T> LazyPVectorX<T> fromPVector(PVector<T> vec, Reducer<PVector<T>> pVectorReducer) {
+        return new LazyPVectorX<T>(vec,null, pVectorReducer);
     }
     public static <T> LazyPVectorX<T> singleton(T t){
-        return LazyPVectorX.fromPVector(new JavaSlangPVector<>(Vector.of(t)), toPVector());
+        return fromPVector(new JavaSlangPVector<>(Vector.of(t)), toPVector());
     }
     public static <T> LazyPVectorX<T> of(T... t){
-        return LazyPVectorX.fromPVector(new JavaSlangPVector<>(Vector.of(t)), toPVector());
+        return fromPVector(new JavaSlangPVector<>(Vector.of(t)), toPVector());
     }
     public static <T> LazyPVectorX<T> PStack(Vector<T> q) {
-        return LazyPVectorX.fromPVector(new JavaSlangPVector<T>(q), toPVector());
+        return fromPVector(new JavaSlangPVector<T>(q), toPVector());
     }
     @SafeVarargs
     public static <T> LazyPVectorX<T> PVector(T... elements){
-        return LazyPVectorX.fromPVector(of(elements),toPVector());
+        return fromPVector(of(elements),toPVector());
     }
     @Wither
     private final Vector<T> vector;

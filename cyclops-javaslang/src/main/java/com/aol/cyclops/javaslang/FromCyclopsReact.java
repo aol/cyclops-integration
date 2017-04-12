@@ -2,10 +2,10 @@ package com.aol.cyclops.javaslang;
 
 import java.util.stream.Stream;
 
-import com.aol.cyclops.control.FutureW;
-import com.aol.cyclops.control.Xor;
-import com.aol.cyclops.types.MonadicValue;
 
+import com.aol.cyclops2.types.MonadicValue;
+import com.aol.cyclops2.types.Value;
+import cyclops.control.Xor;
 import javaslang.Lazy;
 import javaslang.concurrent.Future;
 import javaslang.concurrent.Promise;
@@ -16,7 +16,7 @@ import javaslang.control.Validation;
 
 public class FromCyclopsReact {
     
-    public static <T> Future<T> future(FutureW<T> future){
+    public static <T> Future<T> future(cyclops.async.Future<T> future){
         Promise<T> result =  Promise.make();
         
         future.peek(n->result.complete(Try.success(n)));
@@ -35,11 +35,11 @@ public class FromCyclopsReact {
     public static <T> Future<T> future(MonadicValue<T> value) {
         return Future.of(() -> value.get());
     }
-    public static <T> Lazy<T> lazy(com.aol.cyclops.types.Value<T> value){
+    public static <T> Lazy<T> lazy(Value<T> value){
         return Lazy.of(value);
     }
 
-    public static <T> Option<T> option(com.aol.cyclops.types.Value<T> value){
+    public static <T> Option<T> option(Value<T> value){
         return value.visit(Option::some, Option::none);
      }
     

@@ -17,8 +17,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.aol.cyclops.hkt.alias.Higher;
 
+import com.aol.cyclops2.hkt.Higher;
 import javaslang.Function1;
 import javaslang.Tuple1;
 import javaslang.Tuple2;
@@ -49,7 +49,7 @@ import lombok.AllArgsConstructor;
  * @param <T> Data type stored within the Array
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public  class ArrayType<T> implements Higher<ArrayType.µ, T> ,IndexedSeq<T>{
+public  class ArrayType<T> implements Higher<ArrayType.µ, T>,IndexedSeq<T>{
     /**
      * Witness type
      * 
@@ -1549,7 +1549,7 @@ public  class ArrayType<T> implements Higher<ArrayType.µ, T> ,IndexedSeq<T>{
      * @return
      * @see javaslang.collection.Array#transform(java.util.function.Function)
      */
-    public <U> U transform(Function<? super Array<T>, ? extends U> f) {
+    public <U> U transformFn(Function<? super Array<T>, ? extends U> f) {
         return boxed.transform(f);
     }
     /**

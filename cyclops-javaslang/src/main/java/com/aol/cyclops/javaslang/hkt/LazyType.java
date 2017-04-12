@@ -6,11 +6,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.aol.cyclops.control.Eval;
-import com.aol.cyclops.hkt.alias.Higher;
+
 import com.aol.cyclops.javaslang.FromCyclopsReact;
 import com.aol.cyclops.javaslang.Javaslang;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.control.Eval;
 import javaslang.Lazy;
 import javaslang.collection.Iterator;
 import javaslang.control.Option;
@@ -27,7 +28,7 @@ import lombok.AllArgsConstructor;
  * @param <T> Data type stored within the Lazy
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final  class LazyType<T> implements Higher<LazyType.µ, T>{
+public final  class LazyType<T> implements Higher<LazyType.µ, T> {
     
  
     /**

@@ -7,6 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.aol.cyclops2.types.mixins.TupleWrapper;
+import cyclops.collections.MapXs;
+import cyclops.collections.immutable.PMapX;
+import cyclops.control.Eval;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
@@ -53,7 +59,7 @@ public class ClojureTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
         return fromMap(res);
     }
     public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY),Eval.later(()->toPMapX()));
+       return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY), Eval.later(()->toPMapX()));
     }
     public static <K,V> PMapX<K,V> empty(@NonNull Comparator<K> comp){
         return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY),Eval.later(()->toPMapX(comp)));

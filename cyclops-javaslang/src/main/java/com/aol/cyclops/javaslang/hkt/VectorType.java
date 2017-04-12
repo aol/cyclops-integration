@@ -17,8 +17,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.aol.cyclops.hkt.alias.Higher;
 
+import com.aol.cyclops2.hkt.Higher;
 import javaslang.Function1;
 import javaslang.Tuple1;
 import javaslang.Tuple2;
@@ -49,7 +49,7 @@ import lombok.AllArgsConstructor;
  * @param <T> Data type stored within the Vector
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public  class VectorType<T> implements Higher<VectorType.µ, T> ,IndexedSeq<T>{
+public  class VectorType<T> implements Higher<VectorType.µ, T>,IndexedSeq<T>{
     /**
      * Witness type
      * 

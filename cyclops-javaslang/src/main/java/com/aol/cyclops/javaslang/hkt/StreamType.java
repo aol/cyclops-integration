@@ -1,10 +1,9 @@
 package com.aol.cyclops.javaslang.hkt;
 
+import com.aol.cyclops2.hkt.Higher;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.hkt.alias.Higher;
 
 import javaslang.collection.Stream;
 import lombok.AccessLevel;

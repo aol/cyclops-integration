@@ -17,8 +17,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.aol.cyclops.hkt.alias.Higher;
 
+import com.aol.cyclops2.hkt.Higher;
 import javaslang.Function1;
 import javaslang.Tuple1;
 import javaslang.Tuple2;

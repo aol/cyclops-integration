@@ -7,8 +7,11 @@ import java.util.Map;
 import java.util.Set;
 
 import com.aol.cyclops2.types.mixins.TupleWrapper;
+import cyclops.collections.MapXs;
 import cyclops.collections.immutable.PMapX;
+import cyclops.control.Eval;
 import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
@@ -50,7 +53,7 @@ public class ClojureArrayPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>
      }
     public static <K,V> PMapX<K,V> singleton(K key,V value){
         PersistentArrayMap map = ( PersistentArrayMap)PersistentArrayMap.create(MapXs.of(key, value));
-        return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()->ClojureArrayPMap.<K,V>toPMapX()));
+        return new ExtensiblePMapX<K,V>(fromMap(map), Eval.later(()->ClojureArrayPMap.<K,V>toPMapX()));
      }
     
     public static <K,V> PMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){

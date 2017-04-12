@@ -6,18 +6,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.instances.General;
-import com.aol.cyclops.hkt.typeclasses.Unit;
-import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
-import com.aol.cyclops.hkt.typeclasses.functor.Functor;
-import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
-import com.aol.cyclops.hkt.typeclasses.monad.Monad;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
-import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.instances.General;
+import cyclops.typeclasses.monad.*;
 import com.aol.cyclops.javaslang.hkt.StreamType;
 
 import javaslang.collection.Stream;

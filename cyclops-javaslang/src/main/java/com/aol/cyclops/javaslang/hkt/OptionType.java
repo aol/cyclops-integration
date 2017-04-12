@@ -2,11 +2,11 @@ package com.aol.cyclops.javaslang.hkt;
 
 import java.util.Optional;
 
-import com.aol.cyclops.control.Eval;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.jdk.OptionalType;
+
 import com.aol.cyclops.javaslang.FromCyclopsReact;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.control.Eval;
 import javaslang.collection.Iterator;
 import javaslang.control.Option;
 import lombok.AccessLevel;
