@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Eval;
 import com.aol.cyclops.control.Maybe;
+import com.aol.cyclops.control.Try;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.EvalType;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
@@ -20,7 +21,7 @@ public class EvalsTest {
 
     @Test
     public void unit(){
-        
+      
         EvalType<String> opt = EvalInstances.unit()
                                             .unit("hello")
                                             .convert(EvalType::narrowK);
