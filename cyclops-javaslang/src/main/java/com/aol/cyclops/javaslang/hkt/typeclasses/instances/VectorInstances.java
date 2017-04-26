@@ -4,6 +4,10 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.function.Monoid;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
@@ -70,7 +74,7 @@ public class VectorInstances {
      * 
      * @return A factory for Vectors
      */
-    public static <T> Unit<VectorType.µ> unit(){
+    public static <T> Pure<VectorType.µ> unit(){
         return General.<VectorType.µ,T>unit(VectorType::of);
     }
     /**

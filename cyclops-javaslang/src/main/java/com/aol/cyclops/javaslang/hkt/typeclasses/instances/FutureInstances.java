@@ -1,5 +1,10 @@
 package com.aol.cyclops.javaslang.hkt.typeclasses.instances;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.Monoids;
+import cyclops.function.Monoid;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
@@ -68,7 +73,7 @@ public class FutureInstances {
      * 
      * @return A factory for Futures
      */
-    public static <T> Unit<FutureType.µ> unit(){
+    public static <T> Pure<FutureType.µ> unit(){
         return General.<FutureType.µ,T>unit(FutureInstances::of);
     }
     /**
@@ -176,9 +181,9 @@ public class FutureInstances {
      * @return Type class for combining Futures by concatenation
      */
     public static <T> MonadPlus<FutureType.µ> monadPlus(){
-        Monoid<FutureW<T>> mn = Monoids.firstSuccessfulFuture();
+        Monoid<cyclops.async.Future<T>> mn = Monoids.firstSuccessfulFuture();
         Monoid<FutureType<T>> m = Monoid.of(FutureType.widen(mn.zero()), (f,g)-> FutureType.widen(
-                                                                             mn.apply(Javaslang.futureW(f), Javaslang.futureW(g))));
+                                                                             mn.apply(Javaslang.future(f), Javaslang.future(g))));
                 
         Monoid<Higher<FutureType.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
@@ -241,7 +246,7 @@ public class FutureInstances {
         return FutureType.widen(Future.successful(value));
     }
     private static <T,R> FutureType<R> ap(FutureType<Function< T, R>> lt,  FutureType<T> list){
-        return FutureType.widen(Javaslang.futureW(lt).combine(Javaslang.futureW(list), (a,b)->a.apply(b)));
+        return FutureType.widen(Javaslang.future(lt).combine(Javaslang.future(list), (a,b)->a.apply(b)));
         
     }
     private static <T,R> Higher<FutureType.µ,R> flatMap( Higher<FutureType.µ,T> lt, Function<? super T, ? extends  Higher<FutureType.µ,R>> fn){

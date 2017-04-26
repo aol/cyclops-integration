@@ -6,6 +6,7 @@ import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Unit;
 import cyclops.function.Monoid;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
@@ -73,7 +74,7 @@ public class ArrayInstances {
      * 
      * @return A factory for Arrays
      */
-    public static <T> Unit<ArrayType.µ> unit(){
+    public static <T> Pure<ArrayType.µ> unit(){
         return General.<ArrayType.µ,T>unit(ArrayType::of);
     }
     /**

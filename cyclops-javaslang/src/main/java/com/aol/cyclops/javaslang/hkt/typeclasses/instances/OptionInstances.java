@@ -3,6 +3,11 @@ package com.aol.cyclops.javaslang.hkt.typeclasses.instances;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.Monoids;
+import cyclops.function.Monoid;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
@@ -70,7 +75,7 @@ public class OptionInstances {
      * 
      * @return A factory for Options
      */
-    public static <T> Unit<OptionType.µ> unit(){
+    public static <T> Pure<OptionType.µ> unit(){
         return General.<OptionType.µ,T>unit(OptionInstances::of);
     }
     /**

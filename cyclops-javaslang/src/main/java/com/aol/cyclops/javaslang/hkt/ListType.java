@@ -61,7 +61,7 @@ public final class ListType<T> implements Higher<ListType.µ, T>, Publisher<T>, 
      * If the supplied List implements ListType it is returned already, otherwise it
      * is wrapped into a List implementation that does implement ListType
      * 
-     * @param List List to widen to a ListType
+     * @param completableList List to widen to a ListType
      * @return ListType encoding HKT info about Lists
      */
     public static <T> ListType<T> widen(final List<T> completableList) {
@@ -102,12 +102,12 @@ public final class ListType<T> implements Higher<ListType.µ, T>, Publisher<T>, 
     /**
      * Convert the HigherKindedType definition for a List into
      * 
-     * @param List Type Constructor to convert back into narrowed type
+     * @param list Type Constructor to convert back into narrowed type
      * @return List from Higher Kinded Type
      */
-    public static <T> List<T> narrow(final Higher<ListType.µ, T> completableList) {
+    public static <T> List<T> narrow(final Higher<ListType.µ, T> list) {
 
-        return ((ListType<T>) completableList).narrow();
+        return ((ListType<T>) list).narrow();
 
     }
 

@@ -21,7 +21,7 @@ import javaslang.collection.SortedSet;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
+
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class JavaSlangPQueue<T> extends AbstractQueue<T> implements PQueue<T> {
     

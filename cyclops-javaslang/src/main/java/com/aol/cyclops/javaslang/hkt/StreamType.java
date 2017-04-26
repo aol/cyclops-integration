@@ -1,6 +1,7 @@
 package com.aol.cyclops.javaslang.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.stream.ReactiveSeq;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -58,13 +59,12 @@ public final class StreamType<T> implements Higher<StreamType.µ, T>, Publisher<
      * If the supplied Stream implements StreamType it is returned already, otherwise it
      * is wrapped into a Stream implementation that does implement StreamType
      * 
-     * @param Stream Stream to widen to a StreamType
+     * @param stream Stream to widen to a StreamType
      * @return StreamType encoding HKT info about Streams
      */
-    public static <T> StreamType<T> widen(final Stream<T> completableStream) {
+    public static <T> StreamType<T> widen(final Stream<T> stream) {
 
-        return new StreamType<>(
-                                completableStream);
+        return new StreamType<>(stream);
     }
 
     /**
@@ -99,12 +99,12 @@ public final class StreamType<T> implements Higher<StreamType.µ, T>, Publisher<
     /**
      * Convert the HigherKindedType definition for a Stream into
      * 
-     * @param Stream Type Constructor to convert back into narrowed type
+     * @param stream Type Constructor to convert back into narrowed type
      * @return Stream from Higher Kinded Type
      */
-    public static <T> Stream<T> narrow(final Higher<StreamType.µ, T> completableStream) {
+    public static <T> Stream<T> narrow(final Higher<StreamType.µ, T> stream) {
 
-        return ((StreamType<T>) completableStream).narrow();
+        return ((StreamType<T>) stream).narrow();
 
     }
 

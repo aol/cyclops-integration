@@ -76,7 +76,7 @@ public final  class LazyType<T> implements Higher<LazyType.µ, T> {
      * If the supplied Lazy implements LazyType it is returned already, otherwise it
      * is wrapped into a Lazy implementation that does implement LazyType
      * 
-     * @param Lazy Lazy to widen to a LazyType
+     * @param eval Lazy to widen to a LazyType
      * @return LazyType encoding HKT info about Lazys
      */
     public static <T> LazyType<T> widen(final Lazy<T> eval) {
@@ -91,7 +91,7 @@ public final  class LazyType<T> implements Higher<LazyType.µ, T> {
     /**
      * Convert the HigherKindedType definition for a Lazy into
      * 
-     * @param Lazy Type Constructor to convert back into narrowed type
+     * @param eval Type Constructor to convert back into narrowed type
      * @return LazyX from Higher Kinded Type
      */
     public static <T> Lazy<T> narrow(final Higher<LazyType.µ, T> eval) {

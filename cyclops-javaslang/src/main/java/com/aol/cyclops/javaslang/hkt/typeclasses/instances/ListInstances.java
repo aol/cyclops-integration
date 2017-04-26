@@ -6,6 +6,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.function.Monoid;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
@@ -71,7 +75,7 @@ public class ListInstances {
      * 
      * @return A factory for Lists
      */
-    public static <T> Unit<ListType.µ> unit(){
+    public static <T> Pure<ListType.µ> unit(){
         return General.<ListType.µ,T>unit(ListInstances::of);
     }
     /**
@@ -217,7 +221,7 @@ public class ListInstances {
 
             BinaryOperator<Higher<C2,ListType<T>>> combineLists = (a,b)-> ap.apBiFn(ap.unit((l1,l2)-> { return ListInstances.concat(l1,l2);}),a,b); ;  
 
-            return ReactiveSeq.fromPublisher(list).reduce(identity,
+            return ReactiveSeq.fromIterable(list).reduce(identity,
                                                             combineToList,
                                                             combineLists);  
 

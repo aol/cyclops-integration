@@ -3,6 +3,10 @@ package com.aol.cyclops.javaslang.hkt.typeclasses.instances;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.function.Monoid;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
@@ -70,7 +74,7 @@ public class LazyInstances {
      * 
      * @return A factory for Lazys
      */
-    public static <T> Unit<LazyType.µ> unit(){
+    public static <T> Pure<LazyType.µ> unit(){
         return General.<LazyType.µ,T>unit(LazyInstances::of);
     }
     /**

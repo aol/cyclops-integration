@@ -6,6 +6,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.function.Monoid;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
@@ -71,7 +75,7 @@ public class StreamInstances {
      * 
      * @return A factory for Streams
      */
-    public static <T> Unit<StreamType.µ> unit(){
+    public static <T> Pure<StreamType.µ> unit(){
         return General.<StreamType.µ,T>unit(StreamInstances::of);
     }
     /**
@@ -217,7 +221,7 @@ public class StreamInstances {
 
             BinaryOperator<Higher<C2,StreamType<T>>> combineStreams = (a,b)-> ap.apBiFn(ap.unit((l1,l2)-> { return StreamInstances.concat(l1,l2);}),a,b); ;  
 
-            return ReactiveSeq.fromPublisher(stream).reduce(identity,
+            return ReactiveSeq.fromIterable(stream).reduce(identity,
                                                             combineToStream,
                                                             combineStreams);  
 

@@ -19,7 +19,7 @@ import javaslang.collection.Vector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
+
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class JavaSlangPVector<T> extends AbstractList<T> implements PVector<T> {
     
