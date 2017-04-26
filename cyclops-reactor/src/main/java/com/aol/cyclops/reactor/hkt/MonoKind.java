@@ -34,7 +34,7 @@ import reactor.util.function.Tuple2;
 /**
  * Simulates Higher Kinded Types for Reactor Mono's
  * 
- * MonoType is a Mono and a Higher Kinded Type (MonoType.µ,T)
+ * MonoKind is a Mono and a Higher Kinded Type (MonoKind.µ,T)
  * 
  * @author johnmcclean
  *
@@ -42,7 +42,7 @@ import reactor.util.function.Tuple2;
  */
 
 @AllArgsConstructor(access=AccessLevel.PRIVATE)
-public final class MonoType<T> implements Higher<MonoType.µ, T>, Publisher<T> {
+public final class MonoKind<T> implements Higher<MonoKind.µ, T>, Publisher<T> {
 
     /**
      * Witness type
@@ -59,45 +59,45 @@ public final class MonoType<T> implements Higher<MonoType.µ, T>, Publisher<T> {
      * @param value To encode inside a HKT encoded Mono
      * @return Completed HKT encoded FMono
      */
-    public static <T> MonoType<T> just(T value){
+    public static <T> MonoKind<T> just(T value){
         
         return widen(Mono.just(value));
     }
-    public static <T> MonoType<T> empty(){
+    public static <T> MonoKind<T> empty(){
         return widen(Mono.empty());
     }
 
     /**
      * Convert a Mono to a simulated HigherKindedType that captures Mono nature
-     * and Mono element data type separately. Recover via @see MonoType#narrow
+     * and Mono element data type separately. Recover via @see MonoKind#narrow
      * 
-     * If the supplied Mono implements MonoType it is returned already, otherwise it
-     * is wrapped into a Mono implementation that does implement MonoType
+     * If the supplied Mono implements MonoKind it is returned already, otherwise it
+     * is wrapped into a Mono implementation that does implement MonoKind
      * 
-     * @param completableMono Mono to widen to a MonoType
-     * @return MonoType encoding HKT info about Monos
+     * @param completableMono Mono to widen to a MonoKind
+     * @return MonoKind encoding HKT info about Monos
      */
-    public static <T> MonoType<T> widen(final Mono<T> completableMono) {
+    public static <T> MonoKind<T> widen(final Mono<T> completableMono) {
         
-        return new MonoType<>(
+        return new MonoKind<>(
                          completableMono);
     }
     
-    public static <T> MonoType<T> widen(final Publisher<T> completableMono) {
+    public static <T> MonoKind<T> widen(final Publisher<T> completableMono) {
         
-        return new MonoType<>(Mono.from(
+        return new MonoKind<>(Mono.from(
                          completableMono));
     }
         
     
     /**
-     * Convert the raw Higher Kinded Type for MonoType types into the MonoType type definition class
+     * Convert the raw Higher Kinded Type for MonoKind types into the MonoKind type definition class
      * 
-     * @param future HKT encoded list into a MonoType
-     * @return MonoType
+     * @param future HKT encoded list into a MonoKind
+     * @return MonoKind
      */
-    public static <T> MonoType<T> narrowK(final Higher<MonoType.µ, T> future) {
-       return (MonoType<T>)future;
+    public static <T> MonoKind<T> narrowK(final Higher<MonoKind.µ, T> future) {
+       return (MonoKind<T>)future;
     }
 
     /**
@@ -106,9 +106,9 @@ public final class MonoType<T> implements Higher<MonoType.µ, T>, Publisher<T> {
      * @param completableMono Type Constructor to convert back into narrowed type
      * @return Mono from Higher Kinded Type
      */
-    public static <T> Mono<T> narrow(final Higher<MonoType.µ, T> completableMono) {
+    public static <T> Mono<T> narrow(final Higher<MonoKind.µ, T> completableMono) {
       
-            return ((MonoType<T>)completableMono).narrow();
+            return ((MonoKind<T>)completableMono).narrow();
            
        
 

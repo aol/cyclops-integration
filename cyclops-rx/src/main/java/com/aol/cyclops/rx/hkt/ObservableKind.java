@@ -40,7 +40,7 @@ import rx.schedulers.Timestamped;
 /**
  * Simulates Higher Kinded Types for Reactor Observable's
  * 
- * ObservableType is a Observable and a Higher Kinded Type (ObservableType.µ,T)
+ * ObservableKind is a Observable and a Higher Kinded Type (ObservableKind.µ,T)
  * 
  * @author johnmcclean
  *
@@ -48,7 +48,7 @@ import rx.schedulers.Timestamped;
  */
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ObservableType<T> implements Higher<ObservableType.µ, T>, Publisher<T> {
+public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Publisher<T> {
 
     /**
      * Witness type
@@ -65,73 +65,73 @@ public final class ObservableType<T> implements Higher<ObservableType.µ, T>, Pu
      * @param value To encode inside a HKT encoded Observable
      * @return Completed HKT encoded FObservable
      */
-    public static <T> ObservableType<T> just(T value) {
+    public static <T> ObservableKind<T> just(T value) {
 
         return widen(Observable.just(value));
     }
-    public static <T> ObservableType<T> just(T... values) {
+    public static <T> ObservableKind<T> just(T... values) {
         
         return widen(Observable.from(values));
     }
 
-    public static <T> ObservableType<T> empty() {
+    public static <T> ObservableKind<T> empty() {
         return widen(Observable.empty());
     }
 
     /**
      * Convert a Observable to a simulated HigherKindedType that captures Observable nature
-     * and Observable element data type separately. Recover via @see ObservableType#narrow
+     * and Observable element data type separately. Recover via @see ObservableKind#narrow
      * 
-     * If the supplied Observable implements ObservableType it is returned already, otherwise it
-     * is wrapped into a Observable implementation that does implement ObservableType
+     * If the supplied Observable implements ObservableKind it is returned already, otherwise it
+     * is wrapped into a Observable implementation that does implement ObservableKind
      * 
-     * @param Observable Observable to widen to a ObservableType
-     * @return ObservableType encoding HKT info about Observables
+     * @param observable Observable to widen to a ObservableKind
+     * @return ObservableKind encoding HKT info about Observables
      */
-    public static <T> ObservableType<T> widen(final Observable<T> completableObservable) {
+    public static <T> ObservableKind<T> widen(final Observable<T> observable) {
 
-        return new ObservableType<>(
-                                    completableObservable);
+        return new ObservableKind<>(
+                                    observable);
     }
 
     /**
-     * Widen a ObservableType nested inside another HKT encoded type
+     * Widen a ObservableKind nested inside another HKT encoded type
      * 
      * @param flux HTK encoded type containing  a Observable to widen
      * @return HKT encoded type with a widened Observable
      */
-    public static <C2, T> Higher<C2, Higher<ObservableType.µ, T>> widen2(Higher<C2, ObservableType<T>> flux) {
+    public static <C2, T> Higher<C2, Higher<ObservableKind.µ, T>> widen2(Higher<C2, ObservableKind<T>> flux) {
         // a functor could be used (if C2 is a functor / one exists for C2 type)
         // instead of casting
         // cast seems safer as Higher<StreamType.µ,T> must be a StreamType
         return (Higher) flux;
     }
 
-    public static <T> ObservableType<T> widen(final Publisher<T> completableObservable) {
+    public static <T> ObservableKind<T> widen(final Publisher<T> completableObservable) {
 
-        return new ObservableType<>(
+        return new ObservableKind<>(
                                     Observables.observable(completableObservable));
     }
 
     /**
-     * Convert the raw Higher Kinded Type for ObservableType types into the ObservableType type definition class
+     * Convert the raw Higher Kinded Type for ObservableKind types into the ObservableKind type definition class
      * 
-     * @param future HKT encoded list into a ObservableType
-     * @return ObservableType
+     * @param future HKT encoded list into a ObservableKind
+     * @return ObservableKind
      */
-    public static <T> ObservableType<T> narrowK(final Higher<ObservableType.µ, T> future) {
-        return (ObservableType<T>) future;
+    public static <T> ObservableKind<T> narrowK(final Higher<ObservableKind.µ, T> future) {
+        return (ObservableKind<T>) future;
     }
 
     /**
      * Convert the HigherKindedType definition for a Observable into
      * 
-     * @param Observable Type Constructor to convert back into narrowed type
+     * @param observable Type Constructor to convert back into narrowed type
      * @return Observable from Higher Kinded Type
      */
-    public static <T> Observable<T> narrow(final Higher<ObservableType.µ, T> completableObservable) {
+    public static <T> Observable<T> narrow(final Higher<ObservableKind.µ, T> observable) {
 
-        return ((ObservableType<T>) completableObservable).narrow();
+        return ((ObservableKind<T>) observable).narrow();
 
     }
 

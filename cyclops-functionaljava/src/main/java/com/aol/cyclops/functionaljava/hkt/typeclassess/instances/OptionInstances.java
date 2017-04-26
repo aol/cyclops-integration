@@ -3,23 +3,20 @@ package com.aol.cyclops.functionaljava.hkt.typeclassess.instances;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.control.Maybe;
+
 import com.aol.cyclops.functionaljava.FJ;
 import com.aol.cyclops.functionaljava.hkt.OptionType;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.General;
-import com.aol.cyclops.hkt.typeclasses.Unit;
-import com.aol.cyclops.hkt.typeclasses.comonad.Comonad;
-import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
-import com.aol.cyclops.hkt.typeclasses.functor.Functor;
-import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
-import com.aol.cyclops.hkt.typeclasses.monad.Monad;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
-import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 
+
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.control.Maybe;
+import cyclops.function.Monoid;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.instances.General;
+import cyclops.typeclasses.monad.*;
 import fj.data.Option;
 import lombok.experimental.UtilityClass;
 
@@ -80,7 +77,7 @@ public class OptionInstances {
      * 
      * @return A factory for Options
      */
-    public static <T> Unit<OptionType.µ> unit(){
+    public static <T> Pure<OptionType.µ> unit(){
         return General.<OptionType.µ,T>unit(OptionInstances::of);
     }
     /**
@@ -254,7 +251,8 @@ public class OptionInstances {
         return OptionType.widen(Option.some(value));
     }
     private static <T,R> OptionType<R> ap(OptionType<Function< T, R>> lt,  OptionType<T> option){
-        Maybe<R> mb = MaybeType.widen(FJ.maybe(lt.narrow())).combine(MaybeType.widen(FJ.maybe(option.narrow())), 
+
+        Maybe<R> mb = FJ.maybe(lt.narrow()).combine(FJ.maybe(option.narrow()),
                                                     (a,b)->a.apply(b));
         return OptionType.widen(mb);
         

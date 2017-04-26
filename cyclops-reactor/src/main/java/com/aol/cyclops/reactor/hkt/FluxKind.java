@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 /**
  * Simulates Higher Kinded Types for Reactor Flux's
  * 
- * FluxType is a Flux and a Higher Kinded Type (FluxType.µ,T)
+ * FluxKind is a Flux and a Higher Kinded Type (FluxKind.µ,T)
  * 
  * @author johnmcclean
  *
@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  */
 
 @AllArgsConstructor(access=AccessLevel.PRIVATE)
-public final class FluxType<T> implements Higher<FluxType.µ, T>, Publisher<T> {
+public final class FluxKind<T> implements Higher<FluxKind.µ, T>, Publisher<T> {
 
     /**
      * Witness type
@@ -49,59 +49,59 @@ public final class FluxType<T> implements Higher<FluxType.µ, T>, Publisher<T> {
      * @param value To encode inside a HKT encoded Flux
      * @return Completed HKT encoded FFlux
      */
-    public static <T> FluxType<T> just(T value){
+    public static <T> FluxKind<T> just(T value){
         
         return widen(Flux.just(value));
     }
-    public static <T> FluxType<T> just(T... values){
+    public static <T> FluxKind<T> just(T... values){
             
             return widen(Flux.just(values));
     }
-    public static <T> FluxType<T> empty(){
+    public static <T> FluxKind<T> empty(){
         return widen(Flux.empty());
     }
 
     /**
      * Convert a Flux to a simulated HigherKindedType that captures Flux nature
-     * and Flux element data type separately. Recover via @see FluxType#narrow
+     * and Flux element data type separately. Recover via @see FluxKind#narrow
      * 
-     * If the supplied Flux implements FluxType it is returned already, otherwise it
-     * is wrapped into a Flux implementation that does implement FluxType
+     * If the supplied Flux implements FluxKind it is returned already, otherwise it
+     * is wrapped into a Flux implementation that does implement FluxKind
      * 
-     * @param completableFlux Flux to widen to a FluxType
-     * @return FluxType encoding HKT info about Fluxs
+     * @param completableFlux Flux to widen to a FluxKind
+     * @return FluxKind encoding HKT info about Fluxs
      */
-    public static <T> FluxType<T> widen(final Flux<T> completableFlux) {
+    public static <T> FluxKind<T> widen(final Flux<T> completableFlux) {
         
-        return new FluxType<>(
+        return new FluxKind<>(
                          completableFlux);
     }
     /**
-     * Widen a FluxType nested inside another HKT encoded type
+     * Widen a FluxKind nested inside another HKT encoded type
      * 
      * @param flux HTK encoded type containing  a Flux to widen
      * @return HKT encoded type with a widened Flux
      */
-    public static <C2,T> Higher<C2, Higher<FluxType.µ,T>> widen2(Higher<C2, FluxType<T>> flux){
+    public static <C2,T> Higher<C2, Higher<FluxKind.µ,T>> widen2(Higher<C2, FluxKind<T>> flux){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
         //cast seems safer as Higher<StreamType.µ,T> must be a StreamType
         return (Higher)flux;
     }
-    public static <T> FluxType<T> widen(final Publisher<T> completableFlux) {
+    public static <T> FluxKind<T> widen(final Publisher<T> completableFlux) {
         
-        return new FluxType<>(Flux.from(
+        return new FluxKind<>(Flux.from(
                          completableFlux));
     }
         
     
     /**
-     * Convert the raw Higher Kinded Type for FluxType types into the FluxType type definition class
+     * Convert the raw Higher Kinded Type for FluxKind types into the FluxKind type definition class
      * 
-     * @param future HKT encoded list into a FluxType
-     * @return FluxType
+     * @param future HKT encoded list into a FluxKind
+     * @return FluxKind
      */
-    public static <T> FluxType<T> narrowK(final Higher<FluxType.µ, T> future) {
-       return (FluxType<T>)future;
+    public static <T> FluxKind<T> narrowK(final Higher<FluxKind.µ, T> future) {
+       return (FluxKind<T>)future;
     }
 
     /**
@@ -110,9 +110,9 @@ public final class FluxType<T> implements Higher<FluxType.µ, T>, Publisher<T> {
      * @param completableFlux Type Constructor to convert back into narrowed type
      * @return Flux from Higher Kinded Type
      */
-    public static <T> Flux<T> narrow(final Higher<FluxType.µ, T> completableFlux) {
+    public static <T> Flux<T> narrow(final Higher<FluxKind.µ, T> completableFlux) {
       
-            return ((FluxType<T>)completableFlux).narrow();
+            return ((FluxKind<T>)completableFlux).narrow();
            
        
 
@@ -161,7 +161,7 @@ public final class FluxType<T> implements Higher<FluxType.µ, T>, Publisher<T> {
          * @see reactor.core.publisher.Flux#toString()
          */
         public String toString() {
-            return "[FluxType "+boxed.toString() + "]";
+            return "[FluxKind "+boxed.toString() + "]";
         }
         /**
          * @param predicate

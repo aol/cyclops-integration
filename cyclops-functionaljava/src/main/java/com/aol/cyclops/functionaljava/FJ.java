@@ -5,15 +5,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.aol.cyclops.control.AnyM;
-import com.aol.cyclops.control.For;
-import com.aol.cyclops.control.Maybe;
-import com.aol.cyclops.internal.monads.ComprehenderSelector;
-import com.aol.cyclops.types.anyM.AnyMSeq;
-import com.aol.cyclops.types.anyM.AnyMValue;
-import com.aol.cyclops.util.function.QuadFunction;
-import com.aol.cyclops.util.function.TriFunction;
 
+import cyclops.control.Maybe;
 import fj.F0;
 import fj.P1;
 import fj.control.Trampoline;

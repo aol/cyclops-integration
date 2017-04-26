@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-import com.aol.cyclops.hkt.alias.Higher;
 
+import com.aol.cyclops2.hkt.Higher;
 import fj.Equal;
 import fj.F;
 import fj.F0;

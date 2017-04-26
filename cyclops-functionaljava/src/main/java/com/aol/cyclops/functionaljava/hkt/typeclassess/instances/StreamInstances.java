@@ -4,20 +4,17 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.control.ReactiveSeq;
 import com.aol.cyclops.functionaljava.hkt.StreamType;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.instances.General;
-import com.aol.cyclops.hkt.typeclasses.Unit;
-import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
-import com.aol.cyclops.hkt.typeclasses.functor.Functor;
-import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
-import com.aol.cyclops.hkt.typeclasses.monad.Monad;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadPlus;
-import com.aol.cyclops.hkt.typeclasses.monad.MonadZero;
-import com.aol.cyclops.hkt.typeclasses.monad.Traverse;
 
+
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.function.Monoid;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.instances.General;
+import cyclops.typeclasses.monad.*;
 import fj.data.Stream;
 import lombok.experimental.UtilityClass;
 
@@ -77,7 +74,7 @@ public class StreamInstances {
      * 
      * @return A factory for Streams
      */
-    public static <T> Unit<StreamType.µ> unit(){
+    public static <T> Pure<StreamType.µ> unit(){
         return General.<StreamType.µ,T>unit(StreamInstances::of);
     }
     /**

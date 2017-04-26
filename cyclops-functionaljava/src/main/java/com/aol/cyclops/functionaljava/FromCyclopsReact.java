@@ -1,8 +1,8 @@
 package com.aol.cyclops.functionaljava;
 
-import com.aol.cyclops.control.Xor;
-import com.aol.cyclops.types.MonadicValue;
 
+import com.aol.cyclops2.types.MonadicValue;
+import cyclops.control.Xor;
 import fj.data.Either;
 import fj.data.Option;
 import fj.data.Validation;

@@ -4,9 +4,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.jdk.DequeType;
 
+import com.aol.cyclops2.hkt.Higher;
 import fj.Equal;
 import fj.F;
 import fj.F0;

@@ -3,17 +3,18 @@ package com.aol.cyclops.functionaljava.hkt.typeclassess.instances;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.data.collections.extensions.standard.ListX;
 import com.aol.cyclops.functionaljava.hkt.NonEmptyListType;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.instances.General;
-import com.aol.cyclops.hkt.typeclasses.Unit;
-import com.aol.cyclops.hkt.typeclasses.foldable.Foldable;
-import com.aol.cyclops.hkt.typeclasses.functor.Functor;
-import com.aol.cyclops.hkt.typeclasses.monad.Applicative;
-import com.aol.cyclops.hkt.typeclasses.monad.Monad;
 
+
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.collections.ListX;
+import cyclops.function.Monoid;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.instances.General;
+import cyclops.typeclasses.monad.Applicative;
+import cyclops.typeclasses.monad.Monad;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -72,7 +73,7 @@ public class NonEmptyListInstances {
      * 
      * @return A factory for NonEmptyLists
      */
-    public static <T> Unit<NonEmptyListType.µ> unit(){
+    public static <T> Pure<NonEmptyListType.µ> unit(){
         return General.<NonEmptyListType.µ,T>unit(NonEmptyListInstances::of);
     }
     /**
@@ -169,7 +170,7 @@ public class NonEmptyListInstances {
      * @return Type class for folding / reduction operations
      */
     public static <T> Foldable<NonEmptyListType.µ> foldable(){
-        BiFunction<Monoid<T>,Higher<NonEmptyListType.µ,T>,T> foldRightFn =  (m,l)-> ListX.fromIterable(NonEmptyListType.narrow(l)).foldRight(m);
+        BiFunction<Monoid<T>,Higher<NonEmptyListType.µ,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(NonEmptyListType.narrow(l)).foldRight(m);
         BiFunction<Monoid<T>,Higher<NonEmptyListType.µ,T>,T> foldLeftFn = (m,l)-> ListX.fromIterable(NonEmptyListType.narrow(l)).reduce(m);
         return General.foldable(foldRightFn, foldLeftFn);
     }

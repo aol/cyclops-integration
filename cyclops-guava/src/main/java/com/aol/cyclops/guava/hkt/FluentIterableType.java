@@ -6,13 +6,15 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.stream.ReactiveSeq;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
-import com.aol.cyclops.control.ReactiveSeq;
+
 import com.aol.cyclops.guava.FromCyclopsReact;
 import com.aol.cyclops.guava.Guava;
-import com.aol.cyclops.hkt.alias.Higher;
+
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -77,13 +79,13 @@ public final class FluentIterableType<E> implements Higher<FluentIterableType.µ
      * If the supplied FluentIterable implements FluentIterableType it is returned already, otherwise it
      * is wrapped into a FluentIterable implementation that does implement FluentIterableType
      * 
-     * @param FluentIterable FluentIterable to widen to a FluentIterableType
+     * @param fluentIterable FluentIterable to widen to a FluentIterableType
      * @return FluentIterableType encoding HKT info about FluentIterables
      */
-    public static <T> FluentIterableType<T> widen(final FluentIterable<T> completableFluentIterable) {
+    public static <T> FluentIterableType<T> widen(final FluentIterable<T> fluentIterable) {
 
         return new FluentIterableType<>(
-                                        completableFluentIterable);
+                                        fluentIterable);
     }
 
     /**
@@ -118,12 +120,12 @@ public final class FluentIterableType<E> implements Higher<FluentIterableType.µ
     /**
      * Convert the HigherKindedType definition for a FluentIterable into
      * 
-     * @param FluentIterable Type Constructor to convert back into narrowed type
+     * @param fluentIterable Type Constructor to convert back into narrowed type
      * @return FluentIterable from Higher Kinded Type
      */
-    public static <T> FluentIterable<T> narrow(final Higher<FluentIterableType.µ, T> completableFluentIterable) {
+    public static <T> FluentIterable<T> narrow(final Higher<FluentIterableType.µ, T> fluentIterable) {
 
-        return ((FluentIterableType<T>) completableFluentIterable).narrow();
+        return ((FluentIterableType<T>) fluentIterable).narrow();
 
     }
 

@@ -7,10 +7,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.aol.cyclops.control.Maybe;
-import com.aol.cyclops.functionaljava.FromCyclopsReact;
-import com.aol.cyclops.hkt.alias.Higher;
 
+import com.aol.cyclops.functionaljava.FromCyclopsReact;
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.control.Maybe;
 import fj.F;
 import fj.F0;
 import fj.F2;

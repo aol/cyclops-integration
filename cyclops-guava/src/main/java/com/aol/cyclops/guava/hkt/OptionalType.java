@@ -3,17 +3,18 @@ package com.aol.cyclops.guava.hkt;
 
 import java.util.Set;
 
-import com.aol.cyclops.control.Eval;
-import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.guava.FromCyclopsReact;
 import com.aol.cyclops.guava.FromJDK;
 import com.aol.cyclops.guava.Guava;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.cyclops.MaybeType;
+
+import com.aol.cyclops2.hkt.Higher;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.higherkindedtypes.OptionalKind;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
@@ -79,11 +80,11 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * }
      * </pre>
      * 
-     * @param opt Optional to construct Optional from
+     * @param optional Optional to construct Optional from
      * @return Optional created from Optional
      */
-    public static <T> OptionalType<T> fromOptional(Higher<com.aol.cyclops.hkt.jdk.OptionalType.µ,T> optional){
-        return widen(FromCyclopsReact.option(MaybeType.fromOptional(optional)));
+    public static <T> OptionalType<T> fromOptional(Higher<OptionalKind.µ,T> optional){
+        return widen(FromCyclopsReact.option(Maybe.fromOptional(optional)));
     }
     /**
      * Convert a Optional to a simulated HigherKindedType that captures Optional nature
@@ -92,7 +93,7 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * If the supplied Optional implements OptionalType it is returned already, otherwise it
      * is wrapped into a Optional implementation that does implement OptionalType
      * 
-     * @param Optional Optional to widen to a OptionalType
+     * @param optional Optional to widen to a OptionalType
      * @return OptionalType encoding HKT info about Optionals (converts Optional to a Optional)
      */
     public static <T> OptionalType<T> widen(final java.util.Optional<T> optional) {
@@ -120,7 +121,7 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
     /**
      * Convert the HigherKindedType definition for a Optional into
      * 
-     * @param Optional Type Constructor to convert back into narrowed type
+     * @param optional Type Constructor to convert back into narrowed type
      * @return Optional from Higher Kinded Type
      */
     public static <T> java.util.Optional<T> narrowOptional(final Higher<OptionalType.µ, T> optional) {

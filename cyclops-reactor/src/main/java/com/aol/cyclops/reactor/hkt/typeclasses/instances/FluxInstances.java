@@ -1,9 +1,8 @@
 package com.aol.cyclops.reactor.hkt.typeclasses.instances;
 
 
-import com.aol.cyclops.reactor.hkt.FluxType;
+import com.aol.cyclops.reactor.hkt.FluxKind;
 import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.Unit;
 import cyclops.function.Monoid;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Pure;
@@ -31,7 +30,7 @@ public class FluxInstances {
      * 
      * <pre>
      * {@code 
-     *  FluxType<Integer> flux = Fluxs.functor().map(i->i*2, FluxType.widen(Flux.of(1,2,3));
+     *  FluxKind<Integer> flux = Fluxs.functor().map(i->i*2, FluxKind.widen(Flux.of(1,2,3));
      *  
      *  //[2,4,6]
      *  
@@ -42,10 +41,10 @@ public class FluxInstances {
      * An example fluent api working with Fluxs
      * <pre>
      * {@code 
-     *   FluxType<Integer> flux = Fluxs.unit()
+     *   FluxKind<Integer> flux = Fluxs.unit()
                                        .unit("hello")
                                        .then(h->Fluxs.functor().map((String v) ->v.length(), h))
-                                       .convert(FluxType::narrowK);
+                                       .convert(FluxKind::narrowK);
      * 
      * }
      * </pre>
@@ -53,16 +52,16 @@ public class FluxInstances {
      * 
      * @return A functor for Fluxs
      */
-    public static <T,R>Functor<FluxType.µ> functor(){
-        BiFunction<FluxType<T>,Function<? super T, ? extends R>,FluxType<R>> map = FluxInstances::map;
+    public static <T,R>Functor<FluxKind.µ> functor(){
+        BiFunction<FluxKind<T>,Function<? super T, ? extends R>,FluxKind<R>> map = FluxInstances::map;
         return General.functor(map);
     }
     /**
      * <pre>
      * {@code 
-     * FluxType<String> flux = Fluxs.unit()
+     * FluxKind<String> flux = Fluxs.unit()
                                      .unit("hello")
-                                     .convert(FluxType::narrowK);
+                                     .convert(FluxKind::narrowK);
         
         //Flux.of("hello"))
      * 
@@ -72,14 +71,14 @@ public class FluxInstances {
      * 
      * @return A factory for Fluxs
      */
-    public static <T> Pure<FluxType.µ> unit(){
-        return General.<FluxType.µ,T>unit(FluxInstances::of);
+    public static <T> Pure<FluxKind.µ> unit(){
+        return General.<FluxKind.µ,T>unit(FluxInstances::of);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.FluxType.widen;
+     * import static com.aol.cyclops.hkt.jdk.FluxKind.widen;
      * import static com.aol.cyclops.util.function.Lambda.l1;
      * 
        Fluxs.zippingApplicative()
@@ -93,15 +92,15 @@ public class FluxInstances {
      * Example fluent API
      * <pre>
      * {@code 
-     * FluxType<Function<Integer,Integer>> fluxFn =Fluxs.unit()
+     * FluxKind<Function<Integer,Integer>> fluxFn =Fluxs.unit()
      *                                                  .unit(Lambda.l1((Integer i) ->i*2))
-     *                                                  .convert(FluxType::narrowK);
+     *                                                  .convert(FluxKind::narrowK);
         
-        FluxType<Integer> flux = Fluxs.unit()
+        FluxKind<Integer> flux = Fluxs.unit()
                                       .unit("hello")
                                       .then(h->Fluxs.functor().map((String v) ->v.length(), h))
                                       .then(h->Fluxs.zippingApplicative().ap(fluxFn, h))
-                                      .convert(FluxType::narrowK);
+                                      .convert(FluxKind::narrowK);
         
         //Flux.of("hello".length()*2))
      * 
@@ -111,28 +110,28 @@ public class FluxInstances {
      * 
      * @return A zipper for Fluxs
      */
-    public static <T,R> Applicative<FluxType.µ> zippingApplicative(){
-        BiFunction<FluxType< Function<T, R>>,FluxType<T>,FluxType<R>> ap = FluxInstances::ap;
+    public static <T,R> Applicative<FluxKind.µ> zippingApplicative(){
+        BiFunction<FluxKind< Function<T, R>>,FluxKind<T>,FluxKind<R>> ap = FluxInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.FluxType.widen;
-     * FluxType<Integer> flux  = Fluxs.monad()
+     * import static com.aol.cyclops.hkt.jdk.FluxKind.widen;
+     * FluxKind<Integer> flux  = Fluxs.monad()
                                       .flatMap(i->widen(FluxX.range(0,i)), widen(Flux.of(1,2,3)))
-                                      .convert(FluxType::narrowK);
+                                      .convert(FluxKind::narrowK);
      * }
      * </pre>
      * 
      * Example fluent API
      * <pre>
      * {@code 
-     *    FluxType<Integer> flux = Fluxs.unit()
+     *    FluxKind<Integer> flux = Fluxs.unit()
                                         .unit("hello")
                                         .then(h->Fluxs.monad().flatMap((String v) ->Fluxs.unit().unit(v.length()), h))
-                                        .convert(FluxType::narrowK);
+                                        .convert(FluxKind::narrowK);
         
         //Flux.of("hello".length())
      * 
@@ -141,19 +140,19 @@ public class FluxInstances {
      * 
      * @return Type class with monad functions for Fluxs
      */
-    public static <T,R> Monad<FluxType.µ> monad(){
+    public static <T,R> Monad<FluxKind.µ> monad(){
   
-        BiFunction<Higher<FluxType.µ,T>,Function<? super T, ? extends Higher<FluxType.µ,R>>,Higher<FluxType.µ,R>> flatMap = FluxInstances::flatMap;
+        BiFunction<Higher<FluxKind.µ,T>,Function<? super T, ? extends Higher<FluxKind.µ,R>>,Higher<FluxKind.µ,R>> flatMap = FluxInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     *  FluxType<String> flux = Fluxs.unit()
+     *  FluxKind<String> flux = Fluxs.unit()
                                          .unit("hello")
                                          .then(h->Fluxs.monadZero().filter((String t)->t.startsWith("he"), h))
-                                         .convert(FluxType::narrowK);
+                                         .convert(FluxKind::narrowK);
         
        //Flux.of("hello"));
      * 
@@ -163,36 +162,36 @@ public class FluxInstances {
      * 
      * @return A filterable monad (with default value)
      */
-    public static <T,R> MonadZero<FluxType.µ> monadZero(){
-        BiFunction<Higher<FluxType.µ,T>,Predicate<? super T>,Higher<FluxType.µ,T>> filter = FluxInstances::filter;
-        Supplier<Higher<FluxType.µ, T>> zero = ()->FluxType.widen(Flux.empty());
-        return General.<FluxType.µ,T,R>monadZero(monad(), zero,filter);
+    public static <T,R> MonadZero<FluxKind.µ> monadZero(){
+        BiFunction<Higher<FluxKind.µ,T>,Predicate<? super T>,Higher<FluxKind.µ,T>> filter = FluxInstances::filter;
+        Supplier<Higher<FluxKind.µ, T>> zero = ()-> FluxKind.widen(Flux.empty());
+        return General.<FluxKind.µ,T,R>monadZero(monad(), zero,filter);
     }
     /**
      * <pre>
      * {@code 
-     *  FluxType<Integer> flux = Fluxs.<Integer>monadPlus()
-                                      .plus(FluxType.widen(Flux.of()), FluxType.widen(Flux.of(10)))
-                                      .convert(FluxType::narrowK);
+     *  FluxKind<Integer> flux = Fluxs.<Integer>monadPlus()
+                                      .plus(FluxKind.widen(Flux.of()), FluxKind.widen(Flux.of(10)))
+                                      .convert(FluxKind::narrowK);
         //Flux.of(10))
      * 
      * }
      * </pre>
      * @return Type class for combining Fluxs by concatenation
      */
-    public static <T> MonadPlus<FluxType.µ> monadPlus(){
-        Monoid<FluxType<T>> m = Monoid.of(FluxType.widen(Flux.<T>empty()), FluxInstances::concat);
-        Monoid<Higher<FluxType.µ,T>> m2= (Monoid)m;
+    public static <T> MonadPlus<FluxKind.µ> monadPlus(){
+        Monoid<FluxKind<T>> m = Monoid.of(FluxKind.widen(Flux.<T>empty()), FluxInstances::concat);
+        Monoid<Higher<FluxKind.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
     /**
      * 
      * <pre>
      * {@code 
-     *  Monoid<FluxType<Integer>> m = Monoid.of(FluxType.widen(Flux.of()), (a,b)->a.isEmpty() ? b : a);
-        FluxType<Integer> flux = Fluxs.<Integer>monadPlus(m)
-                                      .plus(FluxType.widen(Flux.of(5)), FluxType.widen(Flux.of(10)))
-                                      .convert(FluxType::narrowK);
+     *  Monoid<FluxKind<Integer>> m = Monoid.of(FluxKind.widen(Flux.of()), (a,b)->a.isEmpty() ? b : a);
+        FluxKind<Integer> flux = Fluxs.<Integer>monadPlus(m)
+                                      .plus(FluxKind.widen(Flux.of(5)), FluxKind.widen(Flux.of(10)))
+                                      .convert(FluxKind::narrowK);
         //Flux.of(5))
      * 
      * }
@@ -201,22 +200,22 @@ public class FluxInstances {
      * @param m Monoid to use for combining Fluxs
      * @return Type class for combining Fluxs
      */
-    public static <T> MonadPlus<FluxType.µ> monadPlus(Monoid<FluxType<T>> m){
-        Monoid<Higher<FluxType.µ,T>> m2= (Monoid)m;
+    public static <T> MonadPlus<FluxKind.µ> monadPlus(Monoid<FluxKind<T>> m){
+        Monoid<Higher<FluxKind.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
  
     /**
      * @return Type class for traversables with traverse / sequence operations
      */
-    public static <C2,T> Traverse<FluxType.µ> traverse(){
-        BiFunction<Applicative<C2>,FluxType<Higher<C2, T>>,Higher<C2, FluxType<T>>> sequenceFn = (ap,flux) -> {
+    public static <C2,T> Traverse<FluxKind.µ> traverse(){
+        BiFunction<Applicative<C2>,FluxKind<Higher<C2, T>>,Higher<C2, FluxKind<T>>> sequenceFn = (ap, flux) -> {
         
-            Higher<C2,FluxType<T>> identity = ap.unit(FluxType.widen(Flux.empty()));
+            Higher<C2,FluxKind<T>> identity = ap.unit(FluxKind.widen(Flux.empty()));
 
-            BiFunction<Higher<C2,FluxType<T>>,Higher<C2,T>,Higher<C2,FluxType<T>>> combineToFlux =   (acc,next) -> ap.apBiFn(ap.unit((a,b) -> FluxType.widen(Flux.concat(a,Flux.just(b)))),acc,next);
+            BiFunction<Higher<C2,FluxKind<T>>,Higher<C2,T>,Higher<C2,FluxKind<T>>> combineToFlux =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> FluxKind.widen(Flux.concat(a,Flux.just(b)))),acc,next);
 
-            BinaryOperator<Higher<C2,FluxType<T>>> combineFluxs = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> { return FluxType.widen(Flux.concat(l1.narrow(),l2.narrow()));}),a,b); ;
+            BinaryOperator<Higher<C2,FluxKind<T>>> combineFluxs = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> { return FluxKind.widen(Flux.concat(l1.narrow(),l2.narrow()));}),a,b); ;
 
             return ReactiveSeq.fromPublisher(flux).reduce(identity,
                                                             combineToFlux,
@@ -224,8 +223,8 @@ public class FluxInstances {
 
    
         };
-        BiFunction<Applicative<C2>,Higher<FluxType.µ,Higher<C2, T>>,Higher<C2, Higher<FluxType.µ,T>>> sequenceNarrow  = 
-                                                        (a,b) -> FluxType.widen2(sequenceFn.apply(a, FluxType.narrowK(b)));
+        BiFunction<Applicative<C2>,Higher<FluxKind.µ,Higher<C2, T>>,Higher<C2, Higher<FluxKind.µ,T>>> sequenceNarrow  =
+                                                        (a,b) -> FluxKind.widen2(sequenceFn.apply(a, FluxKind.narrowK(b)));
         return General.traverse(zippingApplicative(), sequenceNarrow);
     }
     
@@ -234,7 +233,7 @@ public class FluxInstances {
      * <pre>
      * {@code 
      * int sum  = Fluxs.foldable()
-                        .foldLeft(0, (a,b)->a+b, FluxType.widen(Flux.of(1,2,3,4)));
+                        .foldLeft(0, (a,b)->a+b, FluxKind.widen(Flux.of(1,2,3,4)));
         
         //10
      * 
@@ -244,28 +243,28 @@ public class FluxInstances {
      * 
      * @return Type class for folding / reduction operations
      */
-    public static <T> Foldable<FluxType.µ> foldable(){
-        BiFunction<Monoid<T>,Higher<FluxType.µ,T>,T> foldRightFn =  (m,l)-> ReactiveSeq.fromPublisher(FluxType.narrow(l)).foldRight(m);
-        BiFunction<Monoid<T>,Higher<FluxType.µ,T>,T> foldLeftFn = (m,l)-> ReactiveSeq.fromPublisher(FluxType.narrow(l)).reduce(m);
+    public static <T> Foldable<FluxKind.µ> foldable(){
+        BiFunction<Monoid<T>,Higher<FluxKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).foldRight(m);
+        BiFunction<Monoid<T>,Higher<FluxKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).reduce(m);
         return General.foldable(foldRightFn, foldLeftFn);
     }
   
-    private static  <T> FluxType<T> concat(FluxType<T> l1, FluxType<T> l2){
-        return FluxType.widen(Flux.concat(l1,l2));
+    private static  <T> FluxKind<T> concat(FluxKind<T> l1, FluxKind<T> l2){
+        return FluxKind.widen(Flux.concat(l1,l2));
     }
-    private <T> FluxType<T> of(T value){
-        return FluxType.widen(Flux.just(value));
+    private <T> FluxKind<T> of(T value){
+        return FluxKind.widen(Flux.just(value));
     }
-    private static <T,R> FluxType<R> ap(FluxType<Function< T, R>> lt,  FluxType<T> flux){
-       return FluxType.widen(lt.zipWith(flux,(a,b)->a.apply(b)));
+    private static <T,R> FluxKind<R> ap(FluxKind<Function< T, R>> lt, FluxKind<T> flux){
+       return FluxKind.widen(lt.zipWith(flux,(a, b)->a.apply(b)));
     }
-    private static <T,R> Higher<FluxType.µ,R> flatMap( Higher<FluxType.µ,T> lt, Function<? super T, ? extends  Higher<FluxType.µ,R>> fn){
-        return FluxType.widen(FluxType.narrowK(lt).flatMap(fn.andThen(FluxType::narrowK)));
+    private static <T,R> Higher<FluxKind.µ,R> flatMap(Higher<FluxKind.µ,T> lt, Function<? super T, ? extends  Higher<FluxKind.µ,R>> fn){
+        return FluxKind.widen(FluxKind.narrowK(lt).flatMap(fn.andThen(FluxKind::narrowK)));
     }
-    private static <T,R> FluxType<R> map(FluxType<T> lt, Function<? super T, ? extends R> fn){
-        return FluxType.widen(lt.map(fn));
+    private static <T,R> FluxKind<R> map(FluxKind<T> lt, Function<? super T, ? extends R> fn){
+        return FluxKind.widen(lt.map(fn));
     }
-    private static <T> FluxType<T> filter(Higher<FluxType.µ,T> lt, Predicate<? super T> fn){
-        return FluxType.widen(FluxType.narrow(lt).filter(fn));
+    private static <T> FluxKind<T> filter(Higher<FluxKind.µ,T> lt, Predicate<? super T> fn){
+        return FluxKind.widen(FluxKind.narrow(lt).filter(fn));
     }
 }
