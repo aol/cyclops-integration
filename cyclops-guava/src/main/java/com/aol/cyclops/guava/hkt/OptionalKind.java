@@ -14,21 +14,20 @@ import com.google.common.base.Supplier;
 
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
-import cyclops.higherkindedtypes.OptionalKind;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for Optional's
  * 
- * OptionalType is a Optional and a Higher Kinded Type (OptionalType.µ,T)
+ * OptionalKind is a Optional and a Higher Kinded Type (OptionalKind.µ,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Optional
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class OptionalType<T> implements Higher<OptionalType.µ, T> {
+public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
     /**
      * Witness type
      * 
@@ -42,19 +41,19 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * @return Get the empty Optional (single instance)
      */
     @SuppressWarnings("unchecked")
-    public static <T> OptionalType<T> absent() {
+    public static <T> OptionalKind<T> absent() {
         return widen(Optional.absent());
     }
-    public static <T> OptionalType<T> of(T element) {
+    public static <T> OptionalKind<T> of(T element) {
         return widen(Optional.of(element));
     }
     /**
-     *  Construct a OptionalType  that contains a single value extracted from the supplied Iterable
+     *  Construct a OptionalKind  that contains a single value extracted from the supplied Iterable
      * <pre>
      * {@code 
      *   ReactiveSeq<Integer> stream =  ReactiveSeq.of(1,2,3);
         
-         OptionalType<Integer> maybe = OptionalType.fromIterable(stream);
+         OptionalKind<Integer> maybe = OptionalKind.fromIterable(stream);
         
         //Optional[1]
      * 
@@ -63,7 +62,7 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * @param iterable Iterable  to extract value from
      * @return Optional populated with first value from Iterable (Optional.empty if Publisher empty)
      */
-    public static <T> OptionalType<T> fromIterable(final Iterable<T> iterable) {
+    public static <T> OptionalKind<T> fromIterable(final Iterable<T> iterable) {
        
         return widen(FromCyclopsReact.option(Eval.fromIterable(iterable)));
     }
@@ -72,10 +71,10 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * Construct an equivalent Optional from the Supplied Optional
      * <pre>
      * {@code 
-     *   OptionalType<Integer> some = OptionalType.fromOptional(Optional.of(10));
+     *   OptionalKind<Integer> some = OptionalKind.fromOptional(Optional.of(10));
      *   //Optional[10], Some[10]
      *  
-     *   OptionalType<Integer> none = OptionalType.fromOptional(Optional.empty());
+     *   OptionalKind<Integer> none = OptionalKind.fromOptional(Optional.empty());
      *   //Optional.empty, None[]
      * }
      * </pre>
@@ -83,39 +82,39 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * @param optional Optional to construct Optional from
      * @return Optional created from Optional
      */
-    public static <T> OptionalType<T> fromOptional(Higher<OptionalKind.µ,T> optional){
+    public static <T> OptionalKind<T> fromOptional(Higher<cyclops.higherkindedtypes.OptionalKind.µ,T> optional){
         return widen(FromCyclopsReact.option(Maybe.fromOptional(optional)));
     }
     /**
      * Convert a Optional to a simulated HigherKindedType that captures Optional nature
-     * and Optional element data type separately. Recover via @see OptionalType#narrow
+     * and Optional element data type separately. Recover via @see OptionalKind#narrow
      * 
-     * If the supplied Optional implements OptionalType it is returned already, otherwise it
-     * is wrapped into a Optional implementation that does implement OptionalType
+     * If the supplied Optional implements OptionalKind it is returned already, otherwise it
+     * is wrapped into a Optional implementation that does implement OptionalKind
      * 
-     * @param optional Optional to widen to a OptionalType
-     * @return OptionalType encoding HKT info about Optionals (converts Optional to a Optional)
+     * @param optional Optional to widen to a OptionalKind
+     * @return OptionalKind encoding HKT info about Optionals (converts Optional to a Optional)
      */
-    public static <T> OptionalType<T> widen(final java.util.Optional<T> optional) {
+    public static <T> OptionalKind<T> widen(final java.util.Optional<T> optional) {
         
-        return new OptionalType<>(FromJDK.option(optional));
+        return new OptionalKind<>(FromJDK.option(optional));
     }
-    public static <T> OptionalType<T> widen(final Maybe<T> option) {
+    public static <T> OptionalKind<T> widen(final Maybe<T> option) {
         
-        return new OptionalType<T>(FromCyclopsReact.option(option));
+        return new OptionalKind<T>(FromCyclopsReact.option(option));
     }
     /**
-     * Convert the raw Higher Kinded Type for OptionalType types into the OptionalType type definition class
+     * Convert the raw Higher Kinded Type for OptionalKind types into the OptionalKind type definition class
      * 
-     * @param future HKT encoded list into a OptionalType
-     * @return OptionalType
+     * @param future HKT encoded list into a OptionalKind
+     * @return OptionalKind
      */
-    public static <T> OptionalType<T> narrowK(final Higher<OptionalType.µ, T> future) {
-       return (OptionalType<T>)future;
+    public static <T> OptionalKind<T> narrowK(final Higher<OptionalKind.µ, T> future) {
+       return (OptionalKind<T>)future;
     }
-    public static <C2,T> Higher<C2, Higher<OptionalType.µ,T>> widen2(Higher<C2, OptionalType<T>> nestedOptional){
+    public static <C2,T> Higher<C2, Higher<OptionalKind.µ,T>> widen2(Higher<C2, OptionalKind<T>> nestedOptional){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
-        //cast seems safer as Higher<OptionalType.µ,T> must be a StreamType
+        //cast seems safer as Higher<OptionalKind.µ,T> must be a StreamType
         return (Higher)nestedOptional;
     }
     /**
@@ -124,7 +123,7 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * @param optional Type Constructor to convert back into narrowed type
      * @return Optional from Higher Kinded Type
      */
-    public static <T> java.util.Optional<T> narrowOptional(final Higher<OptionalType.µ, T> optional) {
+    public static <T> java.util.Optional<T> narrowOptional(final Higher<OptionalKind.µ, T> optional) {
         
          return Guava.asMaybe(narrow(optional)).toOptional();
         
@@ -145,7 +144,7 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * @param value Value to wrap inside a Optional
      * @return Optional containing the supplied value
      */
-    public static <T> OptionalType<T> just(final T value) {
+    public static <T> OptionalKind<T> just(final T value) {
         return ofNullable(value);
     }
 
@@ -167,23 +166,23 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * @param value
      * @return
      */
-    public static <T> OptionalType<T> ofNullable(final T value) {
+    public static <T> OptionalKind<T> ofNullable(final T value) {
 
         return widen(Optional.fromNullable(value));
     }
     /**
      * Convert a Optional to a simulated HigherKindedType that captures Optional nature
-     * and Optional element data type separately. Recover via @see OptionalType#narrow
+     * and Optional element data type separately. Recover via @see OptionalKind#narrow
      * 
-     * If the supplied Optional implements OptionalType it is returned already, otherwise it
-     * is wrapped into a Optional implementation that does implement OptionalType
+     * If the supplied Optional implements OptionalKind it is returned already, otherwise it
+     * is wrapped into a Optional implementation that does implement OptionalKind
      * 
-     * @param Optional Optional to widen to a OptionalType
-     * @return OptionalType encoding HKT info about Optionals
+     * @param Optional Optional to widen to a OptionalKind
+     * @return OptionalKind encoding HKT info about Optionals
      */
-    public static <T> OptionalType<T> widen(final Optional<T> maybe) {
+    public static <T> OptionalKind<T> widen(final Optional<T> maybe) {
    
-        return new OptionalType<>(
+        return new OptionalKind<>(
                          maybe);
     }
 
@@ -193,11 +192,11 @@ public class OptionalType<T> implements Higher<OptionalType.µ, T> {
      * @param Optional Type Constructor to convert back into narrowed type
      * @return OptionalX from Higher Kinded Type
      */
-    public static <T> Optional<T> narrow(final Higher<OptionalType.µ, T> maybe) {
+    public static <T> Optional<T> narrow(final Higher<OptionalKind.µ, T> maybe) {
         if (maybe instanceof Optional)
             return (Optional) maybe;
         //this code should be unreachable due to HKT type checker
-        final OptionalType<T> type = (OptionalType<T>) maybe;
+        final OptionalKind<T> type = (OptionalKind<T>) maybe;
         return type.boxed;
     }
     private final Optional<T> boxed;

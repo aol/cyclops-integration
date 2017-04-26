@@ -3,8 +3,6 @@ package com.aol.cyclops.guava.hkt;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Spliterator;
-import java.util.function.Consumer;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.stream.ReactiveSeq;
@@ -33,7 +31,7 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for Guava FluentIterable's
  * 
- * FluentIterableType is a FluentIterable and a Higher Kinded Type (FluentIterableType.µ,T)
+ * FluentIterableKind is a FluentIterable and a Higher Kinded Type (FluentIterableKind.µ,T)
  * 
  * @author johnmcclean
  *
@@ -41,7 +39,7 @@ import lombok.AllArgsConstructor;
  */
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FluentIterableType<E> implements Higher<FluentIterableType.µ, E>, Publisher<E>, Iterable<E> {
+public final class FluentIterableKind<E> implements Higher<FluentIterableKind.µ, E>, Publisher<E>, Iterable<E> {
 
     /**
      * Witness type
@@ -58,63 +56,63 @@ public final class FluentIterableType<E> implements Higher<FluentIterableType.µ
      * @param value To encode inside a HKT encoded FluentIterable
      * @return Completed HKT encoded FFluentIterable
      */
-    public static <T> FluentIterableType<T> just(T value) {
+    public static <T> FluentIterableKind<T> just(T value) {
 
         return widen(FluentIterable.of(value));
     }
 
-    public static <T> FluentIterableType<T> just(T... values) {
+    public static <T> FluentIterableKind<T> just(T... values) {
 
         return widen(FluentIterable.from(values));
     }
 
-    public static <T> FluentIterableType<T> empty() {
+    public static <T> FluentIterableKind<T> empty() {
         return widen(FluentIterable.of());
     }
 
     /**
      * Convert a FluentIterable to a simulated HigherKindedType that captures FluentIterable nature
-     * and FluentIterable element data type separately. Recover via @see FluentIterableType#narrow
+     * and FluentIterable element data type separately. Recover via @see FluentIterableKind#narrow
      * 
-     * If the supplied FluentIterable implements FluentIterableType it is returned already, otherwise it
-     * is wrapped into a FluentIterable implementation that does implement FluentIterableType
+     * If the supplied FluentIterable implements FluentIterableKind it is returned already, otherwise it
+     * is wrapped into a FluentIterable implementation that does implement FluentIterableKind
      * 
-     * @param fluentIterable FluentIterable to widen to a FluentIterableType
-     * @return FluentIterableType encoding HKT info about FluentIterables
+     * @param fluentIterable FluentIterable to widen to a FluentIterableKind
+     * @return FluentIterableKind encoding HKT info about FluentIterables
      */
-    public static <T> FluentIterableType<T> widen(final FluentIterable<T> fluentIterable) {
+    public static <T> FluentIterableKind<T> widen(final FluentIterable<T> fluentIterable) {
 
-        return new FluentIterableType<>(
+        return new FluentIterableKind<>(
                                         fluentIterable);
     }
 
     /**
-     * Widen a FluentIterableType nested inside another HKT encoded type
+     * Widen a FluentIterableKind nested inside another HKT encoded type
      * 
      * @param flux HTK encoded type containing  a FluentIterable to widen
      * @return HKT encoded type with a widened FluentIterable
      */
-    public static <C2, T> Higher<C2, Higher<FluentIterableType.µ, T>> widen2(Higher<C2, FluentIterableType<T>> flux) {
+    public static <C2, T> Higher<C2, Higher<FluentIterableKind.µ, T>> widen2(Higher<C2, FluentIterableKind<T>> flux) {
         // a functor could be used (if C2 is a functor / one exists for C2 type)
         // instead of casting
         // cast seems safer as Higher<StreamType.µ,T> must be a StreamType
         return (Higher) flux;
     }
 
-    public static <T> FluentIterableType<T> widen(final Publisher<T> completableFluentIterable) {
+    public static <T> FluentIterableKind<T> widen(final Publisher<T> completableFluentIterable) {
 
         
-        return new FluentIterableType<>(FromCyclopsReact.fromSimpleReact(ReactiveSeq.fromPublisher(completableFluentIterable)));
+        return new FluentIterableKind<>(FromCyclopsReact.fromSimpleReact(ReactiveSeq.fromPublisher(completableFluentIterable)));
     }
 
     /**
-     * Convert the raw Higher Kinded Type for FluentIterableType types into the FluentIterableType type definition class
+     * Convert the raw Higher Kinded Type for FluentIterableKind types into the FluentIterableKind type definition class
      * 
-     * @param future HKT encoded list into a FluentIterableType
-     * @return FluentIterableType
+     * @param future HKT encoded list into a FluentIterableKind
+     * @return FluentIterableKind
      */
-    public static <T> FluentIterableType<T> narrowK(final Higher<FluentIterableType.µ, T> future) {
-        return (FluentIterableType<T>) future;
+    public static <T> FluentIterableKind<T> narrowK(final Higher<FluentIterableKind.µ, T> future) {
+        return (FluentIterableKind<T>) future;
     }
 
     /**
@@ -123,9 +121,9 @@ public final class FluentIterableType<E> implements Higher<FluentIterableType.µ
      * @param fluentIterable Type Constructor to convert back into narrowed type
      * @return FluentIterable from Higher Kinded Type
      */
-    public static <T> FluentIterable<T> narrow(final Higher<FluentIterableType.µ, T> fluentIterable) {
+    public static <T> FluentIterable<T> narrow(final Higher<FluentIterableKind.µ, T> fluentIterable) {
 
-        return ((FluentIterableType<T>) fluentIterable).narrow();
+        return ((FluentIterableKind<T>) fluentIterable).narrow();
 
     }
 
@@ -175,7 +173,7 @@ public final class FluentIterableType<E> implements Higher<FluentIterableType.µ
      * @see com.google.common.collect.FluentIterable#toString()
      */
     public String toString() {
-        return "[FluentIterableType "+boxed.toString()+"]";
+        return "[FluentIterableKind "+boxed.toString()+"]";
     }
 
     /**
