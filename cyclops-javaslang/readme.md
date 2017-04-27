@@ -89,7 +89,7 @@ Value<Integer> option = Javaslang.ForValue.each2(Option.of(10), a-> Option.<Inte
 
 ```java
 
-import static com.aol.cyclops.javaslang.Javaslang.traversable;
+import static com.aol.cyclops.vavr.Vavr.traversable;
 
 
 traversable(Stream.of(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThreadPool(1))
@@ -100,7 +100,7 @@ traversable(Stream.of(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThre
 Subscribe to a Javaslang Traversable
 
 ```java	
-import static com.aol.cyclops.javaslang.Javaslang.traversable;
+import static com.aol.cyclops.vavr.Vavr.traversable;
 
 SeqSubscriber<Integer> subscriber =SeqSubscriber.subscriber();
 		
@@ -123,7 +123,7 @@ assertThat(Javaslang.tryM(Try.of(this::success))
 
 
 
-Pacakage com.aol.cyclops.javaslang contains converters for types from various functional libraries for Java
+Pacakage com.aol.cyclops.vavr contains converters for types from various functional libraries for Java
 
 * JDK
 * Guava

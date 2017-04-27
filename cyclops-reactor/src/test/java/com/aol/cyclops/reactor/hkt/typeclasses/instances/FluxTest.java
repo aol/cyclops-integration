@@ -24,7 +24,7 @@ public class FluxTest {
     @Test
     public void unit(){
         
-        FluxKind<String> list = FluxInstances.unit()
+        FluxKind<String> list = Instances.unit()
                                      .unit("hello")
                                      .convert(FluxKind::narrowK);
         
@@ -33,16 +33,16 @@ public class FluxTest {
     @Test
     public void functor(){
         
-        FluxKind<Integer> list = FluxInstances.unit()
+        FluxKind<Integer> list = Instances.unit()
                                      .unit("hello")
-                                     .transform(h->FluxInstances.functor().map((String v) ->v.length(), h))
+                                     .transform(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length())));
     }
     @Test
     public void apSimple(){
-        FluxInstances.zippingApplicative()
+        Instances.zippingApplicative()
             .ap(widen(Flux.just(l1(this::multiplyByTwo))),widen(Flux.just(1,2,3)));
     }
     private int multiplyByTwo(int x){
@@ -51,30 +51,30 @@ public class FluxTest {
     @Test
     public void applicative(){
 
-        FluxKind<Fn1<Integer, Integer>> listFn = FluxInstances.unit()
+        FluxKind<Fn1<Integer, Integer>> listFn = Instances.unit()
                                                               .unit(Lambda.l1((Integer i) -> i * 2))
                                                               .convert(FluxKind::narrowK);
         
-        FluxKind<Integer> list = FluxInstances.unit()
+        FluxKind<Integer> list = Instances.unit()
                                      .unit("hello")
-                                     .transform(h->FluxInstances.functor().map((String v) ->v.length(), h))
-                                     .transform(h->FluxInstances.zippingApplicative().ap(listFn, h))
+                                     .transform(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .transform(h-> Instances.zippingApplicative().ap(listFn, h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length()*2)));
     }
     @Test
     public void monadSimple(){
-       FluxKind<Integer> list  = FluxInstances.monad()
+       FluxKind<Integer> list  = Instances.monad()
                                       .flatMap(i->widen(ReactiveSeq.range(0,i)), widen(Flux.just(1,2,3)))
                                       .convert(FluxKind::narrowK);
     }
     @Test
     public void monad(){
         
-        FluxKind<Integer> list = FluxInstances.unit()
+        FluxKind<Integer> list = Instances.unit()
                                      .unit("hello")
-                                     .transform(h->FluxInstances.monad().flatMap((String v) ->FluxInstances.unit().unit(v.length()), h))
+                                     .transform(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length())));
@@ -82,9 +82,9 @@ public class FluxTest {
     @Test
     public void monadZeroFilter(){
         
-        FluxKind<String> list = FluxInstances.unit()
+        FluxKind<String> list = Instances.unit()
                                      .unit("hello")
-                                     .transform(h->FluxInstances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .transform(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello")));
@@ -92,9 +92,9 @@ public class FluxTest {
     @Test
     public void monadZeroFilterOut(){
         
-        FluxKind<String> list = FluxInstances.unit()
+        FluxKind<String> list = Instances.unit()
                                      .unit("hello")
-                                     .transform(h->FluxInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .transform(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList()));
@@ -102,7 +102,7 @@ public class FluxTest {
     
     @Test
     public void monadPlus(){
-        FluxKind<Integer> list = FluxInstances.<Integer>monadPlus()
+        FluxKind<Integer> list = Instances.<Integer>monadPlus()
                                       .plus(FluxKind.widen(Flux.empty()), FluxKind.widen(Flux.just(10)))
                                       .convert(FluxKind::narrowK);
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList(10)));
@@ -112,7 +112,7 @@ public class FluxTest {
     public void monadPlusNonEmpty(){
         
         Monoid<FluxKind<Integer>> m = Monoid.of(FluxKind.widen(Flux.empty()), (a,b)->a.isEmpty() ? b : a);
-        FluxKind<Integer> list = FluxInstances.<Integer>monadPlus(m)
+        FluxKind<Integer> list = Instances.<Integer>monadPlus(m)
                                       .plus(FluxKind.widen(Flux.of(5)), FluxKind.widen(Flux.of(10)))
                                       .convert(FluxKind::narrowK);
         assertThat(list,equalTo(Arrays.asList(5)));
@@ -120,14 +120,14 @@ public class FluxTest {
 **/
     @Test
     public void  foldLeft(){
-        int sum  = FluxInstances.foldable()
+        int sum  = Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, FluxKind.widen(Flux.just(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
-        int sum  = FluxInstances.foldable()
+        int sum  = Instances.foldable()
                         .foldRight(0, (a,b)->a+b, FluxKind.widen(Flux.just(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
@@ -135,7 +135,7 @@ public class FluxTest {
     @Test
     public void traverse(){
 
-       Maybe<Higher<FluxKind.µ, Integer>> res = FluxInstances.traverse()
+       Maybe<Higher<FluxKind.µ, Integer>> res = Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), FluxKind.just(1,2,3))
                                                          .convert(Maybe::narrowK);
        

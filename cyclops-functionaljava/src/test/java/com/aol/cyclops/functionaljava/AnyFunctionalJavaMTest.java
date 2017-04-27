@@ -332,7 +332,7 @@ public class AnyFunctionalJavaMTest {
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
-    @Test // (expected=javaslang.control.Failure.NonFatal.class)
+    @Test // (expected=vavr.control.Failure.NonFatal.class)
     public void validationTestFailure() {
 
         FJ.validation(Validation.fail(new RuntimeException()))

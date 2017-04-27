@@ -33,7 +33,7 @@ dependencies {
 
 	compile "org.functionaljava:functionaljava:"+functionalJavaVersion
 	compile "org.functionaljava:functionaljava-java8:"+functionalJavaVersion
-	provided 'io.javaslang:javaslang:'+javaslangVersion
+	provided 'io.vavr:vavr:'+javaslangVersion
 	compile  'com.google.guava:guava:'+guavaVersion
 	provided group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion

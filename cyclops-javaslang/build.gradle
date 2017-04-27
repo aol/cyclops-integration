@@ -32,7 +32,7 @@ configurations {
 dependencies {
 	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
-	compile 'io.javaslang:javaslang:'+javaslangVersion
+	compile 'io.vavr:vavr:'+javaslangVersion
 	provided "org.functionaljava:functionaljava:"+functionalJavaVersion
 	provided "org.functionaljava:functionaljava-java8:"+functionalJavaVersion
 	provided  'com.google.guava:guava:'+guavaVersion
@@ -62,13 +62,13 @@ test {
 
 modifyPom {
 	project {
-		name 'cyclops-javaslang'
+		name 'cyclops-vavr'
 		description 'Converters and Comprehenders for Javaslang'
 		url 'https://github.com/aol/cyclops'
 		inceptionYear '2015'
 
 		groupId 'com.aol.cyclops'
-		artifactId 'cyclops-javaslang'
+		artifactId 'cyclops-vavr'
 		version "$version"
 		
 		scm {

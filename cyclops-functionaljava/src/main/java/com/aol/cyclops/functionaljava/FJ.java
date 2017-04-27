@@ -319,7 +319,7 @@ public interface FJ {
      */
     public static <T> AnyMValue<T> left(Either<T, ?>.LeftProjection<T, ?> lM) {
         if (lM.toOption()
-              .isSome()) // works in the opposite way to javaslang
+              .isSome()) // works in the opposite way to vavr
             return AnyM.ofValue(Either.right(lM.value())
                                       .right());
         else

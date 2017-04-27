@@ -36,7 +36,7 @@ Closely linked to cyclops-react AnyM functionality, the integration modules allo
 
 ```java
 
-import static com.aol.cyclops.javaslang.Javaslang.traversable;
+import static com.aol.cyclops.vavr.Vavr.traversable;
 
 SeqSubscriber<Integer> sub = SeqSubscriber.subscriber();
 traversable(List.of(1,2,3)).subscribe(sub);
