@@ -5,10 +5,14 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
+import com.aol.cyclops.vavr.VavrWitness.future;
+import com.aol.cyclops.vavr.VavrWitness.option;
+import com.aol.cyclops2.types.anyM.AnyMSeq;
 import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.async.Future;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
+import cyclops.monads.AnyM;
 import javaslang.Lazy;
 import javaslang.Value;
 import javaslang.collection.Traversable;
@@ -27,12 +31,7 @@ public class Vavr {
         return Eval.later(opt);
     }
    
-    public static <T> Future<T> future(javaslang.concurrent.Future<T> future){
-        Future<T> res = Future.future();
-        future.onSuccess(v->res.complete(v))
-              .onFailure(t->res.completeExceptionally(t));
-        return res;
-    }
+
     public static <T> AnyMValue<T> value(Value<T> monadM) {
         return AnyM.ofValue(monadM);
     }
@@ -61,12 +60,16 @@ public class Vavr {
             return AnyM.ofValue(Optional.empty());
     }
 
-    public static <T> AnyMValue<T> option(Option<T> option) {
-        return AnyM.ofValue(option);
+    public static <T> AnyMValue<option,T> option(Option<T> option) {
+        return AnyM.ofValue(option, VavrWitness.option.INSTANCE);
     }
 
     public static <T> AnyMSeq<T> traversable(Traversable<T> traversable) {
         return AnyM.ofSeq(traversable);
+    }
+
+    public static <R> AnyM<future,R> future(javaslang.concurrent.Future<R> res) {
+        return AnyM.ofValue(res, future.INSTANCE);
     }
 
     public interface ForTraversable {

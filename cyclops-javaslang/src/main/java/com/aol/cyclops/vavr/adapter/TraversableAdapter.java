@@ -13,12 +13,10 @@ import java.util.function.Predicate;
 
 
 @AllArgsConstructor
-public class TraversableAdapter<W extends VavrWitness.TraversableWitness<W>> extends AbstractFunctionalAdapter<W> {
+public abstract class TraversableAdapter<W extends VavrWitness.TraversableWitness<W>> extends AbstractFunctionalAdapter<W> {
 
 
-
-
-
+    W instance;
     @Override
     public <T> Iterable<T> toIterable(AnyM<W, T> t) {
         return ()->stream(t).iterator();
@@ -28,23 +26,28 @@ public class TraversableAdapter<W extends VavrWitness.TraversableWitness<W>> ext
     public <T, R> AnyM<W, R> ap(AnyM<W,? extends Function<? super T,? extends R>> fn, AnyM<W, T> apply) {
         Traversable<T> f = stream(apply);
         Traversable<? extends Function<? super T, ? extends R>> fnF = stream(fn);
-        Traversable<R> res = Traversable.from(ReactiveSeq.fromIterable(fnF).zip(f, (a, b) -> a.apply(b)));
-        return Vavr.anyM(res);
+        return unitIterable(ReactiveSeq.fromIterable(fnF).zip(f, (a, b) -> a.apply(b)));
 
     }
 
     @Override
     public <T> AnyM<W, T> filter(AnyM<W, T> t, Predicate<? super T> fn) {
-        return Vavr.anyM(stream(t).filter(fn));
+        return anyM(stream(t).filter(fn));
     }
 
     <T> Traversable<T> stream(AnyM<W,T> anyM){
         return anyM.unwrap();
     }
-
+    public abstract <T> Traversable<T> emptyTraversable();
+    public abstract <T> Traversable<T> singletonTraversable(T value);
+    public abstract <T> Traversable<T> traversableFromIterable(Iterable<T> value);
     @Override
     public <T> AnyM<W, T> empty() {
-        return Vavr.anyM(Traversable.of());
+        return anyM(emptyTraversable());
+    }
+
+    private <T> AnyM<W,T> anyM(Traversable<T> t){
+        return AnyM.ofSeq(t,instance);
     }
 
 
@@ -52,18 +55,18 @@ public class TraversableAdapter<W extends VavrWitness.TraversableWitness<W>> ext
     @Override
     public <T, R> AnyM<W, R> flatMap(AnyM<W, T> t,
                                      Function<? super T, ? extends AnyM<W, ? extends R>> fn) {
-        return Vavr.anyM(stream(t).flatMap(a->stream(fn.apply(a))));
+        return anyM(stream(t).flatMap(a->stream(fn.apply(a))));
 
     }
 
     @Override
     public <T> AnyM<W, T> unitIterable(Iterable<T> it)  {
-        return Vavr.anyM(Traversable.from(it));
+        return anyM(traversableFromIterable(it));
     }
 
     @Override
     public <T> AnyM<W, T> unit(T o) {
-        return Vavr.anyM(Traversable.of(o));
+        return anyM(singletonTraversable(o));
     }
 
 
