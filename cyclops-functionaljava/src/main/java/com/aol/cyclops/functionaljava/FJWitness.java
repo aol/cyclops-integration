@@ -1,10 +1,7 @@
 package com.aol.cyclops.functionaljava;
 
 
-import com.aol.cyclops.functionaljava.adapter.EitherAdapter;
-import com.aol.cyclops.functionaljava.adapter.ListAdapter;
-import com.aol.cyclops.functionaljava.adapter.OptionAdapter;
-import com.aol.cyclops.functionaljava.adapter.ValidationAdapter;
+import com.aol.cyclops.functionaljava.adapter.*;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
 import cyclops.monads.WitnessType;
 import javaslang.collection.*;
@@ -22,6 +19,31 @@ public interface FJWitness {
         }
 
     }
+    static interface StreamWitness<W extends StreamWitness<W>>  extends WitnessType<W> {
+
+    }
+    public static enum stream implements StreamWitness<stream> {
+        INSTANCE;
+
+        @Override
+        public FunctionalAdapter<stream> adapter() {
+            return new StreamAdapter();
+        }
+
+    }
+    static interface IterableWWitness<W extends IterableWWitness<W>>  extends WitnessType<W> {
+
+    }
+    public static enum iterableW implements IterableWWitness<iterableW> {
+        INSTANCE;
+
+        @Override
+        public FunctionalAdapter<iterableW> adapter() {
+            return new IterableWAdapter();
+        }
+
+    }
+
     static interface OptionWitness<W extends FJWitness.OptionWitness<W>>  extends WitnessType<W> {
 
     }

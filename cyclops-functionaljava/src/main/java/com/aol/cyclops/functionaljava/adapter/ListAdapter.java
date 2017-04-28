@@ -13,8 +13,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 
-@AllArgsConstructor
-public abstract class ListAdapter extends AbstractFunctionalAdapter<list> {
+
+public class ListAdapter extends AbstractFunctionalAdapter<list> {
 
 
 
@@ -42,7 +42,7 @@ public abstract class ListAdapter extends AbstractFunctionalAdapter<list> {
 
     @Override
     public <T> AnyM<list, T> empty() {
-        return anyM(List.list());
+        return anyM(List.nil());
     }
 
     private <T> AnyM<list,T> anyM(List<T> t){

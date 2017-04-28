@@ -6,10 +6,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 
-import com.aol.cyclops.functionaljava.FJWitness.either;
-import com.aol.cyclops.functionaljava.FJWitness.list;
-import com.aol.cyclops.functionaljava.FJWitness.option;
-import com.aol.cyclops.functionaljava.FJWitness.validation;
+import com.aol.cyclops.functionaljava.FJWitness.*;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.control.Maybe;
@@ -107,8 +104,8 @@ public interface FJ {
      * @param iterableWM to create AnyM from
      * @return AnyM
      */
-    public static <T> AnyMSeq<T> iterableW(IterableW<T> iterableWM) {
-        return AnyM.ofSeq(iterableWM);
+    public static <T> AnyMSeq<iterableW,T> iterableW(IterableW<T> iterableWM) {
+        return AnyM.ofSeq(iterableWM, iterableW.INSTANCE);
     }
 
     /**
@@ -164,8 +161,8 @@ public interface FJ {
      * @param streamM to construct AnyM from
      * @return AnyM
      */
-    public static <T> AnyMSeq<T> stream(Stream<T> streamM) {
-        return AnyM.ofSeq(streamM);
+    public static <T> AnyMSeq<stream,T> stream(Stream<T> streamM) {
+        return AnyM.ofSeq(streamM, stream.INSTANCE);
     }
 
     /**
