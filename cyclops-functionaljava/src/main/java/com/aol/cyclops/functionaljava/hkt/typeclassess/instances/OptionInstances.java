@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 
 import com.aol.cyclops.functionaljava.FJ;
-import com.aol.cyclops.functionaljava.hkt.OptionType;
+import com.aol.cyclops.functionaljava.hkt.OptionKind;
 
 
 import com.aol.cyclops2.hkt.Higher;
@@ -35,8 +35,8 @@ public class OptionInstances {
      * 
      * <pre>
      * {@code 
-     *  OptionType<Integer> option = Options.functor()
-     *                                      .map(i->i*2, OptionType.widen(Option.some(1));
+     *  OptionKind<Integer> option = Options.functor()
+     *                                      .map(i->i*2, OptionKind.widen(Option.some(1));
      *  
      *  //[2]
      *  
@@ -47,10 +47,10 @@ public class OptionInstances {
      * An example fluent api working with Options
      * <pre>
      * {@code 
-     *   OptionType<Integer> option = Options.unit()
+     *   OptionKind<Integer> option = Options.unit()
                                        .unit("hello")
                                        .then(h->Options.functor().map((String v) ->v.length(), h))
-                                       .convert(OptionType::narrowK);
+                                       .convert(OptionKind::narrowK);
      * 
      * }
      * </pre>
@@ -58,16 +58,16 @@ public class OptionInstances {
      * 
      * @return A functor for Options
      */
-    public static <T,R>Functor<OptionType.µ> functor(){
-        BiFunction<OptionType<T>,Function<? super T, ? extends R>,OptionType<R>> map = OptionInstances::map;
+    public static <T,R>Functor<OptionKind.µ> functor(){
+        BiFunction<OptionKind<T>,Function<? super T, ? extends R>,OptionKind<R>> map = OptionInstances::map;
         return General.functor(map);
     }
     /**
      * <pre>
      * {@code 
-     * OptionType<String> option = Options.unit()
+     * OptionKind<String> option = Options.unit()
                                           .unit("hello")
-                                          .convert(OptionType::narrowK);
+                                          .convert(OptionKind::narrowK);
         
         //Option.some("hello"))
      * 
@@ -77,14 +77,14 @@ public class OptionInstances {
      * 
      * @return A factory for Options
      */
-    public static <T> Pure<OptionType.µ> unit(){
-        return General.<OptionType.µ,T>unit(OptionInstances::of);
+    public static <T> Pure<OptionKind.µ> unit(){
+        return General.<OptionKind.µ,T>unit(OptionInstances::of);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.OptionType.widen;
+     * import static com.aol.cyclops.hkt.jdk.OptionKind.widen;
      * import static com.aol.cyclops.util.function.Lambda.l1;
      * 
      * 
@@ -99,15 +99,15 @@ public class OptionInstances {
      * Example fluent API
      * <pre>
      * {@code 
-     * OptionType<Function<Integer,Integer>> optionFn =Options.unit()
+     * OptionKind<Function<Integer,Integer>> optionFn =Options.unit()
      *                                                  .unit(Lambda.l1((Integer i) ->i*2))
-     *                                                  .convert(OptionType::narrowK);
+     *                                                  .convert(OptionKind::narrowK);
         
-        OptionType<Integer> option = Options.unit()
+        OptionKind<Integer> option = Options.unit()
                                       .unit("hello")
                                       .then(h->Options.functor().map((String v) ->v.length(), h))
                                       .then(h->Options.applicative().ap(optionFn, h))
-                                      .convert(OptionType::narrowK);
+                                      .convert(OptionKind::narrowK);
         
         //Arrays.asOption("hello".length()*2))
      * 
@@ -117,28 +117,28 @@ public class OptionInstances {
      * 
      * @return A zipper for Options
      */
-    public static <T,R> Applicative<OptionType.µ> applicative(){
-        BiFunction<OptionType< Function<T, R>>,OptionType<T>,OptionType<R>> ap = OptionInstances::ap;
+    public static <T,R> Applicative<OptionKind.µ> applicative(){
+        BiFunction<OptionKind< Function<T, R>>,OptionKind<T>,OptionKind<R>> ap = OptionInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.OptionType.widen;
-     * OptionType<Integer> option  = Options.monad()
+     * import static com.aol.cyclops.hkt.jdk.OptionKind.widen;
+     * OptionKind<Integer> option  = Options.monad()
                                       .flatMap(i->widen(OptionX.range(0,i)), widen(Option.some(1,2,3)))
-                                      .convert(OptionType::narrowK);
+                                      .convert(OptionKind::narrowK);
      * }
      * </pre>
      * 
      * Example fluent API
      * <pre>
      * {@code 
-     *    OptionType<Integer> option = Options.unit()
+     *    OptionKind<Integer> option = Options.unit()
                                         .unit("hello")
                                         .then(h->Options.monad().flatMap((String v) ->Options.unit().unit(v.length()), h))
-                                        .convert(OptionType::narrowK);
+                                        .convert(OptionKind::narrowK);
         
         //Arrays.asOption("hello".length())
      * 
@@ -147,19 +147,19 @@ public class OptionInstances {
      * 
      * @return Type class with monad functions for Options
      */
-    public static <T,R> Monad<OptionType.µ> monad(){
+    public static <T,R> Monad<OptionKind.µ> monad(){
   
-        BiFunction<Higher<OptionType.µ,T>,Function<? super T, ? extends Higher<OptionType.µ,R>>,Higher<OptionType.µ,R>> flatMap = OptionInstances::flatMap;
+        BiFunction<Higher<OptionKind.µ,T>,Function<? super T, ? extends Higher<OptionKind.µ,R>>,Higher<OptionKind.µ,R>> flatMap = OptionInstances::flatMap;
         return General.monad(applicative(), flatMap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     *  OptionType<String> option = Options.unit()
+     *  OptionKind<String> option = Options.unit()
                                      .unit("hello")
                                      .then(h->Options.monadZero().filter((String t)->t.startsWith("he"), h))
-                                     .convert(OptionType::narrowK);
+                                     .convert(OptionKind::narrowK);
         
        //Arrays.asOption("hello"));
      * 
@@ -169,38 +169,38 @@ public class OptionInstances {
      * 
      * @return A filterable monad (with default value)
      */
-    public static <T,R> MonadZero<OptionType.µ> monadZero(){
+    public static <T,R> MonadZero<OptionKind.µ> monadZero(){
         
-        return General.monadZero(monad(), OptionType.empty());
+        return General.monadZero(monad(), OptionKind.empty());
     }
     /**
      * <pre>
      * {@code 
-     *  OptionType<Integer> option = Options.<Integer>monadPlus()
-                                      .plus(OptionType.widen(Arrays.asOption()), OptionType.widen(Arrays.asOption(10)))
-                                      .convert(OptionType::narrowK);
+     *  OptionKind<Integer> option = Options.<Integer>monadPlus()
+                                      .plus(OptionKind.widen(Arrays.asOption()), OptionKind.widen(Arrays.asOption(10)))
+                                      .convert(OptionKind::narrowK);
         //Arrays.asOption(10))
      * 
      * }
      * </pre>
      * @return Type class for combining Options by concatenation
      */
-    public static <T> MonadPlus<OptionType.µ> monadPlus(){
+    public static <T> MonadPlus<OptionKind.µ> monadPlus(){
         Monoid<Option<T>> mn = Monoid.of(Option.none(), (a, b) -> a.isSome() ? a : b);
-        Monoid<OptionType<T>> m = Monoid.of(OptionType.widen(mn.zero()), (f,g)-> OptionType.widen(
-                                                                                mn.apply(OptionType.narrow(f), OptionType.narrow(g))));
+        Monoid<OptionKind<T>> m = Monoid.of(OptionKind.widen(mn.zero()), (f, g)-> OptionKind.widen(
+                                                                                mn.apply(OptionKind.narrow(f), OptionKind.narrow(g))));
                 
-        Monoid<Higher<OptionType.µ,T>> m2= (Monoid)m;
+        Monoid<Higher<OptionKind.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
     /**
      * 
      * <pre>
      * {@code 
-     *  Monoid<OptionType<Integer>> m = Monoid.of(OptionType.widen(Arrays.asOption()), (a,b)->a.isEmpty() ? b : a);
-        OptionType<Integer> option = Options.<Integer>monadPlus(m)
-                                      .plus(OptionType.widen(Arrays.asOption(5)), OptionType.widen(Arrays.asOption(10)))
-                                      .convert(OptionType::narrowK);
+     *  Monoid<OptionKind<Integer>> m = Monoid.of(OptionKind.widen(Arrays.asOption()), (a,b)->a.isEmpty() ? b : a);
+        OptionKind<Integer> option = Options.<Integer>monadPlus(m)
+                                      .plus(OptionKind.widen(Arrays.asOption(5)), OptionKind.widen(Arrays.asOption(10)))
+                                      .convert(OptionKind::narrowK);
         //Arrays.asOption(5))
      * 
      * }
@@ -209,15 +209,15 @@ public class OptionInstances {
      * @param m Monoid to use for combining Options
      * @return Type class for combining Options
      */
-    public static <T> MonadPlus<OptionType.µ> monadPlus(Monoid<OptionType<T>> m){
-        Monoid<Higher<OptionType.µ,T>> m2= (Monoid)m;
+    public static <T> MonadPlus<OptionKind.µ> monadPlus(Monoid<OptionKind<T>> m){
+        Monoid<Higher<OptionKind.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
  
     /**
      * @return Type class for traversables with traverse / sequence operations
      */
-    public static <C2,T> Traverse<OptionType.µ> traverse(){
+    public static <C2,T> Traverse<OptionKind.µ> traverse(){
       
         return General.traverseByTraverse(applicative(), OptionInstances::traverseA);
     }
@@ -227,7 +227,7 @@ public class OptionInstances {
      * <pre>
      * {@code 
      * int sum  = Options.foldable()
-                           .foldLeft(0, (a,b)->a+b, OptionType.widen(Option.some(2)));
+                           .foldLeft(0, (a,b)->a+b, OptionKind.widen(Option.some(2)));
         
         //2
      * 
@@ -237,40 +237,40 @@ public class OptionInstances {
      * 
      * @return Type class for folding / reduction operations
      */
-    public static <T> Foldable<OptionType.µ> foldable(){
-        BiFunction<Monoid<T>,Higher<OptionType.µ,T>,T> foldRightFn =  (m,l)-> OptionType.narrow(l).orSome(m.zero());
-        BiFunction<Monoid<T>,Higher<OptionType.µ,T>,T> foldLeftFn = (m,l)-> OptionType.narrow(l).orSome(m.zero());
+    public static <T> Foldable<OptionKind.µ> foldable(){
+        BiFunction<Monoid<T>,Higher<OptionKind.µ,T>,T> foldRightFn =  (m, l)-> OptionKind.narrow(l).orSome(m.zero());
+        BiFunction<Monoid<T>,Higher<OptionKind.µ,T>,T> foldLeftFn = (m, l)-> OptionKind.narrow(l).orSome(m.zero());
         return General.foldable(foldRightFn, foldLeftFn);
     }
-    public static <T> Comonad<OptionType.µ> comonad(){
-        Function<? super Higher<OptionType.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionType::narrow).some();
+    public static <T> Comonad<OptionKind.µ> comonad(){
+        Function<? super Higher<OptionKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionKind::narrow).some();
         return General.comonad(functor(), unit(), extractFn);
     }
     
-    private <T> OptionType<T> of(T value){
-        return OptionType.widen(Option.some(value));
+    private <T> OptionKind<T> of(T value){
+        return OptionKind.widen(Option.some(value));
     }
-    private static <T,R> OptionType<R> ap(OptionType<Function< T, R>> lt,  OptionType<T> option){
+    private static <T,R> OptionKind<R> ap(OptionKind<Function< T, R>> lt, OptionKind<T> option){
 
         Maybe<R> mb = FJ.maybe(lt.narrow()).combine(FJ.maybe(option.narrow()),
                                                     (a,b)->a.apply(b));
-        return OptionType.widen(mb);
+        return OptionKind.widen(mb);
         
     }
-    private static <T,R> Higher<OptionType.µ,R> flatMap( Higher<OptionType.µ,T> lt, Function<? super T, ? extends  Higher<OptionType.µ,R>> fn){
-        return OptionType.widen(OptionType.narrow(lt).bind(in->fn.andThen(OptionType::narrow).apply(in)));
+    private static <T,R> Higher<OptionKind.µ,R> flatMap(Higher<OptionKind.µ,T> lt, Function<? super T, ? extends  Higher<OptionKind.µ,R>> fn){
+        return OptionKind.widen(OptionKind.narrow(lt).bind(in->fn.andThen(OptionKind::narrow).apply(in)));
     }
-    private static <T,R> OptionType<R> map(OptionType<T> lt, Function<? super T, ? extends R> fn){
+    private static <T,R> OptionKind<R> map(OptionKind<T> lt, Function<? super T, ? extends R> fn){
         
-        return OptionType.widen(OptionType.narrow(lt).map(t->fn.apply(t)));
+        return OptionKind.widen(OptionKind.narrow(lt).map(t->fn.apply(t)));
     }
   
  
-    private static <C2,T,R> Higher<C2, Higher<OptionType.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn, 
-            Higher<OptionType.µ, T> ds){
-        Option<T> opt = OptionType.narrow(ds);
-        return opt.isSome()?   applicative.map(OptionType::of, fn.apply(opt.some())) : 
-                                    applicative.unit(OptionType.empty());
+    private static <C2,T,R> Higher<C2, Higher<OptionKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                          Higher<OptionKind.µ, T> ds){
+        Option<T> opt = OptionKind.narrow(ds);
+        return opt.isSome()?   applicative.map(OptionKind::of, fn.apply(opt.some())) :
+                                    applicative.unit(OptionKind.empty());
     }
    
 }

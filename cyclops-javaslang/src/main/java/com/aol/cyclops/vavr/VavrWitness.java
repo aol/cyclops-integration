@@ -2,9 +2,7 @@ package com.aol.cyclops.vavr;
 
 
 
-import com.aol.cyclops.vavr.adapter.FutureAdapter;
-import com.aol.cyclops.vavr.adapter.OptionAdapter;
-import com.aol.cyclops.vavr.adapter.TraversableAdapter;
+import com.aol.cyclops.vavr.adapter.*;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
 import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
@@ -174,26 +172,26 @@ public interface VavrWitness {
 
                 @Override
                 public Traversable traversableFromIterable(Iterable value) {
-                    return Queue.ofAll(value);
+                    return HashSet.ofAll(value);
                 }
 
                 @Override
                 public Traversable singletonTraversable(Object value) {
-                    return Queue.of((Character)value);
+                    return HashSet.of((Character)value);
                 }
 
                 @Override
                 public Traversable emptyTraversable() {
-                    return Queue.empty();
+                    return HashSet.empty();
                 }
             };
         }
 
     }
-    static interface OptionalWitness<W extends VavrWitness.OptionalWitness<W>>  extends WitnessType<W> {
+    static interface OptionWitness<W extends VavrWitness.OptionWitness<W>>  extends WitnessType<W> {
 
     }
-    public static enum option implements OptionalWitness<option> {
+    public static enum option implements OptionWitness<option> {
         INSTANCE;
 
         @Override
@@ -211,6 +209,30 @@ public interface VavrWitness {
         @Override
         public FunctionalAdapter<future> adapter() {
             return new FutureAdapter();
+        }
+
+    }
+    static interface EitherWitness<W extends VavrWitness.EitherWitness<W>>  extends WitnessType<W> {
+
+    }
+    public static enum either implements EitherWitness<either> {
+        INSTANCE;
+
+        @Override
+        public FunctionalAdapter<either> adapter() {
+            return new EitherAdapter();
+        }
+
+    }
+    static interface TryWitness<W extends VavrWitness.TryWitness<W>>  extends WitnessType<W> {
+
+    }
+    public static enum tryType implements TryWitness<tryType> {
+        INSTANCE;
+
+        @Override
+        public FunctionalAdapter<tryType> adapter() {
+            return new TryAdapter();
         }
 
     }

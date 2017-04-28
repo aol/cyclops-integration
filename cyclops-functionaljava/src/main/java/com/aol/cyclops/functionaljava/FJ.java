@@ -6,7 +6,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 
+import com.aol.cyclops.functionaljava.FJWitness.option;
+import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.control.Maybe;
+import cyclops.monads.AnyM;
 import fj.F0;
 import fj.P1;
 import fj.control.Trampoline;
@@ -340,8 +343,8 @@ public interface FJ {
      * @param optionM to construct AnyM from
      * @return AnyM
      */
-    public static <T> AnyMValue<T> option(Option<T> optionM) {
-        return AnyM.ofValue(optionM);
+    public static <T> AnyMValue<option,T> option(Option<T> optionM) {
+        return AnyM.ofValue(optionM, option.INSTANCE);
     }
 
     /**

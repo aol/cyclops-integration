@@ -40,14 +40,14 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for Option's
  * 
- * OptionType is a Option and a Higher Kinded Type (OptionType.µ,T)
+ * OptionKind is a Option and a Higher Kinded Type (OptionKind.µ,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Option
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class OptionType<T> implements Higher<OptionType.µ, T>, Iterable<T> {
+public final class OptionKind<T> implements Higher<OptionKind.µ, T>, Iterable<T> {
     private final Option<T> boxed;  
    
     /**
@@ -61,7 +61,7 @@ public final class OptionType<T> implements Higher<OptionType.µ, T>, Iterable<T
     /**
      * @return An HKT encoded empty Option
      */
-    public static <T> OptionType<T> empty() {
+    public static <T> OptionKind<T> empty() {
         return widen(Option.none());
     }
     
@@ -69,35 +69,35 @@ public final class OptionType<T> implements Higher<OptionType.µ, T>, Iterable<T
      * @param value Value to embed in an Option
      * @return An HKT encoded Option
      */
-    public static <T> OptionType<T> of(T value) {
+    public static <T> OptionKind<T> of(T value) {
         return widen(Option.some(value));
     }
     /**
      * Convert a Option to a simulated HigherKindedType that captures Option nature
-     * and Option element data type separately. Recover via @see OptionType#narrow
+     * and Option element data type separately. Recover via @see OptionKind#narrow
      * 
-     * If the supplied Option implements OptionType it is returned already, otherwise it
-     * is wrapped into a Option implementation that does implement OptionType
+     * If the supplied Option implements OptionKind it is returned already, otherwise it
+     * is wrapped into a Option implementation that does implement OptionKind
      * 
-     * @param Option Option to widen to a OptionType
-     * @return OptionType encoding HKT info about Options
+     * @param Option Option to widen to a OptionKind
+     * @return OptionKind encoding HKT info about Options
      */
-    public static <T> OptionType<T> widen(final Option<T> Option) {
+    public static <T> OptionKind<T> widen(final Option<T> Option) {
         
-        return new OptionType<T>(Option);
+        return new OptionKind<T>(Option);
     }
-    public static <T> OptionType<T> widen(final Maybe<T> option) {
+    public static <T> OptionKind<T> widen(final Maybe<T> option) {
         
-        return new OptionType<T>(FromCyclopsReact.option(option));
+        return new OptionKind<T>(FromCyclopsReact.option(option));
     }
     /**
-     * Convert the raw Higher Kinded Type for OptionType types into the OptionType type definition class
+     * Convert the raw Higher Kinded Type for OptionKind types into the OptionKind type definition class
      * 
-     * @param future HKT encoded list into a OptionType
-     * @return OptionType
+     * @param future HKT encoded list into a OptionKind
+     * @return OptionKind
      */
-    public static <T> OptionType<T> narrowK(final Higher<OptionType.µ, T> future) {
-       return (OptionType<T>)future;
+    public static <T> OptionKind<T> narrowK(final Higher<OptionKind.µ, T> future) {
+       return (OptionKind<T>)future;
     }
     /**
      * Convert the HigherKindedType definition for a Option into
@@ -105,9 +105,9 @@ public final class OptionType<T> implements Higher<OptionType.µ, T>, Iterable<T
      * @param Option Type Constructor to convert back into narrowed type
      * @return Option from Higher Kinded Type
      */
-    public static <T> Option<T> narrow(final Higher<OptionType.µ, T> Option) {
-        //has to be an OptionType as only OptionType can implement Higher<OptionType.µ, T>
-         return ((OptionType<T>)Option).boxed;
+    public static <T> Option<T> narrow(final Higher<OptionKind.µ, T> Option) {
+        //has to be an OptionKind as only OptionKind can implement Higher<OptionKind.µ, T>
+         return ((OptionKind<T>)Option).boxed;
         
     }
     

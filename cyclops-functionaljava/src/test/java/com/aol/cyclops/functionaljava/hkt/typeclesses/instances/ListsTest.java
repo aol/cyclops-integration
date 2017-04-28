@@ -1,18 +1,18 @@
 package com.aol.cyclops.functionaljava.hkt.typeclesses.instances;
 
-import static com.aol.cyclops.functionaljava.hkt.ListType.widen;
+import static com.aol.cyclops.functionaljava.hkt.ListKind.widen;
 import static com.aol.cyclops.util.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.function.Function;
 
+import com.aol.cyclops.functionaljava.hkt.ListKind;
 import org.junit.Test;
 
 import com.aol.cyclops.Monoid;
 import com.aol.cyclops.control.Maybe;
 import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.functionaljava.hkt.ListType;
 import com.aol.cyclops.functionaljava.hkt.typeclassess.instances.ListInstances;
 import com.aol.cyclops.hkt.alias.Higher;
 import com.aol.cyclops.hkt.cyclops.MaybeType;
@@ -20,26 +20,25 @@ import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
 import com.aol.cyclops.util.function.Lambda;
 
 import fj.data.List;
-import fj.data.Option;
 
 public class ListsTest {
 
     @Test
     public void unit(){
         
-        ListType<String> list = ListInstances.unit()
+        ListKind<String> list = ListInstances.unit()
                                      .unit("hello")
-                                     .convert(ListType::narrowK);
+                                     .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list("hello")));
     }
     @Test
     public void functor(){
         
-        ListType<Integer> list = ListInstances.unit()
+        ListKind<Integer> list = ListInstances.unit()
                                      .unit("hello")
                                      .then(h->ListInstances.functor().map((String v) ->v.length(), h))
-                                     .convert(ListType::narrowK);
+                                     .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list("hello".length())));
     }
@@ -54,88 +53,88 @@ public class ListsTest {
     @Test
     public void applicative(){
         
-        ListType<Function<Integer,Integer>> listFn =ListInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(ListType::narrowK);
+        ListKind<Function<Integer,Integer>> listFn =ListInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(ListKind::narrowK);
         
-        ListType<Integer> list = ListInstances.unit()
+        ListKind<Integer> list = ListInstances.unit()
                                      .unit("hello")
                                      .then(h->ListInstances.functor().map((String v) ->v.length(), h))
                                      .then(h->ListInstances.zippingApplicative().ap(listFn, h))
-                                     .convert(ListType::narrowK);
+                                     .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list("hello".length()*2)));
     }
     @Test
     public void monadSimple(){
-       ListType<Integer> list  = ListInstances.monad()
+       ListKind<Integer> list  = ListInstances.monad()
                                       .flatMap(i->widen(List.range(0,i)), widen(List.list(1,2,3)))
-                                      .convert(ListType::narrowK);
+                                      .convert(ListKind::narrowK);
     }
     @Test
     public void monad(){
         
-        ListType<Integer> list = ListInstances.unit()
+        ListKind<Integer> list = ListInstances.unit()
                                      .unit("hello")
                                      .then(h->ListInstances.monad().flatMap((String v) ->ListInstances.unit().unit(v.length()), h))
-                                     .convert(ListType::narrowK);
+                                     .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list("hello".length())));
     }
     @Test
     public void monadZeroFilter(){
         
-        ListType<String> list = ListInstances.unit()
+        ListKind<String> list = ListInstances.unit()
                                      .unit("hello")
                                      .then(h->ListInstances.monadZero().filter((String t)->t.startsWith("he"), h))
-                                     .convert(ListType::narrowK);
+                                     .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list("hello")));
     }
     @Test
     public void monadZeroFilterOut(){
         
-        ListType<String> list = ListInstances.unit()
+        ListKind<String> list = ListInstances.unit()
                                      .unit("hello")
                                      .then(h->ListInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
-                                     .convert(ListType::narrowK);
+                                     .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list()));
     }
     
     @Test
     public void monadPlus(){
-        ListType<Integer> list = ListInstances.<Integer>monadPlus()
-                                      .plus(ListType.widen(List.list()), ListType.widen(List.list(10)))
-                                      .convert(ListType::narrowK);
+        ListKind<Integer> list = ListInstances.<Integer>monadPlus()
+                                      .plus(ListKind.widen(List.list()), ListKind.widen(List.list(10)))
+                                      .convert(ListKind::narrowK);
         assertThat(list,equalTo(List.list(10)));
     }
     @Test
     public void monadPlusNonEmpty(){
         
-        Monoid<ListType<Integer>> m = Monoid.of(ListType.widen(List.list()), (a,b)->a.isEmpty() ? b : a);
-        ListType<Integer> list = ListInstances.<Integer>monadPlus(m)
-                                      .plus(ListType.widen(List.list(5)), ListType.widen(List.list(10)))
-                                      .convert(ListType::narrowK);
+        Monoid<ListKind<Integer>> m = Monoid.of(ListKind.widen(List.list()), (a, b)->a.isEmpty() ? b : a);
+        ListKind<Integer> list = ListInstances.<Integer>monadPlus(m)
+                                      .plus(ListKind.widen(List.list(5)), ListKind.widen(List.list(10)))
+                                      .convert(ListKind::narrowK);
         assertThat(list,equalTo(List.list(5)));
     }
     @Test
     public void  foldLeft(){
         int sum  = ListInstances.foldable()
-                        .foldLeft(0, (a,b)->a+b, ListType.widen(List.list(1,2,3,4)));
+                        .foldLeft(0, (a,b)->a+b, ListKind.widen(List.list(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
         int sum  = ListInstances.foldable()
-                        .foldRight(0, (a,b)->a+b, ListType.widen(List.list(1,2,3,4)));
+                        .foldRight(0, (a,b)->a+b, ListKind.widen(List.list(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
     }
     
     @Test
     public void traverse(){
-       MaybeType<Higher<ListType.µ, Integer>> res = ListInstances.traverse()
-                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), ListType.list(1,2,3))
+       MaybeType<Higher<ListKind.µ, Integer>> res = ListInstances.traverse()
+                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), ListKind.list(1,2,3))
                                                          .convert(MaybeType::narrowK);
             
        assertThat(res,equalTo(Maybe.just(List.list(6,4,2))));

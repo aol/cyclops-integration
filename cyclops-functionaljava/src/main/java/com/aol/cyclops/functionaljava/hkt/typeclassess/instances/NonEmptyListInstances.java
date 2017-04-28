@@ -3,7 +3,7 @@ package com.aol.cyclops.functionaljava.hkt.typeclassess.instances;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.aol.cyclops.functionaljava.hkt.NonEmptyListType;
+import com.aol.cyclops.functionaljava.hkt.NonEmptyListKind;
 
 
 import com.aol.cyclops2.hkt.Higher;
@@ -32,7 +32,7 @@ public class NonEmptyListInstances {
      * 
      * <pre>
      * {@code 
-     *  NonEmptyListType<Integer> list = NonEmptyLists.functor().map(i->i*2, NonEmptyListType.widen(Arrays.asNonEmptyList(1,2,3));
+     *  NonEmptyListKind<Integer> list = NonEmptyLists.functor().map(i->i*2, NonEmptyListKind.widen(Arrays.asNonEmptyList(1,2,3));
      *  
      *  //[2,4,6]
      *  
@@ -43,10 +43,10 @@ public class NonEmptyListInstances {
      * An example fluent api working with NonEmptyLists
      * <pre>
      * {@code 
-     *   NonEmptyListType<Integer> list = NonEmptyLists.unit()
+     *   NonEmptyListKind<Integer> list = NonEmptyLists.unit()
                                        .unit("hello")
                                        .then(h->NonEmptyLists.functor().map((String v) ->v.length(), h))
-                                       .convert(NonEmptyListType::narrowK);
+                                       .convert(NonEmptyListKind::narrowK);
      * 
      * }
      * </pre>
@@ -54,16 +54,16 @@ public class NonEmptyListInstances {
      * 
      * @return A functor for NonEmptyLists
      */
-    public static <T,R>Functor<NonEmptyListType.µ> functor(){
-        BiFunction<NonEmptyListType<T>,Function<? super T, ? extends R>,NonEmptyListType<R>> map = NonEmptyListInstances::map;
+    public static <T,R>Functor<NonEmptyListKind.µ> functor(){
+        BiFunction<NonEmptyListKind<T>,Function<? super T, ? extends R>,NonEmptyListKind<R>> map = NonEmptyListInstances::map;
         return General.functor(map);
     }
     /**
      * <pre>
      * {@code 
-     * NonEmptyListType<String> list = NonEmptyLists.unit()
+     * NonEmptyListKind<String> list = NonEmptyLists.unit()
                                      .unit("hello")
-                                     .convert(NonEmptyListType::narrowK);
+                                     .convert(NonEmptyListKind::narrowK);
         
         //Arrays.asNonEmptyList("hello"))
      * 
@@ -73,14 +73,14 @@ public class NonEmptyListInstances {
      * 
      * @return A factory for NonEmptyLists
      */
-    public static <T> Pure<NonEmptyListType.µ> unit(){
-        return General.<NonEmptyListType.µ,T>unit(NonEmptyListInstances::of);
+    public static <T> Pure<NonEmptyListKind.µ> unit(){
+        return General.<NonEmptyListKind.µ,T>unit(NonEmptyListInstances::of);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.NonEmptyListType.widen;
+     * import static com.aol.cyclops.hkt.jdk.NonEmptyListKind.widen;
      * import static com.aol.cyclops.util.function.Lambda.l1;
      * import static java.util.Arrays.asNonEmptyList;
      * 
@@ -95,15 +95,15 @@ public class NonEmptyListInstances {
      * Example fluent API
      * <pre>
      * {@code 
-     * NonEmptyListType<Function<Integer,Integer>> listFn =NonEmptyLists.unit()
+     * NonEmptyListKind<Function<Integer,Integer>> listFn =NonEmptyLists.unit()
      *                                                  .unit(Lambda.l1((Integer i) ->i*2))
-     *                                                  .convert(NonEmptyListType::narrowK);
+     *                                                  .convert(NonEmptyListKind::narrowK);
         
-        NonEmptyListType<Integer> list = NonEmptyLists.unit()
+        NonEmptyListKind<Integer> list = NonEmptyLists.unit()
                                       .unit("hello")
                                       .then(h->NonEmptyLists.functor().map((String v) ->v.length(), h))
                                       .then(h->NonEmptyLists.zippingApplicative().ap(listFn, h))
-                                      .convert(NonEmptyListType::narrowK);
+                                      .convert(NonEmptyListKind::narrowK);
         
         //Arrays.asNonEmptyList("hello".length()*2))
      * 
@@ -113,28 +113,28 @@ public class NonEmptyListInstances {
      * 
      * @return A zipper for NonEmptyLists
      */
-    public static <T,R> Applicative<NonEmptyListType.µ> zippingApplicative(){
-        BiFunction<NonEmptyListType< Function<T, R>>,NonEmptyListType<T>,NonEmptyListType<R>> ap = NonEmptyListInstances::ap;
+    public static <T,R> Applicative<NonEmptyListKind.µ> zippingApplicative(){
+        BiFunction<NonEmptyListKind< Function<T, R>>,NonEmptyListKind<T>,NonEmptyListKind<R>> ap = NonEmptyListInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.NonEmptyListType.widen;
-     * NonEmptyListType<Integer> list  = NonEmptyLists.monad()
+     * import static com.aol.cyclops.hkt.jdk.NonEmptyListKind.widen;
+     * NonEmptyListKind<Integer> list  = NonEmptyLists.monad()
                                       .flatMap(i->widen(NonEmptyListX.range(0,i)), widen(Arrays.asNonEmptyList(1,2,3)))
-                                      .convert(NonEmptyListType::narrowK);
+                                      .convert(NonEmptyListKind::narrowK);
      * }
      * </pre>
      * 
      * Example fluent API
      * <pre>
      * {@code 
-     *    NonEmptyListType<Integer> list = NonEmptyLists.unit()
+     *    NonEmptyListKind<Integer> list = NonEmptyLists.unit()
                                         .unit("hello")
                                         .then(h->NonEmptyLists.monad().flatMap((String v) ->NonEmptyLists.unit().unit(v.length()), h))
-                                        .convert(NonEmptyListType::narrowK);
+                                        .convert(NonEmptyListKind::narrowK);
         
         //Arrays.asNonEmptyList("hello".length())
      * 
@@ -143,9 +143,9 @@ public class NonEmptyListInstances {
      * 
      * @return Type class with monad functions for NonEmptyLists
      */
-    public static <T,R> Monad<NonEmptyListType.µ> monad(){
+    public static <T,R> Monad<NonEmptyListKind.µ> monad(){
   
-        BiFunction<Higher<NonEmptyListType.µ,T>,Function<? super T, ? extends Higher<NonEmptyListType.µ,R>>,Higher<NonEmptyListType.µ,R>> flatMap = NonEmptyListInstances::flatMap;
+        BiFunction<Higher<NonEmptyListKind.µ,T>,Function<? super T, ? extends Higher<NonEmptyListKind.µ,R>>,Higher<NonEmptyListKind.µ,R>> flatMap = NonEmptyListInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
    
@@ -159,7 +159,7 @@ public class NonEmptyListInstances {
      * <pre>
      * {@code 
      * int sum  = NonEmptyLists.foldable()
-                        .foldLeft(0, (a,b)->a+b, NonEmptyListType.widen(Arrays.asNonEmptyList(1,2,3,4)));
+                        .foldLeft(0, (a,b)->a+b, NonEmptyListKind.widen(Arrays.asNonEmptyList(1,2,3,4)));
         
         //10
      * 
@@ -169,24 +169,24 @@ public class NonEmptyListInstances {
      * 
      * @return Type class for folding / reduction operations
      */
-    public static <T> Foldable<NonEmptyListType.µ> foldable(){
-        BiFunction<Monoid<T>,Higher<NonEmptyListType.µ,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(NonEmptyListType.narrow(l)).foldRight(m);
-        BiFunction<Monoid<T>,Higher<NonEmptyListType.µ,T>,T> foldLeftFn = (m,l)-> ListX.fromIterable(NonEmptyListType.narrow(l)).reduce(m);
+    public static <T> Foldable<NonEmptyListKind.µ> foldable(){
+        BiFunction<Monoid<T>,Higher<NonEmptyListKind.µ,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(NonEmptyListKind.narrow(l)).foldRight(m);
+        BiFunction<Monoid<T>,Higher<NonEmptyListKind.µ,T>,T> foldLeftFn = (m, l)-> ListX.fromIterable(NonEmptyListKind.narrow(l)).reduce(m);
         return General.foldable(foldRightFn, foldLeftFn);
     }
   
     
-    private <T> NonEmptyListType<T> of(T value){
-        return NonEmptyListType.of(value);
+    private <T> NonEmptyListKind<T> of(T value){
+        return NonEmptyListKind.of(value);
     }
-    private static <T,R> NonEmptyListType<R> ap(NonEmptyListType<Function< T, R>> lt,  NonEmptyListType<T> list){
+    private static <T,R> NonEmptyListKind<R> ap(NonEmptyListKind<Function< T, R>> lt, NonEmptyListKind<T> list){
         
-        return NonEmptyListType.widen(lt.zipWith(list.narrow().toList(),(a,b)->a.apply(b)));
+        return NonEmptyListKind.widen(lt.zipWith(list.narrow().toList(),(a, b)->a.apply(b)));
     }
-    private static <T,R> Higher<NonEmptyListType.µ,R> flatMap( Higher<NonEmptyListType.µ,T> lt, Function<? super T, ? extends  Higher<NonEmptyListType.µ,R>> fn){
-        return NonEmptyListType.widen(NonEmptyListType.narrow(lt).bind(in->fn.andThen(NonEmptyListType::narrow).apply(in)));
+    private static <T,R> Higher<NonEmptyListKind.µ,R> flatMap(Higher<NonEmptyListKind.µ,T> lt, Function<? super T, ? extends  Higher<NonEmptyListKind.µ,R>> fn){
+        return NonEmptyListKind.widen(NonEmptyListKind.narrow(lt).bind(in->fn.andThen(NonEmptyListKind::narrow).apply(in)));
     }
-    private static <T,R> NonEmptyListType<R> map(NonEmptyListType<T> lt, Function<? super T, ? extends R> fn){
-        return NonEmptyListType.widen(NonEmptyListType.narrow(lt).map(in->fn.apply(in)));
+    private static <T,R> NonEmptyListKind<R> map(NonEmptyListKind<T> lt, Function<? super T, ? extends R> fn){
+        return NonEmptyListKind.widen(NonEmptyListKind.narrow(lt).map(in->fn.apply(in)));
     }
 }

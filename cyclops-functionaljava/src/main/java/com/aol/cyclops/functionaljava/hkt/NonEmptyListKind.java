@@ -19,14 +19,14 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for NonEmptyList's
  * 
- * NonEmptyListType is a NonEmptyList and a Higher Kinded Type (ListType.µ,T)
+ * NonEmptyListKind is a NonEmptyList and a Higher Kinded Type (ListKind.µ,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the NonEmptyList
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public  class NonEmptyListType<T> implements Higher<NonEmptyListType.µ, T> {
+public  class NonEmptyListKind<T> implements Higher<NonEmptyListKind.µ, T> {
     /**
      * Witness type
      * 
@@ -36,44 +36,44 @@ public  class NonEmptyListType<T> implements Higher<NonEmptyListType.µ, T> {
     public static class µ {
     }
     
-    public static<T> NonEmptyListType<T> of(T first,T...v){
+    public static<T> NonEmptyListKind<T> of(T first, T...v){
         
         return widen(NonEmptyList.fromList(List.list(v).cons(first)).some());
     }
 
     /**
      * Convert a NonEmptyList to a simulated HigherKindedType that captures NonEmptyList nature
-     * and NonEmptyList element data type separately. Recover via @see NonEmptyListType#narrow
+     * and NonEmptyList element data type separately. Recover via @see NonEmptyListKind#narrow
      * 
-     * If the supplied NonEmptyList implements NonEmptyListType it is returned already, otherwise it
-     * is wrapped into a NonEmptyList implementation that does implement NonEmptyListType
+     * If the supplied NonEmptyList implements NonEmptyListKind it is returned already, otherwise it
+     * is wrapped into a NonEmptyList implementation that does implement NonEmptyListKind
      * 
-     * @param list NonEmptyList to widen to a NonEmptyListType
-     * @return NonEmptyListType encoding HKT info about NonEmptyLists
+     * @param list NonEmptyList to widen to a NonEmptyListKind
+     * @return NonEmptyListKind encoding HKT info about NonEmptyLists
      */
-    public static <T> NonEmptyListType<T> widen(final NonEmptyList<T> list) {
+    public static <T> NonEmptyListKind<T> widen(final NonEmptyList<T> list) {
         
-        return new NonEmptyListType<>(list);
+        return new NonEmptyListKind<>(list);
     }
     /**
-     * Widen a NonEmptyListType nested inside another HKT encoded type
+     * Widen a NonEmptyListKind nested inside another HKT encoded type
      * 
      * @param list HTK encoded type containing  a NonEmptyList to widen
      * @return HKT encoded type with a widened NonEmptyList
      */
-    public static <C2,T> Higher<C2, Higher<NonEmptyListType.µ,T>> widen2(Higher<C2, NonEmptyListType<T>> list){
+    public static <C2,T> Higher<C2, Higher<NonEmptyListKind.µ,T>> widen2(Higher<C2, NonEmptyListKind<T>> list){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
-        //cast seems safer as Higher<ListType.µ,T> must be a NonEmptyListType
+        //cast seems safer as Higher<ListKind.µ,T> must be a NonEmptyListKind
         return (Higher)list;
     }
     /**
-     * Convert the raw Higher Kinded Type for NonEmptyList types into the NonEmptyListType type definition class
+     * Convert the raw Higher Kinded Type for NonEmptyList types into the NonEmptyListKind type definition class
      * 
-     * @param list HKT encoded list into a NonEmptyListType
-     * @return NonEmptyListType
+     * @param list HKT encoded list into a NonEmptyListKind
+     * @return NonEmptyListKind
      */
-    public static <T> NonEmptyListType<T> narrowK(final Higher<NonEmptyListType.µ, T> list) {
-       return (NonEmptyListType<T>)list;
+    public static <T> NonEmptyListKind<T> narrowK(final Higher<NonEmptyListKind.µ, T> list) {
+       return (NonEmptyListKind<T>)list;
     }
     /**
      * Convert the HigherKindedType definition for a NonEmptyList into
@@ -81,8 +81,8 @@ public  class NonEmptyListType<T> implements Higher<NonEmptyListType.µ, T> {
      * @param list Type Constructor to convert back into narrowed type
      * @return NonEmptyListX from Higher Kinded Type
      */
-    public static <T> NonEmptyList<T> narrow(final Higher<NonEmptyListType.µ, T> list) {
-        return ((NonEmptyListType)list).narrow();
+    public static <T> NonEmptyList<T> narrow(final Higher<NonEmptyListKind.µ, T> list) {
+        return ((NonEmptyListKind)list).narrow();
        
     }
 

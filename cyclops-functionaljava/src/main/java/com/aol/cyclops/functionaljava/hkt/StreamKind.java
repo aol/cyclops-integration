@@ -2,8 +2,6 @@ package com.aol.cyclops.functionaljava.hkt;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Spliterator;
-import java.util.function.Consumer;
 
 
 import com.aol.cyclops2.hkt.Higher;
@@ -29,14 +27,14 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for Stream's
  * 
- * StreamType is a Stream and a Higher Kinded Type (StreamType.µ,T)
+ * StreamKind is a Stream and a Higher Kinded Type (StreamKind.µ,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Stream
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public  class StreamType<T> implements Higher<StreamType.µ, T> {
+public  class StreamKind<T> implements Higher<StreamKind.µ, T> {
     /**
      * Witness type
      * 
@@ -45,43 +43,43 @@ public  class StreamType<T> implements Higher<StreamType.µ, T> {
      */
     public static class µ {
     }
-    public static <T> StreamType<T> stream(final T... values) {
+    public static <T> StreamKind<T> stream(final T... values) {
         
         return widen(Stream.stream(values));
     }
     /**
      * Convert a Stream to a simulated HigherKindedType that captures Stream nature
-     * and Stream element data type separately. Recover via @see StreamType#narrow
+     * and Stream element data type separately. Recover via @see StreamKind#narrow
      * 
-     * If the supplied Stream implements StreamType it is returned already, otherwise it
-     * is wrapped into a Stream implementation that does implement StreamType
+     * If the supplied Stream implements StreamKind it is returned already, otherwise it
+     * is wrapped into a Stream implementation that does implement StreamKind
      * 
-     * @param stream Stream to widen to a StreamType
-     * @return StreamType encoding HKT info about Streams
+     * @param stream Stream to widen to a StreamKind
+     * @return StreamKind encoding HKT info about Streams
      */
-    public static <T> StreamType<T> widen(final Stream<T> stream) {
+    public static <T> StreamKind<T> widen(final Stream<T> stream) {
         
-        return new StreamType<>(stream);
+        return new StreamKind<>(stream);
     }
     /**
-     * Widen a StreamType nested inside another HKT encoded type
+     * Widen a StreamKind nested inside another HKT encoded type
      * 
      * @param stream HTK encoded type containing  a Stream to widen
      * @return HKT encoded type with a widened Stream
      */
-    public static <C2,T> Higher<C2, Higher<StreamType.µ,T>> widen2(Higher<C2, StreamType<T>> stream){
+    public static <C2,T> Higher<C2, Higher<StreamKind.µ,T>> widen2(Higher<C2, StreamKind<T>> stream){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
-        //cast seems safer as Higher<StreamType.µ,T> must be a StreamType
+        //cast seems safer as Higher<StreamKind.µ,T> must be a StreamKind
         return (Higher)stream;
     }
     /**
-     * Convert the raw Higher Kinded Type for Stream types into the StreamType type definition class
+     * Convert the raw Higher Kinded Type for Stream types into the StreamKind type definition class
      * 
-     * @param stream HKT encoded stream into a StreamType
-     * @return StreamType
+     * @param stream HKT encoded stream into a StreamKind
+     * @return StreamKind
      */
-    public static <T> StreamType<T> narrowK(final Higher<StreamType.µ, T> stream) {
-       return (StreamType<T>)stream;
+    public static <T> StreamKind<T> narrowK(final Higher<StreamKind.µ, T> stream) {
+       return (StreamKind<T>)stream;
     }
     /**
      * Convert the HigherKindedType definition for a Stream into
@@ -89,8 +87,8 @@ public  class StreamType<T> implements Higher<StreamType.µ, T> {
      * @param stream Type Constructor to convert back into narrowed type
      * @return StreamX from Higher Kinded Type
      */
-    public static <T> Stream<T> narrow(final Higher<StreamType.µ, T> stream) {
-        return ((StreamType)stream).narrow();
+    public static <T> Stream<T> narrow(final Higher<StreamKind.µ, T> stream) {
+        return ((StreamKind)stream).narrow();
        
     }
 

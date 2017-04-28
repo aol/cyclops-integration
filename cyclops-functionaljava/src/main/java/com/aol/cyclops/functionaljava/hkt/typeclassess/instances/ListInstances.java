@@ -4,7 +4,7 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import com.aol.cyclops.functionaljava.hkt.ListType;
+import com.aol.cyclops.functionaljava.hkt.ListKind;
 
 
 import com.aol.cyclops2.hkt.Higher;
@@ -34,7 +34,7 @@ public class ListInstances {
      * 
      * <pre>
      * {@code 
-     *  ListType<Integer> list = Lists.functor().map(i->i*2, ListType.widen(Arrays.asList(1,2,3));
+     *  ListKind<Integer> list = Lists.functor().map(i->i*2, ListKind.widen(Arrays.asList(1,2,3));
      *  
      *  //[2,4,6]
      *  
@@ -45,10 +45,10 @@ public class ListInstances {
      * An example fluent api working with Lists
      * <pre>
      * {@code 
-     *   ListType<Integer> list = Lists.unit()
+     *   ListKind<Integer> list = Lists.unit()
                                        .unit("hello")
                                        .then(h->Lists.functor().map((String v) ->v.length(), h))
-                                       .convert(ListType::narrowK);
+                                       .convert(ListKind::narrowK);
      * 
      * }
      * </pre>
@@ -56,16 +56,16 @@ public class ListInstances {
      * 
      * @return A functor for Lists
      */
-    public static <T,R>Functor<ListType.µ> functor(){
-        BiFunction<ListType<T>,Function<? super T, ? extends R>,ListType<R>> map = ListInstances::map;
+    public static <T,R>Functor<ListKind.µ> functor(){
+        BiFunction<ListKind<T>,Function<? super T, ? extends R>,ListKind<R>> map = ListInstances::map;
         return General.functor(map);
     }
     /**
      * <pre>
      * {@code 
-     * ListType<String> list = Lists.unit()
+     * ListKind<String> list = Lists.unit()
                                      .unit("hello")
-                                     .convert(ListType::narrowK);
+                                     .convert(ListKind::narrowK);
         
         //Arrays.asList("hello"))
      * 
@@ -75,14 +75,14 @@ public class ListInstances {
      * 
      * @return A factory for Lists
      */
-    public static <T> Pure<ListType.µ> unit(){
-        return General.<ListType.µ,T>unit(ListInstances::of);
+    public static <T> Pure<ListKind.µ> unit(){
+        return General.<ListKind.µ,T>unit(ListInstances::of);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.ListType.widen;
+     * import static com.aol.cyclops.hkt.jdk.ListKind.widen;
      * import static com.aol.cyclops.util.function.Lambda.l1;
      * import static java.util.Arrays.asList;
      * 
@@ -97,15 +97,15 @@ public class ListInstances {
      * Example fluent API
      * <pre>
      * {@code 
-     * ListType<Function<Integer,Integer>> listFn =Lists.unit()
+     * ListKind<Function<Integer,Integer>> listFn =Lists.unit()
      *                                                  .unit(Lambda.l1((Integer i) ->i*2))
-     *                                                  .convert(ListType::narrowK);
+     *                                                  .convert(ListKind::narrowK);
         
-        ListType<Integer> list = Lists.unit()
+        ListKind<Integer> list = Lists.unit()
                                       .unit("hello")
                                       .then(h->Lists.functor().map((String v) ->v.length(), h))
                                       .then(h->Lists.zippingApplicative().ap(listFn, h))
-                                      .convert(ListType::narrowK);
+                                      .convert(ListKind::narrowK);
         
         //Arrays.asList("hello".length()*2))
      * 
@@ -115,28 +115,28 @@ public class ListInstances {
      * 
      * @return A zipper for Lists
      */
-    public static <T,R> Applicative<ListType.µ> zippingApplicative(){
-        BiFunction<ListType< Function<T, R>>,ListType<T>,ListType<R>> ap = ListInstances::ap;
+    public static <T,R> Applicative<ListKind.µ> zippingApplicative(){
+        BiFunction<ListKind< Function<T, R>>,ListKind<T>,ListKind<R>> ap = ListInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.ListType.widen;
-     * ListType<Integer> list  = Lists.monad()
+     * import static com.aol.cyclops.hkt.jdk.ListKind.widen;
+     * ListKind<Integer> list  = Lists.monad()
                                       .flatMap(i->widen(ListX.range(0,i)), widen(Arrays.asList(1,2,3)))
-                                      .convert(ListType::narrowK);
+                                      .convert(ListKind::narrowK);
      * }
      * </pre>
      * 
      * Example fluent API
      * <pre>
      * {@code 
-     *    ListType<Integer> list = Lists.unit()
+     *    ListKind<Integer> list = Lists.unit()
                                         .unit("hello")
                                         .then(h->Lists.monad().flatMap((String v) ->Lists.unit().unit(v.length()), h))
-                                        .convert(ListType::narrowK);
+                                        .convert(ListKind::narrowK);
         
         //Arrays.asList("hello".length())
      * 
@@ -145,19 +145,19 @@ public class ListInstances {
      * 
      * @return Type class with monad functions for Lists
      */
-    public static <T,R> Monad<ListType.µ> monad(){
+    public static <T,R> Monad<ListKind.µ> monad(){
   
-        BiFunction<Higher<ListType.µ,T>,Function<? super T, ? extends Higher<ListType.µ,R>>,Higher<ListType.µ,R>> flatMap = ListInstances::flatMap;
+        BiFunction<Higher<ListKind.µ,T>,Function<? super T, ? extends Higher<ListKind.µ,R>>,Higher<ListKind.µ,R>> flatMap = ListInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     *  ListType<String> list = Lists.unit()
+     *  ListKind<String> list = Lists.unit()
                                      .unit("hello")
                                      .then(h->Lists.monadZero().filter((String t)->t.startsWith("he"), h))
-                                     .convert(ListType::narrowK);
+                                     .convert(ListKind::narrowK);
         
        //Arrays.asList("hello"));
      * 
@@ -167,35 +167,35 @@ public class ListInstances {
      * 
      * @return A filterable monad (with default value)
      */
-    public static <T,R> MonadZero<ListType.µ> monadZero(){
+    public static <T,R> MonadZero<ListKind.µ> monadZero(){
         
-        return General.monadZero(monad(), ListType.widen(List.list()));
+        return General.monadZero(monad(), ListKind.widen(List.list()));
     }
     /**
      * <pre>
      * {@code 
-     *  ListType<Integer> list = Lists.<Integer>monadPlus()
-                                      .plus(ListType.widen(Arrays.asList()), ListType.widen(Arrays.asList(10)))
-                                      .convert(ListType::narrowK);
+     *  ListKind<Integer> list = Lists.<Integer>monadPlus()
+                                      .plus(ListKind.widen(Arrays.asList()), ListKind.widen(Arrays.asList(10)))
+                                      .convert(ListKind::narrowK);
         //Arrays.asList(10))
      * 
      * }
      * </pre>
      * @return Type class for combining Lists by concatenation
      */
-    public static <T> MonadPlus<ListType.µ> monadPlus(){
-        Monoid<ListType<T>> m = Monoid.of(ListType.widen(List.list()), ListInstances::concat);
-        Monoid<Higher<ListType.µ,T>> m2= (Monoid)m;
+    public static <T> MonadPlus<ListKind.µ> monadPlus(){
+        Monoid<ListKind<T>> m = Monoid.of(ListKind.widen(List.list()), ListInstances::concat);
+        Monoid<Higher<ListKind.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
     /**
      * 
      * <pre>
      * {@code 
-     *  Monoid<ListType<Integer>> m = Monoid.of(ListType.widen(Arrays.asList()), (a,b)->a.isEmpty() ? b : a);
-        ListType<Integer> list = Lists.<Integer>monadPlus(m)
-                                      .plus(ListType.widen(Arrays.asList(5)), ListType.widen(Arrays.asList(10)))
-                                      .convert(ListType::narrowK);
+     *  Monoid<ListKind<Integer>> m = Monoid.of(ListKind.widen(Arrays.asList()), (a,b)->a.isEmpty() ? b : a);
+        ListKind<Integer> list = Lists.<Integer>monadPlus(m)
+                                      .plus(ListKind.widen(Arrays.asList(5)), ListKind.widen(Arrays.asList(10)))
+                                      .convert(ListKind::narrowK);
         //Arrays.asList(5))
      * 
      * }
@@ -204,34 +204,34 @@ public class ListInstances {
      * @param m Monoid to use for combining Lists
      * @return Type class for combining Lists
      */
-    public static <T> MonadPlus<ListType.µ> monadPlus(Monoid<ListType<T>> m){
-        Monoid<Higher<ListType.µ,T>> m2= (Monoid)m;
+    public static <T> MonadPlus<ListKind.µ> monadPlus(Monoid<ListKind<T>> m){
+        Monoid<Higher<ListKind.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
  
     /**
      * @return Type class for traversables with traverse / sequence operations
      */
-    public static <C2,T> Traverse<ListType.µ> traverse(){
+    public static <C2,T> Traverse<ListKind.µ> traverse(){
      
-        BiFunction<Applicative<C2>,ListType<Higher<C2, T>>,Higher<C2, ListType<T>>> sequenceFn = (ap,list) -> {
+        BiFunction<Applicative<C2>,ListKind<Higher<C2, T>>,Higher<C2, ListKind<T>>> sequenceFn = (ap, list) -> {
         
-            Higher<C2,ListType<T>> identity = ap.unit(ListType.widen(List.list()));
+            Higher<C2,ListKind<T>> identity = ap.unit(ListKind.widen(List.list()));
 
-            BiFunction<Higher<C2,ListType<T>>,Higher<C2,T>,Higher<C2,ListType<T>>> combineToList =   
-                    (acc,next) -> ap.apBiFn(ap.unit((a,b) -> ListType.widen(ListType.narrow(a).cons(b))), acc,next);
+            BiFunction<Higher<C2,ListKind<T>>,Higher<C2,T>,Higher<C2,ListKind<T>>> combineToList =
+                    (acc,next) -> ap.apBiFn(ap.unit((a,b) -> ListKind.widen(ListKind.narrow(a).cons(b))), acc,next);
 
-            BinaryOperator<Higher<C2,ListType<T>>> combineLists = (a,b)-> ap.apBiFn(ap.unit((l1,l2)-> ListType.widen(ListType.narrow(l1).append(ListType.narrow(l2)))),a,b); ;  
+            BinaryOperator<Higher<C2,ListKind<T>>> combineLists = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> ListKind.widen(ListKind.narrow(l1).append(ListKind.narrow(l2)))),a,b); ;
            
-            return ReactiveSeq.fromIterable(ListType.narrow(list))
+            return ReactiveSeq.fromIterable(ListKind.narrow(list))
                       .reduce(identity,
                               combineToList,
                               combineLists);  
 
    
         };
-        BiFunction<Applicative<C2>,Higher<ListType.µ,Higher<C2, T>>,Higher<C2, Higher<ListType.µ,T>>> sequenceNarrow  = 
-                                                        (a,b) -> ListType.widen2(sequenceFn.apply(a, ListType.narrowK(b)));
+        BiFunction<Applicative<C2>,Higher<ListKind.µ,Higher<C2, T>>,Higher<C2, Higher<ListKind.µ,T>>> sequenceNarrow  =
+                                                        (a,b) -> ListKind.widen2(sequenceFn.apply(a, ListKind.narrowK(b)));
         return General.traverse(zippingApplicative(), sequenceNarrow);
     }
 
@@ -241,7 +241,7 @@ public class ListInstances {
      * <pre>
      * {@code 
      * int sum  = Lists.foldable()
-                        .foldLeft(0, (a,b)->a+b, ListType.widen(Arrays.asList(1,2,3,4)));
+                        .foldLeft(0, (a,b)->a+b, ListKind.widen(Arrays.asList(1,2,3,4)));
         
         //10
      * 
@@ -251,27 +251,27 @@ public class ListInstances {
      * 
      * @return Type class for folding / reduction operations
      */
-    public static <T> Foldable<ListType.µ> foldable(){
-        BiFunction<Monoid<T>,Higher<ListType.µ,T>,T> foldRightFn =  (m,l)-> ListX.fromIterable(ListType.narrow(l)).foldRight(m);
-        BiFunction<Monoid<T>,Higher<ListType.µ,T>,T> foldLeftFn = (m,l)-> ListX.fromIterable(ListType.narrow(l)).reduce(m);
+    public static <T> Foldable<ListKind.µ> foldable(){
+        BiFunction<Monoid<T>,Higher<ListKind.µ,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(ListKind.narrow(l)).foldRight(m);
+        BiFunction<Monoid<T>,Higher<ListKind.µ,T>,T> foldLeftFn = (m, l)-> ListX.fromIterable(ListKind.narrow(l)).reduce(m);
         return General.foldable(foldRightFn, foldLeftFn);
     }
   
-    private static  <T> ListType<T> concat(ListType<T> l1, ListType<T> l2){
-        return ListType.widen(l1.append(ListType.narrow(l2)));
+    private static  <T> ListKind<T> concat(ListKind<T> l1, ListKind<T> l2){
+        return ListKind.widen(l1.append(ListKind.narrow(l2)));
        
     }
-    private <T> ListType<T> of(T value){
-        return ListType.widen(List.list(value));
+    private <T> ListKind<T> of(T value){
+        return ListKind.widen(List.list(value));
     }
-    private static <T,R> ListType<R> ap(ListType<Function< T, R>> lt,  ListType<T> list){
+    private static <T,R> ListKind<R> ap(ListKind<Function< T, R>> lt, ListKind<T> list){
         
-        return ListType.widen(lt.zipWith(list.narrow(),(a,b)->a.apply(b)));
+        return ListKind.widen(lt.zipWith(list.narrow(),(a, b)->a.apply(b)));
     }
-    private static <T,R> Higher<ListType.µ,R> flatMap( Higher<ListType.µ,T> lt, Function<? super T, ? extends  Higher<ListType.µ,R>> fn){
-        return ListType.widen(ListType.narrow(lt).bind(in->fn.andThen(ListType::narrow).apply(in)));
+    private static <T,R> Higher<ListKind.µ,R> flatMap(Higher<ListKind.µ,T> lt, Function<? super T, ? extends  Higher<ListKind.µ,R>> fn){
+        return ListKind.widen(ListKind.narrow(lt).bind(in->fn.andThen(ListKind::narrow).apply(in)));
     }
-    private static <T,R> ListType<R> map(ListType<T> lt, Function<? super T, ? extends R> fn){
-        return ListType.widen(ListType.narrow(lt).map(in->fn.apply(in)));
+    private static <T,R> ListKind<R> map(ListKind<T> lt, Function<? super T, ? extends R> fn){
+        return ListKind.widen(ListKind.narrow(lt).map(in->fn.apply(in)));
     }
 }

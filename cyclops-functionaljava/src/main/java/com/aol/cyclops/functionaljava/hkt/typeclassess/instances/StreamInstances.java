@@ -4,7 +4,7 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import com.aol.cyclops.functionaljava.hkt.StreamType;
+import com.aol.cyclops.functionaljava.hkt.StreamKind;
 
 
 import com.aol.cyclops2.hkt.Higher;
@@ -33,7 +33,7 @@ public class StreamInstances {
      * 
      * <pre>
      * {@code 
-     *  StreamType<Integer> stream = Streams.functor().map(i->i*2, StreamType.widen(Arrays.asStream(1,2,3));
+     *  StreamKind<Integer> stream = Streams.functor().map(i->i*2, StreamKind.widen(Arrays.asStream(1,2,3));
      *  
      *  //[2,4,6]
      *  
@@ -44,10 +44,10 @@ public class StreamInstances {
      * An example fluent api working with Streams
      * <pre>
      * {@code 
-     *   StreamType<Integer> stream = Streams.unit()
+     *   StreamKind<Integer> stream = Streams.unit()
                                        .unit("hello")
                                        .then(h->Streams.functor().map((String v) ->v.length(), h))
-                                       .convert(StreamType::narrowK);
+                                       .convert(StreamKind::narrowK);
      * 
      * }
      * </pre>
@@ -55,16 +55,16 @@ public class StreamInstances {
      * 
      * @return A functor for Streams
      */
-    public static <T,R>Functor<StreamType.µ> functor(){
-        BiFunction<StreamType<T>,Function<? super T, ? extends R>,StreamType<R>> map = StreamInstances::map;
+    public static <T,R>Functor<StreamKind.µ> functor(){
+        BiFunction<StreamKind<T>,Function<? super T, ? extends R>,StreamKind<R>> map = StreamInstances::map;
         return General.functor(map);
     }
     /**
      * <pre>
      * {@code 
-     * StreamType<String> stream = Streams.unit()
+     * StreamKind<String> stream = Streams.unit()
                                      .unit("hello")
-                                     .convert(StreamType::narrowK);
+                                     .convert(StreamKind::narrowK);
         
         //Arrays.asStream("hello"))
      * 
@@ -74,14 +74,14 @@ public class StreamInstances {
      * 
      * @return A factory for Streams
      */
-    public static <T> Pure<StreamType.µ> unit(){
-        return General.<StreamType.µ,T>unit(StreamInstances::of);
+    public static <T> Pure<StreamKind.µ> unit(){
+        return General.<StreamKind.µ,T>unit(StreamInstances::of);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.StreamType.widen;
+     * import static com.aol.cyclops.hkt.jdk.StreamKind.widen;
      * import static com.aol.cyclops.util.function.Lambda.l1;
      * import static java.util.Arrays.asStream;
      * 
@@ -96,15 +96,15 @@ public class StreamInstances {
      * Example fluent API
      * <pre>
      * {@code 
-     * StreamType<Function<Integer,Integer>> streamFn =Streams.unit()
+     * StreamKind<Function<Integer,Integer>> streamFn =Streams.unit()
      *                                                  .unit(Lambda.l1((Integer i) ->i*2))
-     *                                                  .convert(StreamType::narrowK);
+     *                                                  .convert(StreamKind::narrowK);
         
-        StreamType<Integer> stream = Streams.unit()
+        StreamKind<Integer> stream = Streams.unit()
                                       .unit("hello")
                                       .then(h->Streams.functor().map((String v) ->v.length(), h))
                                       .then(h->Streams.zippingApplicative().ap(streamFn, h))
-                                      .convert(StreamType::narrowK);
+                                      .convert(StreamKind::narrowK);
         
         //Arrays.asStream("hello".length()*2))
      * 
@@ -114,28 +114,28 @@ public class StreamInstances {
      * 
      * @return A zipper for Streams
      */
-    public static <T,R> Applicative<StreamType.µ> zippingApplicative(){
-        BiFunction<StreamType< Function<T, R>>,StreamType<T>,StreamType<R>> ap = StreamInstances::ap;
+    public static <T,R> Applicative<StreamKind.µ> zippingApplicative(){
+        BiFunction<StreamKind< Function<T, R>>,StreamKind<T>,StreamKind<R>> ap = StreamInstances::ap;
         return General.applicative(functor(), unit(), ap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     * import static com.aol.cyclops.hkt.jdk.StreamType.widen;
-     * StreamType<Integer> stream  = Streams.monad()
+     * import static com.aol.cyclops.hkt.jdk.StreamKind.widen;
+     * StreamKind<Integer> stream  = Streams.monad()
                                       .flatMap(i->widen(StreamX.range(0,i)), widen(Arrays.asStream(1,2,3)))
-                                      .convert(StreamType::narrowK);
+                                      .convert(StreamKind::narrowK);
      * }
      * </pre>
      * 
      * Example fluent API
      * <pre>
      * {@code 
-     *    StreamType<Integer> stream = Streams.unit()
+     *    StreamKind<Integer> stream = Streams.unit()
                                         .unit("hello")
                                         .then(h->Streams.monad().flatMap((String v) ->Streams.unit().unit(v.length()), h))
-                                        .convert(StreamType::narrowK);
+                                        .convert(StreamKind::narrowK);
         
         //Arrays.asStream("hello".length())
      * 
@@ -144,19 +144,19 @@ public class StreamInstances {
      * 
      * @return Type class with monad functions for Streams
      */
-    public static <T,R> Monad<StreamType.µ> monad(){
+    public static <T,R> Monad<StreamKind.µ> monad(){
   
-        BiFunction<Higher<StreamType.µ,T>,Function<? super T, ? extends Higher<StreamType.µ,R>>,Higher<StreamType.µ,R>> flatMap = StreamInstances::flatMap;
+        BiFunction<Higher<StreamKind.µ,T>,Function<? super T, ? extends Higher<StreamKind.µ,R>>,Higher<StreamKind.µ,R>> flatMap = StreamInstances::flatMap;
         return General.monad(zippingApplicative(), flatMap);
     }
     /**
      * 
      * <pre>
      * {@code 
-     *  StreamType<String> stream = Streams.unit()
+     *  StreamKind<String> stream = Streams.unit()
                                      .unit("hello")
                                      .then(h->Streams.monadZero().filter((String t)->t.startsWith("he"), h))
-                                     .convert(StreamType::narrowK);
+                                     .convert(StreamKind::narrowK);
         
        //Arrays.asStream("hello"));
      * 
@@ -166,35 +166,35 @@ public class StreamInstances {
      * 
      * @return A filterable monad (with default value)
      */
-    public static <T,R> MonadZero<StreamType.µ> monadZero(){
+    public static <T,R> MonadZero<StreamKind.µ> monadZero(){
         
-        return General.monadZero(monad(), StreamType.widen(Stream.stream()));
+        return General.monadZero(monad(), StreamKind.widen(Stream.stream()));
     }
     /**
      * <pre>
      * {@code 
-     *  StreamType<Integer> stream = Streams.<Integer>monadPlus()
-                                      .plus(StreamType.widen(Arrays.asStream()), StreamType.widen(Arrays.asStream(10)))
-                                      .convert(StreamType::narrowK);
+     *  StreamKind<Integer> stream = Streams.<Integer>monadPlus()
+                                      .plus(StreamKind.widen(Arrays.asStream()), StreamKind.widen(Arrays.asStream(10)))
+                                      .convert(StreamKind::narrowK);
         //Arrays.asStream(10))
      * 
      * }
      * </pre>
      * @return Type class for combining Streams by concatenation
      */
-    public static <T> MonadPlus<StreamType.µ> monadPlus(){
-        Monoid<StreamType<T>> m = Monoid.of(StreamType.widen(Stream.stream()), StreamInstances::concat);
-        Monoid<Higher<StreamType.µ,T>> m2= (Monoid)m;
+    public static <T> MonadPlus<StreamKind.µ> monadPlus(){
+        Monoid<StreamKind<T>> m = Monoid.of(StreamKind.widen(Stream.stream()), StreamInstances::concat);
+        Monoid<Higher<StreamKind.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
     /**
      * 
      * <pre>
      * {@code 
-     *  Monoid<StreamType<Integer>> m = Monoid.of(StreamType.widen(Arrays.asStream()), (a,b)->a.isEmpty() ? b : a);
-        StreamType<Integer> stream = Streams.<Integer>monadPlus(m)
-                                      .plus(StreamType.widen(Arrays.asStream(5)), StreamType.widen(Arrays.asStream(10)))
-                                      .convert(StreamType::narrowK);
+     *  Monoid<StreamKind<Integer>> m = Monoid.of(StreamKind.widen(Arrays.asStream()), (a,b)->a.isEmpty() ? b : a);
+        StreamKind<Integer> stream = Streams.<Integer>monadPlus(m)
+                                      .plus(StreamKind.widen(Arrays.asStream(5)), StreamKind.widen(Arrays.asStream(10)))
+                                      .convert(StreamKind::narrowK);
         //Arrays.asStream(5))
      * 
      * }
@@ -203,34 +203,34 @@ public class StreamInstances {
      * @param m Monoid to use for combining Streams
      * @return Type class for combining Streams
      */
-    public static <T> MonadPlus<StreamType.µ> monadPlus(Monoid<StreamType<T>> m){
-        Monoid<Higher<StreamType.µ,T>> m2= (Monoid)m;
+    public static <T> MonadPlus<StreamKind.µ> monadPlus(Monoid<StreamKind<T>> m){
+        Monoid<Higher<StreamKind.µ,T>> m2= (Monoid)m;
         return General.monadPlus(monadZero(),m2);
     }
  
     /**
      * @return Type class for traversables with traverse / sequence operations
      */
-    public static <C2,T> Traverse<StreamType.µ> traverse(){
+    public static <C2,T> Traverse<StreamKind.µ> traverse(){
      
-        BiFunction<Applicative<C2>,StreamType<Higher<C2, T>>,Higher<C2, StreamType<T>>> sequenceFn = (ap,stream) -> {
+        BiFunction<Applicative<C2>,StreamKind<Higher<C2, T>>,Higher<C2, StreamKind<T>>> sequenceFn = (ap, stream) -> {
         
-            Higher<C2,StreamType<T>> identity = ap.unit(StreamType.widen(Stream.stream()));
+            Higher<C2,StreamKind<T>> identity = ap.unit(StreamKind.widen(Stream.stream()));
 
-            BiFunction<Higher<C2,StreamType<T>>,Higher<C2,T>,Higher<C2,StreamType<T>>> combineToStream =   
-                    (acc,next) -> ap.apBiFn(ap.unit((a,b) -> StreamType.widen(StreamType.narrow(a).cons(b))), acc,next);
+            BiFunction<Higher<C2,StreamKind<T>>,Higher<C2,T>,Higher<C2,StreamKind<T>>> combineToStream =
+                    (acc,next) -> ap.apBiFn(ap.unit((a,b) -> StreamKind.widen(StreamKind.narrow(a).cons(b))), acc,next);
 
-            BinaryOperator<Higher<C2,StreamType<T>>> combineStreams = (a,b)-> ap.apBiFn(ap.unit((l1,l2)-> StreamType.widen(StreamType.narrow(l1).append(StreamType.narrow(l2)))),a,b); ;  
+            BinaryOperator<Higher<C2,StreamKind<T>>> combineStreams = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> StreamKind.widen(StreamKind.narrow(l1).append(StreamKind.narrow(l2)))),a,b); ;
            
-            return ReactiveSeq.fromIterable(StreamType.narrow(stream))
+            return ReactiveSeq.fromIterable(StreamKind.narrow(stream))
                       .reduce(identity,
                               combineToStream,
                               combineStreams);  
 
    
         };
-        BiFunction<Applicative<C2>,Higher<StreamType.µ,Higher<C2, T>>,Higher<C2, Higher<StreamType.µ,T>>> sequenceNarrow  = 
-                                                        (a,b) -> StreamType.widen2(sequenceFn.apply(a, StreamType.narrowK(b)));
+        BiFunction<Applicative<C2>,Higher<StreamKind.µ,Higher<C2, T>>,Higher<C2, Higher<StreamKind.µ,T>>> sequenceNarrow  =
+                                                        (a,b) -> StreamKind.widen2(sequenceFn.apply(a, StreamKind.narrowK(b)));
         return General.traverse(zippingApplicative(), sequenceNarrow);
     }
 
@@ -240,7 +240,7 @@ public class StreamInstances {
      * <pre>
      * {@code 
      * int sum  = Streams.foldable()
-                        .foldLeft(0, (a,b)->a+b, StreamType.widen(Arrays.asStream(1,2,3,4)));
+                        .foldLeft(0, (a,b)->a+b, StreamKind.widen(Arrays.asStream(1,2,3,4)));
         
         //10
      * 
@@ -250,27 +250,27 @@ public class StreamInstances {
      * 
      * @return Type class for folding / reduction operations
      */
-    public static <T> Foldable<StreamType.µ> foldable(){
-        BiFunction<Monoid<T>,Higher<StreamType.µ,T>,T> foldRightFn =  (m,l)-> ReactiveSeq.fromIterable(StreamType.narrow(l)).foldRight(m);
-        BiFunction<Monoid<T>,Higher<StreamType.µ,T>,T> foldLeftFn = (m,l)-> ReactiveSeq.fromIterable(StreamType.narrow(l)).reduce(m);
+    public static <T> Foldable<StreamKind.µ> foldable(){
+        BiFunction<Monoid<T>,Higher<StreamKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).foldRight(m);
+        BiFunction<Monoid<T>,Higher<StreamKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).reduce(m);
         return General.foldable(foldRightFn, foldLeftFn);
     }
   
-    private static  <T> StreamType<T> concat(StreamType<T> l1, StreamType<T> l2){
-        return StreamType.widen(l1.append(StreamType.narrow(l2)));
+    private static  <T> StreamKind<T> concat(StreamKind<T> l1, StreamKind<T> l2){
+        return StreamKind.widen(l1.append(StreamKind.narrow(l2)));
        
     }
-    private <T> StreamType<T> of(T value){
-        return StreamType.widen(Stream.stream(value));
+    private <T> StreamKind<T> of(T value){
+        return StreamKind.widen(Stream.stream(value));
     }
-    private static <T,R> StreamType<R> ap(StreamType<Function< T, R>> lt,  StreamType<T> stream){
+    private static <T,R> StreamKind<R> ap(StreamKind<Function< T, R>> lt, StreamKind<T> stream){
         
-        return StreamType.widen(lt.zipWith(stream.narrow(),(a,b)->a.apply(b)));
+        return StreamKind.widen(lt.zipWith(stream.narrow(),(a, b)->a.apply(b)));
     }
-    private static <T,R> Higher<StreamType.µ,R> flatMap( Higher<StreamType.µ,T> lt, Function<? super T, ? extends  Higher<StreamType.µ,R>> fn){
-        return StreamType.widen(StreamType.narrow(lt).bind(in->fn.andThen(StreamType::narrow).apply(in)));
+    private static <T,R> Higher<StreamKind.µ,R> flatMap(Higher<StreamKind.µ,T> lt, Function<? super T, ? extends  Higher<StreamKind.µ,R>> fn){
+        return StreamKind.widen(StreamKind.narrow(lt).bind(in->fn.andThen(StreamKind::narrow).apply(in)));
     }
-    private static <T,R> StreamType<R> map(StreamType<T> lt, Function<? super T, ? extends R> fn){
-        return StreamType.widen(StreamType.narrow(lt).map(in->fn.apply(in)));
+    private static <T,R> StreamKind<R> map(StreamKind<T> lt, Function<? super T, ? extends R> fn){
+        return StreamKind.widen(StreamKind.narrow(lt).map(in->fn.apply(in)));
     }
 }
