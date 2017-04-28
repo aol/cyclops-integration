@@ -6,6 +6,7 @@ import com.aol.cyclops.functionaljava.FJ;
 import com.aol.cyclops.functionaljava.FJWitness;
 import com.aol.cyclops.functionaljava.FJWitness.either;
 import com.aol.cyclops.functionaljava.FromCyclopsReact;
+import com.aol.cyclops.functionaljava.ToCyclopsReact;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
 import cyclops.control.Xor;
@@ -56,7 +57,7 @@ public class EitherAdapter<L> extends AbstractFunctionalAdapter<either> {
     @Override
     public <T, R> AnyM<either, R> flatMap(AnyM<either, T> t,
                                      Function<? super T, ? extends AnyM<either, ? extends R>> fn) {
-        return FJ.either(either(t).right().bind(a-> either(fn.apply(a))));
+        return FJ.either(either(t).right().bind(a-> either((AnyM<either,R>)fn.apply(a))));
 
     }
 
