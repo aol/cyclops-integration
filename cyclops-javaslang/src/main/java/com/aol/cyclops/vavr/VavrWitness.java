@@ -10,12 +10,20 @@ import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
 
 import javaslang.collection.*;
+import javaslang.concurrent.Future;
 import javaslang.control.Either;
 import javaslang.control.Option;
+import javaslang.control.Try;
 
 public interface VavrWitness {
 
     public static <T> Option<T> option(AnyM<option,? extends T> anyM){
+        return anyM.unwrap();
+    }
+    public static <T> Try<T> tryType(AnyM<tryType,? extends T> anyM){
+        return anyM.unwrap();
+    }
+    public static <T> Future<T> future(AnyM<future,? extends T> anyM){
         return anyM.unwrap();
     }
     public static <L,T> Either<L,T> either(AnyM<either,? extends T> anyM){
