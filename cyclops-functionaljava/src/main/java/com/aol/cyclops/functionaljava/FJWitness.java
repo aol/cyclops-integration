@@ -5,10 +5,15 @@ import com.aol.cyclops.functionaljava.adapter.*;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
+import fj.data.Either;
 import fj.data.Option;
 
 
+
 public interface FJWitness {
+    public static <L,T> Either<L,T> either(AnyM<either,? extends T> anyM){
+        return anyM.unwrap();
+    }
     public static <T> Option<T> option(AnyM<option,? extends T> anyM){
         return anyM.unwrap();
     }
