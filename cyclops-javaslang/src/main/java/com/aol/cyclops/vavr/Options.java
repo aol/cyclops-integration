@@ -619,7 +619,7 @@ public class Options {
      *
      */
     @UtilityClass
-    public class Instances {
+    public static class Instances {
 
 
         /**

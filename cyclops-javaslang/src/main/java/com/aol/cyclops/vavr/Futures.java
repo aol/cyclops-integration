@@ -582,7 +582,7 @@ public class Futures {
      *
      */
     @UtilityClass
-    public class Instances {
+    public static class Instances {
 
 
         /**
