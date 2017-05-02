@@ -1,10 +1,17 @@
 package com.aol.cyclops.vavr;
 
+import com.aol.cyclops.vavr.VavrWitness.list;
 import com.aol.cyclops.vavr.hkt.ListKind;
 import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
+import cyclops.monads.AnyM;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.ListT;
+import cyclops.monads.transformers.OptionalT;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.foldable.Foldable;
@@ -12,12 +19,19 @@ import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import javaslang.collection.List;
+import javaslang.control.Option;
 import lombok.experimental.UtilityClass;
 
 import java.util.function.*;
 
 
 public class Lists {
+    public static <T,W extends WitnessType<W>> ListT<W, T> liftM(List<T> opt, W witness) {
+        return ListT.ofList(witness.adapter().unit(opt.toJavaList()));
+    }
+    public static <T> AnyMSeq<list,T> anyM(List<T> option) {
+        return AnyM.ofSeq(option, list.INSTANCE);
+    }
     /**
      * Perform a For Comprehension over a List, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Publishers.

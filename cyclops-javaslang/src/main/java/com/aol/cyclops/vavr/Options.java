@@ -1,5 +1,6 @@
 package com.aol.cyclops.vavr;
 
+import com.aol.cyclops.vavr.VavrWitness.option;
 import com.aol.cyclops.vavr.hkt.OptionKind;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.hkt.Higher;
@@ -82,7 +83,7 @@ public class Options {
     public static <T,W extends WitnessType<W>> OptionalT<W, T> liftM(Option<T> opt, W witness) {
         return OptionalT.of(witness.adapter().unit(opt.toJavaOptional()));
     }
-    public static <T> AnyMValue<VavrWitness.option,T> anyM(Option<T> option) {
+    public static <T> AnyMValue<option,T> anyM(Option<T> option) {
         return AnyM.ofValue(option, VavrWitness.option.INSTANCE);
     }
     /**
@@ -426,7 +427,7 @@ public class Options {
      * @return  Option with a List of values
      */
     public static <T> Option<ReactiveSeq<T>> sequence(final Stream<Option<T>> opts) {
-        return AnyM.sequence(opts.map(Options::anyM), VavrWitness.option.INSTANCE)
+        return AnyM.sequence(opts.map(Options::anyM), option.INSTANCE)
                 .map(ReactiveSeq::fromStream)
                 .to(VavrWitness::option);
 
