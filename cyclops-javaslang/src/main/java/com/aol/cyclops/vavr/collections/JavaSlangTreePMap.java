@@ -34,6 +34,9 @@ public class JavaSlangTreePMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
     public static <K,V> JavaSlangTreePMap<K,V> fromMap(@NonNull TreeMap<K,V> map){
         return new JavaSlangTreePMap<>(map);
     }
+    public static <K,V> JavaSlangTreePMap<K,V> ofAll(@NonNull TreeMap<K,V> map){
+        return new JavaSlangTreePMap<>(map);
+    }
     public static <K extends Comparable<? super K>,V> JavaSlangTreePMap<K,V> fromJavaMap(Map<? extends K,? extends V> map){
         TreeMap<K,V> res = TreeMap.ofAll((Map)map);
         return fromMap(res);

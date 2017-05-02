@@ -33,6 +33,9 @@ public class JavaSlangHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V
     public static <K,V> JavaSlangHashPMap<K,V> fromMap(HashMap<K,V> map){
         return new JavaSlangHashPMap<>(map);
     }
+    public static <K,V> JavaSlangHashPMap<K,V> ofAll(HashMap<K,V> map){
+        return new JavaSlangHashPMap<>(map);
+    }
     public static <K,V> JavaSlangHashPMap<K,V> fromJavaMap(Map<K,V> map){
         HashMap<K,V> res = HashMap.ofAll(map);
         return fromMap(res);

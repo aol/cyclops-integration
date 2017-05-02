@@ -138,6 +138,9 @@ public class JavaSlangPSet<T> extends AbstractSet<T>  implements PSet<T> {
     public static <T> LazyPSetX<T> of(T... t){
         return fromPSet( new JavaSlangPSet<>(HashSet.of(t)), toPSet());
     }
+    public static <T> LazyPSetX<T> ofAll(Set<T> q) {
+        return fromPSet(new JavaSlangPSet<>(q), toPSet());
+    }
     @SafeVarargs
     public static <T> LazyPSetX<T> PSet(T... elements){
         return  of(elements);

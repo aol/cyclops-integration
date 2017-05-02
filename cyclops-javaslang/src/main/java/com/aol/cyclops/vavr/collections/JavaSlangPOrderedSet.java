@@ -157,8 +157,10 @@ public class JavaSlangPOrderedSet<T> extends AbstractSet<T>implements POrderedSe
         return fromPOrderedSet(new JavaSlangPOrderedSet<>(
                                         TreeSet.of(t)),toPOrderedSet());
     }
-    
 
+    public static <T> LazyPOrderedSetX<T> ofAll(SortedSet<T> set) {
+        return fromPOrderedSet(new JavaSlangPOrderedSet<>(set), toPOrderedSet(set.comparator()));
+    }
     public static <T> LazyPOrderedSetX<T> POrderedSet(SortedSet<T> set) {
         return fromPOrderedSet(new JavaSlangPOrderedSet<>(set), toPOrderedSet(set.comparator()));
     }

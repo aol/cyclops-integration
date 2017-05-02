@@ -26,6 +26,9 @@ public interface VavrWitness {
     public static <T> Queue<T> queue(AnyM<queue,? extends T> anyM){
         return anyM.unwrap();
     }
+    public static <T> Option<T> option(AnyM<option,? extends T> anyM){
+        return anyM.unwrap();
+    }
     public static <T> Try<T> tryType(AnyM<tryType,? extends T> anyM){
         return anyM.unwrap();
     }

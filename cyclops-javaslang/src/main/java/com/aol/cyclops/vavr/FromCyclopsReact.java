@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.types.MonadicValue;
 import com.aol.cyclops2.types.Value;
+import cyclops.control.Eval;
 import cyclops.control.Xor;
 import javaslang.Lazy;
 import javaslang.concurrent.Future;
@@ -15,7 +16,9 @@ import javaslang.control.Try;
 import javaslang.control.Validation;
 
 public class FromCyclopsReact {
-    
+    public static <T> Lazy<T> eval(Eval<T> opt){
+        return Lazy.of(opt);
+    }
     public static <T> Future<T> future(cyclops.async.Future<T> future){
         Promise<T> result =  Promise.make();
         
