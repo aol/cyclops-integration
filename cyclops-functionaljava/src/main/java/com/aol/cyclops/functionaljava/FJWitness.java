@@ -3,10 +3,15 @@ package com.aol.cyclops.functionaljava;
 
 import com.aol.cyclops.functionaljava.adapter.*;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
+import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
-import javaslang.collection.*;
+import fj.data.Option;
+
 
 public interface FJWitness {
+    public static <T> Option<T> option(AnyM<option,? extends T> anyM){
+        return anyM.unwrap();
+    }
     static interface ListWitness<W extends FJWitness.ListWitness<W>>  extends WitnessType<W> {
 
     }
