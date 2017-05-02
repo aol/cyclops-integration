@@ -135,6 +135,9 @@ public class JavaSlangPQueue<T> extends AbstractQueue<T> implements PQueue<T> {
     public static <T> LazyPQueueX<T> of(T... t){
        return  fromPQueue(new JavaSlangPQueue<>(Queue.of(t)),toPQueue());
     }
+    public static <T> LazyPQueueX<T> ofAll(T... t){
+        return  fromPQueue(new JavaSlangPQueue<>(Queue.of(t)),toPQueue());
+    }
     public static <T> LazyPQueueX<T> PQueue(Queue<T> q) {
         return fromPQueue(new JavaSlangPQueue<>(q), toPQueue());
     }

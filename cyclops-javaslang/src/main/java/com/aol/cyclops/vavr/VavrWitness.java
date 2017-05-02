@@ -16,10 +16,14 @@ import javaslang.control.Option;
 import javaslang.control.Try;
 
 public interface VavrWitness {
+
     public static <T> List<T> list(AnyM<list,? extends T> anyM){
         return anyM.unwrap();
     }
-    public static <T> Option<T> option(AnyM<option,? extends T> anyM){
+    public static <T> Vector<T> vector(AnyM<vector,? extends T> anyM){
+        return anyM.unwrap();
+    }
+    public static <T> Queue<T> queue(AnyM<queue,? extends T> anyM){
         return anyM.unwrap();
     }
     public static <T> Try<T> tryType(AnyM<tryType,? extends T> anyM){
