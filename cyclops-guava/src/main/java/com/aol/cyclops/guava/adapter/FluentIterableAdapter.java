@@ -1,8 +1,6 @@
 package com.aol.cyclops.guava.adapter;
 
 import com.aol.cyclops.guava.FluentIterables;
-import com.aol.cyclops.guava.Guava;
-import com.aol.cyclops.guava.GuavaWitness;
 
 import com.aol.cyclops.guava.GuavaWitness.fluentIterable;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;

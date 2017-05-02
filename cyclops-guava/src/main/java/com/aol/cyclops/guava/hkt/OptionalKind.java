@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.aol.cyclops.guava.FromCyclopsReact;
 import com.aol.cyclops.guava.FromJDK;
-import com.aol.cyclops.guava.Guava;
+import com.aol.cyclops.guava.ToCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 import com.google.common.base.Function;
@@ -64,7 +64,7 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      */
     public static <T> OptionalKind<T> fromIterable(final Iterable<T> iterable) {
        
-        return widen(FromCyclopsReact.option(Eval.fromIterable(iterable)));
+        return widen(FromCyclopsReact.optional(Eval.fromIterable(iterable)));
     }
 
     /**
@@ -83,7 +83,7 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      * @return Optional created from Optional
      */
     public static <T> OptionalKind<T> fromOptional(Higher<cyclops.higherkindedtypes.OptionalKind.µ,T> optional){
-        return widen(FromCyclopsReact.option(Maybe.fromOptional(optional)));
+        return widen(FromCyclopsReact.optional(Maybe.fromOptional(optional)));
     }
     /**
      * Convert a Optional to a simulated HigherKindedType that captures Optional nature
@@ -97,11 +97,11 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      */
     public static <T> OptionalKind<T> widen(final java.util.Optional<T> optional) {
         
-        return new OptionalKind<>(FromJDK.option(optional));
+        return new OptionalKind<>(FromJDK.optional(optional));
     }
     public static <T> OptionalKind<T> widen(final Maybe<T> option) {
         
-        return new OptionalKind<T>(FromCyclopsReact.option(option));
+        return new OptionalKind<T>(FromCyclopsReact.optional(option));
     }
     /**
      * Convert the raw Higher Kinded Type for OptionalKind types into the OptionalKind type definition class
@@ -125,7 +125,7 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      */
     public static <T> java.util.Optional<T> narrowOptional(final Higher<OptionalKind.µ, T> optional) {
         
-         return Guava.asMaybe(narrow(optional)).toOptional();
+         return ToCyclopsReact.maybe(narrow(optional)).toOptional();
         
     }
 

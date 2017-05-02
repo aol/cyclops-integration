@@ -11,7 +11,7 @@ import org.reactivestreams.Subscriber;
 
 
 import com.aol.cyclops.guava.FromCyclopsReact;
-import com.aol.cyclops.guava.Guava;
+import com.aol.cyclops.guava.ToCyclopsReact;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -29,7 +29,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 /**
- * Simulates Higher Kinded Types for Guava FluentIterable's
+ * Simulates Higher Kinded Types for ToCyclopsReact FluentIterable's
  * 
  * FluentIterableKind is a FluentIterable and a Higher Kinded Type (FluentIterableKind.µ,T)
  * 
@@ -138,7 +138,7 @@ public final class FluentIterableKind<E> implements Higher<FluentIterableKind.µ
 
     @Override
     public void subscribe(Subscriber<? super E> s) {
-        Guava.fluentIterable(boxed)
+        ToCyclopsReact.fluentIterable(boxed)
              .subscribe(s);
 
     }

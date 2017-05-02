@@ -7,8 +7,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.aol.cyclops.control.AnyM;
-import com.aol.cyclops.control.Maybe;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 
@@ -25,7 +24,7 @@ public class AnyGuavaMTest {
 
     @Test
     public void optionalTest() {
-        assertThat(Guava.optional(Optional.of("hello world"))
+        assertThat(ToCyclopsReact.optional(Optional.of("hello world"))
                         .map(String::toUpperCase)
                         .toSequence()
                         .toList(),
@@ -34,7 +33,7 @@ public class AnyGuavaMTest {
 
     @Test
     public void optionFlatMapTest() {
-        assertThat(Guava.optional(Optional.of("hello world"))
+        assertThat(ToCyclopsReact.optional(Optional.of("hello world"))
                         .map(String::toUpperCase)
                         .flatMap(a -> AnyM.fromMaybe(Maybe.just(a)))
                         .toSequence()
@@ -44,7 +43,7 @@ public class AnyGuavaMTest {
 
     @Test
     public void optionEmptyTest() {
-        assertThat(Guava.optional(Optional.<String> absent())
+        assertThat(ToCyclopsReact.optional(Optional.<String> absent())
                         .map(String::toUpperCase)
                         .toSequence()
                         .toList(),
@@ -53,7 +52,7 @@ public class AnyGuavaMTest {
 
     @Test
     public void streamTest() {
-        assertThat(Guava.fluentIterable(FluentIterable.of(new String[] { "hello world" }))
+        assertThat(ToCyclopsReact.fluentIterable(FluentIterable.of(new String[] { "hello world" }))
                         .map(String::toUpperCase)
                         .stream()
                         .toList(),
@@ -62,7 +61,7 @@ public class AnyGuavaMTest {
 
     @Test
     public void streamFlatMapTestJDK() {
-        assertThat(Guava.fluentIterable(FluentIterable.of(new String[] { "hello world" }))
+        assertThat(ToCyclopsReact.fluentIterable(FluentIterable.of(new String[] { "hello world" }))
                         .map(String::toUpperCase)
                         .flatMap(i -> AnyM.fromStream(java.util.stream.Stream.of(i)))
                         .stream()

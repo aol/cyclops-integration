@@ -13,9 +13,9 @@ import com.google.common.collect.FluentIterable;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
 
-public class Guava {
+public class ToCyclopsReact {
 
-    public static <T> Maybe<T> asMaybe(Optional<T> option) {
+    public static <T> Maybe<T> maybe(Optional<T> option) {
         return option.isPresent() ? Maybe.just(option.get()) : Maybe.none();
     }
 

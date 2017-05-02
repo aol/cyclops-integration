@@ -23,7 +23,7 @@ public class ComprehensionTest {
 
         CompletableFuture<String> future = CompletableFuture.supplyAsync(this::loadData);
         CompletableFuture<List<String>> results1 = For.future(future)
-                                                      .anyM(a -> Guava.fluentIterable(FluentIterable.of(new String[] {
+                                                      .anyM(a -> ToCyclopsReact.fluentIterable(FluentIterable.of(new String[] {
                                                               "first", "second" })))
                                                       .yield(loadedData -> localData -> loadedData + ":" + localData)
                                                       .unwrap();
@@ -39,16 +39,16 @@ public class ComprehensionTest {
     @Test
     public void optionalTest() {
 
-        Guava.ForOptional.each2(Optional.of(10), a -> Optional.absent(), (a, b) -> "failed");
+        ToCyclopsReact.ForOptional.each2(Optional.of(10), a -> Optional.absent(), (a, b) -> "failed");
 
-        assertFalse(Guava.ForOptional.each2(Optional.of(10), a -> Optional.absent(), (a, b) -> "failed")
+        assertFalse(ToCyclopsReact.ForOptional.each2(Optional.of(10), a -> Optional.absent(), (a, b) -> "failed")
                                      .isPresent());
     }
 
     @Test
     public void option2Test() {
 
-        assertThat(Guava.ForOptional.each2(Optional.of(10), a -> Optional.<Integer> of(a + 20), (a, b) -> a + b)
+        assertThat(ToCyclopsReact.ForOptional.each2(Optional.of(10), a -> Optional.<Integer> of(a + 20), (a, b) -> a + b)
                                     .get(),
                    equalTo(40));
     }
@@ -56,7 +56,7 @@ public class ComprehensionTest {
     @Test
     public void generate() {
 
-        String s = Guava.ForFluentIterable.each2(FluentIterable.from(ListX.of(1, 2, 3)),
+        String s = ToCyclopsReact.ForFluentIterable.each2(FluentIterable.from(ListX.of(1, 2, 3)),
                                                  a -> FluentIterable.<Integer> from(ListX.of(a + 10)), Tuple::tuple)
                                           .toString();
 

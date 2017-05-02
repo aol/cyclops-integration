@@ -90,7 +90,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
      */
     public static <T> ObservableKind<T> widen(final Observable<T> observable) {
 
-        return new ObservableKind<>(
+        return new ObservableKind<T>(
                                     observable);
     }
 
@@ -109,7 +109,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
 
     public static <T> ObservableKind<T> widen(final Publisher<T> completableObservable) {
 
-        return new ObservableKind<>(
+        return new ObservableKind<T>(
                                     Observables.observable(completableObservable));
     }
 

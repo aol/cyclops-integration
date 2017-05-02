@@ -22,14 +22,14 @@ public class FromJDKTest {
 
     @Test
     public void testJDKOption() {
-        assertThat(FromJDK.option(Optional.of(1))
+        assertThat(FromJDK.optional(Optional.of(1))
                           .get(),
                    is(1));
     }
 
     @Test
     public void testJDKOptionNull() {
-        assertThat(FromJDK.option(Optional.ofNullable(null))
+        assertThat(FromJDK.optional(Optional.ofNullable(null))
                           .or(100),
                    is(100));
     }
