@@ -1,9 +1,14 @@
 package com.aol.cyclops.vavr;
 
+import com.aol.cyclops2.types.Zippable;
 import cyclops.async.Future;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
 import cyclops.control.Try;
 import cyclops.control.Xor;
+import javaslang.Lazy;
 import javaslang.control.Either;
+import javaslang.control.Option;
 
 
 public class ToCyclopsReact {
@@ -23,6 +28,13 @@ public class ToCyclopsReact {
             return Try.failure(t.getCause());
         }
         return Try.success(t.get());
+    }
+
+    public static <T> Maybe<T> maybe(Option<T> opt){
+        return opt.isDefined() ? Maybe.just(opt.get()) : Maybe.none();
+    }
+    public static <T> Eval<T> eval(Lazy<T> opt){
+        return Eval.later(opt);
     }
 
 }

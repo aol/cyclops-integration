@@ -4,12 +4,20 @@ package com.aol.cyclops.vavr;
 
 import com.aol.cyclops.vavr.adapter.*;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
+import com.google.common.base.Optional;
+import cyclops.monads.AnyM;
 import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
 
 import javaslang.collection.*;
+import javaslang.control.Option;
 
 public interface VavrWitness {
+
+    public static <T> Option<T> option(AnyM<option,? extends T> anyM){
+        return anyM.unwrap();
+    }
+
     static interface TraversableWitness<W extends TraversableWitness<W>>  extends WitnessType<W>{
 
     }

@@ -26,13 +26,7 @@ import javaslang.control.Try;
 
 public class Vavr {
     
-    public static <T> Maybe<T> maybe(Option<T> opt){
-        return opt.isDefined() ? Maybe.just(opt.get()) : Maybe.none();
-    }
-    public static <T> Eval<T> eval(Lazy<T> opt){
-        return Eval.later(opt);
-    }
-   
+
 
 
 
