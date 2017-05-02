@@ -10,11 +10,15 @@ import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
 
 import javaslang.collection.*;
+import javaslang.control.Either;
 import javaslang.control.Option;
 
 public interface VavrWitness {
 
     public static <T> Option<T> option(AnyM<option,? extends T> anyM){
+        return anyM.unwrap();
+    }
+    public static <L,T> Either<L,T> either(AnyM<either,? extends T> anyM){
         return anyM.unwrap();
     }
 
