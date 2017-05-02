@@ -3,7 +3,6 @@ package com.aol.cyclops.functionaljava;
 
 import com.aol.cyclops.functionaljava.FJWitness.option;
 import com.aol.cyclops.functionaljava.hkt.OptionKind;
-import com.aol.cyclops.functionaljava.hkt.typeclassess.instances.Instances;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Value;
