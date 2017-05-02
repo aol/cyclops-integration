@@ -132,7 +132,10 @@ public class JavaSlangPVector<T> extends AbstractList<T> implements PVector<T> {
     public static <T> LazyPVectorX<T> of(T... t){
         return fromPVector(new JavaSlangPVector<>(Vector.of(t)), toPVector());
     }
-    public static <T> LazyPVectorX<T> PStack(Vector<T> q) {
+    public static <T> LazyPVectorX<T> ofAll(Vector<T> t){
+        return fromPVector(new JavaSlangPVector<>(t), toPVector());
+    }
+    public static <T> LazyPVectorX<T> PVector(Vector<T> q) {
         return fromPVector(new JavaSlangPVector<T>(q), toPVector());
     }
     @SafeVarargs

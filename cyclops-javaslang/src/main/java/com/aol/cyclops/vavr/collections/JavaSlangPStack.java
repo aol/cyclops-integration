@@ -108,12 +108,12 @@ public class JavaSlangPStack<T> extends AbstractList<T> implements PStack<T> {
     /**
      * <pre>
      * {@code 
-     * PStack<Integer> q = JSPStack.<Integer>toPStack()
+     * PVector<Integer> q = JSPStack.<Integer>toPStack()
                                      .mapReduce(Stream.of(1,2,3,4));
      * 
      * }
      * </pre>
-     * @return Reducer for PStack
+     * @return Reducer for PVector
      */
     public static <T> Reducer<PStack<T>> toPStack() {
         return Reducer.<PStack<T>> of(JavaSlangPStack.emptyPStack(), (final PStack<T> a) -> b -> a.plusAll(b), (final T x) -> JavaSlangPStack.singleton(x));
@@ -133,6 +133,9 @@ public class JavaSlangPStack<T> extends AbstractList<T> implements PStack<T> {
     }
     public static <T> LazyPStackX<T> of(T... t){
         return fromPStack(new JavaSlangPStack<T>(List.of(t)), toPStack());
+    }
+    public static <T> LazyPStackX<T> ofAll(List<T> q){
+        return fromPStack(new JavaSlangPStack<T>(q), toPStack());
     }
     public static <T> LazyPStackX<T> PStack(List<T> q) {
         return fromPStack(new JavaSlangPStack<>(q), toPStack());

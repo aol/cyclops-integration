@@ -1,6 +1,7 @@
 package com.aol.cyclops.vavr;
 
 import com.aol.cyclops.vavr.VavrWitness.list;
+import com.aol.cyclops.vavr.collections.JavaSlangPStack;
 import com.aol.cyclops.vavr.hkt.ListKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
@@ -27,7 +28,7 @@ import java.util.function.*;
 
 public class Lists {
     public static <T,W extends WitnessType<W>> ListT<W, T> liftM(List<T> opt, W witness) {
-        return ListT.ofList(witness.adapter().unit(opt.toJavaList()));
+        return ListT.ofList(witness.adapter().unit(JavaSlangPStack.ofAll(opt)));
     }
     public static <T> AnyMSeq<list,T> anyM(List<T> option) {
         return AnyM.ofSeq(option, list.INSTANCE);

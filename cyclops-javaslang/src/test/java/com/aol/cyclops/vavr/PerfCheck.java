@@ -46,7 +46,7 @@ public class PerfCheck {
         for (int i = 0; i < 1_000_000; i++) {
             list = list.plus(1);
         }
-        System.out.println("PCollections PStack took " + (System.currentTimeMillis() - start));
+        System.out.println("PCollections PVector took " + (System.currentTimeMillis() - start));
         System.out.println(list.size());
 
     }
