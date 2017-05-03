@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 
 import com.aol.cyclops.vavr.FromCyclopsReact;
+import com.aol.cyclops.vavr.ToCyclopsReact;
 import com.aol.cyclops.vavr.Vavr;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -30,7 +31,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final  class LazyKind<T> implements Higher<LazyKind.µ, T> {
     
- 
+
     /**
      * Witness type
      * 
@@ -101,7 +102,7 @@ public final  class LazyKind<T> implements Higher<LazyKind.µ, T> {
     }
     public static <T> Eval<T> narrowEval(final Higher<LazyKind.µ, T> eval) {
         
-        return Vavr.eval(((LazyKind) eval).boxed);
+        return ToCyclopsReact.eval(((LazyKind) eval).boxed);
    
 }
 
