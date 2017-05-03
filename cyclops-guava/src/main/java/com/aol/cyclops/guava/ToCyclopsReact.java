@@ -12,6 +12,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
+import cyclops.stream.ReactiveSeq;
 
 public class ToCyclopsReact {
 
@@ -19,8 +20,12 @@ public class ToCyclopsReact {
         return option.isPresent() ? Maybe.just(option.get()) : Maybe.none();
     }
 
+    public static <T> ReactiveSeq<T> reactiveSeq(Iterable<T> it) {
+        return ReactiveSeq.fromIterable(it);
+    }
 
-    
+
+
 
 
 

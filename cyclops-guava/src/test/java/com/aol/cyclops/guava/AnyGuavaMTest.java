@@ -5,6 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.control.Maybe;
+import cyclops.monads.AnyM;
 import org.junit.Test;
 
 
@@ -24,35 +26,31 @@ public class AnyGuavaMTest {
 
     @Test
     public void optionalTest() {
-        assertThat(ToCyclopsReact.optional(Optional.of("hello world"))
-                        .map(String::toUpperCase)
-                        .toSequence()
-                        .toList(),
+        assertThat(ToCyclopsReact.maybe(Optional.of("hello world"))
+                        .map(String::toUpperCase).toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
     @Test
     public void optionFlatMapTest() {
-        assertThat(ToCyclopsReact.optional(Optional.of("hello world"))
+        assertThat(ToCyclopsReact.maybe(Optional.of("hello world"))
                         .map(String::toUpperCase)
                         .flatMap(a -> AnyM.fromMaybe(Maybe.just(a)))
-                        .toSequence()
-                        .toList(),
+                        .toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
     @Test
     public void optionEmptyTest() {
-        assertThat(ToCyclopsReact.optional(Optional.<String> absent())
+        assertThat(ToCyclopsReact.maybe(Optional.<String> absent())
                         .map(String::toUpperCase)
-                        .toSequence()
-                        .toList(),
+                        .toLazyCollection(),
                    equalTo(Arrays.asList()));
     }
 
     @Test
     public void streamTest() {
-        assertThat(ToCyclopsReact.fluentIterable(FluentIterable.of(new String[] { "hello world" }))
+        assertThat(ToCyclopsReact.reactiveSeq(FluentIterable.of(new String[] { "hello world" }))
                         .map(String::toUpperCase)
                         .stream()
                         .toList(),
@@ -61,9 +59,9 @@ public class AnyGuavaMTest {
 
     @Test
     public void streamFlatMapTestJDK() {
-        assertThat(ToCyclopsReact.fluentIterable(FluentIterable.of(new String[] { "hello world" }))
+        assertThat(ToCyclopsReact.reactiveSeq(FluentIterable.of(new String[] { "hello world" }))
                         .map(String::toUpperCase)
-                        .flatMap(i -> AnyM.fromStream(java.util.stream.Stream.of(i)))
+                        .flatMapI(i -> AnyM.fromStream(java.util.stream.Stream.of(i)))
                         .stream()
                         .toList(),
                    equalTo(Arrays.asList("HELLO WORLD")));
