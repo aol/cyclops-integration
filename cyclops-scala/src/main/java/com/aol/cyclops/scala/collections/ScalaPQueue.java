@@ -245,7 +245,7 @@ public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
 
     @Override
     public PQueue<T> minusAll(Collection<?> queue) {
-        return fromPQueue(this, toPQueue())
+        return (LazyPQueueX<T>)fromPQueue(this, toPQueue())
                           .removeAllS((Iterable<T>) queue);
     }
 

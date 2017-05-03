@@ -195,7 +195,7 @@ public class ClojurePQueue<T> extends AbstractQueue<T> implements PQueue<T> {
 
     @Override
     public PQueue<T> minusAll(Collection<?> queue) {
-        return fromPQueue(this, toPQueue())
+        return (LazyPQueueX<T>)fromPQueue(this, toPQueue())
                           .removeAllS((Iterable<T>) queue);
     }
 

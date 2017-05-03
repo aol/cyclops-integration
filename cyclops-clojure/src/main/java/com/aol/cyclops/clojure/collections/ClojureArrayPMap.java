@@ -1,11 +1,7 @@
 package com.aol.cyclops.clojure.collections;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import clojure.lang.PersistentArrayMap;
+import clojure.lang.PersistentVector;
 import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
 import cyclops.collections.MapXs;
@@ -13,17 +9,14 @@ import cyclops.collections.immutable.PMapX;
 import cyclops.control.Eval;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
-import org.jooq.lambda.tuple.Tuple2;
-import org.pcollections.PMap;
-
-
-
-import clojure.lang.PersistentArrayMap;
-import clojure.lang.PersistentVector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Wither;
+import org.jooq.lambda.tuple.Tuple2;
+import org.pcollections.PMap;
+
+import java.util.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClojureArrayPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
     
