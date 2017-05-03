@@ -58,8 +58,8 @@ public class FluxTest {
         
         FluxKind<Integer> list = Fluxs.Instances.unit()
                                      .unit("hello")
-                                     .transform(h-> Fluxs.Instances.functor().map((String v) ->v.length(), h))
-                                     .transform(h-> Fluxs.Instances.zippingApplicative().ap(listFn, h))
+                                     .apply(h-> Fluxs.Instances.functor().map((String v) ->v.length(), h))
+                                     .apply(h-> Fluxs.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length()*2)));
@@ -75,7 +75,7 @@ public class FluxTest {
         
         FluxKind<Integer> list = Fluxs.Instances.unit()
                                      .unit("hello")
-                                     .transform(h-> Fluxs.Instances.monad().flatMap((String v) -> Fluxs.Instances.unit().unit(v.length()), h))
+                                     .apply(h-> Fluxs.Instances.monad().flatMap((String v) -> Fluxs.Instances.unit().unit(v.length()), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length())));
@@ -85,7 +85,7 @@ public class FluxTest {
         
         FluxKind<String> list = Fluxs.Instances.unit()
                                      .unit("hello")
-                                     .transform(h-> Fluxs.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .apply(h-> Fluxs.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello")));
@@ -95,7 +95,7 @@ public class FluxTest {
         
         FluxKind<String> list = Fluxs.Instances.unit()
                                      .unit("hello")
-                                     .transform(h-> Fluxs.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .apply(h-> Fluxs.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList()));
