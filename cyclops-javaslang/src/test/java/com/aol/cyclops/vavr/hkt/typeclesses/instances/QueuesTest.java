@@ -2,7 +2,7 @@ package com.aol.cyclops.vavr.hkt.typeclesses.instances;
 
 
 import static com.aol.cyclops.vavr.hkt.QueueKind.widen;
-import static com.aol.cyclops.util.function.Lambda.l1;
+import static cyclops.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -11,13 +11,11 @@ import java.util.function.Function;
 import com.aol.cyclops.vavr.hkt.QueueKind;
 import org.junit.Test;
 
-import com.aol.cyclops.Monoid;
-import com.aol.cyclops.control.Maybe;
-import com.aol.cyclops.hkt.alias.Higher;
-import com.aol.cyclops.hkt.cyclops.MaybeType;
-import com.aol.cyclops.hkt.instances.cyclops.MaybeInstances;
-import com.aol.cyclops.vavr.hkt.typeclasses.instances.QueueInstances;
-import com.aol.cyclops.util.function.Lambda;
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.control.Maybe;
+import cyclops.function.Fn1;
+import cyclops.function.Lambda;
+import cyclops.function.Monoid;
 
 import javaslang.collection.Queue;
 
