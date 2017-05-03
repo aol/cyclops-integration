@@ -9,7 +9,7 @@ import java.util.function.Function;
 import com.aol.cyclops.functionaljava.hkt.NonEmptyListKind;
 import org.junit.Test;
 
-import com.aol.cyclops.functionaljava.hkt.typeclassess.instances.NonEmptyListInstances;
+import com.aol.cyclops.functionaljava.hkt.typeclassess.instances.Instances;
 import com.aol.cyclops.util.function.Lambda;
 
 import fj.data.List;
@@ -20,7 +20,7 @@ public class NonEmptyListsTest {
     @Test
     public void unit(){
         
-        NonEmptyListKind<String> list = NonEmptyListInstances.unit()
+        NonEmptyListKind<String> list = Instances.unit()
                                      .unit("hello")
                                      .convert(NonEmptyListKind::narrowK);
         
@@ -29,16 +29,16 @@ public class NonEmptyListsTest {
     @Test
     public void functor(){
         
-        NonEmptyListKind<Integer> list = NonEmptyListInstances.unit()
+        NonEmptyListKind<Integer> list = Instances.unit()
                                      .unit("hello")
-                                     .then(h->NonEmptyListInstances.functor().map((String v) ->v.length(), h))
+                                     .then(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(NonEmptyListKind::narrowK);
         
         assertThat(list,equalTo(NonEmptyList.fromList(List.list("hello".length())).some()));
     }
     @Test
     public void apSimple(){
-        NonEmptyListInstances.zippingApplicative()
+        Instances.zippingApplicative()
             .ap(NonEmptyListKind.of(l1(this::multiplyByTwo)), NonEmptyListKind.of(1,2,3));
     }
     private int multiplyByTwo(int x){
@@ -47,12 +47,12 @@ public class NonEmptyListsTest {
     @Test
     public void applicative(){
         
-        NonEmptyListKind<Function<Integer,Integer>> listFn =NonEmptyListInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(NonEmptyListKind::narrowK);
+        NonEmptyListKind<Function<Integer,Integer>> listFn = Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(NonEmptyListKind::narrowK);
         
-        NonEmptyListKind<Integer> list = NonEmptyListInstances.unit()
+        NonEmptyListKind<Integer> list = Instances.unit()
                                      .unit("hello")
-                                     .then(h->NonEmptyListInstances.functor().map((String v) ->v.length(), h))
-                                     .then(h->NonEmptyListInstances.zippingApplicative().ap(listFn, h))
+                                     .then(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .then(h-> Instances.zippingApplicative().ap(listFn, h))
                                      .convert(NonEmptyListKind::narrowK);
         
         assertThat(list,equalTo(list("hello".length()*2)));
@@ -66,16 +66,16 @@ public class NonEmptyListsTest {
     }
     @Test
     public void monadSimple(){
-       NonEmptyListKind<Integer> list  = NonEmptyListInstances.monad()
+       NonEmptyListKind<Integer> list  = Instances.monad()
                                       .flatMap(i->range(0,i), NonEmptyListKind.of(1,2,3))
                                       .convert(NonEmptyListKind::narrowK);
     }
     @Test
     public void monad(){
         
-        NonEmptyListKind<Integer> list = NonEmptyListInstances.unit()
+        NonEmptyListKind<Integer> list = Instances.unit()
                                      .unit("hello")
-                                     .then(h->NonEmptyListInstances.monad().flatMap((String v) ->NonEmptyListInstances.unit().unit(v.length()), h))
+                                     .then(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(NonEmptyListKind::narrowK);
         
         assertThat(list,equalTo(list("hello".length())));
@@ -83,14 +83,14 @@ public class NonEmptyListsTest {
 
     @Test
     public void  foldLeft(){
-        int sum  = NonEmptyListInstances.foldable()
+        int sum  = Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, NonEmptyListKind.of(1,2,3,4));
         
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
-        int sum  = NonEmptyListInstances.foldable()
+        int sum  = Instances.foldable()
                         .foldRight(0, (a,b)->a+b, NonEmptyListKind.of(1,2,3,4));
         
         assertThat(sum,equalTo(10));

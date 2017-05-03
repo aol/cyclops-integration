@@ -304,7 +304,7 @@ public class Lists {
      *
      */
     @UtilityClass
-    public class Instances {
+    public static class Instances {
 
 
         /**
@@ -426,7 +426,7 @@ public class Lists {
          */
         public static <T,R> Monad<ListKind.µ> monad(){
 
-            BiFunction<Higher<ListKind.µ,T>,Function<? super T, ? extends Higher<ListKind.µ,R>>,Higher<ListKind.µ,R>> flatMap = com.aol.cyclops.functionaljava.hkt.typeclassess.instances.Instances::flatMap;
+            BiFunction<Higher<ListKind.µ,T>,Function<? super T, ? extends Higher<ListKind.µ,R>>,Higher<ListKind.µ,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**

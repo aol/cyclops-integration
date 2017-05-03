@@ -29,6 +29,18 @@ public interface FJWitness {
         }
 
     }
+    static interface NonEmptyListWitness<W extends FJWitness.NonEmptyListWitness<W>>  extends WitnessType<W> {
+
+    }
+    public static enum nonEmptyList implements NonEmptyListWitness<nonEmptyList> {
+        INSTANCE;
+
+        @Override
+        public FunctionalAdapter<nonEmptyList> adapter() {
+            return new NonEmptyListAdapter();
+        }
+
+    }
     static interface StreamWitness<W extends StreamWitness<W>>  extends WitnessType<W> {
 
     }
