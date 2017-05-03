@@ -21,14 +21,14 @@ public class ComprehensionTest {
     @Test
     public void optionalTest() {
 
-        assertTrue(Vavr.ForValue.each2(Option.of(10), a -> Option.none(), (a, b) -> "failed")
+        assertTrue(Options.forEach2((Option.of(10), a -> Option.none(), (a, b) -> "failed")
                                      .isEmpty());
     }
 
     @Test
     public void option2Test() {
 
-        assertThat(Vavr.ForValue.each2(Option.of(10), a -> Option.<Integer> of(a + 20), (a, b) -> a + b)
+        assertThat(Options.forEach2(Option.of(10), a -> Option.<Integer> of(a + 20), (a, b) -> a + b)
                                      .get(),
                    equalTo(40));
     }
@@ -36,7 +36,7 @@ public class ComprehensionTest {
     @Test
     public void generate() {
 
-        String s = Vavr.ForTraversable.each2(List.of(1, 2, 3), a -> List.<Integer> of(a + 10), Tuple::tuple)
+        String s = Lists.forEach2(List.of(1, 2, 3), a -> List.<Integer> of(a + 10), Tuple::tuple)
                                            .toString();
 
         assertThat(s, equalTo("List((1, 11), (2, 12), (3, 13))"));
@@ -45,7 +45,7 @@ public class ComprehensionTest {
     @Test
     public void generateStream() {
 
-        String s = Vavr.ForTraversable.each2(Stream.of(1, 2, 3), a -> Stream.<Integer> of(a + 10), Tuple::tuple)
+        String s = Streams.forEach2(Stream.of(1, 2, 3), a -> Stream.<Integer> of(a + 10), Tuple::tuple)
                                            .toString();
 
         assertThat(s, equalTo("Stream((1, 11), ?)"));
@@ -54,7 +54,7 @@ public class ComprehensionTest {
     @Test
     public void generateListStream() {
 
-        String s = Vavr.ForTraversable.each2(List.of(1, 2, 3), a -> Stream.<Integer> of(a + 10), Tuple::tuple)
+        String s = Lists.forEach2(List.of(1, 2, 3), a -> List.<Integer> of(a + 10), Tuple::tuple)
                                            .toString();
 
         assertThat(s, equalTo("List((1, 11), (2, 12), (3, 13))"));

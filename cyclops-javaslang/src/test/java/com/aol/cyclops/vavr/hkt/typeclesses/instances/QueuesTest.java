@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.function.Function;
 
+import com.aol.cyclops.vavr.Queues;
 import com.aol.cyclops.vavr.hkt.QueueKind;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class QueuesTest {
     @Test
     public void unit(){
         
-        QueueKind<String> list = QueueInstances.unit()
+        QueueKind<String> list = Queues.Instances.unit()
                                      .unit("hello")
                                      .convert(QueueKind::narrowK);
         
@@ -33,16 +34,16 @@ public class QueuesTest {
     @Test
     public void functor(){
         
-        QueueKind<Integer> list = QueueInstances.unit()
+        QueueKind<Integer> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .then(h->QueueInstances.functor().map((String v) ->v.length(), h))
+                                     .apply(h->Queues.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.of("hello".length())));
     }
     @Test
     public void apSimple(){
-        QueueInstances.zippingApplicative()
+        Queues.Instances.zippingApplicative()
             .ap(widen(Queue.of(l1(this::multiplyByTwo))),widen(Queue.of(1,2,3)));
     }
     private int multiplyByTwo(int x){
@@ -51,28 +52,28 @@ public class QueuesTest {
     @Test
     public void applicative(){
         
-        QueueKind<Function<Integer,Integer>> listFn =QueueInstances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(QueueKind::narrowK);
+        QueueKind<Fn1<Integer,Integer>> listFn =Queues.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(QueueKind::narrowK);
         
-        QueueKind<Integer> list = QueueInstances.unit()
+        QueueKind<Integer> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .then(h->QueueInstances.functor().map((String v) ->v.length(), h))
-                                     .then(h->QueueInstances.zippingApplicative().ap(listFn, h))
+                                     .apply(h->Queues.Instances.functor().map((String v) ->v.length(), h))
+                                     .apply(h->Queues.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.of("hello".length()*2)));
     }
     @Test
     public void monadSimple(){
-       QueueKind<Integer> list  = QueueInstances.monad()
+       QueueKind<Integer> list  = Queues.Instances.monad()
                                       .flatMap(i->widen(Queue.range(0,i)), widen(Queue.of(1,2,3)))
                                       .convert(QueueKind::narrowK);
     }
     @Test
     public void monad(){
         
-        QueueKind<Integer> list = QueueInstances.unit()
+        QueueKind<Integer> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .then(h->QueueInstances.monad().flatMap((String v) ->QueueInstances.unit().unit(v.length()), h))
+                                     .apply(h->Queues.Instances.monad().flatMap((String v) ->Queues.Instances.unit().unit(v.length()), h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.of("hello".length())));
@@ -80,9 +81,9 @@ public class QueuesTest {
     @Test
     public void monadZeroFilter(){
         
-        QueueKind<String> list = QueueInstances.unit()
+        QueueKind<String> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .then(h->QueueInstances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .apply(h->Queues.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.of("hello")));
@@ -90,9 +91,9 @@ public class QueuesTest {
     @Test
     public void monadZeroFilterOut(){
         
-        QueueKind<String> list = QueueInstances.unit()
+        QueueKind<String> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .then(h->QueueInstances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .apply(h->Queues.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.empty()));
@@ -100,7 +101,7 @@ public class QueuesTest {
     
     @Test
     public void monadPlus(){
-        QueueKind<Integer> list = QueueInstances.<Integer>monadPlus()
+        QueueKind<Integer> list = Queues.Instances.<Integer>monadPlus()
                                       .plus(QueueKind.widen(Queue.empty()), QueueKind.widen(Queue.of(10)))
                                       .convert(QueueKind::narrowK);
         assertThat(list,equalTo(Queue.of(10)));
@@ -109,21 +110,21 @@ public class QueuesTest {
     public void monadPlusNonEmpty(){
         
         Monoid<QueueKind<Integer>> m = Monoid.of(QueueKind.widen(Queue.empty()), (a, b)->a.isEmpty() ? b : a);
-        QueueKind<Integer> list = QueueInstances.<Integer>monadPlus(m)
+        QueueKind<Integer> list = Queues.Instances.<Integer>monadPlus(m)
                                       .plus(QueueKind.widen(Queue.of(5)), QueueKind.widen(Queue.of(10)))
                                       .convert(QueueKind::narrowK);
         assertThat(list,equalTo(Queue.of(5)));
     }
     @Test
     public void  foldLeft(){
-        int sum  = QueueInstances.foldable()
+        int sum  = Queues.Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, QueueKind.widen(Queue.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
-        int sum  = QueueInstances.foldable()
+        int sum  = Queues.Instances.foldable()
                         .foldRight(0, (a,b)->a+b, QueueKind.widen(Queue.of(1,2,3,4)));
         
         assertThat(sum,equalTo(10));
@@ -131,9 +132,9 @@ public class QueuesTest {
     
     @Test
     public void traverse(){
-       MaybeType<Higher<QueueKind.µ, Integer>> res = QueueInstances.traverse()
-                                                         .traverseA(MaybeInstances.applicative(), (Integer a)->MaybeType.just(a*2), QueueKind.of(1,2,3))
-                                                         .convert(MaybeType::narrowK);
+       Maybe<Higher<QueueKind.µ, Integer>> res = Queues.Instances.traverse()
+                                                         .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), QueueKind.of(1,2,3))
+                                                         .convert(Maybe::narrowK);
             
        assertThat(res,equalTo(Maybe.just(Queue.of(2,4,6))));
     }
