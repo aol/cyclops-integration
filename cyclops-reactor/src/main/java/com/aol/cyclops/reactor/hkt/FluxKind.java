@@ -31,8 +31,12 @@ import java.util.stream.Stream;
  * @param <T> Data type stored within the Flux
  */
 
-@AllArgsConstructor(access=AccessLevel.PRIVATE)
+
 public final class FluxKind<T> implements Higher<FluxKind.µ, T>, Publisher<T> {
+
+    private FluxKind(Flux<T> boxed) {
+        this.boxed = boxed;
+    }
 
     /**
      * Witness type
@@ -73,7 +77,7 @@ public final class FluxKind<T> implements Higher<FluxKind.µ, T>, Publisher<T> {
      */
     public static <T> FluxKind<T> widen(final Flux<T> completableFlux) {
         
-        return new FluxKind<>(
+        return new FluxKind<T>(
                          completableFlux);
     }
     /**
@@ -89,7 +93,7 @@ public final class FluxKind<T> implements Higher<FluxKind.µ, T>, Publisher<T> {
     }
     public static <T> FluxKind<T> widen(final Publisher<T> completableFlux) {
         
-        return new FluxKind<>(Flux.from(
+        return new FluxKind<T>(Flux.from(
                          completableFlux));
     }
         

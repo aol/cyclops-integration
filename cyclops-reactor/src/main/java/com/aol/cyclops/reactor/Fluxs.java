@@ -331,7 +331,7 @@ public class Fluxs {
      *
      */
     @UtilityClass
-    public class Instances {
+    public static class Instances {
 
 
         /**
@@ -382,7 +382,8 @@ public class Fluxs {
          * @return A factory for Fluxs
          */
         public static <T> Pure<FluxKind.µ> unit(){
-            return General.<FluxKind.µ,T>unit(Instances::of);
+            Function<T, Higher<FluxKind.µ, T>> unitRef = Instances::of;
+            return General.<FluxKind.µ,T>unit(unitRef);
         }
         /**
          *
@@ -562,7 +563,7 @@ public class Fluxs {
         private static  <T> FluxKind<T> concat(FluxKind<T> l1, FluxKind<T> l2){
             return FluxKind.widen(Flux.concat(l1,l2));
         }
-        private <T> FluxKind<T> of(T value){
+        private static <T> FluxKind<T> of(T value){
             return FluxKind.widen(Flux.just(value));
         }
         private static <T,R> FluxKind<R> ap(FluxKind<Function< T, R>> lt, FluxKind<T> flux){

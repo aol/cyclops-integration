@@ -292,7 +292,7 @@ public class Monos {
      *
      */
     @UtilityClass
-    public class Instances {
+    public static class Instances {
 
 
         /**
@@ -515,7 +515,7 @@ public class Monos {
             return General.comonad(functor(), unit(), extractFn);
         }
 
-        private <T> MonoKind<T> of(T value){
+        private static <T> MonoKind<T> of(T value){
             return MonoKind.widen(Mono.just(value));
         }
         private static <T,R> MonoKind<R> ap(MonoKind<Function< T, R>> lt, MonoKind<T> list){

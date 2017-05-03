@@ -41,8 +41,11 @@ import reactor.util.function.Tuple2;
  * @param <T> Data type stored within the Mono
  */
 
-@AllArgsConstructor(access=AccessLevel.PRIVATE)
+
 public final class MonoKind<T> implements Higher<MonoKind.µ, T>, Publisher<T> {
+    private MonoKind(Mono<T> boxed) {
+        this.boxed = boxed;
+    }
 
     /**
      * Witness type
@@ -79,13 +82,13 @@ public final class MonoKind<T> implements Higher<MonoKind.µ, T>, Publisher<T> {
      */
     public static <T> MonoKind<T> widen(final Mono<T> completableMono) {
         
-        return new MonoKind<>(
+        return new MonoKind<T>(
                          completableMono);
     }
     
     public static <T> MonoKind<T> widen(final Publisher<T> completableMono) {
         
-        return new MonoKind<>(Mono.from(
+        return new MonoKind<T>(Mono.from(
                          completableMono));
     }
         
