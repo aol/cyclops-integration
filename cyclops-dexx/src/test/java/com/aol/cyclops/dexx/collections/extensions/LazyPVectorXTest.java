@@ -17,7 +17,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
 import com.aol.cyclops.dexx.collections.DexxPVector;
-import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
+
 
 
 import reactor.core.publisher.Flux;
@@ -25,8 +25,8 @@ import reactor.core.publisher.Flux;
 public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
-        LazyPVectorX<T> list = DexxPVector.empty();
+    public <T> FluentCollectionX<T> of(T... values) {
+        PVectorX<T> list = DexxPVector.empty();
         for (T next : values) {
             list = list.plus(list.size(), next);
         }
@@ -38,7 +38,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
     @Test
     public void onEmptySwitch() {
         assertThat(DexxPVector.empty()
-                          .onEmptySwitch(() -> LazyPVectorX.of(1, 2, 3)),
+                          .onEmptySwitch(() -> PVectorX.of(1, 2, 3)),
                    equalTo(PVectorX.of(1, 2, 3)));
     }
 

@@ -8,24 +8,23 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
+import cyclops.collections.immutable.PBagX;
+import cyclops.collections.immutable.PVectorX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
 import com.aol.cyclops.clojure.collections.ClojurePVector;
-import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
-import com.aol.cyclops.data.collections.extensions.persistent.PVectorX;
-import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPVectorX;
+
 
 import reactor.core.publisher.Flux;
 
 public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
-        LazyPVectorX<T> list = ClojurePVector.empty();
+    public <T> FluentCollectionX<T> of(T... values) {
+        PVectorX<T> list = ClojurePVector.empty();
         for (T next : values) {
             list = list.plus(list.size(), next);
         }
@@ -37,7 +36,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
     @Test
     public void onEmptySwitch() {
         assertThat(ClojurePVector.empty()
-                          .onEmptySwitch(() -> LazyPVectorX.of(1, 2, 3)),
+                          .onEmptySwitch(() -> PVectorX.of(1, 2, 3)),
                    equalTo(PVectorX.of(1, 2, 3)));
     }
 
@@ -60,7 +59,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
         ClojurePVector.of(1, 2, 3)
                .minusAll(PBagX.of(2, 3))
-               .flatMapPublisher(i -> Flux.just(10 + i, 20 + i, 30 + i));
+               .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 

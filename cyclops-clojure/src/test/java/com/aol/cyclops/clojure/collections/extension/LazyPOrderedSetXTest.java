@@ -19,14 +19,14 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
 import com.aol.cyclops.clojure.collections.ClojureTreePOrderedSet;
-import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+
 
 import reactor.core.publisher.Flux;
 
 public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
+    public <T> FluentCollectionX<T> of(T... values) {
         POrderedSetX<T> list = (LazyPOrderedSetX)ClojureTreePOrderedSet.empty((Comparator)Comparator.naturalOrder());
         for (T next : values) {
             list = list.plus(next);
@@ -45,7 +45,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     public void onEmptySwitch() {
         assertThat((LazyPOrderedSetX)ClojureTreePOrderedSet.empty((Comparator)Comparator.naturalOrder())
                           .onEmptySwitch(() -> (LazyPOrderedSetX)ClojureTreePOrderedSet.of((Comparator)Comparator.naturalOrder(),1, 2, 3)),
-                   equalTo(LazyPOrderedSetX.of(1, 2, 3)));
+                   equalTo(POrderedSetX.of(1, 2, 3)));
     }
 
     /*

@@ -45,7 +45,7 @@ public class PStackTest {
     }
     @Test
     public void npePlus(){
-        LazyPStackX<Integer> list = ClojurePStack.empty();
+        PStackX<Integer> list = ClojurePStack.empty();
         for (Integer next : Arrays.asList(1,2,3)) {
             list = list.plus(list.size(), next);
         }
@@ -54,7 +54,7 @@ public class PStackTest {
     }
     @Test
     public void npePlusAll(){
-        LazyPStackX<Integer> list = ClojurePStack.empty();
+        PStackX<Integer> list = ClojurePStack.empty();
         for (Integer next : Arrays.asList(1,2,3)) {
             list = list.plusAll(list.size(), Arrays.asList(next));
         }

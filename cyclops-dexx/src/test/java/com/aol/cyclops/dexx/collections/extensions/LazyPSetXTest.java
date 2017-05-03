@@ -13,12 +13,13 @@ import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import cyclops.collections.immutable.PBagX;
+import cyclops.collections.immutable.PSetX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
 
 import com.aol.cyclops.dexx.collections.DexxPSet;
-import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+
 
 
 import reactor.core.publisher.Flux;
@@ -26,8 +27,8 @@ import reactor.core.publisher.Flux;
 public class LazyPSetXTest extends AbstractCollectionXTest  {
 
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
-        LazyPSetX<T> list = DexxPSet.empty();
+    public <T> FluentCollectionX<T> of(T... values) {
+        PSetX<T> list = DexxPSet.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -45,7 +46,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
     @Test
     public void onEmptySwitch() {
         assertThat(DexxPSet.empty()
-                          .onEmptySwitch(() -> LazyPSetX.of(1, 2, 3)).toList(),
+                          .onEmptySwitch(() -> PSetX.of(1, 2, 3)).toList(),
                    equalTo(DexxPSet.of(1, 2, 3).toList()));
     }
 

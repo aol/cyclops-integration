@@ -1,6 +1,6 @@
 package com.aol.cyclops.scala.collections.extension;
 
-import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
+
 import com.aol.cyclops.scala.collections.ScalaPQueue;
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
