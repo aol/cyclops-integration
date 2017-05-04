@@ -17,11 +17,16 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
 import java.util.*;
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+
 public class ClojureHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
     
     @Wither
-    PersistentHashMap map;
+    private final PersistentHashMap map;
+
+    private ClojureHashPMap(PersistentHashMap map) {
+        this.map = map;
+    }
+
     public static <K, V> Reducer<PMapX<K, V>> toPMapX() {
         return Reducer.<PMapX<K, V>> of(empty(), (final PMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
             final List w = ((TupleWrapper) () -> in).values();
@@ -29,7 +34,7 @@ public class ClojureHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
         });
     }
     public static <K,V> ClojureHashPMap<K,V> fromMap(@NonNull PersistentHashMap map){
-        return new ClojureHashPMap<>(map);
+        return new ClojureHashPMap<K,V>(map);
     }
     public static <K,V> ClojureHashPMap<K,V> fromJavaMap(@NonNull Map<K,V> map){
         PersistentHashMap res = ( PersistentHashMap)PersistentHashMap.create(map);

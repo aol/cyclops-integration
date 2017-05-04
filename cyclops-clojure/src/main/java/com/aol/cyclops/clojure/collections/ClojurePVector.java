@@ -21,7 +21,7 @@ import clojure.lang.PersistentVector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
+
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
     
@@ -174,12 +174,12 @@ public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public PVector<T>  plus(int i, T e){
-
-       ReactiveSeq<T> flux = fromPVector(this,toPVector()).reactiveSeq();
+        if(size()==0 || i==size())
+            return plus(e);
+       ReactiveSeq<T> flux = ReactiveSeq.fromIterable(vector);
        ReactiveSeq<T> inserted = flux.insertAt(i, e);
-       
        return fromStream(inserted);
-                  
+
        
     }
     private static <T> LazyPVectorX<T> fromPVector(PVector<T> vec, Reducer<PVector<T>> pVectorReducer) {

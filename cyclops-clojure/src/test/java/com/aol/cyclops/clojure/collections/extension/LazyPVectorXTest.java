@@ -26,7 +26,9 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
     public <T> FluentCollectionX<T> of(T... values) {
         PVectorX<T> list = ClojurePVector.empty();
         for (T next : values) {
+
             list = list.plus(list.size(), next);
+
         }
         System.out.println("List " + list);
         return list;

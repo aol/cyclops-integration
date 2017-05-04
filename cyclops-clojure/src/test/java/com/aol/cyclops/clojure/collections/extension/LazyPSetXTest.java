@@ -1,19 +1,25 @@
 package com.aol.cyclops.clojure.collections.extension;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import cyclops.collections.immutable.PBagX;
 import cyclops.collections.immutable.PSetX;
+import cyclops.control.Maybe;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
@@ -96,6 +102,58 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
         return ClojureHashPSet.unfold(seed, unfolder);
+    }
+    @Test
+    public void testTakeRight(){
+        assertThat(of(1,2,3,4,5)
+                .takeRight(2)
+                .stream().collect(Collectors.toList()).size(),equalTo(2));
+    }@Test
+    public void testSplitAtHead() {
+        assertEquals(Optional.empty(), of().headAndTail().headOptional());
+        assertEquals(asList(), of().headAndTail().tail().toList());
+
+        assertTrue( of(1).headAndTail().headOptional().isPresent());
+
+    }
+    @Test
+    public void testLimitLast(){
+        assertThat(of(1,2,3,4,5)
+                .limitLast(2)
+                .stream().collect(Collectors.toList()).size(),equalTo(2));
+    }
+    @Test
+    public void testSkipLast(){
+        assertThat(of(1,2,3,4,5)
+                .skipLast(2)
+                .toListX().size(),equalTo(3));
+    }
+    @Test
+    public void dropRight(){
+        assertThat(of(1,2,3).dropRight(1).toList().size(),equalTo(2));
+    }
+    @Test
+    public void endsWith(){
+        assertTrue(of(1)
+                .endsWithIterable(Arrays.asList(1)));
+    }
+    public void visit(){
+
+        String res= of(1,2,3).visit((x,xs)-> xs.join(x>2? "hello" : "world"),
+                ()->"boo!");
+
+        assertTrue(res.contains("world"));
+        assertTrue(res.contains("2"));
+        assertTrue(res.contains("3"));
+    }
+    @Test
+    public void getMultpleStream(){
+        assertThat(of(1,2,3,4,5).stream().elementAt(2).v2.toList(),hasItems(1,2,3,4,5));
+    }
+    @Test
+    public void endsWithStream(){
+        assertTrue(of(1)
+                .endsWith(Stream.of(1)));
     }
     @Test
     public void takeWhileTest(){

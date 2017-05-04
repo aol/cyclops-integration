@@ -6,7 +6,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import com.aol.cyclops.scala.collections.internal.ExtensiblePMapX;
+
+import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
 import cyclops.collections.immutable.PMapX;
 import cyclops.control.Eval;

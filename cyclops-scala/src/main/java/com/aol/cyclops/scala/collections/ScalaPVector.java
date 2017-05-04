@@ -22,7 +22,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
 import scala.collection.GenTraversableOnce;
 import scala.collection.generic.CanBuildFrom;
 import scala.collection.immutable.Vector;
@@ -270,7 +269,7 @@ public class ScalaPVector<T> extends AbstractList<T> implements PVector<T>, HasS
 
     @Override
     public PVector<T> minusAll(Collection<?> list) {
-        return fromPVector(this,toPVector()).removeAllS((Iterable<T>)list);
+        return (PVector<T>)fromPVector(this,toPVector()).removeAllS((Iterable<T>)list);
     }
     
     public ScalaPVector<T> tail(){
