@@ -22,7 +22,7 @@ public class TryAdapter extends AbstractFunctionalAdapter<tryType> {
 
     @Override
     public <T> Iterable<T> toIterable(AnyM<tryType, T> t) {
-        return Maybe.fromIterable(t);
+        return Maybe.fromIterable(t.unwrap());
     }
 
     @Override

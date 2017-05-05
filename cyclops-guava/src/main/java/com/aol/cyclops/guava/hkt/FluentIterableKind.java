@@ -138,7 +138,7 @@ public final class FluentIterableKind<E> implements Higher<FluentIterableKind.µ
 
     @Override
     public void subscribe(Subscriber<? super E> s) {
-        ToCyclopsReact.fluentIterable(boxed)
+        ToCyclopsReact.reactiveSeq(boxed)
              .subscribe(s);
 
     }

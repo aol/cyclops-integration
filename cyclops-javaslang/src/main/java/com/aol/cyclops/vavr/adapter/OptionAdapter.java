@@ -25,7 +25,7 @@ public class OptionAdapter extends AbstractFunctionalAdapter<option> {
 
     @Override
     public <T> Iterable<T> toIterable(AnyM<option, T> t) {
-        return Maybe.fromIterable(t);
+        return Maybe.fromIterable(t.unwrap());
     }
 
     @Override

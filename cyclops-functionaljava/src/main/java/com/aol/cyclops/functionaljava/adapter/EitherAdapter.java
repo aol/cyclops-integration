@@ -26,7 +26,7 @@ public class EitherAdapter<L> extends AbstractFunctionalAdapter<either> {
 
     @Override
     public <T> Iterable<T> toIterable(AnyM<either, T> t) {
-        return Maybe.fromIterable(t);
+        return ToCyclopsReact.xor(either(t));
     }
 
     @Override

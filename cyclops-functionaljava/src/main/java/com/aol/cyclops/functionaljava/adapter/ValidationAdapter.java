@@ -23,7 +23,7 @@ public class ValidationAdapter<L> extends AbstractFunctionalAdapter<validation> 
 
     @Override
     public <T> Iterable<T> toIterable(AnyM<validation, T> t) {
-        return Maybe.fromIterable(t);
+        return Maybe.fromIterable(t.unwrap());
     }
 
     @Override

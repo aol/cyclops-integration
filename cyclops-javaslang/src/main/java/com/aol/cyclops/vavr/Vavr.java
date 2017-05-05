@@ -3,14 +3,14 @@ package com.aol.cyclops.vavr;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Stream;
+
 
 
 import com.aol.cyclops.vavr.VavrWitness.*;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.async.Future;
-import cyclops.async.Queue;
+
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
@@ -43,6 +43,9 @@ public class Vavr {
     public static <T> AnyMSeq<list,T> list(List<T> list) {
         return AnyM.ofSeq(list, VavrWitness.list.INSTANCE);
     }
+    public static <T> AnyMSeq<array,T> array(Array<T> array) {
+        return AnyM.ofSeq(array, VavrWitness.array.INSTANCE);
+    }
     public static <T> AnyMSeq<vector,T> vector(Vector<T> vector) {
         return AnyM.ofSeq(vector, VavrWitness.vector.INSTANCE);
     }
@@ -53,7 +56,7 @@ public class Vavr {
     public static <T> AnyMSeq<charSeq,T> charSeq(CharSeq charSeq) {
         return AnyM.ofSeq(charSeq, VavrWitness.charSeq.INSTANCE);
     }
-    public static <T> AnyMSeq<hashSet,T> hashSet(HashSet set) {
+    public static <T> AnyMSeq<hashSet,T> hashSet(HashSet<T> set) {
         return AnyM.ofSeq(set, hashSet.INSTANCE);
     }
     public static <T> AnyMValue<future,T> option(Future<T> option) {

@@ -5,17 +5,19 @@ import java.util.Map;
 
 import com.aol.cyclops.functionaljava.FJ;
 
+import com.aol.cyclops.functionaljava.Readers;
 import fj.data.Reader;
 
 public class UserInfo implements Users {
 
+
     public Reader<UserRepository, Map<String, String>> userInfo(String username) {
 
-        FJ.ForReader.each2(findUser(username), user -> getUser(user.getSupervisor()
+        Readers.forEach2(findUser(username), user -> getUser(user.getSupervisor()
                                                                    .getId()),
                            (user, boss) -> "user:" + username + " boss is " + boss.getName());
 
-        return FJ.ForReader.each2(findUser(username), user -> getUser(user.getSupervisor()
+        return Readers.forEach2(findUser(username), user -> getUser(user.getSupervisor()
                                                                           .getId()),
                                   (user, boss) -> buildMap(user, boss));
 

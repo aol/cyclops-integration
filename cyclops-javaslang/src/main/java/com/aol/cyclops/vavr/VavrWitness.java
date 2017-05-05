@@ -181,7 +181,7 @@ public interface VavrWitness {
 
                 @Override
                 public Traversable singletonTraversable(Object value) {
-                    return Queue.of((Character)value);
+                    return Queue.of(value);
                 }
 
                 @Override
@@ -206,7 +206,7 @@ public interface VavrWitness {
 
                 @Override
                 public Traversable singletonTraversable(Object value) {
-                    return HashSet.of((Character)value);
+                    return HashSet.of(value);
                 }
 
                 @Override

@@ -26,7 +26,7 @@ public class FutureAdapter extends AbstractFunctionalAdapter<future> {
 
     @Override
     public <T> Iterable<T> toIterable(AnyM<future, T> t) {
-        return Maybe.fromIterable(t);
+        return Maybe.fromIterable(t.unwrap());
     }
 
     @Override

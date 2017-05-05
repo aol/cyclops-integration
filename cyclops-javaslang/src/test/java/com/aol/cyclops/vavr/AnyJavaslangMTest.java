@@ -7,9 +7,11 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 
+import com.aol.cyclops2.types.Transformable;
 import cyclops.async.LazyReact;
 import cyclops.collections.ListX;
 import cyclops.collections.SortedSetX;
+import cyclops.monads.AnyM;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.functor.Functor;
 import org.junit.Test;
@@ -45,13 +47,13 @@ public class AnyJavaslangMTest {
     @Test
     public void emissionTest() throws InterruptedException {
 
-        Functor<Integer> functor = SortedSetX.of(1, 2);
-        Functor<Integer> doubled = functor.map(i -> i * 2);
+        Transformable<Integer> functor = SortedSetX.of(1, 2);
+        Transformable<Integer> doubled = functor.map(i -> i * 2);
 
         // Functor[2]
 
         Thread.sleep(5000);
-        Vavr.traversable(List.of("emit", "one", "word", "per", "second"))
+        Vavr.list(List.of("emit", "one", "word", "per", "second"))
                  .schedule("* * * * * ?", Executors.newScheduledThreadPool(1))
                  .connect()
                  .map(s -> System.currentTimeMillis() / 1000 + " : " + s)
@@ -79,9 +81,9 @@ public class AnyJavaslangMTest {
     @Test
     public void javaslangCyclops() {
 
-        Vavr.ForTraversable.each2(List.of(1, 2, 3), a -> List.range(0, a), this::add);
+        Lists.forEach2(List.of(1, 2, 3), a -> List.range(0, a), this::add);
 
-        Vavr.ForValue.each2(Option.none(), a -> Option.<Integer> some(a + 1), this::add);
+        Options.forEach2(Option.none(), a -> Option.<Integer> some(a + 1), this::add);
 
         Option.some(1)
               .flatMap(a -> Option.some(a + 1)
@@ -92,29 +94,19 @@ public class AnyJavaslangMTest {
              .forEach(System.out::println);
 
         ReactiveSeq.of(1, 2, 3, 4)
-                   .flatMapIterable(i -> Stream.iterate(1, a -> a + 1)
+                   .flatMapI(i -> Stream.iterate(1, a -> a + 1)
                                                .take(i))
                    .map(i -> i + 2);
 
     }
 
-    @Test
-    public void testToList() {
-
-        SeqSubscriber<Integer> sub = SeqSubscriber.subscriber();
-        traversable(List.of(1, 2, 3)).subscribe(sub);
-        sub.stream()
-           .forEachWithError(System.out::println, System.err::println);
-
-        assertThat(traversable(List.of(1, 2, 3)).toList(), equalTo(Arrays.asList(1, 2, 3)));
-    }
 
     @Test
     public void monadTest() {
-        assertThat(Vavr.value(Try.of(this::success))
+        assertThat(Trys.anyM(Try.of(this::success))
                             .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
+                            .toLazyCollection(),
+
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -122,8 +114,7 @@ public class AnyJavaslangMTest {
     public void tryTest() {
         assertThat(Vavr.tryM(Try.of(this::success))
                             .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
+                           .toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -142,6 +133,7 @@ public class AnyJavaslangMTest {
         Exception e = new RuntimeException();
         Vavr.tryM(Try.failure(e));
         System.out.println("hello!");
+        Vavr.tryM(Try.failure(e)).printOut();
         assertThat(Vavr.tryM(Try.failure(e))
                             .stream()
                             .toList(),
@@ -153,8 +145,8 @@ public class AnyJavaslangMTest {
     public void whenSuccessFailureProcessDoesNothing() {
 
         assertThat(Vavr.tryM(Try.success("hello world"))
-                            .toSequence()
-                            .toList(),
+
+                            .toLazyCollection(),
                    equalTo(Arrays.asList("hello world")));
 
     }
@@ -164,8 +156,8 @@ public class AnyJavaslangMTest {
         assertThat(Vavr.tryM(Try.of(this::success))
                             .map(String::toUpperCase)
                             .flatMap(AnyM::ofNullable)
-                            .toSequence()
-                            .toList(),
+
+                            .toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -183,8 +175,7 @@ public class AnyJavaslangMTest {
     public void eitherTest() {
         assertThat(Vavr.either(Either.right("hello world"))
                             .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
+                            .toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -192,8 +183,7 @@ public class AnyJavaslangMTest {
     public void eitherLeftTest() {
         assertThat(Vavr.either(Either.<String, String> left("hello world"))
                             .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
+                            .toLazyCollection(),
                    equalTo(Arrays.asList()));
     }
 
@@ -201,80 +191,18 @@ public class AnyJavaslangMTest {
     public void eitherFlatMapTest() {
         assertThat(Vavr.either(Either.<Object, String> right("hello world"))
                             .map(String::toUpperCase)
-                            .flatMap(AnyM::ofNullable)
-                            .toSequence()
-                            .toList(),
+
+                            .toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
-    @Test
-    public void rightProjectionTest() {
-        assertThat(Vavr.right(Either.<Object, String> right("hello world")
-                                         .right())
-                            .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
-                   equalTo(Arrays.asList("HELLO WORLD")));
-    }
 
-    @Test
-    public void rightProjectionLeftTest() {
-        assertThat(Vavr.right(Either.<String, String> left("hello world")
-                                         .right())
-                            .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
-                   equalTo(Arrays.asList()));
-    }
-
-    @Test
-    public void rightProjectionFlatMapTest() {
-        assertThat(Vavr.right(Either.<Object, String> right("hello world")
-                                         .right())
-                            .map(String::toUpperCase)
-                            .flatMap(AnyM::ofNullable)
-                            .toSequence()
-                            .toList(),
-                   equalTo(Arrays.asList("HELLO WORLD")));
-    }
-
-    @Test
-    public void leftProjectionTest() {
-        assertThat(Vavr.right(Either.<String, String> left("hello world")
-                                         .right())
-                            .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
-                   equalTo(Arrays.asList()));
-    }
-
-    @Test
-    public void leftProjectionLeftTest() {
-        assertThat(Vavr.left(Either.<String, String> left("hello world")
-                                        .left())
-                            .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
-                   equalTo(Arrays.asList("HELLO WORLD")));
-    }
-
-    @Test
-    public void leftProjectionLeftFlatMapTest() {
-        assertThat(Vavr.left(Either.<String, String> left("hello world")
-                                        .left())
-                            .map(String::toUpperCase)
-                            .flatMap(AnyM::ofNullable)
-                            .toSequence()
-                            .toList(),
-                   equalTo(Arrays.asList("HELLO WORLD")));
-    }
 
     @Test
     public void optionTest() {
         assertThat(Vavr.option(Option.of("hello world"))
                             .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
+                            .toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -283,8 +211,7 @@ public class AnyJavaslangMTest {
         assertThat(Vavr.option(Option.of("hello world"))
                             .map(String::toUpperCase)
                             .flatMap(AnyM::ofNullable)
-                            .toSequence()
-                            .toList(),
+                            .toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -292,42 +219,31 @@ public class AnyJavaslangMTest {
     public void optionEmptyTest() {
         assertThat(Vavr.option(Option.<String> none())
                             .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
+                            .toLazyCollection(),
                    equalTo(Arrays.asList()));
     }
 
     @Test
     public void futureTest() {
-        assertThat(Vavr.value(Future.of(() -> "hello world"))
+        assertThat(Vavr.future(Future.of(() -> "hello world"))
                             .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
+                            .toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
     @Test
     public void futureFlatMapTest() {
-        assertThat(Vavr.value(Future.of(() -> "hello world"))
+        assertThat(Vavr.future(Future.of(() -> "hello world"))
                             .map(String::toUpperCase)
-                            .flatMap(AnyM::ofNullable)
-                            .toSequence()
-                            .toList(),
+                            .toLazyCollection(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
-    @Test
-    public void lazyTest() {
-        assertThat(Vavr.value(Lazy.of(() -> "hello world"))
-                            .map(String::toUpperCase)
-                            .toSequence()
-                            .toList(),
-                   equalTo(Arrays.asList("HELLO WORLD")));
-    }
+
 
     @Test
     public void streamTest() {
-        assertThat(Vavr.traversable(Stream.of("hello world"))
+        assertThat(Vavr.stream(javaslang.collection.Stream.of("hello world"))
                             .map(String::toUpperCase)
                             .stream()
                             .toList(),
@@ -336,7 +252,7 @@ public class AnyJavaslangMTest {
 
     @Test
     public void listTest() {
-        assertThat(Vavr.traversable(List.of("hello world"))
+        assertThat(Vavr.list(List.of("hello world"))
                             .map(String::toUpperCase)
                             .stream()
                             .toList(),
@@ -345,25 +261,25 @@ public class AnyJavaslangMTest {
 
     @Test
     public void streamFlatMapTest() {
-        assertThat(Vavr.traversable(Stream.of("hello world"))
+        assertThat(Vavr.stream(Stream.of("hello world"))
                             .map(String::toUpperCase)
-                            .flatMap(i -> Vavr.traversable(List.of(i)))
+                            .flatMap(i -> Vavr.stream(Stream.of(i)))
                             .toList(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
     @Test
     public void streamFlatMapTestJDK() {
-        assertThat(Vavr.traversable(Stream.of("hello world"))
+        assertThat(Vavr.stream(Stream.of("hello world"))
                             .map(String::toUpperCase)
-                            .flatMap(i -> AnyM.fromStream(java.util.stream.Stream.of(i)))
+                            .flatMap(i -> Vavr.stream(Stream.of(i)))
                             .toList(),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
     @Test
     public void arrayTest() {
-        assertThat(Vavr.traversable(Array.of("hello world"))
+        assertThat(Vavr.array(Array.of("hello world"))
                             .map(String::toUpperCase)
                             .toList(),
                    equalTo(Arrays.asList("HELLO WORLD")));
@@ -371,7 +287,7 @@ public class AnyJavaslangMTest {
 
     @Test
     public void charSeqTest() {
-        assertThat(Vavr.traversable(CharSeq.of("hello world"))
+        assertThat(Vavr.charSeq(CharSeq.of("hello world"))
                             .map(c -> c.toString()
                                        .toUpperCase()
                                        .charAt(0))
@@ -381,7 +297,7 @@ public class AnyJavaslangMTest {
 
     @Test
     public void hashsetTest() {
-        assertThat(Vavr.traversable(HashSet.of("hello world"))
+        assertThat(Vavr.hashSet(HashSet.of("hello world"))
                             .map(String::toUpperCase)
                             .toList(),
                    equalTo(Arrays.asList("HELLO WORLD")));
@@ -389,7 +305,7 @@ public class AnyJavaslangMTest {
 
     @Test
     public void queueTest() {
-        assertThat(Vavr.traversable(Queue.of("hello world"))
+        assertThat(Vavr.queue(Queue.of("hello world"))
                             .map(String::toUpperCase)
                             .toList(),
                    equalTo(Arrays.asList("HELLO WORLD")));
@@ -397,7 +313,7 @@ public class AnyJavaslangMTest {
 
     @Test
     public void vectorTest() {
-        assertThat(Vavr.traversable(Vector.of("hello world"))
+        assertThat(Vavr.vector(Vector.of("hello world"))
                             .map(String::toUpperCase)
                             .toList(),
                    equalTo(Arrays.asList("HELLO WORLD")));
