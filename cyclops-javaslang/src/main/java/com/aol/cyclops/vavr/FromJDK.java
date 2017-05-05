@@ -3,8 +3,7 @@ package com.aol.cyclops.vavr;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.aol.cyclops.react.async.subscription.Continueable;
-import com.aol.cyclops.util.ExceptionSoftener;
+
 
 import javaslang.Function1;
 import javaslang.Function2;

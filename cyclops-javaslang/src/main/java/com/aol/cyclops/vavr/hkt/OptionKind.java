@@ -7,6 +7,7 @@ import com.aol.cyclops.vavr.FromCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Eval;
+import cyclops.higherkindedtypes.OptionalKind;
 import javaslang.collection.Iterator;
 import javaslang.control.Option;
 import lombok.AccessLevel;
@@ -70,11 +71,11 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
      * }
      * </pre>
      * 
-     * @param opt Optional to construct Option from
+     * @param optional Optional to construct Option from
      * @return Option created from Optional
      */
-    public static <T> OptionKind<T> ofOptional(Higher<OptionalType.µ,T> optional){
-        return widen(Option.ofOptional(OptionalType.narrow(optional)));
+    public static <T> OptionKind<T> ofOptional(Higher<OptionalKind.µ,T> optional){
+        return widen(Option.ofOptional(OptionalKind.narrowK(optional)));
     }
     public static <T> OptionKind<T> ofOptional(Optional<T> optional){
         return widen(Option.ofOptional(optional));
@@ -86,7 +87,7 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
      * If the supplied Optional implements OptionalType it is returned already, otherwise it
      * is wrapped into a Optional implementation that does implement OptionalType
      * 
-     * @param Optional Optional to widen to a OptionalType
+     * @param optional Optional to widen to a OptionalType
      * @return OptionKind encoding HKT info about Optionals (converts Optional to a Option)
      */
     public static <T> OptionKind<T> widen(final Optional<T> optional) {
@@ -139,7 +140,7 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
 
     /**
      * Construct an Option which contains the provided (non-null) value
-     * Equivalent to @see {@link Option#just(Object)}
+     * Equivalent to @see {@link Option#some(Object)}
      * <pre>
      * {@code 
      * 
@@ -163,7 +164,7 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
      * If the supplied Option implements OptionKind it is returned already, otherwise it
      * is wrapped into a Option implementation that does implement OptionKind
      * 
-     * @param Option Option to widen to a OptionKind
+     * @param maybe Option to widen to a OptionKind
      * @return OptionKind encoding HKT info about Options
      */
     public static <T> OptionKind<T> widen(final Option<T> maybe) {
@@ -176,7 +177,7 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
     /**
      * Convert the HigherKindedType definition for a Option into
      * 
-     * @param Option Type Constructor to convert back into narrowed type
+     * @param maybe Type Constructor to convert back into narrowed type
      * @return OptionX from Higher Kinded Type
      */
     public static <T> Option<T> narrow(final Higher<OptionKind.µ, T> maybe) {
