@@ -32,13 +32,13 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest {
                 equalTo(12));
     }
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
-        POrderedSetX<T> list = (LazyPOrderedSetX)ScalaTreePOrderedSet.empty();
+    public <T> FluentCollectionX<T> of(T... values) {
+        POrderedSetX<T> list = (POrderedSetX)ScalaTreePOrderedSet.empty();
         for (T next : values) {
             list = list.plus(next);
         }
         System.out.println("List " + list);
-        return (LazyFluentCollectionX)list;
+        return (FluentCollectionX)list;
 
     }
 
