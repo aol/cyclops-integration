@@ -1,21 +1,20 @@
 package com.aol.cyclops.vavr;
 
-import static com.aol.cyclops.vavr.Vavr.traversable;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 
+import cyclops.async.LazyReact;
+import cyclops.collections.ListX;
+import cyclops.collections.SortedSetX;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.functor.Functor;
 import org.junit.Test;
 
-import com.aol.cyclops.control.AnyM;
-import com.aol.cyclops.control.LazyReact;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.data.collections.extensions.standard.ListX;
-import com.aol.cyclops.data.collections.extensions.standard.SortedSetX;
-import com.aol.cyclops.types.Functor;
-import com.aol.cyclops.types.stream.reactive.SeqSubscriber;
+
 
 import javaslang.Lazy;
 import javaslang.collection.Array;

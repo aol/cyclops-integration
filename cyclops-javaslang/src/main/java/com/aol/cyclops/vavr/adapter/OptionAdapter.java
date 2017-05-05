@@ -2,6 +2,7 @@ package com.aol.cyclops.vavr.adapter;
 
 
 import com.aol.cyclops.vavr.FromCyclopsReact;
+import com.aol.cyclops.vavr.ToCyclopsReact;
 import com.aol.cyclops.vavr.Vavr;
 import com.aol.cyclops.vavr.VavrWitness;
 import com.aol.cyclops.vavr.VavrWitness.option;
@@ -31,7 +32,7 @@ public class OptionAdapter extends AbstractFunctionalAdapter<option> {
     public <T, R> AnyM<option, R> ap(AnyM<option,? extends Function<? super T,? extends R>> fn, AnyM<option, T> apply) {
         Option<T> f = option(apply);
         Option<? extends Function<? super T, ? extends R>> fnF = option(fn);
-        Option<R> res = FromCyclopsReact.option(Vavr.maybe(fnF).combine(Vavr.maybe(f), (a, b) -> a.apply(b)));
+        Option<R> res = FromCyclopsReact.option(ToCyclopsReact.maybe(fnF).combine(ToCyclopsReact.maybe(f), (a, b) -> a.apply(b)));
         return Vavr.option(res);
 
     }

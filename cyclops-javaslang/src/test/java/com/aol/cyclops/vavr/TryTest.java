@@ -2,7 +2,7 @@ package com.aol.cyclops.vavr;
 
 import org.junit.Test;
 
-import com.aol.cyclops.control.For;
+
 
 import javaslang.control.Try;
 
@@ -20,13 +20,12 @@ public class TryTest {
     @Test
     public void futureTest() {
 
-        Try<String> result = For.iterable(grind("arabica beans"))
-                                .iterable(ground -> heatWater(new Water(
-                                                                        25)))
-                                .iterable(ground -> water -> brew(ground, water))
-                                .iterable(ground -> wqter -> espresso -> frothMilk("milk"))
-                                .yield(ground -> water -> espresso -> foam -> combine(espresso, foam))
-                                .unwrap();
+        Try<String> result = Trys.forEach4(grind("arabica beans"),
+                                           ground -> heatWater(new Water(
+                                                                        25)),
+                                            (ground, water) -> brew(ground, water),
+                                            (ground, water ,espresso) -> frothMilk("milk"),
+                                            (ground , water ,espresso , foam) -> combine(espresso, foam));
 
         System.out.println(result.get());
     }
