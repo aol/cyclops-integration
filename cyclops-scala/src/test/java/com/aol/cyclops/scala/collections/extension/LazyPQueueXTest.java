@@ -24,13 +24,13 @@ import static org.junit.Assert.assertThat;
 public class LazyPQueueXTest extends AbstractCollectionXTest {
 
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
+    public <T> FluentCollectionX<T> of(T... values) {
         PQueueX<T> list = ScalaPQueue.empty();
         for (T next : values) {
             list = list.plus(next);
         }
         System.out.println("List " + list);
-        return (LazyFluentCollectionX)list;
+        return (FluentCollectionX)list;
 
     }
 

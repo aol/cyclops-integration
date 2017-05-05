@@ -172,6 +172,9 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
     private static <T> LazyPStackX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
         return new LazyPStackX<T>(s,null,true, pStackReducer);
     }
+    private static <T> LazyPStackX<T> fromPStack(PStack<T> s, boolean efficientOps,Reducer<PStack<T>> pStackReducer) {
+        return new LazyPStackX<T>(s,null,efficientOps, pStackReducer);
+    }
 
     @SafeVarargs
     public static <T> LazyPStackX<T> PStack(T... elements) {
@@ -252,13 +255,14 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
 
     @Override
     public PStack<T> minus(Object e) {
-        return fromPStack(this, toPStack())
+
+        return fromPStack(this, false,toPStack())
                           .filter(i -> !Objects.equals(i, e));
     }
 
     @Override
     public PStack<T> minusAll(Collection<?> list) {
-        return (PStack<T>)fromPStack(this, toPStack())
+        return (PStack<T>)fromPStack(this, false,toPStack())
                           .removeAllS((Iterable<T>) list);
     }
 
@@ -279,9 +283,9 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
         if (i == 0)
             return withList(list.drop(1));
         if (i == size() - 1)
-           return fromPStack(this, toPStack()).dropRight(1);
+           return fromPStack(this,false, toPStack()).dropRight(1);
         
-        return fromPStack(this, toPStack())
+        return fromPStack(this, false ,toPStack())
                           .zipWithIndex()
                           .filter(t->t.v2.intValue()!=i)
                           .map(t->t.v1);

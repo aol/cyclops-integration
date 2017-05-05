@@ -31,13 +31,13 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
                 equalTo(12));
     }
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
+    public <T> FluentCollectionX<T> of(T... values) {
         PSetX<T> list = ScalaHashPSet.empty();
         for (T next : values) {
             list = list.plus(next);
         }
         System.out.println("List " + list);
-        return (LazyFluentCollectionX)list;
+        return (FluentCollectionX)list;
 
     }
 
