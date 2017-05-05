@@ -27,7 +27,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
+
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -258,7 +258,7 @@ public class DexxPStack<T> extends AbstractList<T>implements PStack<T> {
 
     @Override
     public PStack<T> minusAll(Collection<?> list) {
-        return fromPStack(this, toPStack())
+        return (PStack<T>)fromPStack(this, toPStack())
                           .removeAllS((Iterable<T>) list);
     }
 

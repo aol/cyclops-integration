@@ -22,7 +22,6 @@ import com.github.andrewoma.dexx.collection.Vector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
     
@@ -218,7 +217,7 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public PVector<T> minusAll(Collection<?> list) {
-        return fromPVector(this,toPVector()).removeAllS((Iterable<T>)list);
+        return (PVector<T>)fromPVector(this,toPVector()).removeAllS((Iterable<T>)list);
     }
 
     @Override
