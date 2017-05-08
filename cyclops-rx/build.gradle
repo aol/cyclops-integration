@@ -31,8 +31,7 @@ configurations {
 }
 dependencies {
     
-    compile project(':cyclops-typeclasses')
-    compile project(':cyclops-higherkindedtypes')
+
 	compile 'io.reactivex:rxjava:'+rxJavaVersion
 	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	compile 'io.reactivex:rxjava-reactive-streams:1.0.1'

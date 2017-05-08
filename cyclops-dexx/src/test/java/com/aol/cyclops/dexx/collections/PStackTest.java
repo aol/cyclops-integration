@@ -6,13 +6,14 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
+import cyclops.collections.immutable.PStackX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
-import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
+
 public class PStackTest {
 
     ConsPStack<Integer> org = null;
@@ -40,7 +41,7 @@ public class PStackTest {
     @Test
     public void plusi(){
         List<Integer> values = Arrays.asList(1,2,3,4,5,6);
-        LazyPStackX<Integer> list = DexxPStack.empty();
+        PStackX<Integer> list = DexxPStack.empty();
         for (Integer next : values) {
             list = list.plus(list.size(), next);
             System.out.println("List " + list);
@@ -48,7 +49,7 @@ public class PStackTest {
         list = list.efficientOpsOff();
         System.out.println("List " + list);
         
-        LazyPStackX<Integer> list2 = LazyPStackX.empty();
+        PStackX<Integer> list2 = DexxPStack.empty();
         for (Integer next : values) {
             list2 = list2.plus(list2.size(), next);
         }

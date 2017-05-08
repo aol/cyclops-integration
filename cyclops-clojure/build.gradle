@@ -46,7 +46,6 @@ configurations {
 dependencies {
     
     compile group: 'org.clojure', name: 'clojure', version:clojureVersion
-    compile project(':cyclops-reactor')
     compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
 

@@ -8,24 +8,25 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
+import cyclops.collections.immutable.PBagX;
+import cyclops.collections.immutable.PStackX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
-import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
-import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
+
 import com.aol.cyclops.dexx.collections.DexxPStack;
-import com.aol.cyclops.reactor.collections.extensions.AbstractOrderDependentCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
+
 
 import reactor.core.publisher.Flux;
 
 public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
-        LazyPStackX<T> list = DexxPStack.empty();
+    public <T> FluentCollectionX<T> of(T... values) {
+        PStackX<T> list = DexxPStack.empty();
         for (T next : values) {
             list = list.plus(list.size(), next);
         }
@@ -60,7 +61,7 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
 
         DexxPStack.of(1, 2, 3)
                .minusAll(PBagX.of(2, 3))
-               .flatMapPublisher(i -> Flux.just(10 + i, 20 + i, 30 + i));
+               .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 

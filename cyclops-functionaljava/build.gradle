@@ -30,8 +30,7 @@ configurations {
 	provided
 }
 dependencies {
-    compile project(':cyclops-typeclasses')
-    compile project(':cyclops-higherkindedtypes')
+
 	provided 'com.google.guava:guava:'+guavaVersion
 	provided group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion

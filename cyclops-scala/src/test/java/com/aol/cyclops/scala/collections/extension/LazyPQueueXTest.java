@@ -1,44 +1,44 @@
 package com.aol.cyclops.scala.collections.extension;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+
+import com.aol.cyclops.scala.collections.ScalaPQueue;
+import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
+import cyclops.collections.immutable.PBagX;
+import cyclops.collections.immutable.PQueueX;
+import cyclops.collections.immutable.PStackX;
+import org.jooq.lambda.tuple.Tuple2;
+import org.junit.Test;
+import reactor.core.publisher.Flux;
 
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import org.jooq.lambda.tuple.Tuple2;
-import org.junit.Test;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
-import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
-import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPQueueX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
-import com.aol.cyclops.scala.collections.ScalaPQueue;
-
-import reactor.core.publisher.Flux;
-
-public class LazyPQueueXTest extends AbstractCollectionXTest  {
+public class LazyPQueueXTest extends AbstractCollectionXTest {
 
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
-        LazyPQueueX<T> list = ScalaPQueue.empty();
+    public <T> FluentCollectionX<T> of(T... values) {
+        PQueueX<T> list = ScalaPQueue.empty();
         for (T next : values) {
             list = list.plus(next);
         }
         System.out.println("List " + list);
-        return list;
+        return (FluentCollectionX)list;
 
     }
 
     @Test
     public void onEmptySwitch() {
         assertThat(ScalaPQueue.empty()
-                          .onEmptySwitch(() -> LazyPQueueX.of(1, 2, 3)).toList(),
-                   equalTo(LazyPQueueX.of(1, 2, 3).toList()));
+                          .onEmptySwitch(() -> PQueueX.of(1, 2, 3)).toList(),
+                   equalTo(PQueueX.of(1, 2, 3).toList()));
     }
 
     /*
@@ -50,7 +50,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return LazyPStackX.empty();
+        return PStackX.empty();
     }
 
     
@@ -60,7 +60,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
 
         ScalaPQueue.of(1, 2, 3)
                .minusAll(PBagX.of(2, 3))
-               .flatMapPublisher(i -> Flux.just(10 + i, 20 + i, 30 + i));
+               .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 

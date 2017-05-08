@@ -5,13 +5,14 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
+import cyclops.collections.immutable.PStackX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
-import com.aol.cyclops.data.collections.extensions.persistent.PStackX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPStackX;
+
 public class PStackTest {
 
     ConsPStack<Integer> org = null;
@@ -44,7 +45,7 @@ public class PStackTest {
     }
     @Test
     public void npePlus(){
-        LazyPStackX<Integer> list = ClojurePStack.empty();
+        PStackX<Integer> list = ClojurePStack.empty();
         for (Integer next : Arrays.asList(1,2,3)) {
             list = list.plus(list.size(), next);
         }
@@ -53,7 +54,7 @@ public class PStackTest {
     }
     @Test
     public void npePlusAll(){
-        LazyPStackX<Integer> list = ClojurePStack.empty();
+        PStackX<Integer> list = ClojurePStack.empty();
         for (Integer next : Arrays.asList(1,2,3)) {
             list = list.plusAll(list.size(), Arrays.asList(next));
         }

@@ -5,14 +5,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+
+import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
+import com.aol.cyclops2.types.mixins.TupleWrapper;
+import cyclops.collections.immutable.PMapX;
+import cyclops.control.Eval;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.pcollections.PMap;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.Eval;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
-import com.aol.cyclops.reactor.collections.extensions.base.ExtensiblePMapX;
-import com.aol.cyclops.types.mixins.TupleWrapper;
+
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -51,7 +53,7 @@ public class ScalaHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
     public static <K,V> PMapX<K,V> singleton(K key,V value){
         Builder<Tuple2<K, V>, HashMap> builder = HashMap$.MODULE$.newBuilder();
         HashMap<K,V> map = builder.$plus$eq(Tuple2.apply(key,value)).result();
-        return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()->ScalaHashPMap.<K,V>toPMapX()));
+        return new ExtensiblePMapX<K,V>(fromMap(map), Eval.later(()->ScalaHashPMap.<K,V>toPMapX()));
      }
     
     public static <K,V> PMapX<K,V> fromStream(ReactiveSeq<Tuple2<K,V>> stream){

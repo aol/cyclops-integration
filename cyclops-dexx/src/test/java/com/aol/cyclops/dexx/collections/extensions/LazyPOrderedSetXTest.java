@@ -9,23 +9,26 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import cyclops.collections.immutable.PBagX;
+import cyclops.collections.immutable.POrderedSetX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
-import com.aol.cyclops.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops.data.collections.extensions.persistent.PBagX;
+
 import com.aol.cyclops.dexx.collections.DexxPOrderedSet;
-import com.aol.cyclops.reactor.collections.extensions.AbstractCollectionXTest;
-import com.aol.cyclops.reactor.collections.extensions.base.LazyFluentCollectionX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPOrderedSetX;
+
+
 
 import reactor.core.publisher.Flux;
 
 public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Override
-    public <T> LazyFluentCollectionX<T> of(T... values) {
-        LazyPOrderedSetX<T> list = (LazyPOrderedSetX)DexxPOrderedSet.empty();
+    public <T> FluentCollectionX<T> of(T... values) {
+        POrderedSetX<T> list = (LazyPOrderedSetX)DexxPOrderedSet.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -44,7 +47,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     public void onEmptySwitch() {
         assertThat((LazyPOrderedSetX)DexxPOrderedSet.empty()
                           .onEmptySwitch(() -> (LazyPOrderedSetX)DexxPOrderedSet.of(1, 2, 3)),
-                   equalTo(LazyPOrderedSetX.of(1, 2, 3)));
+                   equalTo(POrderedSetX.of(1, 2, 3)));
     }
 
     /*
@@ -66,7 +69,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
         DexxPOrderedSet.of(1, 2, 3)
                .minusAll(PBagX.of(2, 3))
-               .flatMapPublisher(i -> Flux.just(10 + i, 20 + i, 30 + i));
+               .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 
@@ -82,7 +85,8 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return LazyPOrderedSetX.iterate(times, seed, (UnaryOperator)fn);
+
+        return DexxPOrderedSet.<Comparable>iterate(times, (Comparable)seed, (UnaryOperator)fn);
     }
 
     @Override

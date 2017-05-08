@@ -12,7 +12,7 @@ public class FromJDK<T, R> {
         return (t) -> fn.apply(t);
     }
 
-    public static <T> Optional<T> option(java.util.Optional<T> o) {
+    public static <T> Optional<T> optional(java.util.Optional<T> o) {
         if (o.isPresent())
             return Optional.of(o.get());
         return Optional.absent();

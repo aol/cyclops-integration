@@ -1,35 +1,32 @@
 package com.aol.cyclops.clojure.collections;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import org.jooq.lambda.tuple.Tuple2;
-import org.pcollections.PMap;
-
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.Eval;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
-import com.aol.cyclops.data.collections.extensions.standard.MapXs;
-import com.aol.cyclops.reactor.collections.extensions.base.ExtensiblePMapX;
-import com.aol.cyclops.types.mixins.TupleWrapper;
-
-import clojure.lang.IPersistentMap;
 import clojure.lang.PersistentHashMap;
 import clojure.lang.PersistentVector;
+import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
+import com.aol.cyclops2.types.mixins.TupleWrapper;
+import cyclops.collections.MapXs;
+import cyclops.collections.immutable.PMapX;
+import cyclops.control.Eval;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Wither;
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+import org.jooq.lambda.tuple.Tuple2;
+import org.pcollections.PMap;
+
+import java.util.*;
+
 public class ClojureHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
     
     @Wither
-    PersistentHashMap map;
+    private final PersistentHashMap map;
+
+    private ClojureHashPMap(PersistentHashMap map) {
+        this.map = map;
+    }
+
     public static <K, V> Reducer<PMapX<K, V>> toPMapX() {
         return Reducer.<PMapX<K, V>> of(empty(), (final PMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
             final List w = ((TupleWrapper) () -> in).values();
@@ -37,14 +34,14 @@ public class ClojureHashPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
         });
     }
     public static <K,V> ClojureHashPMap<K,V> fromMap(@NonNull PersistentHashMap map){
-        return new ClojureHashPMap<>(map);
+        return new ClojureHashPMap<K,V>(map);
     }
     public static <K,V> ClojureHashPMap<K,V> fromJavaMap(@NonNull Map<K,V> map){
         PersistentHashMap res = ( PersistentHashMap)PersistentHashMap.create(map);
         return fromMap(res);
     }
     public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(fromMap(PersistentHashMap.EMPTY),Eval.later(()->toPMapX()));
+       return new ExtensiblePMapX<K,V>(fromMap(PersistentHashMap.EMPTY), Eval.later(()->toPMapX()));
     }
     public static <K,V> PMap<K,V> singletonPMap(K key,V value){
         PersistentHashMap map = ( PersistentHashMap)PersistentHashMap.create(MapXs.of(key, value));

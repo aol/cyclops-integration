@@ -46,8 +46,6 @@ configurations {
 }
 dependencies {
     doc  'com.aol.simplereact:cyclops-react:'+cyclopsReactVersion+':sources'
-    compile project(':cyclops-typeclasses')
-    compile project(':cyclops-higherkindedtypes')
 	compile 'io.projectreactor:reactor-core:'+reactorVersion
 	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion

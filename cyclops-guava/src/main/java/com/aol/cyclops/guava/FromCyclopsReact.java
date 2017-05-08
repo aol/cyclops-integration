@@ -2,10 +2,10 @@ package com.aol.cyclops.guava;
 
 import java.util.stream.Stream;
 
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.types.MonadicValue;
+import com.aol.cyclops2.types.MonadicValue;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
+import cyclops.stream.ReactiveSeq;
 
 public class FromCyclopsReact {
 
@@ -13,7 +13,7 @@ public class FromCyclopsReact {
         return FluentIterable.from(() -> s.iterator());
     }
 
-    public static <T> Optional<T> option(MonadicValue<T> value) {
+    public static <T> Optional<T> optional(MonadicValue<T> value) {
         return Optional.fromNullable(value.orElse(null));
     }
     public static <T> FluentIterable<T> fromReactiveSeq(ReactiveSeq<T> s) {

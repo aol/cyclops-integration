@@ -11,19 +11,17 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PQueue;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPQueueX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
+
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
 import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConversions;
 import scala.collection.generic.CanBuildFrom;
@@ -34,7 +32,7 @@ import scala.collection.immutable.Queue$;
 import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasScalaCollection<T>,NativePlusLoop<T> {
+public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasScalaCollection<T> {
     public LazyPQueueX<T> plusLoop(int max, IntFunction<T> value) {
         Queue<T> toUse = this.queue;
         final CanBuildFrom<Queue<?>, T, Queue<T>> builder = Queue.<T> canBuildFrom();
@@ -65,8 +63,7 @@ public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
      * @return LazyPQueueX
      */
     public static <T> LazyPQueueX<T> fromStream(Stream<T> stream) {
-        return new LazyPQueueX<T>(
-                                  Flux.from(ReactiveSeq.fromStream(stream)), toPQueue());
+        return new LazyPQueueX<T>(null,ReactiveSeq.fromStream(stream), toPQueue());
     }
 
     /**
@@ -160,8 +157,13 @@ public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
                                  queue);
     }
     public static <T> LazyPQueueX<T> lazyQueue(Queue<T> queue){
-        return LazyPQueueX.fromPQueue(fromQueue(queue), toPQueue());
+        return fromPQueue(fromQueue(queue), toPQueue());
     }
+
+    private static <T> LazyPQueueX<T> fromPQueue(PQueue<T> ts, Reducer<PQueue<T>> pQueueReducer) {
+        return new LazyPQueueX<T>(ts,null,pQueueReducer);
+    }
+
     public static <T> ScalaPQueue<T> emptyPQueue() {
 
         return new ScalaPQueue<>(
@@ -169,7 +171,7 @@ public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
     }
 
     public static <T> LazyPQueueX<T> empty() {
-        return LazyPQueueX.fromPQueue(new ScalaPQueue<>(
+        return fromPQueue(new ScalaPQueue<>(
                                                         Queue$.MODULE$.empty()),
                                       toPQueue());
     }
@@ -184,20 +186,20 @@ public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
         for (T next : t)
             lb.$plus$eq(next);
         Queue<T> vec = lb.result();
-        return LazyPQueueX.fromPQueue(new ScalaPQueue<>(
+        return fromPQueue(new ScalaPQueue<>(
                                                         vec),
                                       toPQueue());
     }
 
     public static <T> LazyPQueueX<T> PQueue(Queue<T> q) {
-        return LazyPQueueX.fromPQueue(new ScalaPQueue<T>(
+        return fromPQueue(new ScalaPQueue<T>(
                                                          q),
                                       toPQueue());
     }
 
     @SafeVarargs
     public static <T> LazyPQueueX<T> PQueue(T... elements) {
-        return LazyPQueueX.fromPQueue(of(elements), toPQueue());
+        return fromPQueue(of(elements), toPQueue());
     }
 
     @Wither
@@ -236,14 +238,14 @@ public class ScalaPQueue<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
 
     @Override
     public PQueue<T> minus(Object e) {
-        return LazyPQueueX.fromPQueue(this, toPQueue())
+        return fromPQueue(this, toPQueue())
                           .filter(i -> !Objects.equals(i, e));
     }
 
     @Override
     public PQueue<T> minusAll(Collection<?> queue) {
-        return LazyPQueueX.fromPQueue(this, toPQueue())
-                          .removeAll((Iterable<T>) queue);
+        return (LazyPQueueX<T>)fromPQueue(this, toPQueue())
+                          .removeAllS((Iterable<T>) queue);
     }
 
     public ScalaPQueue<T> tail() {

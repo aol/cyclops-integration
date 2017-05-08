@@ -13,18 +13,16 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.POrderedSet;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPOrderedSetX;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
 import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConversions;
 import scala.collection.generic.CanBuildFrom;
@@ -34,7 +32,7 @@ import scala.collection.mutable.Builder;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSet<T>, HasScalaCollection<T> {
+public class ScalaTreePOrderedSet<T> extends AbstractSet<T> implements POrderedSet<T>, HasScalaCollection<T> {
     public LazyPOrderedSetX<T> plusLoop(int max, IntFunction<T> value) {
         TreeSet<T> toUse = set;
         for (int i = 0; i < max; i++) {
@@ -60,9 +58,9 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
      * @return LazyPOrderedSetX
      */
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPOrderedSetX<T>(
-                                  Flux.from(ReactiveSeq.fromStream(stream)), 
-                                  ScalaTreePOrderedSet.<T>toPOrderedSet(Comparator.naturalOrder()));
+        Reducer<POrderedSet<T>> reducer = ScalaTreePOrderedSet.<T>toPOrderedSet(Comparator.naturalOrder());
+        return new LazyPOrderedSetX<T>(null, ReactiveSeq.fromStream(stream),
+                                  reducer);
     }
 
     /**
@@ -163,9 +161,13 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
     }
     public static <T> LazyPOrderedSetX<T> lazySet(TreeSet<T> set){
         POrderedSet<T> ordered = fromSet(set);
-        return LazyPOrderedSetX.fromPOrderedSet(ordered, (Reducer)toPOrderedSet());
+        return fromPOrderedSet(ordered, (Reducer)toPOrderedSet());
     }
-    
+
+    private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
+        return  new LazyPOrderedSetX<T>(ordered,null,reducer);
+    }
+
     public static <T extends Comparable<? super T>> ScalaTreePOrderedSet<T> emptyPOrderedSet() {
         return new ScalaTreePOrderedSet<>(
                                  TreeSet$.MODULE$.empty(Converters.<T>ordering(Comparator.naturalOrder())));
@@ -178,13 +180,13 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
 
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> empty() {
         
-        return LazyPOrderedSetX.fromPOrderedSet(new ScalaTreePOrderedSet<>(
+        return fromPOrderedSet(new ScalaTreePOrderedSet<>(
                 TreeSet$.MODULE$.empty(Converters.<T>ordering(Comparator.naturalOrder()))),
                                                 toPOrderedSet());
     }
     public static <T> LazyPOrderedSetX<T> empty(Comparator<T> comp) {
         
-        return LazyPOrderedSetX.fromPOrderedSet(new ScalaTreePOrderedSet<>(
+        return fromPOrderedSet(new ScalaTreePOrderedSet<>(
                 TreeSet$.MODULE$.empty(Converters.<T>ordering(comp))),
                                                 toPOrderedSet(comp));
     }
@@ -201,7 +203,7 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
        for (T next : t)
            lb.$plus$eq(next);
        TreeSet<T> vec = lb.result();
-       return LazyPOrderedSetX.fromPOrderedSet(new ScalaTreePOrderedSet<>(
+       return fromPOrderedSet(new ScalaTreePOrderedSet<>(
                                                        vec),
                                      toPOrderedSet(comp));
    }
@@ -213,14 +215,14 @@ public class ScalaTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSe
     
 
     public static <T> LazyPOrderedSetX<T> POrderedSet(TreeSet<T> q) {
-        return LazyPOrderedSetX.fromPOrderedSet(new ScalaTreePOrderedSet<T>(
+        return fromPOrderedSet(new ScalaTreePOrderedSet<T>(
                                                          q),
                                       toPOrderedSet(q.ordering()));
     }
 
     @SafeVarargs
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> POrderedSet(T... elements) {
-        return LazyPOrderedSetX.fromPOrderedSet(of(elements), toPOrderedSet());
+        return fromPOrderedSet(of(elements), toPOrderedSet());
     }
 
     @Wither

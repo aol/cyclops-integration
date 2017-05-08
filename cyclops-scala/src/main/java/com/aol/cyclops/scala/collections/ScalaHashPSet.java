@@ -10,18 +10,17 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PSet;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.base.NativePlusLoop;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPSetX;
+
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
 import scala.collection.GenTraversableOnce;
 import scala.collection.JavaConversions;
 import scala.collection.generic.CanBuildFrom;
@@ -31,7 +30,7 @@ import scala.collection.mutable.Builder;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScalaCollection<T>,NativePlusLoop<T> {
+public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScalaCollection<T> {
 
     public LazyPSetX<T> plusLoop(int max, IntFunction<T> value) {
         HashSet<T> toUse = set;
@@ -58,8 +57,7 @@ public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScala
      * @return LazyPSetX
      */
     public static <T> LazyPSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPSetX<T>(
-                                  Flux.from(ReactiveSeq.fromStream(stream)), toPSet());
+        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream), toPSet());
     }
 
     /**
@@ -148,8 +146,13 @@ public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScala
                                       (final T x) -> ScalaHashPSet.singleton(x));
     }
     public static <T> LazyPSetX<T> lazySet(HashSet<T> set){
-        return LazyPSetX.fromPSet(fromSet(set), toPSet());
+        return fromPSet(fromSet(set), toPSet());
     }
+
+    private static <T> LazyPSetX<T> fromPSet(PSet<T> ts, Reducer<PSet<T>> pSetReducer) {
+        return new LazyPSetX<T>(ts,null,pSetReducer);
+    }
+
     public static <T> ScalaHashPSet<T> fromSet(HashSet<T> set) {
         return new ScalaHashPSet<>(
                                  set);
@@ -164,7 +167,7 @@ public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScala
     public static <T> LazyPSetX<T> empty() {
         
         HashSet<T> empty = HashSet$.MODULE$.empty();
-        return LazyPSetX.fromPSet(new ScalaHashPSet<T>(
+        return fromPSet(new ScalaHashPSet<T>(
                                                         empty),toPSet());
     }
 
@@ -178,20 +181,20 @@ public class ScalaHashPSet<T> extends AbstractSet<T>implements PSet<T>, HasScala
         for (T next : t)
             lb.$plus$eq(next);
         HashSet<T> vec = lb.result();
-        return LazyPSetX.fromPSet(new ScalaHashPSet<>(
+        return fromPSet(new ScalaHashPSet<>(
                                                         vec),
                                       toPSet());
     }
 
     public static <T> LazyPSetX<T> PSet(HashSet<T> q) {
-        return LazyPSetX.fromPSet(new ScalaHashPSet<T>(
+        return fromPSet(new ScalaHashPSet<T>(
                                                          q),
                                       toPSet());
     }
 
     @SafeVarargs
     public static <T> LazyPSetX<T> PSet(T... elements) {
-        return LazyPSetX.fromPSet(of(elements), toPSet());
+        return fromPSet(of(elements), toPSet());
     }
 
     @Wither

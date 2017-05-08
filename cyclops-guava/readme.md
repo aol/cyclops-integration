@@ -56,7 +56,7 @@ Guava.ForFluentIterable.each2(FluentIterable.from(ListX.of(1,2,3)),
 Subscribe to a Guava FluentIterable
 
 ```java	
-import static com.aol.cyclops.javaslang.guava.fluentIterable;
+import static com.aol.cyclops.vavr.guava.fluentIterable;
 
 SeqSubscriber<Integer> subscriber =SeqSubscriber.subscriber();
 		

@@ -5,11 +5,11 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.MapXs;
+import cyclops.collections.immutable.PMapX;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.aol.cyclops.data.collections.extensions.persistent.PMapX;
-import com.aol.cyclops.data.collections.extensions.standard.MapXs;
 
 public class TreePMapTest {
     PMapX<Integer,String> org;

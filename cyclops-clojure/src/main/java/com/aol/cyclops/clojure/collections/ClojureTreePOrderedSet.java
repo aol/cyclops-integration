@@ -11,12 +11,13 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import cyclops.function.Reducer;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.POrderedSet;
 
-import com.aol.cyclops.Reducer;
-import com.aol.cyclops.control.ReactiveSeq;
-import com.aol.cyclops.reactor.collections.extensions.persistent.LazyPOrderedSetX;
+
 
 import clojure.lang.PersistentList;
 import clojure.lang.PersistentTreeSet;
@@ -24,7 +25,7 @@ import clojure.lang.PersistentVector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
-import reactor.core.publisher.Flux;
+
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClojureTreePOrderedSet<T> extends AbstractSet<T>implements POrderedSet<T> {
@@ -36,9 +37,9 @@ public class ClojureTreePOrderedSet<T> extends AbstractSet<T>implements POrdered
      * @return LazyPOrderedSetX
      */
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPOrderedSetX<T>(
-                                       Flux.from(ReactiveSeq.fromStream(stream)),
-                                       ClojureTreePOrderedSet.<T> toPOrderedSet(Comparator.naturalOrder()));
+        Reducer<POrderedSet<T>> r = ClojureTreePOrderedSet.<T>toPOrderedSet(Comparator.naturalOrder());
+        return new LazyPOrderedSetX<T>(null, ReactiveSeq.fromStream(stream),
+                                      r);
     }
 
     /**
@@ -178,26 +179,28 @@ public class ClojureTreePOrderedSet<T> extends AbstractSet<T>implements POrdered
     }
 
     public static <T> LazyPOrderedSetX<T> of(Comparator<T> comp, T... t) {
-        return LazyPOrderedSetX.fromPOrderedSet(new ClojureTreePOrderedSet<>(
+        return fromPOrderedSet(new ClojureTreePOrderedSet<>(
                                                                              PersistentTreeSet.create(comp,
                                                                                                       PersistentList.create(Arrays.asList(t)).seq())),
                                                 toPOrderedSet(comp));
     }
-
+    private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
+        return  new LazyPOrderedSetX<T>(ordered,null,reducer);
+    }
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> of(T... t) {
 
         return of(Comparator.naturalOrder(), t);
     }
 
     public static <T> LazyPOrderedSetX<T> POrderedSet(PersistentTreeSet q) {
-        return LazyPOrderedSetX.fromPOrderedSet(new ClojureTreePOrderedSet<T>(
+        return fromPOrderedSet(new ClojureTreePOrderedSet<T>(
                                                                               q),
                                                 toPOrderedSet(q.comparator()));
     }
 
     @SafeVarargs
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> POrderedSet(Comparator<T> comp,T... elements) {
-        return LazyPOrderedSetX.fromPOrderedSet(of(elements), toPOrderedSet(comp));
+        return fromPOrderedSet(of(elements), toPOrderedSet(comp));
     }
 
     @Wither
