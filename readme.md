@@ -15,26 +15,40 @@ cyclops provides a common set of APIs across the major functional libraries for 
 
 ## AnyM : a type safe abstraction across Any Monadic type in Java.
 
+Define ulta-generic code that can be used by types across Vavr, Reactor, cyclops-react, Guava, JDK, Functional Java, RxJava. 
+
 ```java
-import static com.aol.cyclops.vavr.VavrWitness.list;
-import static com.aol.cyclops.rx.RxWitness.observable;
-import com.aol.cyclops.vavr.Lists;
-import com.aol.cyclops.rx.Observables;
-
-AnyMSeq<list,Integer> vavrList = Lists.anyM(List.range(0, 10));
-AnyMSeq<observable,Integer> rxObservable = Observables.anyM(Observable.range(0, 10));
-
-AnyMSeq<list,Integer> summedVavr = sumAdjacent(vavrList);
-AnyMSeq<observable,Integer> summedRx = sumAdjacent(rxObservable);
-
-List<Integer> backToVavr = VavrWitness.list(summedVavr);
-Observable<Integer> backToRx = RxWitness.observable(summedRx);
-
-
 public <W extends WitnessType<W>> AnyMSeq<W,Integer> sumAdjacent(AnyMSeq<W,Integer> sequence){
      return sequence.sliding(1)
                     .map(t->t.sum(i->i).get())
 }
+```
+
+Use them with Vavr 
+
+```java
+import static com.aol.cyclops.vavr.VavrWitness.list;
+import com.aol.cyclops.vavr.Lists;
+
+
+AnyMSeq<list,Integer> vavrList = Lists.anyM(List.range(0, 10));
+AnyMSeq<list,Integer> summedVavr = sumAdjacent(vavrList);
+List<Integer> backToVavr = VavrWitness.list(summedVavr);
+
+
+```
+
+Or RxJava
+
+```java
+import static com.aol.cyclops.rx.RxWitness.observable;
+import com.aol.cyclops.rx.Observables;
+
+AnyMSeq<observable,Integer> rxObservable = Observables.anyM(Observable.range(0, 10));
+AnyMSeq<observable,Integer> summedRx = sumAdjacent(rxObservable);
+Observable<Integer> backToRx = RxWitness.observable(summedRx);
+
+
 ```
 
 ## Common functionality in Companion classes
