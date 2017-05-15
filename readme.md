@@ -4,7 +4,126 @@
 
 * [cyclops user guide](https://github.com/aol/cyclops-react/wiki)
 
-# The cyclops-react integration modules.
+# A common API across the functional landscape
+
+cyclops provides a common set of APIs across the major functional libraries for Java. It does this via :
+
+1. A common abstraction layer (AnyM short for AnyMonad)
+2. Companion classes (Optionals, Streams, CompletableFutures, Options, Eithers, Lists, Trys etc) that provide common functionality such as For Comprehensions and Higher Kinded Haskell like type classes
+3. Provided conversion classes between types via FromXXX and ToXXX classes
+4. Allows collection types from all major functional libraries to be substituted behind cyclops-react lazy & reactive collection APIs
+
+## AnyM : a type safe abstraction across Any Monadic type in Java.
+
+```java
+import static com.aol.cyclops.vavr.VavrWitness.list;
+import static com.aol.cyclops.rx.RxWitness.observable;
+import com.aol.cyclops.vavr.Lists;
+import com.aol.cyclops.rx.Observables;
+
+AnyMSeq<list,Integer> vavrList = Lists.anyM(List.range(0, 10));
+AnyMSeq<observable,Integer> rxObservable = Observables.anyM(Observable.range(0, 10));
+
+AnyMSeq<list,Integer> vavrProcesed = processAnySequenceType(vavrList);
+AnyMSeq<observable,Integer> rxProccessed = processAnySequenceType(rxObservable);
+
+List<Integer> backToVavr = VavrWitness.list(vavrProcessed);
+Observable<Integer> backToRx = RxWitness.observable(rxProcessed);
+
+
+public <W extends WitnessType<W>> AnyMSeq<W,Integer> processAnySequenceType(AnyMSeq<W,Integer> sequence){
+
+}
+```
+
+## Common functionality in Companion classes
+
+For comprehensions
+
+```java
+import static com.aol.cyclops.vavr.Trys.*;
+
+        
+Try<String> result = Trys.forEach4(grind("arabica beans"),
+                                   ground -> heatWater(new Water(25)),
+                                   (ground, water) -> brew(ground, water),
+                                   (ground, water ,espresso) -> frothMilk("milk"),
+                                   (ground , water ,espresso , foam) -> combine(espresso, foam));
+
+System.out.println(result.get());
+
+
+Try<String> grind(String beans) {
+    return Try.of(() -> "ground coffee of " + beans);
+}
+
+Try<Water> heatWater(Water water) {
+    return Try.of(() -> water.withTemperature(85));
+}
+
+Try<String> frothMilk(String milk) {
+    return Try.of(() -> "frothed " + milk);
+}
+
+Try<String> brew(String coffee, Water heatedWater) {
+    return Try.of(() -> "espresso");
+}
+
+String combine(String espresso, String frothedMilk) {
+        return "cappuccino";
+}
+```
+
+```java
+import static com.aol.cyclops.reactor.Fluxs.*;
+
+Flux<Integer> result = Fluxs.forEach(Flux.just(10, 20), a -> Flux.<Integer> just(a + 10), (a, b) -> a + b);
+result.collectList()
+       .block(),
+//List[30, 50];
+```
+## Lazy and Reactive Collection APIs
+
+cyclops & cyclops-react allow collection types from all major functional libraries to be used behind fast lazy & reactive collection apis.
+
+### What do we mean by fast lazy & reactive APIs
+
+Most Collection APIs provided by the major functional libraries are eager. That means when a map transformation is invoked on a Functional Java or Vavr List it is executed immediately. Performing multiple chained operations often results in the the collection being processed (traversed) multiple different times. With cyclops map and other functional operations become lazy, and the your chain of commands are only executed when data within the collection is exected for the first time. This allows cyclops to process the entire chain of operations in a single traversal of the data. The resultant transformed collection is then stored in the underlying structure of your favourite functional collection API.
+
+#### The Performance benefit
+
+Leveraging cyclops can significantly improve the execution times of operations on collections.
+
+The code for this performance testing speeding up the execution of functional operations on Javaslang Vectors is available [here](https://gist.githubusercontent.com/johnmcclean-aol/f6d9216ae179fa619d4a6ae67eea3802/raw/740fc413c13784529f30b375b219b0a6c9004865/cyclops-javaslang-benchmark.java)
+![cyclops-speed-up](https://cdn-images-1.medium.com/max/1600/1*ocbwTrrsjPmEp22SliKvFQ.png)
+
+##### Reactive APIs
+
+cyclops also allows data to be pushed asynchronously into collection types from the major functional libraries. For example to asynchronously populate a JavaSlang / Vavr Vector we can write
+
+```java
+PVectorX<Integer> asyncPopulated = JavaSlangPVector.fromStream(Spouts.publishOn(ReactiveSeq.of(1,2,3),
+                Executors.newFixedThreadPool(1));
+```
+
+## Type safe, higher kinded typeclassess
+
+E.g. Using a functor and applicative type classes on FunctionalJava Lists (Higher Kinded encoding via ListKind type)
+
+```java
+
+import static com.aol.cyclops.functionaljava.ListKind;
+import static com.aol.cyclops.functionaljava.Lists.Instances.functor;
+import static com.aol.cyclops.functionaljava.Lists.Instances.zippingApplicative;
+
+ListKind<Fn1<Integer,Integer>> listFn = ListKind.widen(List.list((Lambda.λ((Integer i) ->i*2))
+                                                .convert(ListKind::narrowK);
+        
+List<Integer> list =  zippingApplicative().ap(listFn,functor().map((String v) ->v.length(),widen(List.list("h"))))
+                                          .convert(ListKind::narrow);
+        
+//List.list("hello".length()*2))
+```
 
 There are a number of integration modules for cyclops-react, they are
 
@@ -16,83 +135,6 @@ There are a number of integration modules for cyclops-react, they are
 
 This screencast gives an overview of how cyclops can help integrate and provide abstractions across the datatypes in the above libraries. [Unifying the cambrian explosion with cyclops-react ] (https://www.youtube.com/watch?v=YgzvpMbxiRo)
 
-## Integration module features
-
-1. reactive-streams support
-2. for-comprehensions
-3. type conversion 
-4. AnyM, AnyMValue and AnyMSeq support
-5. Lazy Extended Collections (via [cyclops-reactor](https://github.com/aol/cyclops/tree/master/cyclops-reactor))
-6. Utilities for connecting Streams (cyclops-reactor Flux types) in advanced ways
-7. Utilities for pushing data into Streams (e.g. cyclops-reactor Flux types)
-
-### Reactive Streams support and AnyM support
-
-Closely linked to cyclops-react AnyM functionality, the integration modules allow appropriate types from FunctionalJava, Javaslang, Guava, RxJava and Reactor to be wrapped in an 'AnyM' wrapper. The AnyM wrappers all act as reactive-streams publishers. So if you would like a Javaslang Array or FunctionalJava Writer or List to behave as a reactive-streams publisher, simply call the appropriate method in our Javaslang or FJ class and subscribe to the returned AnyM type.
-
-#### Examples 
-
-##### Convert a Javaslang List into a reactive-stream
-
-```java
-
-import static com.aol.cyclops.vavr.Vavr.traversable;
-
-SeqSubscriber<Integer> sub = SeqSubscriber.subscriber();
-traversable(List.of(1,2,3)).subscribe(sub);
-sub.stream()
-    .forEachWithError(System.out::println, System.err::println);
-```
-
-##### Schedule emission from  FunctionalJava Stream
-
-```java
-
-import static com.aol.cyclops.functionaljava.FJ.stream;
-
-
-stream(Stream.stream(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThreadPool(1))
-							.connect()
-							.forEach(System.out::println)
-									
-```
-
-Cyclops AnyM and AnyMValue / AnyMSeq interfaces allow any 'monad' type (a type with map / flatMap methods like JDK 8 Streams) to be wrapped and manipulated via a common interface. 
-
-AnyMValue represents monads such as Optional, CompletableFuture, Eval (cyclops-react), Either, Try, Writer, Reader etc that resolve to a single value.
-
-AnyMSeq represents monads such as List, Stream, Array, Set etc that resolve to a sequence of values. 
-
-### for-comprehensions
-
-All cyclops integration modules offer full strength for-comprehensions, allowing for example a Javaslang Stream generator to access each element in a preceeding Stream.
-
-#### Examples 
-
-##### Working with Pivotal Reactor Fluxes
-
-```java
-
-import static com.aol.cyclops.reactor.Reactor.ForFlux;
-
-Flux<Tuple2<Integer,Integer>> stream = ForFlux.each2(Flux.range(1,10), i->Flux.range(i, 10), Tuple::tuple);
-
-
-```
-
-##### Programming 'monadically' with FunctionalJava Writer's
-```java
-import static  com.aol.cyclops.functionaljava.FJ.ForWriter;
-
-Writer<String,String> writer = ForWriter.each2(Writer.unit("lower", "", Monoid.stringMonoid),
-												a->Writer.unit(a+"hello",Monoid.stringMonoid),(a,b)->a.toUpperCase() + b);
-
-writer.value(); //"LOWERlowerhello"												
-```
-
-### type conversions
-
-cyclops integration modules support conversion between FunctionalJava, Guava, Javaslang and JDK types. (Observables, Flux, Mono from RxJava and Reactor can be converted via AnyM/ reactive-streams support or by iterables where supported).
 
 ## Getting cyclops-react
 
