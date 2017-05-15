@@ -24,15 +24,16 @@ import com.aol.cyclops.rx.Observables;
 AnyMSeq<list,Integer> vavrList = Lists.anyM(List.range(0, 10));
 AnyMSeq<observable,Integer> rxObservable = Observables.anyM(Observable.range(0, 10));
 
-AnyMSeq<list,Integer> vavrProcesed = processAnySequenceType(vavrList);
-AnyMSeq<observable,Integer> rxProccessed = processAnySequenceType(rxObservable);
+AnyMSeq<list,Integer> summedVavr = sumAdjacent(vavrList);
+AnyMSeq<observable,Integer> summedRx = sumAdjacent(rxObservable);
 
-List<Integer> backToVavr = VavrWitness.list(vavrProcessed);
-Observable<Integer> backToRx = RxWitness.observable(rxProcessed);
+List<Integer> backToVavr = VavrWitness.list(summedVavr);
+Observable<Integer> backToRx = RxWitness.observable(summedRx);
 
 
-public <W extends WitnessType<W>> AnyMSeq<W,Integer> processAnySequenceType(AnyMSeq<W,Integer> sequence){
-
+public <W extends WitnessType<W>> AnyMSeq<W,Integer> sumAdjacent(AnyMSeq<W,Integer> sequence){
+     return sequence.sliding(1)
+                    .map(t->t.sum(i->i).get())
 }
 ```
 
