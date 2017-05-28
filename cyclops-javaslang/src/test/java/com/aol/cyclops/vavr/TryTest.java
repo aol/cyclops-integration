@@ -1,5 +1,6 @@
 package com.aol.cyclops.vavr;
 
+import cyclops.companion.vavr.Trys;
 import org.junit.Test;
 
 

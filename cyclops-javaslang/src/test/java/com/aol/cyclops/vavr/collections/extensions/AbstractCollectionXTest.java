@@ -4,10 +4,10 @@ package com.aol.cyclops.vavr.collections.extensions;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops2.util.SimpleTimer;
-import cyclops.*;
 import cyclops.async.LazyReact;
-import cyclops.collections.ListX;
-import cyclops.collections.immutable.PVectorX;
+import cyclops.collections.immutable.VectorX;
+import cyclops.collections.mutable.ListX;
+import cyclops.companion.*;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.function.Monoid;
@@ -78,7 +78,7 @@ public abstract class AbstractCollectionXTest {
     @Test
     public void subscribeEmpty(){
         List result = new ArrayList<>();
-        Subscription s= of().subscribe(i->result.add(i));
+        Subscription s= of().forEachSubscribe(i->result.add(i));
         s.request(1l);
         assertThat(result.size(),equalTo(0));
         s.request(1l);
@@ -90,7 +90,7 @@ public abstract class AbstractCollectionXTest {
     @Test
     public void subscribe(){
         List<Integer> result = new ArrayList<>();
-        Subscription s= of(1,2,3).subscribe(i->result.add(i));
+        Subscription s= of(1,2,3).forEachSubscribe(i->result.add(i));
         s.request(1l);
         assertThat(result.size(),equalTo(1));
         s.request(1l);
@@ -102,7 +102,7 @@ public abstract class AbstractCollectionXTest {
     @Test
     public void subscribe3(){
         List<Integer> result = new ArrayList<>();
-        Subscription s= of(1,2,3).subscribe(i->result.add(i));
+        Subscription s= of(1,2,3).forEachSubscribe(i->result.add(i));
         s.request(3l);
         assertThat(result.size(),equalTo(3));
         assertThat(result,hasItems(1,2,3));
@@ -110,7 +110,7 @@ public abstract class AbstractCollectionXTest {
     @Test
     public void subscribeErrorEmpty(){
         List result = new ArrayList<>();
-        Subscription s= of().subscribe(i->result.add(i),e->e.printStackTrace());
+        Subscription s= of().forEachSubscribe(i->result.add(i),e->e.printStackTrace());
         s.request(1l);
         assertThat(result.size(),equalTo(0));
         s.request(1l);
@@ -122,7 +122,7 @@ public abstract class AbstractCollectionXTest {
     @Test
     public void subscribeError(){
         List<Integer> result = new ArrayList<>();
-        Subscription s= of(1,2,3).subscribe(i->result.add(i),e->e.printStackTrace());
+        Subscription s= of(1,2,3).forEachSubscribe(i->result.add(i),e->e.printStackTrace());
         s.request(1l);
         assertThat(result.size(),equalTo(1));
         s.request(1l);
@@ -134,7 +134,7 @@ public abstract class AbstractCollectionXTest {
     @Test
     public void subscribe3Error(){
         List<Integer> result = new ArrayList<>();
-        Subscription s= of(1,2,3).subscribe(i->result.add(i),e->e.printStackTrace());
+        Subscription s= of(1,2,3).forEachSubscribe(i->result.add(i),e->e.printStackTrace());
         s.request(3l);
         assertThat(result.size(),equalTo(3));
         assertThat(result,hasItems(1,2,3));
@@ -143,7 +143,7 @@ public abstract class AbstractCollectionXTest {
     public void subscribeErrorEmptyOnComplete(){
         List result = new ArrayList<>();
         AtomicBoolean onComplete = new AtomicBoolean(false);
-        Subscription s= of().subscribe(i->result.add(i),e->e.printStackTrace(),()->onComplete.set(true));
+        Subscription s= of().forEachSubscribe(i->result.add(i),e->e.printStackTrace(),()->onComplete.set(true));
         s.request(1l);
         assertThat(onComplete.get(),equalTo(true));
         assertThat(result.size(),equalTo(0));
@@ -157,7 +157,7 @@ public abstract class AbstractCollectionXTest {
     public void subscribeErrorOnComplete(){
         List<Integer> result = new ArrayList<>();
         AtomicBoolean onComplete = new AtomicBoolean(false);
-        Subscription s= of(1,2,3).subscribe(i->result.add(i),e->e.printStackTrace(),()->onComplete.set(true));
+        Subscription s= of(1,2,3).forEachSubscribe(i->result.add(i),e->e.printStackTrace(),()->onComplete.set(true));
 
         assertThat(onComplete.get(),equalTo(false));
         s.request(1l);
@@ -176,7 +176,7 @@ public abstract class AbstractCollectionXTest {
     public void subscribe3ErrorOnComplete(){
         List<Integer> result = new ArrayList<>();
         AtomicBoolean onComplete = new AtomicBoolean(false);
-        Subscription s= of(1,2,3).subscribe(i->result.add(i),e->e.printStackTrace(),()->onComplete.set(true));
+        Subscription s= of(1,2,3).forEachSubscribe(i->result.add(i),e->e.printStackTrace(),()->onComplete.set(true));
         assertThat(onComplete.get(),equalTo(false));
         s.request(4l);
         assertThat(onComplete.get(),equalTo(true));
@@ -516,7 +516,7 @@ public abstract class AbstractCollectionXTest {
 	
 	@Test
 	public void testCollectable(){
-		assertThat(of(1,2,3).collectable().anyMatch(i->i==2),equalTo(true));
+		assertThat(of(1,2,3).collectors().anyMatch(i->i==2),equalTo(true));
 	}
 	@Test
 	public void dropRight(){
@@ -674,7 +674,7 @@ public abstract class AbstractCollectionXTest {
     
     @Test
     public void testIterable() {
-        List<Integer> list = of(1, 2, 3).toCollection(LinkedList::new);
+        List<Integer> list = of(1, 2, 3).to().collection(LinkedList::new);
 
         for (Integer i :of(1, 2, 3)) {
             assertThat(list,hasItem(i));
@@ -1078,7 +1078,7 @@ public abstract class AbstractCollectionXTest {
 		Streamable<Integer> repeat = (of(1,2,3,4,5,6)
 												.map(i->i*2)
 												)
-												.toStreamable();
+												.to().streamable();
 		
 		assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
 		assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
@@ -1088,7 +1088,7 @@ public abstract class AbstractCollectionXTest {
 	public void concurrentLazyStreamable(){
 		Streamable<Integer> repeat = of(1,2,3,4,5,6)
 												.map(i->i*2)
-												.toConcurrentLazyStreamable();
+												.to().lazyStreamableSynchronized();
 		
 		assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
 		assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
@@ -1104,7 +1104,7 @@ public abstract class AbstractCollectionXTest {
 	public void testLazy(){
 		Collection<Integer> col = of(1,2,3,4,5)
 											.peek(System.out::println)
-											.toLazyCollection();
+											.to().lazyCollection();
 		System.out.println("first!");
 		col.forEach(System.out::println);
 		assertThat(col.size(),equalTo(5));
@@ -1113,7 +1113,7 @@ public abstract class AbstractCollectionXTest {
 	public void testLazyCollection(){
 		Collection<Integer> col = of(1,2,3,4,5)
 											.peek(System.out::println)
-											.toConcurrentLazyCollection();
+											.to().lazyCollectionSynchronized();
 		System.out.println("first!");
 		col.forEach(System.out::println);
 		assertThat(col.size(),equalTo(5));
@@ -1350,46 +1350,46 @@ public abstract class AbstractCollectionXTest {
 	@Test
 	public void emptyConvert(){
 
-		assertFalse(empty().toOptional().isPresent());
+		assertFalse(empty().to().optional().isPresent());
 		assertFalse(empty().toListX().size()>0);
-		assertFalse(empty().toDequeX().size()>0);
-		assertFalse(empty().toPStackX().size()>0);
-		assertFalse(empty().toQueueX().size()>0);
-		assertFalse(empty().toPVectorX().size()>0);
-		assertFalse(empty().toPQueueX().size()>0);
-		assertFalse(empty().toSetX().size()>0);
-		assertFalse(empty().toSortedSetX().size()>0);
-		assertFalse(empty().toPOrderedSetX().size()>0);
-		assertFalse(empty().toPBagX().size()>0);
-		assertFalse(empty().toPMapX(t->t,t->t).size()>0);
-		assertFalse(empty().toMapX(t->t,t->t).size()>0);
+		assertFalse(empty().to().dequeX().size()>0);
+		assertFalse(empty().to().linkedListX().size()>0);
+		assertFalse(empty().to().queueX().size()>0);
+		assertFalse(empty().to().vectorX().size()>0);
+		assertFalse(empty().to().persistentQueueX().size()>0);
+		assertFalse(empty().to().setX().size()>0);
+		assertFalse(empty().to().sortedSetX().size()>0);
+		assertFalse(empty().to().orderedSetX().size()>0);
+		assertFalse(empty().to().bagX().size()>0);
+		assertFalse(empty().to().persistentMapX(t->t,t->t).size()>0);
+		assertFalse(empty().to().mapX(t->t,t->t).size()>0);
 
 		assertFalse(empty().toSet().size()>0);
 		assertFalse(empty().toList().size()>0);
-		assertFalse(empty().toStreamable().size()>0);
+		assertFalse(empty().to().streamable().size()>0);
 		
 		
 	}
 	@Test
 	public void presentConvert(){
 
-		assertTrue(of(1).toOptional().isPresent());
-		assertTrue(of(1).toListX().size()>0);
-		assertTrue(of(1).toDequeX().size()>0);
-		assertTrue(of(1).toPStackX().size()>0);
-		assertTrue(of(1).toQueueX().size()>0);
-		assertTrue(of(1).toPVectorX().size()>0);
-		assertTrue(of(1).toPQueueX().size()>0);
-		assertTrue(of(1).toSetX().size()>0);
-		assertTrue(of(1).toSortedSetX().size()>0);
-		assertTrue(of(1).toPOrderedSetX().size()>0);
-		assertTrue(of(1).toPBagX().size()>0);
-		assertTrue(of(1).toPMapX(t->t,t->t).size()>0);
-		assertTrue(of(1).toMapX(t->t,t->t).size()>0);
+		assertTrue(of(1).to().optional().isPresent());
+		assertTrue(of(1).to().listX().size()>0);
+		assertTrue(of(1).to().dequeX().size()>0);
+		assertTrue(of(1).to().linkedListX().size()>0);
+		assertTrue(of(1).to().queueX().size()>0);
+		assertTrue(of(1).to().vectorX().size()>0);
+		assertTrue(of(1).to().persistentQueueX().size()>0);
+		assertTrue(of(1).to().setX().size()>0);
+		assertTrue(of(1).to().sortedSetX().size()>0);
+		assertTrue(of(1).to().orderedSetX().size()>0);
+		assertTrue(of(1).to().bagX().size()>0);
+		assertTrue(of(1).to().persistentMapX(t->t,t->t).size()>0);
+		assertTrue(of(1).to().mapX(t->t,t->t).size()>0);
 
-		assertTrue(of(1).toSet().size()>0);
+		assertTrue(of(1).to().setX().size()>0);
 		assertTrue(of(1).toList().size()>0);
-		assertTrue(of(1).toStreamable().size()>0);
+		assertTrue(of(1).to().streamable().size()>0);
 		
 		
 	}
@@ -1637,7 +1637,7 @@ public abstract class AbstractCollectionXTest {
 	      
 	        @Test
 	        public void slidingNoOrder() {
-	            ListX<PVectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).toListX();
+	            ListX<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).toListX();
 
 	            System.out.println(list);
 	            assertThat(list.get(0).size(), equalTo(2));

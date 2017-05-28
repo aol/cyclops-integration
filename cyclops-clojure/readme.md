@@ -15,14 +15,14 @@ cyclops-clojure provides Java friendly bindings to the Clojure collections API. 
 
 |  Clojure collection | cyclops-clojure   | pcollections interface   | JDK Interface  | Description  |
 |---|---|---|---|---|
-| PersistentList   | ClourePStack   | PStack  | List  | PStackX  : extended persistent linkedlist |
-|  PersistentVector | ClojurePVector  | PVector   | List   | PVectorX : extended persistent ArrayList   |
-|  PersistentQueue | ClojurePQueue  | PQueue  | Queue  | PQueueX : extended Persistent Queue  |
-|  PersistentHashSet | ClojureHashPSet  | PSet  | Set  | PSetX : extended Persistent Set  |
-|  PersistentTreeSet | ClojureTreePOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
-|  PersistentArrayMap | ClojureArrayPMap  | PMap  | Map | PMapX : extended Persistent Map  |
-|  PersistentTreeMap | ClojureTreePMap  | PMap  | Map | PMapX : extended Persistent Map  |
-|  PersistentHashMap | ClojureHashPMap  | PMap  | Map | PMapX : extended Persistent Map  |
+| PersistentList   | ClourePStack   | PStack  | List  | LinkedListX  : extended persistent linkedlist |
+|  PersistentVector | ClojurePVector  | PVector   | List   | VectorX : extended persistent ArrayList   |
+|  PersistentQueue | ClojurePQueue  | PQueue  | Queue  | PersistentQueueX : extended Persistent Queue  |
+|  PersistentHashSet | ClojureHashPSet  | PSet  | Set  | PersistentSetX : extended Persistent Set  |
+|  PersistentTreeSet | ClojureTreePOrderedSet  | POrderedSet  | SortedSet  | OrderedSetX : extended Persistent Ordered Set  |
+|  PersistentArrayMap | ClojureArrayPMap  | PMap  | Map | PersistentMapX : extended Persistent Map  |
+|  PersistentTreeMap | ClojureTreePMap  | PMap  | Map | PersistentMapX : extended Persistent Map  |
+|  PersistentHashMap | ClojureHashPMap  | PMap  | Map | PersistentMapX : extended Persistent Map  |
 
 
 

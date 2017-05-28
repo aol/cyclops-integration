@@ -20,8 +20,8 @@ import com.aol.cyclops.clojure.collections.ClojurePQueue;
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.POrderedSetX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.OrderedSetX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
         ClojurePQueue.of(1,2,3).printOut();
-        POrderedSetX<T> list = (LazyPOrderedSetX)ClojureTreePOrderedSet.empty((Comparator)Comparator.naturalOrder());
+        OrderedSetX<T> list = (LazyPOrderedSetX)ClojureTreePOrderedSet.empty((Comparator)Comparator.naturalOrder());
         for (T next : values) {
             list = list.plus(next);
         }
@@ -55,7 +55,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     public void onEmptySwitch() {
         assertThat((LazyPOrderedSetX)ClojureTreePOrderedSet.empty((Comparator)Comparator.naturalOrder())
                           .onEmptySwitch(() -> (LazyPOrderedSetX)ClojureTreePOrderedSet.of((Comparator)Comparator.naturalOrder(),1, 2, 3)),
-                   equalTo(POrderedSetX.of(1, 2, 3)));
+                   equalTo(OrderedSetX.of(1, 2, 3)));
     }
 
     /*
@@ -76,7 +76,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     public void remove() {
 
         ClojureTreePOrderedSet.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
@@ -93,7 +93,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return POrderedSetX.iterate(times, seed, (UnaryOperator) fn);
+        return OrderedSetX.iterate(times, seed, (UnaryOperator) fn);
     }
 
     @Override

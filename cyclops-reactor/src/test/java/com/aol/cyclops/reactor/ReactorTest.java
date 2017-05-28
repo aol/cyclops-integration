@@ -9,8 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import cyclops.collections.ListX;
-import cyclops.collections.SetX;
+import cyclops.collections.mutable.SetX;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.vavr.VavrQueueX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.AmortizedPQueue;
@@ -17,17 +18,17 @@ public class PQueueTest {
     @Before
     public void setup(){
        org = AmortizedPQueue.empty();
-       test = JavaSlangPQueue.empty();
+       test = VavrQueueX.empty();
      
     }
     
     @Test
     public void empty(){
-        assertThat(AmortizedPQueue.empty().toArray(),equalTo(JavaSlangPQueue.empty().toArray()));
+        assertThat(AmortizedPQueue.empty().toArray(),equalTo(VavrQueueX.empty().toArray()));
     }
     @Test
     public void singleton(){
-        assertThat(AmortizedPQueue.empty().plus(1).toArray(),equalTo(JavaSlangPQueue.singleton(1).toArray()));
+        assertThat(AmortizedPQueue.empty().plus(1).toArray(),equalTo(VavrQueueX.singleton(1).toArray()));
     }
     
     @Test

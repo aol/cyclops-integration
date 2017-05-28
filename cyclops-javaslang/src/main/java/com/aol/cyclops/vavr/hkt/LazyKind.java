@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 
 import com.aol.cyclops.vavr.FromCyclopsReact;
 import com.aol.cyclops.vavr.ToCyclopsReact;
-import com.aol.cyclops.vavr.Vavr;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Eval;

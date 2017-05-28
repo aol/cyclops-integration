@@ -17,9 +17,9 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PSetX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPersistentSetX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.PersistentSetX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,11 +31,11 @@ import com.aol.cyclops.dexx.collections.DexxPSet;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPSetXTest extends AbstractCollectionXTest  {
+public class LazyPersistentSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        PSetX<T> list = DexxPSet.empty();
+        PersistentSetX<T> list = DexxPSet.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -53,7 +53,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
     @Test
     public void onEmptySwitch() {
         assertThat(DexxPSet.empty()
-                          .onEmptySwitch(() -> PSetX.of(1, 2, 3)).toList(),
+                          .onEmptySwitch(() -> PersistentSetX.of(1, 2, 3)).toList(),
                    equalTo(DexxPSet.of(1, 2, 3).toList()));
     }
 
@@ -75,7 +75,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
     public void remove() {
 
         DexxPSet.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }

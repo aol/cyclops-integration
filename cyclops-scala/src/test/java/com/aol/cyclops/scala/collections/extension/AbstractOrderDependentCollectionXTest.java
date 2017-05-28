@@ -2,9 +2,10 @@ package com.aol.cyclops.scala.collections.extension;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.types.stream.HeadAndTail;
-import cyclops.Semigroups;
-import cyclops.collections.ListX;
-import cyclops.collections.immutable.PVectorX;
+
+import cyclops.collections.immutable.VectorX;
+import cyclops.collections.mutable.ListX;
+import cyclops.companion.Semigroups;
 import cyclops.control.Trampoline;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple3;
@@ -114,7 +115,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
     }
     @Test
     public void sliding() {
-        ListX<PVectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).toListX();
+        ListX<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).toListX();
 
         System.out.println(list);
         assertThat(list.get(0), hasItems(1, 2));

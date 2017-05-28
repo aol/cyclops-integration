@@ -1,7 +1,6 @@
 package com.aol.cyclops.vavr.adapter;
 
-import com.aol.cyclops.vavr.Vavr;
-import com.aol.cyclops.vavr.VavrWitness;
+import cyclops.monads.VavrWitness;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
 import cyclops.stream.ReactiveSeq;

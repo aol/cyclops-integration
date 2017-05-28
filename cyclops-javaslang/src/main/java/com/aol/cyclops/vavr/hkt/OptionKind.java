@@ -6,8 +6,9 @@ import java.util.Optional;
 import com.aol.cyclops.vavr.FromCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.companion.Optionals;
+import cyclops.companion.Optionals.OptionalKind;
 import cyclops.control.Eval;
-import cyclops.higherkindedtypes.OptionalKind;
 import javaslang.collection.Iterator;
 import javaslang.control.Option;
 import lombok.AccessLevel;
@@ -274,7 +275,6 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
         }
 
 
-
         /* (non-Javadoc)
          * @see java.lang.Object#toString()
          */
@@ -284,13 +284,6 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
         }
 
 
-
-
-
-       
-  
-        
-      
     }
 
 

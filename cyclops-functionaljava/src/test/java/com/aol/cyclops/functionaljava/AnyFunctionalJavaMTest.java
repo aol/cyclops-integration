@@ -4,30 +4,23 @@ import static com.aol.cyclops.functionaljava.FJ.stream;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import cyclops.companion.functionaljava.Options;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 
 
-import fj.Monoid;
-import fj.control.Trampoline;
 import fj.data.Either;
-import fj.data.IOFunctions;
 import fj.data.IterableW;
 import fj.data.List;
 import fj.data.Option;
-import fj.data.Reader;
-import fj.data.State;
 import fj.data.Stream;
 import fj.data.Validation;
-import fj.data.Writer;
 
 public class AnyFunctionalJavaMTest {
     @Rule

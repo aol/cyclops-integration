@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.scala.ScalaHashSetX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.HashTreePSet;
@@ -18,17 +19,17 @@ public class PSetTest {
     @Before
     public void setup(){
        org = HashTreePSet.empty();
-       test = ScalaHashPSet.empty();
+       test = ScalaHashSetX.empty();
      
     }
     
     @Test
     public void empty(){
-        assertThat(HashTreePSet.empty(),equalTo(ScalaHashPSet.empty()));
+        assertThat(HashTreePSet.empty(),equalTo(ScalaHashSetX.empty()));
     }
     @Test
     public void singleton(){
-        assertThat(HashTreePSet.singleton(1),equalTo(ScalaHashPSet.singleton(1)));
+        assertThat(HashTreePSet.singleton(1),equalTo(ScalaHashSetX.singleton(1)));
     }
     
     @Test
@@ -52,7 +53,7 @@ public class PSetTest {
     @Test
     public void plusAllScala(){
         assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(Arrays.asList(5,6,7)),
-                   equalTo(test.plusAll(ScalaHashPSet.of(1,2,3)).plusAll(Arrays.asList(5,6,7))));
+                   equalTo(test.plusAll(ScalaHashSetX.of(1,2,3)).plusAll(Arrays.asList(5,6,7))));
     }
    
 }

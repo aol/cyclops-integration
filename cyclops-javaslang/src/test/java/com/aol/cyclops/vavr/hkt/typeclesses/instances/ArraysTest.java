@@ -1,7 +1,7 @@
 package com.aol.cyclops.vavr.hkt.typeclesses.instances;
 
 
-import com.aol.cyclops.vavr.Arrays;
+import cyclops.companion.vavr.Arrays;
 import com.aol.cyclops.vavr.hkt.ArrayKind;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Maybe;

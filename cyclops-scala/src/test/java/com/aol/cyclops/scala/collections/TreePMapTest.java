@@ -6,21 +6,22 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import cyclops.collections.MapXs;
-import cyclops.collections.immutable.PMapX;
+import cyclops.collections.immutable.PersistentMapX;
+import cyclops.collections.scala.ScalaTreeMapX;
+import cyclops.companion.MapXs;
 import org.junit.Before;
 import org.junit.Test;
 
 
 
 public class TreePMapTest {
-    PMapX<Integer,String> org;
-    PMapX<Integer,String> test;
+    PersistentMapX<Integer,String> org;
+    PersistentMapX<Integer,String> test;
     
     @Before
     public void setup(){
-       org = PMapX.fromMap(MapXs.of(1, "hello"));
-       test = ScalaTreePMap.singleton(Comparator.naturalOrder(),1, "hello");
+       org = PersistentMapX.fromMap(MapXs.of(1, "hello"));
+       test = ScalaTreeMapX.singleton(Comparator.naturalOrder(),1, "hello");
      
     }
     @Test

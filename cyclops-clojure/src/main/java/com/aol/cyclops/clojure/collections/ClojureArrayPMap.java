@@ -4,8 +4,8 @@ import clojure.lang.PersistentArrayMap;
 import clojure.lang.PersistentVector;
 import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
-import cyclops.collections.MapXs;
-import cyclops.collections.immutable.PMapX;
+import cyclops.collections.immutable.PersistentMapX;
+import cyclops.companion.MapXs;
 import cyclops.control.Eval;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -22,8 +22,8 @@ public class ClojureArrayPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>
     
     @Wither
     PersistentArrayMap map;
-    public static <K, V> Reducer<PMapX<K, V>> toPMapX() {
-        return Reducer.<PMapX<K, V>> of(empty(), (final PMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
+    public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX() {
+        return Reducer.<PersistentMapX<K, V>> of(empty(), (final PersistentMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
             final List w = ((TupleWrapper) () -> in).values();
             return singleton((K) w.get(0), (V) w.get(1));
         });
@@ -38,20 +38,20 @@ public class ClojureArrayPMap<K,V> extends AbstractMap<K,V> implements PMap<K,V>
     public static <K,V> ClojureArrayPMap<K,V> emptyPMap(){
         return fromMap(PersistentArrayMap.EMPTY);
      }
-    public static <K,V> PMapX<K,V> empty(){
-       return new ExtensiblePMapX<K,V>(new ClojureArrayPMap<>(PersistentArrayMap.EMPTY),Eval.later(()->toPMapX()));
+    public static <K,V> PersistentMapX<K,V> empty(){
+       return new ExtensiblePMapX<K,V>(new ClojureArrayPMap<>(PersistentArrayMap.EMPTY),Eval.later(()->toPersistentMapX()));
     }
     public static <K,V> PMap<K,V> singletonPMap(K key,V value){
         PersistentArrayMap map = ( PersistentArrayMap)PersistentArrayMap.create(MapXs.of(key, value));
         return fromMap(map);
      }
-    public static <K,V> PMapX<K,V> singleton(K key,V value){
+    public static <K,V> PersistentMapX<K,V> singleton(K key,V value){
         PersistentArrayMap map = ( PersistentArrayMap)PersistentArrayMap.create(MapXs.of(key, value));
-        return new ExtensiblePMapX<K,V>(fromMap(map), Eval.later(()->ClojureArrayPMap.<K,V>toPMapX()));
+        return new ExtensiblePMapX<K,V>(fromMap(map), Eval.later(()->ClojureArrayPMap.<K,V>toPersistentMapX()));
      }
     
-    public static <K,V> PMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){
-        return stream.mapReduce(toPMapX());
+    public static <K,V> PersistentMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){
+        return stream.mapReduce(toPersistentMapX());
     }
     
     @Override

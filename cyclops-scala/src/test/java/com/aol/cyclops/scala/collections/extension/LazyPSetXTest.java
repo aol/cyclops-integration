@@ -17,15 +17,13 @@ import java.util.stream.Stream;
 
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PSetX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.PersistentSetX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.aol.cyclops.scala.collections.ScalaHashPSet;
+import cyclops.collections.scala.ScalaHashSetX;
 
 import reactor.core.publisher.Flux;
 
@@ -39,7 +37,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
     }
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        PSetX<T> list = ScalaHashPSet.empty();
+        PersistentSetX<T> list = ScalaHashSetX.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -50,9 +48,9 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
 
     @Test
     public void onEmptySwitch() {
-        assertThat(ScalaHashPSet.empty()
-                          .onEmptySwitch(() -> PSetX.of(1, 2, 3)).toList(),
-                   equalTo(ScalaHashPSet.of(1, 2, 3).toList()));
+        assertThat(ScalaHashSetX.empty()
+                          .onEmptySwitch(() -> PersistentSetX.of(1, 2, 3)).toList(),
+                   equalTo(ScalaHashSetX.of(1, 2, 3).toList()));
     }
 
     /*
@@ -64,7 +62,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return ScalaHashPSet.empty();
+        return ScalaHashSetX.empty();
     }
 
     
@@ -72,35 +70,35 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
     @Test
     public void remove() {
 
-        ScalaHashPSet.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+        ScalaHashSetX.of(1, 2, 3)
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return ScalaHashPSet.range(start, end);
+        return ScalaHashSetX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return ScalaHashPSet.rangeLong(start, end);
+        return ScalaHashSetX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return ScalaHashPSet.iterate(times, seed, fn);
+        return ScalaHashSetX.iterate(times, seed, fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return ScalaHashPSet.generate(times, fn);
+        return ScalaHashSetX.generate(times, fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return ScalaHashPSet.unfold(seed, unfolder);
+        return ScalaHashSetX.unfold(seed, unfolder);
     }
     @Test
     public void testTakeRight(){
@@ -172,11 +170,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
     }
     @Test
     public void limitWhileTest(){
-        
-        
-        
-        
-        
+
         
     }
 }

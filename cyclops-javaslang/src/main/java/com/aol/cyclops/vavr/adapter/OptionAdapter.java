@@ -3,12 +3,9 @@ package com.aol.cyclops.vavr.adapter;
 
 import com.aol.cyclops.vavr.FromCyclopsReact;
 import com.aol.cyclops.vavr.ToCyclopsReact;
-import com.aol.cyclops.vavr.Vavr;
-import com.aol.cyclops.vavr.VavrWitness;
-import com.aol.cyclops.vavr.VavrWitness.option;
+import cyclops.monads.Vavr;
+import cyclops.monads.VavrWitness.option;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
-import com.google.common.base.Optional;
-import cyclops.Optionals;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
 import javaslang.control.Option;

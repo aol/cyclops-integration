@@ -9,11 +9,11 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import cyclops.Semigroups;
 import cyclops.collections.ListX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PStackX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.LinkedListX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
@@ -22,11 +22,11 @@ import com.aol.cyclops.clojure.collections.ClojurePStack;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        PStackX<T> list = ClojurePStack.empty();
+        LinkedListX<T> list = ClojurePStack.empty();
         for (T next : values) {
             list = list.plus(list.size(), next);
         }
@@ -45,8 +45,8 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
     @Test
     public void onEmptySwitch() {
         assertThat(ClojurePStack.empty()
-                          .onEmptySwitch(() -> PStackX.of(1, 2, 3)),
-                   equalTo(PStackX.of(1, 2, 3)));
+                          .onEmptySwitch(() -> LinkedListX.of(1, 2, 3)),
+                   equalTo(LinkedListX.of(1, 2, 3)));
     }
 
     /*
@@ -67,7 +67,7 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
     public void remove() {
 
         ClojurePStack.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }

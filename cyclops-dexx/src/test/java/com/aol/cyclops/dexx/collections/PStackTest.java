@@ -6,8 +6,8 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
-import cyclops.collections.immutable.PStackX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
+import cyclops.collections.immutable.LinkedListX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.ConsPStack;
@@ -36,12 +36,12 @@ public class PStackTest {
     }
     @Test
     public void ofTest(){
-        assertThat(PStackX.of(1,2,3),equalTo(DexxPVector.of(1,2,3)));
+        assertThat(LinkedListX.of(1,2,3),equalTo(DexxPVector.of(1,2,3)));
     }
     @Test
     public void plusi(){
         List<Integer> values = Arrays.asList(1,2,3,4,5,6);
-        PStackX<Integer> list = DexxPStack.empty();
+        LinkedListX<Integer> list = DexxPStack.empty();
         for (Integer next : values) {
             list = list.plus(list.size(), next);
             System.out.println("List " + list);
@@ -49,7 +49,7 @@ public class PStackTest {
         list = list.efficientOpsOff();
         System.out.println("List " + list);
         
-        PStackX<Integer> list2 = DexxPStack.empty();
+        LinkedListX<Integer> list2 = DexxPStack.empty();
         for (Integer next : values) {
             list2 = list2.plus(list2.size(), next);
         }
@@ -60,7 +60,7 @@ public class PStackTest {
     
     @Test
     public void plusi2(){
-        assertThat(PStackX.of(1,2,3).plus(1,10),
+        assertThat(LinkedListX.of(1,2,3).plus(1,10),
                    equalTo(DexxPStack.of(1,2,3).plus(1,10)));
     }
     @Test

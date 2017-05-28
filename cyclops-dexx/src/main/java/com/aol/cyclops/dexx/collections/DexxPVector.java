@@ -217,7 +217,7 @@ public class DexxPVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public PVector<T> minusAll(Collection<?> list) {
-        return (PVector<T>)fromPVector(this,toPVector()).removeAllS((Iterable<T>)list);
+        return (PVector<T>)fromPVector(this,toPVector()).removeAllI((Iterable<T>)list);
     }
 
     @Override

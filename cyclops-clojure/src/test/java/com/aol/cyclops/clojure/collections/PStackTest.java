@@ -5,8 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
-import cyclops.collections.immutable.PStackX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
+import cyclops.collections.immutable.LinkedListX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.ConsPStack;
@@ -45,16 +45,16 @@ public class PStackTest {
     }
     @Test
     public void npePlus(){
-        PStackX<Integer> list = ClojurePStack.empty();
+        LinkedListX<Integer> list = ClojurePStack.empty();
         for (Integer next : Arrays.asList(1,2,3)) {
             list = list.plus(list.size(), next);
         }
-        assertThat(PStackX.of(1,2,3),equalTo(list));
+        assertThat(LinkedListX.of(1,2,3),equalTo(list));
 
     }
     @Test
     public void npePlusAll(){
-        PStackX<Integer> list = ClojurePStack.empty();
+        LinkedListX<Integer> list = ClojurePStack.empty();
         for (Integer next : Arrays.asList(1,2,3)) {
             list = list.plusAll(list.size(), Arrays.asList(next));
         }

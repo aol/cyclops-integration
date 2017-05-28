@@ -3,10 +3,9 @@ package com.aol.cyclops.vavr.adapter;
 
 import com.aol.cyclops.vavr.FromCyclopsReact;
 import com.aol.cyclops.vavr.ToCyclopsReact;
-import com.aol.cyclops.vavr.Vavr;
+import cyclops.monads.Vavr;
 
-import com.aol.cyclops.vavr.VavrWitness;
-import com.aol.cyclops.vavr.VavrWitness.future;
+import cyclops.monads.VavrWitness.future;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;

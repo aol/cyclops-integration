@@ -14,24 +14,23 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PQueueX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPersistentQueueX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.PersistentQueueX;
+import cyclops.collections.vavr.VavrQueueX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
-
-import com.aol.cyclops.vavr.collections.JavaSlangPQueue;
 
 
 import reactor.core.publisher.Flux;
 
-public class LazyPQueueXTest extends AbstractCollectionXTest  {
+public class LazyPersistentQueueXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-    return JavaSlangPQueue.of(values);
+    return VavrQueueX.of(values);
     /**
-        PQueueX<T> list = JavaSlangPQueue.empty();
+        PersistentQueueX<T> list = VavrQueueX.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -42,9 +41,9 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
 
     @Test
     public void onEmptySwitch() {
-        assertThat(JavaSlangPQueue.empty()
-                          .onEmptySwitch(() -> PQueueX.of(1, 2, 3)).toList(),
-                   equalTo(PQueueX.of(1, 2, 3).toList()));
+        assertThat(VavrQueueX.empty()
+                          .onEmptySwitch(() -> PersistentQueueX.of(1, 2, 3)).toList(),
+                   equalTo(PersistentQueueX.of(1, 2, 3).toList()));
     }
 
     /*
@@ -56,7 +55,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return JavaSlangPQueue.empty();
+        return VavrQueueX.empty();
     }
 
     
@@ -64,35 +63,35 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
     @Test
     public void remove() {
 
-        JavaSlangPQueue.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+        VavrQueueX.of(1, 2, 3)
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return  JavaSlangPQueue.range(start, end);
+        return  VavrQueueX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return JavaSlangPQueue.rangeLong(start, end);
+        return VavrQueueX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return JavaSlangPQueue.iterate(times, seed, fn);
+        return VavrQueueX.iterate(times, seed, fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return JavaSlangPQueue.generate(times, fn);
+        return VavrQueueX.generate(times, fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return JavaSlangPQueue.unfold(seed, unfolder);
+        return VavrQueueX.unfold(seed, unfolder);
     }
 
     @Test

@@ -9,22 +9,22 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PStackX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.LinkedListX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
 
-import com.aol.cyclops.vavr.collections.JavaSlangPStack;
+import cyclops.collections.vavr.VavrListX;
 
 
 import reactor.core.publisher.Flux;
 
-public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        PStackX<T> list = JavaSlangPStack.empty();
+        LinkedListX<T> list = VavrListX.empty();
         for (T next : values) {
             list = list.plus(list.size(), next);
         }
@@ -35,9 +35,9 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Test
     public void onEmptySwitch() {
-        assertThat(JavaSlangPStack.empty()
-                          .onEmptySwitch(() -> PStackX.of(1, 2, 3)),
-                   equalTo(PStackX.of(1, 2, 3)));
+        assertThat(VavrListX.empty()
+                          .onEmptySwitch(() -> LinkedListX.of(1, 2, 3)),
+                   equalTo(LinkedListX.of(1, 2, 3)));
     }
 
     /*
@@ -49,7 +49,7 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return JavaSlangPStack.empty();
+        return VavrListX.empty();
     }
 
     
@@ -57,34 +57,34 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
     @Test
     public void remove() {
 
-        JavaSlangPStack.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+        VavrListX.of(1, 2, 3)
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return JavaSlangPStack.range(start, end);
+        return VavrListX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return JavaSlangPStack.rangeLong(start, end);
+        return VavrListX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return JavaSlangPStack.iterate(times, seed, fn);
+        return VavrListX.iterate(times, seed, fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return JavaSlangPStack.generate(times, fn);
+        return VavrListX.generate(times, fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return JavaSlangPStack.unfold(seed, unfolder);
+        return VavrListX.unfold(seed, unfolder);
     }
 }

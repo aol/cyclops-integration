@@ -21,10 +21,10 @@ cyclops-dexx provides a powerful API over the Dexx Scala Persistent Collections 
 
 |  Dexx collection | cyclops-scala   | pcollections interface   | JDK Interface  | Description  |
 |---|---|---|---|---|
-| List   | DexxPStack   | PStack  | List  | PStackX  : extended persistent linkedlist |
-|  Vector | DexxPVector  | PVector   | List   | PVectorX : extended persistent ArrayList   |
-|  HashSet | DexxPSet  | PSet  | Set  | PSetX : extended Persistent Set  |
-|  TreeSet | DexxPOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
+| List   | DexxPStack   | PStack  | List  | LinkedListX  : extended persistent linkedlist |
+|  Vector | DexxPVector  | PVector   | List   | VectorX : extended persistent ArrayList   |
+|  HashSet | DexxPSet  | PSet  | Set  | PersistentSetX : extended Persistent Set  |
+|  TreeSet | DexxPOrderedSet  | POrderedSet  | SortedSet  | OrderedSetX : extended Persistent Ordered Set  |
 
 
 

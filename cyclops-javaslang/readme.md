@@ -27,13 +27,13 @@ v8.3.0 of cyclops-javaslang requires v2.0.5 of Javaslang.
 
 |  JavaSlang collection | cyclops-scala   | pcollections interface   | JDK Interface  | Description  |
 |---|---|---|---|---|
-| List   | JavaSlangPStack   | PStack  | List  | PStackX  : extended persistent linkedlist |
-|  Vector | JavaSlangPVector  | PVector   | List   | PVectorX : extended persistent ArrayList   |
-|  Queue | JavaSlangPQueue  | PQueue  | Queue  | PQueueX : extended Persistent Queue  |
-|  HashSet | JavaSlangPSet  | PSet  | Set  | PSetX : extended Persistent Set  |
-|  TreeSet | JavaSlangPOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
-|  TreeMap | JavaSlangTreePMap  | PMap  | Map | PMapX : extended Persistent Map  |
-|  HashMap | JavaSlangHashPMap  | PMap  | Map | PMapX : extended Persistent Map  |
+| List   | JavaSlangPStack   | PStack  | List  | LinkedListX  : extended persistent linkedlist |
+|  Vector | JavaSlangPVector  | PVector   | List   | VectorX : extended persistent ArrayList   |
+|  Queue | JavaSlangPQueue  | PQueue  | Queue  | PersistentQueueX : extended Persistent Queue  |
+|  HashSet | JavaSlangPSet  | PSet  | Set  | PersistentSetX : extended Persistent Set  |
+|  TreeSet | JavaSlangPOrderedSet  | POrderedSet  | SortedSet  | OrderedSetX : extended Persistent Ordered Set  |
+|  TreeMap | JavaSlangTreePMap  | PMap  | Map | PersistentMapX : extended Persistent Map  |
+|  HashMap | JavaSlangHashPMap  | PMap  | Map | PersistentMapX : extended Persistent Map  |
 
 
 ## For Comprehensions
@@ -89,7 +89,7 @@ Value<Integer> option = Javaslang.ForValue.each2(Option.of(10), a-> Option.<Inte
 
 ```java
 
-import static com.aol.cyclops.vavr.Vavr.traversable;
+import static cyclops.monads.Vavr.traversable;
 
 
 traversable(Stream.of(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThreadPool(1))
@@ -100,7 +100,7 @@ traversable(Stream.of(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThre
 Subscribe to a Javaslang Traversable
 
 ```java	
-import static com.aol.cyclops.vavr.Vavr.traversable;
+import static cyclops.monads.Vavr.traversable;
 
 SeqSubscriber<Integer> subscriber =SeqSubscriber.subscriber();
 		

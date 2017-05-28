@@ -1,6 +1,5 @@
 # Scala Integration
 
-v8.4.0 of cyclops uses 2.12.0 of Scala
 
 ## Get cyclops-scala
 
@@ -15,14 +14,14 @@ v8.4.0 of cyclops uses 2.12.0 of Scala
 <dependency>
     <groupId>com.aol.cyclops</groupId>
     <artifactId>cyclops-scala</artifactId>
-    <version>8.4.0</version>
+    <version>9.0.0-MI2</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile group: 'com.aol.cyclops', name: 'cyclops-scala', version: '8.4.0'
+compile group: 'com.aol.cyclops', name: 'cyclops-scala', version: '9.0.0-MI2'
 ```
 
 # Features
@@ -30,16 +29,16 @@ compile group: 'com.aol.cyclops', name: 'cyclops-scala', version: '8.4.0'
 cyclops-scala provides Java friendly bindings to the Scala collections API. We make use of cyclops powerful lazy collection extensions and coerce Scala persistent collections to the pCollections and JDK Collections interfaces used in cyclops-react.
 
 
-|  Scala collection | cyclops-scala   | pcollections interface   | JDK Interface  | Description  |
+|  Scala collection | cyclops-scala   |  JDK Interface  | Description  |
 |---|---|---|---|---|
-| List   | ScalaPStack   | PStack  | List  | PStackX  : extended persistent linkedlist |
-|  Vector | ScalaPVector  | PVector   | List   | PVectorX : extended persistent ArrayList   |
-|  Queue | ScalaPQueue  | PQueue  | Queue  | PQueueX : extended Persistent Queue  |
-|  HashSet | ScalaHashPSet  | PSet  | Set  | PSetX : extended Persistent Set  |
-|  TreeSet | ScalaTreePOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
-|  BitSet | ScalaBitSetPOrderedSet  | POrderedSet  | SortedSet  | POrderedSetX : extended Persistent Ordered Set  |
-|  HashMap | ScalaHashPMap  | PMap  | Map | PMapX : extended Persistent Map  |
-|  TreeMap | ScalaTreePMap  | PMap  | Map | PMapX : extended Persistent Map  |
+| List   | ScalaListX   | List  | LinkedListX  : extended persistent linkedlist |
+|  Vector | ScalaVectorX  |  List   | VectorX : extended persistent ArrayList   |
+|  Queue | ScalaQueueX   | Queue  | PersistentQueueX : extended Persistent Queue  |
+|  HashSet | ScalaHashSetX  |  Set  | PersistentSetX : extended Persistent Set  |
+|  TreeSet | ScalaTreeSetX  |  SortedSet  | OrderedSetX : extended Persistent Ordered Set  |
+|  BitSet | ScalaBitSetX  |  SortedSet  | OrderedSetX : extended Persistent Ordered Set  |
+|  HashMap | ScalaHashMapX  | Map | PersistentMapX : extended Persistent Map  |
+|  TreeMap | ScalaTreeMapX  |  Map | PersistentMapX : extended Persistent Map  |
 
 1. Efficiently delegate to underlying collection (particularly when a ScalaPXXXX collection is passed as a parameter)
 2. Efficiently implement missing operations (e.g. choose between minus and filter for a List)

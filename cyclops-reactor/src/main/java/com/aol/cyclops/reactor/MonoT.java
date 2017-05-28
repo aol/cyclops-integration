@@ -12,6 +12,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 
+import com.aol.cyclops2.types.foldable.To;
+import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.async.Future;
 import cyclops.control.Trampoline;
 import com.aol.cyclops2.types.*;
@@ -40,7 +42,7 @@ import reactor.core.publisher.Mono;
  * @param <T> Type of data stored inside the nested Mono(s)
  */
 public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,T>
-        implements  To<MonoT<W,T>>,
+        implements To<MonoT<W,T>>,
         Transformable<T>,
         Filters<T> {
 

@@ -4,9 +4,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
-
+import cyclops.companion.vavr.Lists;
+import cyclops.companion.vavr.Options;
+import cyclops.companion.vavr.Streams;
 import org.jooq.lambda.tuple.Tuple;
 import org.junit.Test;
 

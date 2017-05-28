@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.vavr.VavrVectorX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.PVector;
@@ -16,18 +17,19 @@ public class PVectorTest {
     
     @Before
     public void setup(){
+
        org = TreePVector.empty();
-       test = JavaSlangPVector.empty();
+       test = VavrVectorX.empty();
      
     }
     
     @Test
     public void empty(){
-        assertThat(TreePVector.empty(),equalTo( JavaSlangPVector.empty()));
+        assertThat(TreePVector.empty(),equalTo( VavrVectorX.empty()));
     }
     @Test
     public void singleton(){
-        assertThat(TreePVector.singleton(1),equalTo( JavaSlangPVector.singleton(1)));
+        assertThat(TreePVector.singleton(1),equalTo( VavrVectorX.singleton(1)));
     }
     
     @Test

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.scala.ScalaVectorX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.PVector;
@@ -17,17 +18,17 @@ public class PVectorTest {
     @Before
     public void setup(){
        org = TreePVector.empty();
-       test = ScalaPVector.empty();
+       test = ScalaVectorX.empty();
      
     }
     
     @Test
     public void empty(){
-        assertThat(TreePVector.empty(),equalTo(ScalaPVector.empty()));
+        assertThat(TreePVector.empty(),equalTo(ScalaVectorX.empty()));
     }
     @Test
     public void singleton(){
-        assertThat(TreePVector.singleton(1),equalTo(ScalaPVector.singleton(1)));
+        assertThat(TreePVector.singleton(1),equalTo(ScalaVectorX.singleton(1)));
     }
     
     @Test
@@ -57,7 +58,7 @@ public class PVectorTest {
     @Test
     public void plusAllScala(){
         assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(Arrays.asList(5,6,7)),
-                   equalTo(test.plusAll(ScalaPVector.of(1,2,3)).plusAll(Arrays.asList(5,6,7))));
+                   equalTo(test.plusAll(ScalaVectorX.of(1,2,3)).plusAll(Arrays.asList(5,6,7))));
     }
     @Test
     public void plusIndex0(){
@@ -104,17 +105,17 @@ public class PVectorTest {
     @Test
     public void plusAllIndexScala0(){
         assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7)),
-                   equalTo(test.plusAll(ScalaPVector.of(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
+                   equalTo(test.plusAll(ScalaVectorX.of(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
     }
     @Test
     public void plusAllIndexScala1(){
         assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7)),
-                   equalTo(test.plusAll(ScalaPVector.of(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
+                   equalTo(test.plusAll(ScalaVectorX.of(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
     }
     @Test
     public void plusAllIndexScala2(){
         assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(2,Arrays.asList(5,6,7)),
-                   equalTo(test.plusAll(ScalaPVector.of(1,2,3)).plusAll(2,Arrays.asList(5,6,7))));
+                   equalTo(test.plusAll(ScalaVectorX.of(1,2,3)).plusAll(2,Arrays.asList(5,6,7))));
     }
     @Test
     public void subList(){

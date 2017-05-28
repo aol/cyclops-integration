@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.vavr.VavrHashSetX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.HashTreePSet;
@@ -18,17 +19,17 @@ public class PSetTest {
     @Before
     public void setup(){
        org = HashTreePSet.empty();
-       test = JavaSlangPSet.empty();
+       test = VavrHashSetX.empty();
      
     }
     
     @Test
     public void empty(){
-        assertThat(HashTreePSet.empty(),equalTo(JavaSlangPSet.empty()));
+        assertThat(HashTreePSet.empty(),equalTo(VavrHashSetX.empty()));
     }
     @Test
     public void singleton(){
-        assertThat(HashTreePSet.singleton(1),equalTo(JavaSlangPSet.singleton(1)));
+        assertThat(HashTreePSet.singleton(1),equalTo(VavrHashSetX.singleton(1)));
     }
     
     @Test

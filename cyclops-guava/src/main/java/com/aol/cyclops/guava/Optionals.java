@@ -7,7 +7,7 @@ import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;
 import com.google.common.base.Optional;
-import cyclops.collections.ListX;
+import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
@@ -414,8 +414,8 @@ public class Optionals {
      *  Optional<Integer> just = Optional.of(10);
     Optional<Integer> none = Optional.empty();
 
-     * Optional<PSetX<Integer>> opts = Optional.accumulateJust(ListX.of(just, none, Optional.of(1)), Reducers.toPSetX());
-    //Optional.of(PSetX.of(10, 1)));
+     * Optional<PersistentSetX<Integer>> opts = Optional.accumulateJust(ListX.of(just, none, Optional.of(1)), Reducers.toPersistentSetX());
+    //Optional.of(PersistentSetX.of(10, 1)));
      *
      * }
      * </pre>

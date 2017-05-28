@@ -3,7 +3,6 @@ package com.aol.cyclops.reactor;
 
 import com.aol.cyclops.reactor.adapter.FluxAdapter;
 import com.aol.cyclops.reactor.adapter.MonoAdapter;
-import com.aol.cyclops2.internal.comprehensions.comprehenders.StreamAdapter;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
 import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;

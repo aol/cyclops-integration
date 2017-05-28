@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import com.aol.cyclops.reactor.Fluxs;
 import com.aol.cyclops.reactor.hkt.FluxKind;
 import com.aol.cyclops2.hkt.Higher;
-import cyclops.collections.ListX;
+import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;

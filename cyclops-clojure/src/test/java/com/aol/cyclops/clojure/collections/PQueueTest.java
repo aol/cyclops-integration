@@ -5,7 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
-import cyclops.collections.immutable.PQueueX;
+import cyclops.collections.immutable.PersistentQueueX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.AmortizedPQueue;
@@ -30,7 +30,7 @@ public class PQueueTest {
     }
     @Test
     public void singleton(){
-        assertThat(PQueueX.singleton(1).toArray(),equalTo(ClojurePQueue.singleton(1).toArray()));
+        assertThat(PersistentQueueX.singleton(1).toArray(),equalTo(ClojurePQueue.singleton(1).toArray()));
     }
     
     @Test

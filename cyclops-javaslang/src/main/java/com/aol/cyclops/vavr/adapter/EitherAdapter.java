@@ -3,8 +3,8 @@ package com.aol.cyclops.vavr.adapter;
 
 import com.aol.cyclops.vavr.FromCyclopsReact;
 import com.aol.cyclops.vavr.ToCyclopsReact;
-import com.aol.cyclops.vavr.Vavr;
-import com.aol.cyclops.vavr.VavrWitness.either;
+import cyclops.monads.Vavr;
+import cyclops.monads.VavrWitness.either;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
 import cyclops.control.Xor;

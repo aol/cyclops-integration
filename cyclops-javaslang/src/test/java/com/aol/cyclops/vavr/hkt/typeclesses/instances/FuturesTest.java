@@ -6,9 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
-import java.util.function.Function;
-
-import com.aol.cyclops.vavr.Futures;
+import cyclops.companion.vavr.Futures;
 import com.aol.cyclops.vavr.hkt.FutureKind;
 import org.junit.Test;
 

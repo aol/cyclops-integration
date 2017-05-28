@@ -6,9 +6,7 @@ import static cyclops.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.function.Function;
-
-import com.aol.cyclops.vavr.Queues;
+import cyclops.companion.vavr.Queues;
 import com.aol.cyclops.vavr.hkt.QueueKind;
 import org.junit.Test;
 

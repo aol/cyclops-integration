@@ -3,9 +3,7 @@ package com.aol.cyclops.functionaljava.reader;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.aol.cyclops.functionaljava.FJ;
-
-import com.aol.cyclops.functionaljava.Readers;
+import cyclops.companion.functionaljava.Readers;
 import fj.data.Reader;
 
 public class UserInfo implements Users {

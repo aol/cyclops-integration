@@ -9,15 +9,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import com.aol.cyclops.vavr.collections.JavaSlangPStack;
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.POrderedSetX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.OrderedSetX;
+import cyclops.collections.vavr.VavrTreeSetX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
-
-import com.aol.cyclops.vavr.collections.JavaSlangPOrderedSet;
 
 
 import reactor.core.publisher.Flux;
@@ -26,7 +24,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        POrderedSetX<T> list = (LazyPOrderedSetX)JavaSlangPOrderedSet.empty();
+        OrderedSetX<T> list = (LazyPOrderedSetX) VavrTreeSetX.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -37,9 +35,9 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Test
     public void onEmptySwitch() {
-        assertThat((LazyPOrderedSetX)JavaSlangPOrderedSet.empty()
-                          .onEmptySwitch(() -> (LazyPOrderedSetX)JavaSlangPOrderedSet.of(1, 2, 3)),
-                   equalTo(POrderedSetX.of(1, 2, 3)));
+        assertThat((LazyPOrderedSetX) VavrTreeSetX.empty()
+                          .onEmptySwitch(() -> (LazyPOrderedSetX) VavrTreeSetX.of(1, 2, 3)),
+                   equalTo(OrderedSetX.of(1, 2, 3)));
     }
 
     @Test
@@ -57,7 +55,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return (LazyPOrderedSetX)JavaSlangPOrderedSet.empty();
+        return (LazyPOrderedSetX) VavrTreeSetX.empty();
     }
 
     
@@ -65,34 +63,34 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     @Test
     public void remove() {
 
-        JavaSlangPOrderedSet.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+        VavrTreeSetX.of(1, 2, 3)
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return JavaSlangPOrderedSet.range(start, end);
+        return VavrTreeSetX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return JavaSlangPOrderedSet.rangeLong(start, end);
+        return VavrTreeSetX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return JavaSlangPOrderedSet.iterate(times, (Comparable)seed, (UnaryOperator)fn);
+        return VavrTreeSetX.iterate(times, (Comparable)seed, (UnaryOperator)fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return (FluentCollectionX)JavaSlangPOrderedSet.generate(times, (Supplier)fn);
+        return (FluentCollectionX) VavrTreeSetX.generate(times, (Supplier)fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return (FluentCollectionX)JavaSlangPOrderedSet.unfold(seed, (Function)unfolder);
+        return (FluentCollectionX) VavrTreeSetX.unfold(seed, (Function)unfolder);
     }
 }

@@ -10,21 +10,20 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PSetX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.PersistentSetX;
+import cyclops.collections.vavr.VavrHashSetX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
-
-import com.aol.cyclops.vavr.collections.JavaSlangPSet;
 
 
 import reactor.core.publisher.Flux;
 
-public class LazyPSetXTest extends AbstractCollectionXTest  {
+public class LazyPersistentSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        PSetX<T> list = JavaSlangPSet.empty();
+        PersistentSetX<T> list = VavrHashSetX.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -35,9 +34,9 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
 
     @Test
     public void onEmptySwitch() {
-        assertThat(JavaSlangPSet.empty()
-                          .onEmptySwitch(() -> PSetX.of(1, 2, 3)).toList(),
-                   equalTo(JavaSlangPSet.of(1, 2, 3).toList()));
+        assertThat(VavrHashSetX.empty()
+                          .onEmptySwitch(() -> PersistentSetX.of(1, 2, 3)).toList(),
+                   equalTo(VavrHashSetX.of(1, 2, 3).toList()));
     }
     @Test
     public void forEach2() {
@@ -55,7 +54,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return JavaSlangPSet.empty();
+        return VavrHashSetX.empty();
     }
 
     
@@ -63,35 +62,35 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
     @Test
     public void remove() {
 
-        JavaSlangPSet.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+        VavrHashSetX.of(1, 2, 3)
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return JavaSlangPSet.range(start, end);
+        return VavrHashSetX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return JavaSlangPSet.rangeLong(start, end);
+        return VavrHashSetX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return JavaSlangPSet.iterate(times, seed, fn);
+        return VavrHashSetX.iterate(times, seed, fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return JavaSlangPSet.generate(times, fn);
+        return VavrHashSetX.generate(times, fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return JavaSlangPSet.unfold(seed, unfolder);
+        return VavrHashSetX.unfold(seed, unfolder);
     }
     @Test
     public void takeWhileTest(){

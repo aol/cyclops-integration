@@ -5,9 +5,7 @@ import static cyclops.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.function.Function;
-
-import com.aol.cyclops.functionaljava.Lists;
+import cyclops.companion.functionaljava.Lists;
 import com.aol.cyclops.functionaljava.hkt.ListKind;
 import org.junit.Test;
 
@@ -23,7 +21,8 @@ public class ListsTest {
 
     @Test
     public void unit(){
-        
+
+
         ListKind<String> list = Lists.Instances.unit()
                                      .unit("hello")
                                      .convert(ListKind::narrowK);
@@ -51,13 +50,18 @@ public class ListsTest {
     @Test
     public void applicative(){
         
-        ListKind<Fn1<Integer,Integer>> listFn = Lists.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(ListKind::narrowK);
-        
-        ListKind<Integer> list = Lists.Instances.unit()
+        ListKind<Fn1<Integer,Integer>> listFn = Lists.Instances.unit().unit(Lambda.λ((Integer i) ->i*2)).convert(ListKind::narrowK);
+
+
+        Lists.Instances.zippingApplicative().ap(listFn,
+                Lists.Instances.functor().map((String v) ->v.length(),ListKind.widen(List.list("h"))))
+                                .convert(ListKind::narrow);
+
+        List<Integer> list = Lists.Instances.unit()
                                      .unit("hello")
                                      .apply(h-> Lists.Instances.functor().map((String v) ->v.length(), h))
                                      .apply(h-> Lists.Instances.zippingApplicative().ap(listFn, h))
-                                     .convert(ListKind::narrowK);
+                                     .convert(ListKind::narrow);
         
         assertThat(list,equalTo(List.list("hello".length()*2)));
     }

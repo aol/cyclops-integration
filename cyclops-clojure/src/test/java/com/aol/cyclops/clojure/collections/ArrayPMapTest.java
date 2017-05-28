@@ -6,19 +6,19 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 
 import cyclops.collections.MapXs;
-import cyclops.collections.immutable.PMapX;
+import cyclops.collections.immutable.PersistentMapX;
 import org.junit.Before;
 import org.junit.Test;
 
 
 
 public class ArrayPMapTest {
-    PMapX<Integer,String> org;
-    PMapX<Integer,String> test;
+    PersistentMapX<Integer,String> org;
+    PersistentMapX<Integer,String> test;
     
     @Before
     public void setup(){
-       org = PMapX.fromMap(MapXs.of(1, "hello"));
+       org = PersistentMapX.fromMap(MapXs.of(1, "hello"));
        test = ClojureArrayPMap.singleton(1, "hello");
      
     }

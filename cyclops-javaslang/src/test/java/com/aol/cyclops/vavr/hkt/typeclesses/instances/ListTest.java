@@ -5,9 +5,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
-import java.util.function.Function;
 
-import com.aol.cyclops.vavr.Lists;
+import cyclops.companion.vavr.Lists;
 import com.aol.cyclops.vavr.hkt.ListKind;
 
 import cyclops.collections.ListX;
@@ -18,7 +17,6 @@ import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
-import cyclops.function.Monoid;
 import javaslang.collection.List;
 
 public class ListTest {

@@ -10,7 +10,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
-import cyclops.collections.immutable.PVectorX;
+import cyclops.collections.immutable.VectorX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
@@ -187,7 +187,7 @@ public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
     }
     @Override
     public PVector<T> plusAll(int i, Collection<? extends T> list) {
-        ReactiveSeq<T> flux = fromPVector(this,toPVector()).reactiveSeq();
+        ReactiveSeq<T> flux = fromPVector(this,toPVector()).stream();
         ReactiveSeq<T> inserted = flux.insertAtS(i, (Stream<T>)list.stream());
         
         return fromStream(inserted);
@@ -201,7 +201,7 @@ public class ClojurePVector<T> extends AbstractList<T> implements PVector<T> {
 
     @Override
     public PVector<T> minusAll(Collection<?> list) {
-        return (PVectorX<T>)fromPVector(this,toPVector()).removeAllS((Iterable<T>)list);
+        return (VectorX<T>)fromPVector(this,toPVector()).removeAllI((Iterable<T>)list);
     }
     
     public ClojurePVector<T> tail(){

@@ -11,14 +11,15 @@ import com.aol.cyclops2.types.Transformable;
 import cyclops.async.LazyReact;
 import cyclops.collections.ListX;
 import cyclops.collections.SortedSetX;
+import cyclops.companion.vavr.Lists;
+import cyclops.companion.vavr.Options;
+import cyclops.companion.vavr.Trys;
 import cyclops.monads.AnyM;
+import cyclops.monads.Vavr;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.functor.Functor;
 import org.junit.Test;
 
 
-
-import javaslang.Lazy;
 import javaslang.collection.Array;
 import javaslang.collection.CharSeq;
 import javaslang.collection.HashSet;
@@ -279,6 +280,7 @@ public class AnyJavaslangMTest {
 
     @Test
     public void arrayTest() {
+
         assertThat(Vavr.array(Array.of("hello world"))
                             .map(String::toUpperCase)
                             .toList(),

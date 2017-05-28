@@ -11,15 +11,14 @@ import java.util.function.UnaryOperator;
 
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.POrderedSetX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.OrderedSetX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
 
-import com.aol.cyclops.scala.collections.ScalaTreePOrderedSet;
+import cyclops.collections.scala.ScalaTreeSetX;
 
 import reactor.core.publisher.Flux;
 
@@ -33,7 +32,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest {
     }
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        POrderedSetX<T> list = (POrderedSetX)ScalaTreePOrderedSet.empty();
+        OrderedSetX<T> list = (OrderedSetX) ScalaTreeSetX.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -44,9 +43,9 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest {
 
     @Test
     public void onEmptySwitch() {
-        assertThat((LazyPOrderedSetX)ScalaTreePOrderedSet.empty()
-                          .onEmptySwitch(() -> (LazyPOrderedSetX)ScalaTreePOrderedSet.of(1, 2, 3)),
-                   equalTo(POrderedSetX.of(1, 2, 3)));
+        assertThat((LazyPOrderedSetX) ScalaTreeSetX.empty()
+                          .onEmptySwitch(() -> (LazyPOrderedSetX) ScalaTreeSetX.of(1, 2, 3)),
+                   equalTo(OrderedSetX.of(1, 2, 3)));
     }
 
     /*
@@ -58,7 +57,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return (LazyPOrderedSetX)ScalaTreePOrderedSet.empty();
+        return (LazyPOrderedSetX) ScalaTreeSetX.empty();
     }
 
     
@@ -66,34 +65,34 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest {
     @Test
     public void remove() {
 
-        ScalaTreePOrderedSet.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+        ScalaTreeSetX.of(1, 2, 3)
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return ScalaTreePOrderedSet.range(start, end);
+        return ScalaTreeSetX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return ScalaTreePOrderedSet.rangeLong(start, end);
+        return ScalaTreeSetX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return POrderedSetX.iterate(times, seed, (UnaryOperator)fn);
+        return OrderedSetX.iterate(times, seed, (UnaryOperator)fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return (FluentCollectionX)ScalaTreePOrderedSet.generate(times, (Supplier)fn);
+        return (FluentCollectionX) ScalaTreeSetX.generate(times, (Supplier)fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return (FluentCollectionX)ScalaTreePOrderedSet.unfold(seed, (Function)unfolder);
+        return (FluentCollectionX) ScalaTreeSetX.unfold(seed, (Function)unfolder);
     }
 }

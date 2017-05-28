@@ -1,16 +1,16 @@
 package com.aol.cyclops.reactor;
 
 
-import com.aol.cyclops2.types.FoldableTraversable;
-import com.aol.cyclops2.types.To;
-import com.aol.cyclops2.types.Traversable;
+
 import com.aol.cyclops2.types.anyM.transformers.FoldableTransformerSeq;
 
-import com.aol.cyclops2.types.stream.CyclopsCollectable;
-import cyclops.collections.DequeX;
-import cyclops.collections.ListX;
-import cyclops.collections.immutable.PStackX;
-import cyclops.collections.immutable.PVectorX;
+import com.aol.cyclops2.types.foldable.CyclopsCollectable;
+import com.aol.cyclops2.types.foldable.To;
+import com.aol.cyclops2.types.traversable.FoldableTraversable;
+import com.aol.cyclops2.types.traversable.Traversable;
+import cyclops.collections.immutable.LinkedListX;
+import cyclops.collections.immutable.VectorX;
+import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
@@ -399,18 +399,18 @@ public class FluxT<W extends WitnessType<W>,T> implements To<FluxT<W,T>>,
      * @see cyclops2.monads.transformers.values.ListT#sliding(int)
      */
     @Override
-    public FluxT<W,PVectorX<T>> sliding(final int windowSize) {
+    public FluxT<W,VectorX<T>> sliding(final int windowSize) {
 
-        return (FluxT<W,PVectorX<T>>) FoldableTransformerSeq.super.sliding(windowSize);
+        return (FluxT<W,VectorX<T>>) FoldableTransformerSeq.super.sliding(windowSize);
     }
 
     /* (non-Javadoc)
      * @see cyclops2.monads.transformers.values.ListT#sliding(int, int)
      */
     @Override
-    public FluxT<W,PVectorX<T>> sliding(final int windowSize, final int increment) {
+    public FluxT<W,VectorX<T>> sliding(final int windowSize, final int increment) {
 
-        return (FluxT<W,PVectorX<T>>) FoldableTransformerSeq.super.sliding(windowSize, increment);
+        return (FluxT<W,VectorX<T>>) FoldableTransformerSeq.super.sliding(windowSize, increment);
     }
 
     /* (non-Javadoc)

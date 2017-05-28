@@ -9,9 +9,9 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PQueueX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.PersistentQueueX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
@@ -20,11 +20,11 @@ import com.aol.cyclops.clojure.collections.ClojurePQueue;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPQueueXTest extends AbstractCollectionXTest  {
+public class LazyPersistentQueueXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        PQueueX<T> list = ClojurePQueue.empty();
+        PersistentQueueX<T> list = ClojurePQueue.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -36,8 +36,8 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
     @Test
     public void onEmptySwitch() {
         assertThat(ClojurePQueue.empty()
-                          .onEmptySwitch(() -> PQueueX.of(1, 2, 3)).toList(),
-                   equalTo(PQueueX.of(1, 2, 3).toList()));
+                          .onEmptySwitch(() -> PersistentQueueX.of(1, 2, 3)).toList(),
+                   equalTo(PersistentQueueX.of(1, 2, 3).toList()));
     }
 
     /*
@@ -58,7 +58,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
     public void remove() {
 
         ClojurePQueue.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }

@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PSetX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPersistentSetX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.PersistentSetX;
 import cyclops.control.Maybe;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
@@ -28,11 +28,11 @@ import com.aol.cyclops.clojure.collections.ClojureHashPSet;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPSetXTest extends AbstractCollectionXTest  {
+public class LazyPersistentSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        PSetX<T> list = ClojureHashPSet.empty();
+        PersistentSetX<T> list = ClojureHashPSet.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -52,7 +52,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
     @Test
     public void onEmptySwitch() {
         assertThat(ClojureHashPSet.empty()
-                          .onEmptySwitch(() -> PSetX.of(1, 2, 3)).toList(),
+                          .onEmptySwitch(() -> PersistentSetX.of(1, 2, 3)).toList(),
                    hasItems(ClojureHashPSet.of(1, 2, 3).toArray()));
     }
 
@@ -74,7 +74,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
     public void remove() {
 
         ClojureHashPSet.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }

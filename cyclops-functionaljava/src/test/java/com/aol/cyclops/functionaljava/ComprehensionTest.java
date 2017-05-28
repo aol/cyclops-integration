@@ -3,15 +3,12 @@ package com.aol.cyclops.functionaljava;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.*;
-import java.util.concurrent.CompletableFuture;
 
+import cyclops.companion.functionaljava.Options;
 import org.junit.Test;
 
 
-import fj.Monoid;
-import fj.data.List;
 import fj.data.Option;
-import fj.data.Writer;
 
 public class ComprehensionTest {
 
