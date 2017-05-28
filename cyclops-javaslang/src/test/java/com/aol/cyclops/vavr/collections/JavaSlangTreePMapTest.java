@@ -5,9 +5,9 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
-import cyclops.collections.MapXs;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.collections.vavr.VavrTreeMapX;
+import cyclops.companion.MapXs;
 import org.junit.Before;
 import org.junit.Test;
 

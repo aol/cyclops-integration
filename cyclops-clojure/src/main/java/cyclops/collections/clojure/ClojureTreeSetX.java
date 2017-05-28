@@ -11,7 +11,9 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
@@ -30,6 +32,12 @@ import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClojureTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T> {
 
+    public static <T> OrderedSetX<T> copyFromCollection(CollectionX<T> vec, Comparator<T> comp) {
+
+        return ClojureTreeSetX.empty(comp)
+                .plusAll(vec);
+
+    }
     /**
      * Create a LazyPOrderedSetX from a Stream
      * 

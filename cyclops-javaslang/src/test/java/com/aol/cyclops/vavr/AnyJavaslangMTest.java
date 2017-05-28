@@ -7,10 +7,12 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 
-import com.aol.cyclops2.types.Transformable;
+
+import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.async.LazyReact;
-import cyclops.collections.ListX;
-import cyclops.collections.SortedSetX;
+
+import cyclops.collections.mutable.ListX;
+import cyclops.collections.mutable.SortedSetX;
 import cyclops.companion.vavr.Lists;
 import cyclops.companion.vavr.Options;
 import cyclops.companion.vavr.Trys;

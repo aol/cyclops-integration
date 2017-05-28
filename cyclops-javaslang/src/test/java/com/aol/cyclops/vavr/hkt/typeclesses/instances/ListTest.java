@@ -6,10 +6,11 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.mutable.ListX;
 import cyclops.companion.vavr.Lists;
 import com.aol.cyclops.vavr.hkt.ListKind;
 
-import cyclops.collections.ListX;
+
 import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 

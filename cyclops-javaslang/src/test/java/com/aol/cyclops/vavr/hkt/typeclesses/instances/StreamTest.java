@@ -6,9 +6,10 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.mutable.ListX;
 import cyclops.companion.vavr.Streams;
 import com.aol.cyclops.vavr.hkt.StreamKind;
-import cyclops.collections.ListX;
+
 import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 

@@ -20,7 +20,7 @@ import cyclops.collections.vavr.VavrListX;
 
 import reactor.core.publisher.Flux;
 
-public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
@@ -29,7 +29,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
             list = list.plus(list.size(), next);
         }
         System.out.println("List " + list);
-        return list.efficientOpsOff();
+        return list;
 
     }
 

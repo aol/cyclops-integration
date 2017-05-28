@@ -2,9 +2,10 @@ package com.aol.cyclops.vavr.collections.extensions;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.types.stream.HeadAndTail;
-import cyclops.Semigroups;
-import cyclops.collections.ListX;
+
 import cyclops.collections.immutable.VectorX;
+import cyclops.collections.mutable.ListX;
+import cyclops.companion.Semigroups;
 import cyclops.control.Trampoline;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple3;

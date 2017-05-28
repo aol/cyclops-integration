@@ -14,7 +14,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPersistentQueueX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.collections.vavr.VavrQueueX;
@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPersistentQueueXTest extends AbstractCollectionXTest  {
+public class LazyPQueueXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {

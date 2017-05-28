@@ -97,8 +97,10 @@ public class ClojureHashMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
     public V get(Object key) {
        return (V)map.valAt(key);
     }
-   
-    
-   
-   
+
+
+    public static <K,V> PersistentMapX<K,V> copyFromMap(Map<K,V> map){
+        return ClojureHashMapX.<K,V>empty()
+                .plusAll(map);
+    }
 }

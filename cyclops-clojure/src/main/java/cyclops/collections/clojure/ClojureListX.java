@@ -10,8 +10,10 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
-import cyclops.collections.ListX;
+import cyclops.collections.immutable.LinkedListX;
+import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
@@ -27,7 +29,11 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClojureListX<T> extends AbstractList<T>implements PStack<T> {
+    public static <T> LinkedListX<T> copyFromCollection(CollectionX<T> vec) {
+        return ClojureListX.<T>empty()
+                .plusAll(vec);
 
+    }
     /**
      * Create a LazyLinkedListX from a Stream
      * 
@@ -37,7 +43,7 @@ public class ClojureListX<T> extends AbstractList<T>implements PStack<T> {
     public static <T> LazyLinkedListX<T> fromStream(Stream<T> stream) {
         Reducer<PStack<T>> s = toPStack();
         return new LazyLinkedListX<T>(null,
-                                  ReactiveSeq.fromStream(stream),true, s);
+                                  ReactiveSeq.fromStream(stream), s);
     }
 
     /**
@@ -159,7 +165,7 @@ public class ClojureListX<T> extends AbstractList<T>implements PStack<T> {
     }
 
     private static <T> LazyLinkedListX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
-        return new LazyLinkedListX<T>(s,null,true, pStackReducer);
+        return new LazyLinkedListX<T>(s,null, pStackReducer);
     }
 
     @SafeVarargs
