@@ -4,17 +4,15 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
-import java.util.concurrent.CompletableFuture;
-
 import cyclops.collections.ListX;
+import cyclops.companion.guava.FluentIterables;
+import cyclops.companion.guava.Optionals;
 import org.jooq.lambda.tuple.Tuple;
 import org.junit.Test;
 
 
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
-
-import javaslang.collection.List;
 
 public class ComprehensionTest {
 

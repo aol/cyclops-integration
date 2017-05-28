@@ -1,6 +1,6 @@
 package cyclops.companion.functionaljava;
 
-import com.aol.cyclops.functionaljava.FJWitness.list;
+import cyclops.monads.FJWitness.list;
 import com.aol.cyclops.functionaljava.hkt.ListKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
@@ -9,8 +9,6 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
-import cyclops.monads.WitnessType;
-import cyclops.monads.transformers.ListT;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.foldable.Foldable;

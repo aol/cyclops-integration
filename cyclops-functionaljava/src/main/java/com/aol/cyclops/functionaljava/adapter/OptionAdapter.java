@@ -1,10 +1,9 @@
 package com.aol.cyclops.functionaljava.adapter;
 
 
-import com.aol.cyclops.functionaljava.FJ;
-import com.aol.cyclops.functionaljava.FJWitness;
-import com.aol.cyclops.functionaljava.FJWitness.option;
-import com.aol.cyclops.functionaljava.FromCyclopsReact;
+import cyclops.monads.FJ;
+import cyclops.monads.FJWitness.option;
+import cyclops.conversion.functionaljava.FromCyclopsReact;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;

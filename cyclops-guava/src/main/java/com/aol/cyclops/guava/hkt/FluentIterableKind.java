@@ -10,8 +10,8 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 
-import com.aol.cyclops.guava.FromCyclopsReact;
-import com.aol.cyclops.guava.ToCyclopsReact;
+import cyclops.conversion.guava.FromCyclopsReact;
+import cyclops.conversion.guava.ToCyclopsReact;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;

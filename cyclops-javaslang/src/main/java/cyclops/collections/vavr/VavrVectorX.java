@@ -8,7 +8,9 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
+import cyclops.collections.immutable.VectorX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
@@ -22,7 +24,12 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VavrVectorX<T> extends AbstractList<T> implements PVector<T> {
-    
+    public static <T> VectorX<T> copyFromCollection(CollectionX<T> vec) {
+
+        return VavrVectorX.<T>empty()
+                .plusAll(vec);
+
+    }
     /**
      * Create a LazyPVectorX from a Stream
      * 

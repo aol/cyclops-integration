@@ -1,17 +1,17 @@
 package com.aol.cyclops.guava.adapter;
 
-import com.aol.cyclops.guava.FromCyclopsReact;
-import com.aol.cyclops.guava.ToCyclopsReact;
-import com.aol.cyclops.guava.GuavaWitness;
+import cyclops.conversion.guava.FromCyclopsReact;
+import cyclops.conversion.guava.ToCyclopsReact;
+import cyclops.monads.GuavaWitness;
 
-import com.aol.cyclops.guava.Optionals;
+import cyclops.companion.guava.Optionals;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import com.google.common.base.Optional;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
 import lombok.AllArgsConstructor;
 
-import com.aol.cyclops.guava.GuavaWitness.optional;
+import cyclops.monads.GuavaWitness.optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 

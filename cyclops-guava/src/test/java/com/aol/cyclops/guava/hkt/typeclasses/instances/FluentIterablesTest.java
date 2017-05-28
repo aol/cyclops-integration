@@ -6,9 +6,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
-import java.util.function.Function;
 
-import com.aol.cyclops.guava.FluentIterables;
+import cyclops.companion.guava.FluentIterables;
 import com.aol.cyclops.guava.hkt.FluentIterableKind;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.collections.ListX;

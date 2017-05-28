@@ -1,8 +1,8 @@
 package com.aol.cyclops.guava.adapter;
 
-import com.aol.cyclops.guava.FluentIterables;
+import cyclops.companion.guava.FluentIterables;
 
-import com.aol.cyclops.guava.GuavaWitness.fluentIterable;
+import cyclops.monads.GuavaWitness.fluentIterable;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import com.google.common.collect.FluentIterable;
 import cyclops.monads.AnyM;

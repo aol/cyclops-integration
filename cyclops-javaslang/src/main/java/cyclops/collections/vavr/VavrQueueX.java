@@ -9,7 +9,9 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
+import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
@@ -23,7 +25,12 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VavrQueueX<T> extends AbstractQueue<T> implements PQueue<T> {
-    
+    public static <T> PersistentQueueX<T> copyFromCollection(CollectionX<T> vec) {
+
+        return VavrQueueX.<T>empty()
+                .plusAll(vec);
+
+    }
     /**
      * Create a LazyPQueueX from a Stream
      * 

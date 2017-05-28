@@ -11,6 +11,7 @@ import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import cyclops.collections.immutable.OrderedSetX;
+import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
@@ -265,8 +266,8 @@ public class ScalaHashSetX<T> extends AbstractSet<T>implements PSet<T>, HasScala
     }
 
 
-    public static <T> OrderedSetX<T> copyFromCollection(CollectionX<? extends T> vec, Comparator<T> comp) {
-        OrderedSetX<T> res = ScalaTreeSetX.empty(comp)
+    public static <T> PersistentSetX<T> copyFromCollection(CollectionX<? extends T> vec, Comparator<T> comp) {
+        PersistentSetX<T> res = ScalaHashSetX.<T>empty()
                                           .plusAll(vec);
         return res;
     }

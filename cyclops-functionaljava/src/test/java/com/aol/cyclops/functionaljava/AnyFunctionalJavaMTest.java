@@ -1,6 +1,6 @@
 package com.aol.cyclops.functionaljava;
 
-import static com.aol.cyclops.functionaljava.FJ.stream;
+import static cyclops.monads.FJ.stream;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -9,6 +9,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import cyclops.companion.functionaljava.Options;
+import cyclops.monads.FJ;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;

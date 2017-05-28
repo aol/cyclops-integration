@@ -1,9 +1,9 @@
 package cyclops.companion.functionaljava;
 
 
-import com.aol.cyclops.functionaljava.FJWitness;
-import com.aol.cyclops.functionaljava.FromCyclopsReact;
-import com.aol.cyclops.functionaljava.ToCyclopsReact;
+import cyclops.monads.FJWitness;
+import cyclops.conversion.functionaljava.FromCyclopsReact;
+import cyclops.conversion.functionaljava.ToCyclopsReact;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;

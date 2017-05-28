@@ -3,6 +3,7 @@ package com.aol.cyclops.functionaljava;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import cyclops.conversion.functionaljava.FromJavaslang;
 import org.junit.Test;
 
 import fj.P;

@@ -1,40 +1,14 @@
 package cyclops.companion.functionaljava;
 
 
-import com.aol.cyclops.functionaljava.FJWitness.option;
-import com.aol.cyclops.functionaljava.hkt.OptionKind;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.collections.ListX;
-import cyclops.control.Maybe;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
-import cyclops.function.Monoid;
-import cyclops.function.Reducer;
-import cyclops.monads.AnyM;
-import cyclops.monads.WitnessType;
-import cyclops.monads.transformers.OptionalT;
-import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Pure;
-import cyclops.typeclasses.comonad.Comonad;
-import cyclops.typeclasses.foldable.Foldable;
-import cyclops.typeclasses.functor.Functor;
-import cyclops.typeclasses.instances.General;
-import cyclops.typeclasses.monad.*;
-import fj.data.Option;
 import fj.data.Reader;
 import lombok.experimental.UtilityClass;
-import org.reactivestreams.Publisher;
 
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
-import java.util.OptionalLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * Utility class for working with JDK Optionals

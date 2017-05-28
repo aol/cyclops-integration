@@ -3,9 +3,9 @@ package com.aol.cyclops.guava.hkt;
 
 import java.util.Set;
 
-import com.aol.cyclops.guava.FromCyclopsReact;
-import com.aol.cyclops.guava.FromJDK;
-import com.aol.cyclops.guava.ToCyclopsReact;
+import cyclops.conversion.guava.FromCyclopsReact;
+import cyclops.conversion.guava.FromJDK;
+import cyclops.conversion.guava.ToCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 import com.google.common.base.Function;

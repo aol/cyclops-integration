@@ -3,15 +3,10 @@ package com.aol.cyclops.functionaljava;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.util.Arrays;
 import java.util.Optional;
 
-import cyclops.monads.transformers.ListT;
+import cyclops.conversion.functionaljava.FromJDK;
 import org.junit.Test;
-
-
-
-import fj.data.List;
 
 
 public class FromJDKTest {

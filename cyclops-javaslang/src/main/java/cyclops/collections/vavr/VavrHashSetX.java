@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import cyclops.collections.immutable.OrderedSetX;
+import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
@@ -23,8 +24,8 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VavrHashSetX<T> extends AbstractSet<T>  implements PSet<T> {
-    public static <T> OrderedSetX<T> copyFromCollection(CollectionX<? extends T> vec, Comparator<T> comp) {
-        OrderedSetX<T> res = VavrTreeSetX.empty(comp)
+    public static <T> PersistentSetX<T> copyFromCollection(CollectionX<? extends T> vec) {
+        PersistentSetX<T> res = VavrHashSetX.<T>empty()
                 .plusAll(vec);
         return res;
     }

@@ -1,11 +1,11 @@
 package cyclops.companion.functionaljava;
 
 
-import com.aol.cyclops.functionaljava.FJ;
-import com.aol.cyclops.functionaljava.FJWitness;
-import com.aol.cyclops.functionaljava.FJWitness.option;
-import com.aol.cyclops.functionaljava.FromCyclopsReact;
-import com.aol.cyclops.functionaljava.ToCyclopsReact;
+import cyclops.monads.FJ;
+import cyclops.monads.FJWitness;
+import cyclops.monads.FJWitness.option;
+import cyclops.conversion.functionaljava.FromCyclopsReact;
+import cyclops.conversion.functionaljava.ToCyclopsReact;
 import com.aol.cyclops.functionaljava.hkt.OptionKind;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.hkt.Higher;

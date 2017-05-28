@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 
 import cyclops.control.Maybe;
+import cyclops.conversion.guava.ToCyclopsReact;
 import cyclops.monads.AnyM;
 import org.junit.Test;
 

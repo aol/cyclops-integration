@@ -37,16 +37,13 @@ public interface VavrConverters {
     }
     public static <T> HashSet<T> HashSet(CollectionX<T> vec){
         return vec.unwrapIfInstance(HashSet.class,
-                ()-> VavrHashSetX.copyFromCollection(vec,(Comparator<T>)Comparator.naturalOrder()).unwrap());
+                ()-> VavrHashSetX.copyFromCollection(vec).unwrap());
     }
     public static <T> TreeSet<T> TreeSet(CollectionX<T> vec, Comparator<T> comp){
         return vec.unwrapIfInstance(TreeSet.class,
                 ()-> VavrTreeSetX.copyFromCollection(vec,comp).unwrap());
     }
-    public static <T> HashSet<T> HashSet(CollectionX<T> vec, Comparator<T> comp){
-        return vec.unwrapIfInstance(HashSet.class,
-                ()-> VavrHashSetX.copyFromCollection(vec,comp).unwrap());
-    }
+
 
     public static <T> Queue<T> Queue(CollectionX<T> vec){
         return vec.unwrapIfInstance(Queue.class,

@@ -36,7 +36,7 @@ FJ.ForOption.each2(Option.some(10), a->Option.none(), (a,b)->"failed")
 
 ```java
 
-import static com.aol.cyclops.functionaljava.FJ.stream;
+import static cyclops.monads.FJ.stream;
 
 
 stream(Stream.stream(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThreadPool(1))
@@ -68,7 +68,7 @@ stream(Stream.stream(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThrea
  
  ```java
 
-import static com.aol.cyclops.functionaljava.FJ.list;
+import static cyclops.monads.FJ.list;
 
 SeqSubscriber<Integer> sub = SeqSubscriber.subscriber();
 list(List.list(1,2,3)).subscribe(sub);

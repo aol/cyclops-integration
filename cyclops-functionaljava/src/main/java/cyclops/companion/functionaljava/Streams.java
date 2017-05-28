@@ -1,6 +1,6 @@
 package cyclops.companion.functionaljava;
 
-import com.aol.cyclops.functionaljava.FJWitness.stream;
+import cyclops.monads.FJWitness.stream;
 import com.aol.cyclops.functionaljava.hkt.StreamKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
