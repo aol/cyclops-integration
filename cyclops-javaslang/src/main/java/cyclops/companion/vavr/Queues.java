@@ -1,6 +1,6 @@
 package cyclops.companion.vavr;
 
-import com.aol.cyclops.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.VavrWitness.queue;
 import com.aol.cyclops.vavr.hkt.QueueKind;
 import com.aol.cyclops2.hkt.Higher;

@@ -1,10 +1,11 @@
 package com.aol.cyclops.vavr;
 
+import cyclops.conversion.vavr.FromJDK;
 import org.junit.Test;
 
 import java.util.Optional;
 
-import static com.aol.cyclops.vavr.FromJDK.f2;
+import static cyclops.conversion.vavr.FromJDK.f2;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 

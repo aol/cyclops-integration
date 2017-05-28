@@ -1,6 +1,6 @@
 package cyclops.companion.vavr;
 
-import com.aol.cyclops.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.VavrWitness.vector;
 import cyclops.collections.vavr.VavrVectorX;
 import com.aol.cyclops.vavr.hkt.VectorKind;

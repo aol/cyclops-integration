@@ -10,7 +10,7 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 
-import com.aol.cyclops.rx.Observables;
+import cyclops.companion.rx.Observables;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.aol.cyclops.reactor;
+package cyclops.monads.transformers.reactor;
 
 
 
@@ -8,14 +8,15 @@ import com.aol.cyclops2.types.foldable.CyclopsCollectable;
 import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.traversable.FoldableTraversable;
 import com.aol.cyclops2.types.traversable.Traversable;
-import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.reactor.Fluxs;
 import cyclops.control.Maybe;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.ReactorWitness;
 import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
 

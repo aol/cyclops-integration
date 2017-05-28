@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-import com.aol.cyclops.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 import javaslang.collection.Iterator;

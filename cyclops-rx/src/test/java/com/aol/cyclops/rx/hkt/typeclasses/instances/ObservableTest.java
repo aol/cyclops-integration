@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
-import java.util.function.Function;
 
 import com.aol.cyclops.rx.hkt.ObservableKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -18,7 +17,7 @@ import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 
 
-import com.aol.cyclops.rx.Observables;
+import cyclops.companion.rx.Observables;
 
 
 import rx.Observable;

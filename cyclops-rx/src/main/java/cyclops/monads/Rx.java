@@ -1,4 +1,4 @@
-package com.aol.cyclops.rx;
+package cyclops.monads;
 
 /**
  * Created by johnmcclean on 15/05/2017.

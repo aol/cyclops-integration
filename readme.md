@@ -41,8 +41,8 @@ List<Integer> backToVavr = VavrWitness.list(summedVavr);
 Or RxJava
 
 ```java
-import static com.aol.cyclops.rx.RxWitness.observable;
-import com.aol.cyclops.rx.Observables;
+import static cyclops.monads.RxWitness.observable;
+import cyclops.companion.rx.Observables;
 
 AnyMSeq<observable,Integer> rxObservable = Observables.anyM(Observable.range(0, 10));
 AnyMSeq<observable,Integer> summedRx = sumAdjacent(rxObservable);
@@ -90,7 +90,7 @@ String combine(String espresso, String frothedMilk) {
 ```
 
 ```java
-import static com.aol.cyclops.reactor.Fluxs.*;
+import static cyclops.companion.reactor.Fluxs.*;
 
 Flux<Integer> result = Fluxs.forEach(Flux.just(10, 20), a -> Flux.<Integer> just(a + 10), (a, b) -> a + b);
 result.collectList()

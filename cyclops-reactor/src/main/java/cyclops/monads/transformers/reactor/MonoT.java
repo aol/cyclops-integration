@@ -1,8 +1,7 @@
-package com.aol.cyclops.reactor;
+package cyclops.monads.transformers.reactor;
 
 
 import java.util.Iterator;
-import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;

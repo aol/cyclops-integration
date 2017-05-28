@@ -1,7 +1,7 @@
 package cyclops.companion.vavr;
 
-import com.aol.cyclops.vavr.FromCyclopsReact;
-import com.aol.cyclops.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
 import com.aol.cyclops.vavr.hkt.OptionKind;

@@ -1,11 +1,9 @@
-package com.aol.cyclops.reactor;
+package cyclops.monads;
 
 
 import com.aol.cyclops.reactor.adapter.FluxAdapter;
 import com.aol.cyclops.reactor.adapter.MonoAdapter;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
-import cyclops.monads.Witness;
-import cyclops.monads.WitnessType;
 
 public interface ReactorWitness {
     static interface FluxWitness<W extends ReactorWitness.FluxWitness<W>>  extends WitnessType<W> {

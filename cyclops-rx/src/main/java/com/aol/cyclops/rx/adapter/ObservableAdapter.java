@@ -1,8 +1,8 @@
 package com.aol.cyclops.rx.adapter;
 
 
-import com.aol.cyclops.rx.Observables;
-import com.aol.cyclops.rx.RxWitness.obsvervable;
+import cyclops.companion.rx.Observables;
+import cyclops.monads.RxWitness.obsvervable;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
 import lombok.AllArgsConstructor;

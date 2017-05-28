@@ -1,4 +1,4 @@
-package com.aol.cyclops.vavr;
+package cyclops.conversion.vavr;
 
 import javaslang.Function1;
 import javaslang.control.Option;

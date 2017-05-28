@@ -1,4 +1,4 @@
-package com.aol.cyclops.vavr;
+package cyclops.conversion.vavr;
 
 import com.aol.cyclops2.types.Zippable;
 import cyclops.async.Future;

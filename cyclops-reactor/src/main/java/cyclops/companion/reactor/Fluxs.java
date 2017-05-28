@@ -1,32 +1,25 @@
-package com.aol.cyclops.reactor;
+package cyclops.companion.reactor;
 
-import com.aol.cyclops.reactor.ReactorWitness.flux;
+import cyclops.monads.ReactorWitness;
+import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
-import cyclops.control.Try;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.stream.ReactiveSeq;
-import cyclops.stream.Spouts;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple;
-import org.jooq.lambda.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
-import java.util.*;
 import java.util.function.*;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Companion class for working with Reactor Flux types
@@ -70,7 +63,7 @@ public class Fluxs {
      *  <pre>
       * {@code
       *    
-      *   import static com.aol.cyclops.reactor.Fluxs.forEach4;
+      *   import static cyclops.companion.reactor.Fluxs.forEach4;
       *    
           forEach4(Flux.range(1,10), 
                   a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -118,7 +111,7 @@ public class Fluxs {
      * <pre>
      * {@code
      * 
-     *  import static com.aol.cyclops.reactor.Fluxs.forEach4;
+     *  import static cyclops.companion.reactor.Fluxs.forEach4;
      *   
      *  forEach4(Flux.range(1,10), 
                             a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -168,7 +161,7 @@ public class Fluxs {
      * <pre>
      * {@code 
      * 
-     * import static com.aol.cyclops.reactor.Fluxs.forEach;
+     * import static cyclops.companion.reactor.Fluxs.forEach;
      * 
      * forEach(Flux.range(1,10), 
                             a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -208,7 +201,7 @@ public class Fluxs {
          * <pre>
          * {@code
          *
-         * import static com.aol.cyclops.reactor.Fluxs.forEach;
+         * import static cyclops.companion.reactor.Fluxs.forEach;
          *
          * forEach(Flux.range(1,10),
                        a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -253,7 +246,7 @@ public class Fluxs {
      * <pre>
      * {@code 
      * 
-     *  import static com.aol.cyclops.reactor.Fluxs.forEach;
+     *  import static cyclops.companion.reactor.Fluxs.forEach;
      *  forEach(Flux.range(1, 10), i -> Flux.range(i, 10), Tuple::tuple)
               .subscribe(System.out::println);
               
@@ -286,7 +279,7 @@ public class Fluxs {
      * <pre>
      * {@code 
      * 
-     *   import static com.aol.cyclops.reactor.Fluxs.forEach;
+     *   import static cyclops.companion.reactor.Fluxs.forEach;
      * 
      *   forEach(Flux.range(1, 10), i -> Flux.range(i, 10),(a,b) -> a>2 && b<10,Tuple::tuple)
                .subscribe(System.out::println);

@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import com.aol.cyclops.reactor.Fluxs;
+import cyclops.companion.reactor.Fluxs;
 import com.aol.cyclops.reactor.hkt.FluxKind;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.collections.mutable.ListX;

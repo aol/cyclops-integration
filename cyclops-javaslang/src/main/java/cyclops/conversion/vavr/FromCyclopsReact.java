@@ -1,4 +1,4 @@
-package com.aol.cyclops.vavr;
+package cyclops.conversion.vavr;
 
 import java.util.stream.Stream;
 

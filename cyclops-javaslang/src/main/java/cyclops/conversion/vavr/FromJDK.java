@@ -1,4 +1,4 @@
-package com.aol.cyclops.vavr;
+package cyclops.conversion.vavr;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;

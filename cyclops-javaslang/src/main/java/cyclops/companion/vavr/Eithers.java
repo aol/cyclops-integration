@@ -1,8 +1,8 @@
 package cyclops.companion.vavr;
 
 
-import com.aol.cyclops.vavr.FromCyclopsReact;
-import com.aol.cyclops.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.types.Value;

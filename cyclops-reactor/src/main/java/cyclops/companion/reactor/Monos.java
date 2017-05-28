@@ -1,17 +1,16 @@
-package com.aol.cyclops.reactor;
+package cyclops.companion.reactor;
 
 import java.util.Iterator;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.aol.cyclops.reactor.ReactorWitness.mono;
+import cyclops.monads.ReactorWitness;
+import cyclops.monads.ReactorWitness.mono;
 import com.aol.cyclops.reactor.hkt.MonoKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.async.Future;
-import cyclops.function.Fn1;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
@@ -68,7 +67,7 @@ public class Monos {
      *  <pre>
      * {@code
      *    
-     *   import static com.aol.cyclops.reactor.Monos.forEach4;
+     *   import static cyclops.companion.reactor.Monos.forEach4;
      *    
           forEach4(Mono.just(1), 
                   a-> Mono.just(a+1),
@@ -117,7 +116,7 @@ public class Monos {
      *  <pre>
      * {@code
      *    
-     *   import static com.aol.cyclops.reactor.Monos.forEach3;
+     *   import static cyclops.companion.reactor.Monos.forEach3;
      *    
           forEach3(Mono.just(1), 
                   a-> Mono.just(a+1),
@@ -164,7 +163,7 @@ public class Monos {
      *  <pre>
      * {@code
      *    
-     *   import static com.aol.cyclops.reactor.Monos.forEach;
+     *   import static cyclops.companion.reactor.Monos.forEach;
      *    
           forEach(Mono.just(1), 
                   a-> Mono.just(a+1),

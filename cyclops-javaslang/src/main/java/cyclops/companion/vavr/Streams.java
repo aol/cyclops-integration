@@ -1,6 +1,6 @@
 package cyclops.companion.vavr;
 
-import com.aol.cyclops.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.VavrWitness.stream;
 import com.aol.cyclops.vavr.hkt.StreamKind;
 import com.aol.cyclops2.hkt.Higher;

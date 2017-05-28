@@ -3,10 +3,9 @@ package com.aol.cyclops.vavr.hkt;
 import java.util.Optional;
 
 
-import com.aol.cyclops.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
-import cyclops.companion.Optionals;
 import cyclops.companion.Optionals.OptionalKind;
 import cyclops.control.Eval;
 import javaslang.collection.Iterator;

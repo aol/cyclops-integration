@@ -1,8 +1,8 @@
-package com.aol.cyclops.rx;
+package cyclops.companion.rx;
 
 import java.util.function.*;
 
-import com.aol.cyclops.rx.RxWitness.obsvervable;
+import cyclops.monads.RxWitness.obsvervable;
 import com.aol.cyclops.rx.hkt.ObservableKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
