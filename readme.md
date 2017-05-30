@@ -4,6 +4,11 @@
 
 * [cyclops user guide](https://github.com/aol/cyclops-react/wiki)
 
+## Latest Articles
+
+* [DSLs with the Free Monad in Java 8 : Part I](https://medium.com/@johnmcclean/dsls-with-the-free-monad-in-java-8-part-i-701408e874f8)
+* [Cross Library Stream Benchmarking : Playing Scrabble with Shakespeare](https://medium.com/@johnmcclean/cross-library-stream-benchmarking-playing-scrabble-with-shakespeare-8dd1d1654717)
+
 # A common API across the functional landscape
 
 cyclops provides a common set of APIs across the major functional libraries for Java. It does this via :
