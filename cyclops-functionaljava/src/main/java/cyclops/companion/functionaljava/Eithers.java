@@ -1,13 +1,13 @@
 package cyclops.companion.functionaljava;
 
 
+import cyclops.collections.mutable.ListX;
 import cyclops.monads.FJWitness;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;
-import cyclops.collections.ListX;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;

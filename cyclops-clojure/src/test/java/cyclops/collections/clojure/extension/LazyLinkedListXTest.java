@@ -1,4 +1,4 @@
-package cyclops.collections.dexx.extensions;
+package cyclops.collections.clojure.extension;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -9,13 +9,15 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.LinkedListX;
+import cyclops.collections.mutable.ListX;
+import cyclops.companion.Semigroups;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
-
-import cyclops.collections.dexx.DexxListX;
+import cyclops.collections.clojure.ClojureListX;
 
 
 import reactor.core.publisher.Flux;
@@ -24,18 +26,25 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        LinkedListX<T> list = DexxListX.empty();
+        LinkedListX<T> list = ClojureListX.empty();
         for (T next : values) {
             list = list.plus(list.size(), next);
         }
-        
-        return list.efficientOpsOff();
+        System.out.println("List " + list);
+        return list;
 
+    }
+    @Test
+    public void combineNoOrderOd(){
+        assertThat(of(1,2,3)
+                   .combine((a, b)->a.equals(b), Semigroups.intSum)
+                   .toListX(),equalTo(ListX.of(1,2,3)));
+                   
     }
 
     @Test
     public void onEmptySwitch() {
-        assertThat(DexxListX.empty()
+        assertThat(ClojureListX.empty()
                           .onEmptySwitch(() -> LinkedListX.of(1, 2, 3)),
                    equalTo(LinkedListX.of(1, 2, 3)));
     }
@@ -49,7 +58,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return DexxListX.empty();
+        return ClojureListX.empty();
     }
 
     
@@ -57,7 +66,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
     @Test
     public void remove() {
 
-        DexxListX.of(1, 2, 3)
+        ClojureListX.of(1, 2, 3)
                .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
@@ -65,26 +74,26 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return DexxListX.range(start, end);
+        return ClojureListX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return DexxListX.rangeLong(start, end);
+        return ClojureListX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return DexxListX.iterate(times, seed, fn);
+        return ClojureListX.iterate(times, seed, fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return DexxListX.generate(times, fn);
+        return ClojureListX.generate(times, fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return DexxListX.unfold(seed, unfolder);
+        return ClojureListX.unfold(seed, unfolder);
     }
 }

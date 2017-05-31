@@ -1,6 +1,7 @@
 package cyclops.companion.functionaljava;
 
 
+import cyclops.collections.mutable.ListX;
 import cyclops.monads.FJ;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.option;
@@ -11,8 +12,6 @@ import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;
-import cyclops.Monoids;
-import cyclops.collections.ListX;
 import cyclops.control.Maybe;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;

@@ -6,6 +6,8 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 import com.aol.cyclops2.types.functor.Transformable;
@@ -16,8 +18,10 @@ import cyclops.collections.mutable.SortedSetX;
 import cyclops.companion.vavr.Lists;
 import cyclops.companion.vavr.Options;
 import cyclops.companion.vavr.Trys;
+import cyclops.control.Eval;
 import cyclops.monads.AnyM;
 import cyclops.monads.Vavr;
+import cyclops.monads.VavrWitness;
 import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 
@@ -36,6 +40,8 @@ import javaslang.control.Try;
 import lombok.Data;
 
 public class AnyJavaslangMTest {
+
+    public static final Function<AnyM<?, String>, java.util.List<String>> ANY_M_LIST_FUNCTION = e -> e.stream().collect(Collectors.toList());
 
     private ReactiveSeq<Data> loadById(int id) {
         return null;
@@ -108,16 +114,18 @@ public class AnyJavaslangMTest {
     public void monadTest() {
         assertThat(Trys.anyM(Try.of(this::success))
                             .map(String::toUpperCase)
-                            .toLazyCollection(),
+                            .to(ANY_M_LIST_FUNCTION),
 
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
+    
     @Test
     public void tryTest() {
+        
         assertThat(Vavr.tryM(Try.of(this::success))
                             .map(String::toUpperCase)
-                           .toLazyCollection(),
+                           .to(ANY_M_LIST_FUNCTION),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -149,7 +157,7 @@ public class AnyJavaslangMTest {
 
         assertThat(Vavr.tryM(Try.success("hello world"))
 
-                            .toLazyCollection(),
+                            .to(ANY_M_LIST_FUNCTION),
                    equalTo(Arrays.asList("hello world")));
 
     }
@@ -160,7 +168,7 @@ public class AnyJavaslangMTest {
                             .map(String::toUpperCase)
                             .flatMap(AnyM::ofNullable)
 
-                            .toLazyCollection(),
+                            .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -178,7 +186,7 @@ public class AnyJavaslangMTest {
     public void eitherTest() {
         assertThat(Vavr.either(Either.right("hello world"))
                             .map(String::toUpperCase)
-                            .toLazyCollection(),
+                            .to(ANY_M_LIST_FUNCTION),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -186,7 +194,7 @@ public class AnyJavaslangMTest {
     public void eitherLeftTest() {
         assertThat(Vavr.either(Either.<String, String> left("hello world"))
                             .map(String::toUpperCase)
-                            .toLazyCollection(),
+                            .to(ANY_M_LIST_FUNCTION),
                    equalTo(Arrays.asList()));
     }
 
@@ -195,7 +203,7 @@ public class AnyJavaslangMTest {
         assertThat(Vavr.either(Either.<Object, String> right("hello world"))
                             .map(String::toUpperCase)
 
-                            .toLazyCollection(),
+                            .to(ANY_M_LIST_FUNCTION),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -205,7 +213,7 @@ public class AnyJavaslangMTest {
     public void optionTest() {
         assertThat(Vavr.option(Option.of("hello world"))
                             .map(String::toUpperCase)
-                            .toLazyCollection(),
+                            .to(ANY_M_LIST_FUNCTION),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -214,7 +222,7 @@ public class AnyJavaslangMTest {
         assertThat(Vavr.option(Option.of("hello world"))
                             .map(String::toUpperCase)
                             .flatMap(AnyM::ofNullable)
-                            .toLazyCollection(),
+                            .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -222,7 +230,7 @@ public class AnyJavaslangMTest {
     public void optionEmptyTest() {
         assertThat(Vavr.option(Option.<String> none())
                             .map(String::toUpperCase)
-                            .toLazyCollection(),
+                            .to(ANY_M_LIST_FUNCTION),
                    equalTo(Arrays.asList()));
     }
 
@@ -230,7 +238,7 @@ public class AnyJavaslangMTest {
     public void futureTest() {
         assertThat(Vavr.future(Future.of(() -> "hello world"))
                             .map(String::toUpperCase)
-                            .toLazyCollection(),
+                            .to(ANY_M_LIST_FUNCTION),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -238,7 +246,7 @@ public class AnyJavaslangMTest {
     public void futureFlatMapTest() {
         assertThat(Vavr.future(Future.of(() -> "hello world"))
                             .map(String::toUpperCase)
-                            .toLazyCollection(),
+                            .to(ANY_M_LIST_FUNCTION),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 

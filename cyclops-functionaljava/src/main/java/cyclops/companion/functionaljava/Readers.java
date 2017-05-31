@@ -1,7 +1,5 @@
 package cyclops.companion.functionaljava;
 
-
-import cyclops.collections.ListX;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import fj.data.Reader;

@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
-import cyclops.collections.ListX;
+import cyclops.collections.mutable.ListX;
 import cyclops.companion.guava.FluentIterables;
 import cyclops.companion.guava.Optionals;
 import org.jooq.lambda.tuple.Tuple;

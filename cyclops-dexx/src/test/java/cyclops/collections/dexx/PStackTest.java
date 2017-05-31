@@ -45,14 +45,14 @@ public class PStackTest {
             list = list.plus(list.size(), next);
             System.out.println("List " + list);
         }
-        list = list.efficientOpsOff();
+        list = list;
         System.out.println("List " + list);
         
         LinkedListX<Integer> list2 = DexxListX.empty();
         for (Integer next : values) {
             list2 = list2.plus(list2.size(), next);
         }
-        list2 = list2.efficientOpsOff();
+        list2 = list2;
         System.out.println("List2 " + list2);
        assertThat(list,equalTo(list2));
     }

@@ -9,8 +9,8 @@ import java.util.Set;
 
 import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
-import cyclops.collections.MapXs;
 import cyclops.collections.immutable.PersistentMapX;
+import cyclops.companion.MapXs;
 import cyclops.control.Eval;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;

@@ -1,10 +1,10 @@
 package cyclops.companion.functionaljava;
 
+import cyclops.collections.mutable.ListX;
 import cyclops.monads.FJWitness.list;
 import com.aol.cyclops.functionaljava.hkt.ListKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
-import cyclops.collections.ListX;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;

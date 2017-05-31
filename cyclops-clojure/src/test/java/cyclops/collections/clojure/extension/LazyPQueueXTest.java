@@ -19,7 +19,7 @@ import cyclops.collections.clojure.ClojureQueueX;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPersistentQueueXTest extends AbstractCollectionXTest  {
+public class LazyPQueueXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {

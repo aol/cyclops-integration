@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPersistentSetX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import cyclops.collections.clojure.ClojureHashSetX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.PersistentSetX;
@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPersistentSetXTest extends AbstractCollectionXTest  {
+public class LazyPSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {

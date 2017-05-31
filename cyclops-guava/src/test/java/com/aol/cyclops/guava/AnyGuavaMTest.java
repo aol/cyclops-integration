@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import cyclops.control.Maybe;
 import cyclops.conversion.guava.ToCyclopsReact;
@@ -28,7 +29,7 @@ public class AnyGuavaMTest {
     @Test
     public void optionalTest() {
         assertThat(ToCyclopsReact.maybe(Optional.of("hello world"))
-                        .map(String::toUpperCase).toLazyCollection(),
+                        .map(String::toUpperCase).to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -37,7 +38,7 @@ public class AnyGuavaMTest {
         assertThat(ToCyclopsReact.maybe(Optional.of("hello world"))
                         .map(String::toUpperCase)
                         .flatMap(a -> AnyM.fromMaybe(Maybe.just(a)))
-                        .toLazyCollection(),
+                        .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -45,7 +46,7 @@ public class AnyGuavaMTest {
     public void optionEmptyTest() {
         assertThat(ToCyclopsReact.maybe(Optional.<String> absent())
                         .map(String::toUpperCase)
-                        .toLazyCollection(),
+                        .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList()));
     }
 
