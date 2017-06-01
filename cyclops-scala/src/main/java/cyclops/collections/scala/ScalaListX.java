@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.function.Reducer;
@@ -33,7 +34,11 @@ import scala.collection.Seq;
 import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScalaCollection<T> {
+public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScalaCollection<T>, Unwrapable {
+    @Override
+    public <R> R unwrap() {
+        return (R)list;
+    }
 
     public LazyLinkedListX<T> plusLoop(int max, IntFunction<T> value) {
 

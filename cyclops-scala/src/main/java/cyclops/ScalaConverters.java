@@ -61,8 +61,19 @@ public interface ScalaConverters {
                 ()-> ScalaQueueX.copyFromCollection(vec).unwrap());
     }
     public static <T> List<T> List(CollectionX<T> vec){
+        System.out.println("List!");
         return vec.unwrapIfInstance(List.class,
-                ()-> ScalaListX.copyFromCollection(vec).unwrap());
+                ()-> {
+                System.out.println("Vec " + vec.unwrap().getClass());
+                    if(vec.unwrap() instanceof CollectionX){
+                        System.out.println("Unwrap.. ");
+                        return List(vec.unwrap());
+                    }
+                        ScalaListX o = ScalaListX.copyFromCollection(vec).unwrap();
+                       // Object o2= o.unwrap();
+                       // System.out.println("O2 class is " + o2.getClass());
+                        return null;//(List<T>)o2;
+                });
     }
     public static <T> Vector<T> Vector(CollectionX<T> vec){
         return vec.unwrapIfInstance(Vector.class,

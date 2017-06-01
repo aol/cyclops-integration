@@ -1,6 +1,8 @@
 package cyclops.companion.vavr;
 
 
+import com.aol.cyclops2.react.Status;
+import com.aol.cyclops2.react.collectors.lazy.Blocker;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
@@ -30,9 +32,16 @@ import javaslang.concurrent.Future;
 
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -43,10 +52,16 @@ import java.util.stream.Stream;
  */
 @UtilityClass
 public class Futures {
-
+    public static <T> void subscribe(final Subscriber<? super T> sub, Future<T> f){
+         asPublisher(f).subscribe(sub);
+    }
+    public static <T> Publisher<T> asPublisher(Future<T> f){
+        return ToCyclopsReact.future(f);
+    }
     public static <T> AnyMValue<future,T> anyM(Future<T> future) {
         return AnyM.ofValue(future, VavrWitness.future.INSTANCE);
     }
+
     /**
      * Lifts a vavr Future into a cyclops FutureT monad transformer (involves an async conversion to
      * cyclops Future types)
@@ -55,6 +70,112 @@ public class Futures {
     public static <T,W extends WitnessType<W>> FutureT<W, T> liftM(Future<T> opt, W witness) {
         return FutureT.of(witness.adapter().unit(ToCyclopsReact.future(opt)));
     }
+
+
+
+    /**
+     * Select the first Future to complete
+     *
+     * @see CompletableFuture#anyOf(CompletableFuture...)
+     * @param fts FutureWs to race
+     * @return First Future to complete
+     */
+    public static <T> Future<T> anyOf(Future<T>... fts) {
+        return FromCyclopsReact.future(cyclops.async.Future.anyOf(ToCyclopsReact.futures(fts)));
+
+    }
+    /**
+     * Wait until all the provided Future's to complete
+     *
+     * @see CompletableFuture#allOf(CompletableFuture...)
+     *
+     * @param fts FutureWs to  wait on
+     * @return Future that completes when all the provided Futures Complete. Empty Future result, or holds an Exception
+     *         from a provided Future that failed.
+     */
+    public static <T> Future<T> allOf(Future<T>... fts) {
+
+        return FromCyclopsReact.future(cyclops.async.Future.allOf(ToCyclopsReact.futures(fts)));
+    }
+    /**
+     * Block until a Quorum of results have returned as determined by the provided Predicate
+     *
+     * <pre>
+     * {@code
+     *
+     * Future<ListX<Integer>> strings = Future.quorum(status -> status.getCompleted() >0, Future.ofSupplier(()->1),Future.future(),Future.future());
+
+
+    strings.get().size()
+    //1
+     *
+     * }
+     * </pre>
+     *
+     *
+     * @param breakout Predicate that determines whether the block should be
+     *            continued or removed
+     * @param fts FutureWs to  wait on results from
+     * @param errorHandler Consumer to handle any exceptions thrown
+     * @return Future which will be populated with a Quorum of results
+     */
+    @SafeVarargs
+    public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Consumer<Throwable> errorHandler, Future<T>... fts) {
+
+        return FromCyclopsReact.future(cyclops.async.Future.quorum(breakout,errorHandler,ToCyclopsReact.futures(fts)));
+
+
+    }
+    /**
+     * Block until a Quorum of results have returned as determined by the provided Predicate
+     *
+     * <pre>
+     * {@code
+     *
+     * Future<ListX<Integer>> strings = Future.quorum(status -> status.getCompleted() >0, Future.ofSupplier(()->1),Future.future(),Future.future());
+
+
+    strings.get().size()
+    //1
+     *
+     * }
+     * </pre>
+     *
+     *
+     * @param breakout Predicate that determines whether the block should be
+     *            continued or removed
+     * @param fts FutureWs to  wait on results from
+     * @return Future which will be populated with a Quorum of results
+     */
+    @SafeVarargs
+    public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Future<T>... fts) {
+
+        return FromCyclopsReact.future(cyclops.async.Future.quorum(breakout,ToCyclopsReact.futures(fts)));
+
+
+    }
+    /**
+     * Select the first Future to return with a successful result
+     *
+     * <pre>
+     * {@code
+     * Future<Integer> ft = Future.future();
+    Future<Integer> result = Future.firstSuccess(Future.ofSupplier(()->1),ft);
+
+    ft.complete(10);
+    result.get() //1
+     * }
+     * </pre>
+     *
+     * @param fts Futures to race
+     * @return First Future to return with a result
+     */
+    @SafeVarargs
+    public static <T> Future<T> firstSuccess(Future<T>... fts) {
+        return FromCyclopsReact.future(cyclops.async.Future.firstSuccess(ToCyclopsReact.futures(fts)));
+
+    }
+
     /**
      * Perform a For Comprehension over a Future, accepting 3 generating function.
      * This results in a four level nested internal iteration over the provided Futures.

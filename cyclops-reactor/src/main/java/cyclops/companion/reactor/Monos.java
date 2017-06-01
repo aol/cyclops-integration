@@ -1,9 +1,15 @@
 package cyclops.companion.reactor;
 
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
+import com.aol.cyclops2.react.Status;
+import cyclops.collections.mutable.ListX;
+import cyclops.conversion.reactor.ToCyclopsReact;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.mono;
 import com.aol.cyclops.reactor.hkt.MonoKind;
@@ -58,6 +64,111 @@ public class Monos {
      */
     public static <T> AnyMValue<mono,T> anyM(Mono<T> mono) {
         return AnyM.ofValue(mono, ReactorWitness.mono.INSTANCE);
+    }
+
+
+
+    /**
+     * Select the first Mono to complete
+     *
+     * @see CompletableFuture#anyOf(CompletableFuture...)
+     * @param fts Monos to race
+     * @return First Mono to complete
+     */
+    public static <T> Mono<T> anyOf(Mono<T>... fts) {
+        return Mono.from(Future.anyOf(ToCyclopsReact.futures(fts)));
+
+    }
+    /**
+     * Wait until all the provided Future's to complete
+     *
+     * @see CompletableFuture#allOf(CompletableFuture...)
+     *
+     * @param fts Monos to  wait on
+     * @return Mono that completes when all the provided Futures Complete. Empty Future result, or holds an Exception
+     *         from a provided Future that failed.
+     */
+    public static <T> Mono<T> allOf(Mono<T>... fts) {
+
+        return Mono.from(Future.allOf(ToCyclopsReact.futures(fts)));
+    }
+    /**
+     * Block until a Quorum of results have returned as determined by the provided Predicate
+     *
+     * <pre>
+     * {@code
+     *
+     * Mono<ListX<Integer>> strings = Monos.quorum(status -> status.getCompleted() >0, Mono.deferred(()->1),Mono.empty(),Mono.empty());
+
+
+    strings.get().size()
+    //1
+     *
+     * }
+     * </pre>
+     *
+     *
+     * @param breakout Predicate that determines whether the block should be
+     *            continued or removed
+     * @param fts FutureWs to  wait on results from
+     * @param errorHandler Consumer to handle any exceptions thrown
+     * @return Future which will be populated with a Quorum of results
+     */
+    @SafeVarargs
+    public static <T> Mono<ListX<T>> quorum(Predicate<Status<T>> breakout, Consumer<Throwable> errorHandler, Mono<T>... fts) {
+
+        return Mono.from(cyclops.async.Future.quorum(breakout,errorHandler,ToCyclopsReact.futures(fts)));
+
+
+    }
+    /**
+     * Block until a Quorum of results have returned as determined by the provided Predicate
+     *
+     * <pre>
+     * {@code
+     *
+     * Mono<ListX<Integer>> strings = Monos.quorum(status -> status.getCompleted() >0, Mono.deferred(()->1),Mono.empty(),Mono.empty());
+
+
+    strings.get().size()
+    //1
+     *
+     * }
+     * </pre>
+     *
+     *
+     * @param breakout Predicate that determines whether the block should be
+     *            continued or removed
+     * @param fts Monos to  wait on results from
+     * @return Mono which will be populated with a Quorum of results
+     */
+    @SafeVarargs
+    public static <T> Mono<ListX<T>> quorum(Predicate<Status<T>> breakout, Mono<T>... fts) {
+
+        return Mono.from(cyclops.async.Future.quorum(breakout,ToCyclopsReact.futures(fts)));
+
+
+    }
+    /**
+     * Select the first Future to return with a successful result
+     *
+     * <pre>
+     * {@code
+     * Mono<Integer> ft = Mono.empty();
+      Mono<Integer> result = Monos.firstSuccess(Mono.deferred(()->1),ft);
+
+    ft.complete(10);
+    result.get() //1
+     * }
+     * </pre>
+     *
+     * @param fts Monos to race
+     * @return First Mono to return with a result
+     */
+    @SafeVarargs
+    public static <T> Mono<T> firstSuccess(Mono<T>... fts) {
+        return Mono.from(cyclops.async.Future.firstSuccess(ToCyclopsReact.futures(fts)));
+
     }
 
     /**

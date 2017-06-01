@@ -13,6 +13,14 @@ import javaslang.control.Option;
 
 public class ToCyclopsReact {
 
+    public static <T> Future[] futures(javaslang.concurrent.Future<T>... futures){
+
+        Future[] array = new Future[futures.length];
+        for(int i=0;i<array.length;i++){
+            array[i]=future(futures[i]);
+        }
+        return array;
+    }
     public static <T> Future<T> future(javaslang.concurrent.Future<T> future){
         Future<T> res = Future.future();
         future.onSuccess(v->res.complete(v))
