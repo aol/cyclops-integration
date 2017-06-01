@@ -2,6 +2,7 @@ package cyclops.collections.scala;
 
 import java.util.AbstractList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -18,6 +19,7 @@ import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
+import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
 
@@ -143,7 +145,7 @@ public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScala
     /**
      * <pre>
      * {@code 
-     * PStack<Integer> q = JSPStack.<Integer>toPStack()
+     * PStack<Integer> q = PStack.<Integer>toPStack()
                                      .mapReduce(Stream.of(1,2,3,4));
      * 
      * }
@@ -403,9 +405,15 @@ public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScala
        return List.canBuildFrom();
     }
     public static <T> LinkedListX<T> copyFromCollection(CollectionX<T> vec) {
+        List<T> list = from(vec.iterator(),0);
+        return fromPStack(fromList(list),toPStack());
 
-        return ScalaListX.<T>empty()
-                .plusAll(vec);
+    }
+    private static <E> List<E> from(final Iterator<E> i, int depth) {
 
+        if(!i.hasNext())
+            return List$.MODULE$.empty();
+        E e = i.next();
+        return  from(i,depth++).$colon$colon(e);
     }
 }

@@ -3,10 +3,16 @@ package cyclops;
 import cyclops.collections.immutable.*;
 import cyclops.collections.mutable.ListX;
 import cyclops.collections.mutable.QueueX;
+import cyclops.collections.scala.ScalaHashMapX;
 import cyclops.collections.scala.ScalaListX;
+import cyclops.collections.scala.ScalaTreeMapX;
 import cyclops.collections.scala.ScalaVectorX;
+import cyclops.companion.MapXs;
+import cyclops.companion.PersistentMapXs;
 import org.junit.Test;
 import scala.collection.immutable.*;
+
+import java.util.Comparator;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -18,14 +24,23 @@ import static org.testng.Assert.*;
 public class ScalaConvertersTest {
 
     @Test
-    public void list(){
+    public void listNative(){
 //materializeList makes use of ConsPStack
         List<Integer> list = LinkedListX.of(1,2,3)
                                         .type(ScalaListX.toPStack())
-                                        .map(i->i*2).materialize()
-                                        .to(ScalaConverters::List2);
+                                        .map(i->i*2)
+                                        .to(ScalaConverters::List);
 
-        System.out.println(list);
+        assertThat(list.toString(), equalTo( "List(2, 4, 6)"));
+    }
+    @Test
+    public void listAlien(){
+//materializeList makes use of ConsPStack
+        List<Integer> list = LinkedListX.of(1,2,3)
+                .map(i->i*2)
+                .to(ScalaConverters::List);
+
+        assertThat(list.toString(), equalTo( "List(2, 4, 6)"));
     }
     @Test
     public void vectorNative() {
@@ -141,4 +156,50 @@ public class ScalaConvertersTest {
         assertTrue(list.contains(4),list.toString());
         assertTrue(list.contains(6),list.toString());
     }
+
+    @Test
+    public void hashMapNative() {
+
+        HashMap<Integer,Integer> list = ScalaHashMapX.copyFromMap(MapXs.of(1,2,3,4))
+                                                       .to(ScalaConverters::HashMap);
+
+        assertThat(list.size(), equalTo(2));
+        assertTrue(list.contains(1),list.toString());
+        assertTrue(list.contains(3),list.toString());
+
+    }
+
+    @Test
+    public void hashMapAlien(){
+
+        HashMap<Integer,Integer> list = PersistentMapXs.of(1, 2, 3,4)
+                .to(ScalaConverters::HashMap);
+
+        assertThat(list.size(), equalTo(2));
+        assertTrue(list.contains(1),list.toString());
+        assertTrue(list.contains(3),list.toString());
+    }
+    @Test
+    public void treeMapNative() {
+
+        TreeMap<Integer,Integer> list = ScalaTreeMapX.copyFromMap(MapXs.of(1,2,3,4), Comparator.naturalOrder())
+                                                     .to(ScalaConverters::TreeMap);
+
+        assertThat(list.size(), equalTo(2));
+        assertTrue(list.contains(1),list.toString());
+        assertTrue(list.contains(3),list.toString());
+
+    }
+
+    @Test
+    public void treeMapAlien(){
+
+        TreeMap<Integer,Integer> list = PersistentMapXs.of(1, 2, 3,4)
+                                                        .to(ScalaConverters::TreeMap);
+
+        assertThat(list.size(), equalTo(2));
+        assertTrue(list.contains(1),list.toString());
+        assertTrue(list.contains(3),list.toString());
+    }
+
 }

@@ -1,15 +1,12 @@
 package cyclops.collections.scala;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 import com.aol.cyclops.scala.collections.Converters;
 import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
+import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.control.Eval;
@@ -32,15 +29,25 @@ import scala.collection.immutable.TreeMap;
 import scala.collection.immutable.TreeMap$;
 import scala.collection.mutable.Builder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, HasScalaCollection {
+public class ScalaTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, HasScalaCollection, Unwrapable {
     
     @Wither
     TreeMap<K,V> map;
+
+    @Override
+    public <R> R unwrap() {
+        return (R)map;
+    }
+
     public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX(Comparator<? super K> c) {
         return Reducer.<PersistentMapX<K, V>> of(empty(c), (final PersistentMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
             final List w = ((TupleWrapper) () -> in).values();
             return singleton(c,(K) w.get(0), (V) w.get(1));
         });
+    }
+    public static <K,V> PersistentMapX<K,V> copyFromMap(Map<K,V> map,Comparator<? super K> c){
+        return ScalaTreeMapX.<K,V>empty(c)
+                .plusAll(map);
     }
     public static <K,V> ScalaTreeMapX<K,V> fromMap(TreeMap<K,V> map){
         return new ScalaTreeMapX<>(map);

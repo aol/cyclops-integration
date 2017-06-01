@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -31,7 +32,12 @@ import scala.collection.mutable.Builder;
  * BitSet is experimental / not ready for prime time
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaBitSetX extends AbstractSet<Integer>implements POrderedSet<Integer>, HasScalaCollection {
+public class ScalaBitSetX extends AbstractSet<Integer>implements POrderedSet<Integer>, HasScalaCollection, Unwrapable {
+
+    @Override
+    public <R> R unwrap() {
+        return (R)set;
+    }
 
     /**
      * Create a LazyPOrderedSetX from a Stream
