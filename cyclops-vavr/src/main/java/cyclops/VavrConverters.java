@@ -4,7 +4,7 @@ import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.types.foldable.To;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.collections.vavr.*;
-import javaslang.collection.*;
+import io.vavr.collection.*;
 
 import java.util.Comparator;
 import java.util.function.Function;

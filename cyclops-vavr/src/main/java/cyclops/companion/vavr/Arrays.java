@@ -503,7 +503,7 @@ public class Arrays {
                 BiFunction<Higher<C2,ArrayKind<T>>,Higher<C2,T>,Higher<C2,ArrayKind<T>>> combineToArray =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> ArrayKind.widen(ArrayKind.narrow(a).append(b))),
                         acc,next);
 
-                BinaryOperator<Higher<C2,ArrayKind<T>>> combineArrays = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> ArrayKind.widen(ArrayKind.narrow(l1).appendAll(l2))),a,b); ;
+                BinaryOperator<Higher<C2,ArrayKind<T>>> combineArrays = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> ArrayKind.widen(ArrayKind.narrow(l1).appendAll(l2.narrow()))),a,b); ;
 
                 return ReactiveSeq.fromIterable(ArrayKind.narrow(list))
                         .reduce(identity,
@@ -545,7 +545,7 @@ public class Arrays {
         }
 
         private static <T,R> ArrayKind<R> ap(ArrayKind<Function< T, R>> lt, ArrayKind<T> list){
-            return ArrayKind.widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt).zip(list, (a, b)->a.apply(b))).toArray());
+            return ArrayKind.widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toArray());
         }
         private static <T,R> Higher<ArrayKind.µ,R> flatMap(Higher<ArrayKind.µ,T> lt, Function<? super T, ? extends  Higher<ArrayKind.µ,R>> fn){
             return ArrayKind.widen(ArrayKind.narrow(lt).flatMap(fn.andThen(ArrayKind::narrow)));

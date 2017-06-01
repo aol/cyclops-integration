@@ -15,7 +15,7 @@ import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
-import javaslang.collection.Queue;
+import io.vavr.collection.Queue;
 import lombok.experimental.UtilityClass;
 
 import java.util.function.BiFunction;
@@ -501,7 +501,7 @@ public class Queues {
                 BiFunction<Higher<C2,QueueKind<T>>,Higher<C2,T>,Higher<C2,QueueKind<T>>> combineToQueue =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> QueueKind.widen(QueueKind.narrow(a).append(b))),
                         acc,next);
 
-                BinaryOperator<Higher<C2,QueueKind<T>>> combineQueues = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> QueueKind.widen(QueueKind.narrow(l1).appendAll(l2))),a,b); ;
+                BinaryOperator<Higher<C2,QueueKind<T>>> combineQueues = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> QueueKind.widen(QueueKind.narrow(l1).appendAll(l2.narrow()))),a,b); ;
 
                 return ReactiveSeq.fromIterable(QueueKind.narrow(list))
                         .reduce(identity,
@@ -543,7 +543,7 @@ public class Queues {
         }
 
         private static <T,R> QueueKind<R> ap(QueueKind<Function< T, R>> lt, QueueKind<T> list){
-            return QueueKind.widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt).zip(list, (a, b)->a.apply(b))).toQueue());
+            return QueueKind.widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toQueue());
         }
         private static <T,R> Higher<QueueKind.µ,R> flatMap(Higher<QueueKind.µ,T> lt, Function<? super T, ? extends  Higher<QueueKind.µ,R>> fn){
             return QueueKind.widen(QueueKind.narrow(lt).flatMap(fn.andThen(QueueKind::narrow)));

@@ -25,7 +25,7 @@ import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
-import javaslang.control.Option;
+import io.vavr.control.Option;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 

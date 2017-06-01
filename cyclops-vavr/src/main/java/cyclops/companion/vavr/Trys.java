@@ -14,7 +14,7 @@ import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
 import cyclops.stream.ReactiveSeq;
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
