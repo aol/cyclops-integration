@@ -44,5 +44,16 @@ public class ToCyclopsReact {
     public static <T> Eval<T> eval(Lazy<T> opt){
         return Eval.later(opt);
     }
+    public static <R> cyclops.control.lazy.Either<Throwable,R> either(javaslang.concurrent.Future<R> either){
+        return cyclops.control.lazy.Either.fromFuture(future(either));
+
+    }
+
+    public static <T> Maybe<T> maybe(javaslang.concurrent.Future<T> opt){
+        return Maybe.fromFuture(future(opt));
+    }
+    public static <T> Eval<T> eval(javaslang.concurrent.Future<T> opt){
+        return Eval.fromFuture(future(opt));
+    }
 
 }

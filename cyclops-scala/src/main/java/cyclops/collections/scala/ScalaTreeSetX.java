@@ -17,6 +17,7 @@ import com.aol.cyclops.scala.collections.Converters;
 import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -36,7 +37,13 @@ import scala.collection.mutable.Builder;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, HasScalaCollection<T> {
+public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, HasScalaCollection<T>, Unwrapable {
+
+    @Override
+    public <R> R unwrap() {
+        return (R)set;
+    }
+
     public LazyPOrderedSetX<T> plusLoop(int max, IntFunction<T> value) {
         TreeSet<T> toUse = set;
         for (int i = 0; i < max; i++) {

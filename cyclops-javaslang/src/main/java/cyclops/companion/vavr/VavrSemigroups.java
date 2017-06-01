@@ -3,11 +3,19 @@ package cyclops.companion.vavr;
 import com.aol.cyclops2.types.Zippable;
 import cyclops.function.Semigroup;
 import javaslang.collection.*;
+import javaslang.collection.HashSet;
+import javaslang.collection.LinkedHashSet;
+import javaslang.collection.List;
+import javaslang.collection.Queue;
+import javaslang.collection.Set;
+import javaslang.collection.TreeSet;
+import javaslang.collection.Vector;
 import javaslang.concurrent.Future;
 import javaslang.control.Either;
 import javaslang.control.Option;
 import javaslang.control.Try;
 
+import java.util.*;
 import java.util.function.BiFunction;
 
 
@@ -79,56 +87,29 @@ public interface VavrSemigroups {
     }
 
 
-    /**
-     * <pre>
-     * {@code
-     *  BinaryOperator<Zippable<Integer>> sumInts = Semigroups.combineZippables(Semigroups.intSum);
-    sumInts.apply(ListX.of(1,2,3), ListX.of(4,5,6));
-
-    //List[5,7,9];
-     *
-     * }
-     * </pre>
-     *
-     * @param semigroup Semigroup toNested combine the values inside the zippables
-     * @return Combination of two Zippables
-     */
-    static <T,A extends Zippable<T>> Semigroup<A> combineZippables(BiFunction<T,T,T> semigroup) {
-        return (a, b) -> (A) a.zip(b, semigroup);
-    }
-    /**
-     *
-     * <pre>
-     * {@code
-     *
-     *  BinaryOperator<Combiner<Integer>> sumMaybes = Semigroups.combineScalarFunctors(Semigroups.intSum);
-     *  Maybe.just(1)
-     *       .combine(sumMaybes, Maybe.just(5))
-     *
-     *  //Maybe[6]
-     * }
-     * </pre>
-     *
-     *
-     * @param semigroup Semigroup toNested combine the values inside the Scalar Functors (Maybe, Xor, Ior, Try, Eva, FeatureToggle etc)
-     * @return Combination of two Scalar Functors
-     */
-    static <T,A extends Zippable<T>> Semigroup<A> combineScalarFunctors(BiFunction<T,T,T> semigroup) {
-        return (a, b) -> (A) a.zip(b, semigroup);
-    }
-
-
 
     /**
      * @return Combination of two Collection, first non-empty is returned
      */
-    static <T,C extends Seq<T>> Semigroup<C> firstNonEmpty() {
+    static <T,C extends Seq<T>> Semigroup<C> firstNonEmptySeq() {
+        return (a, b) -> a.isEmpty() ? b: a;
+    }
+    /**
+     * @return Combination of two Collection, first non-empty is returned
+     */
+    static <T,C extends Set<T>> Semigroup<C> firstNonEmptySet() {
         return (a, b) -> a.isEmpty() ? b: a;
     }
     /**
      * @return Combination of two Collection, last non-empty is returned
      */
-    static <T,C extends Seq<T>> Semigroup<C> lastNonEmpty() {
+    static <T,C extends Seq<T>> Semigroup<C> lastNonEmptySeq() {
+        return (a, b) -> b.isEmpty() ? a: b;
+    }
+    /**
+     * @return Combination of two Collection, last non-empty is returned
+     */
+    static <T,C extends Set<T>> Semigroup<C> lastNonEmptySet() {
         return (a, b) -> b.isEmpty() ? a: b;
     }
 
@@ -198,7 +179,7 @@ public interface VavrSemigroups {
 
 
     /**
-     * @return Combine two optionals by taking the first present
+     * @return Combine two Options by taking the first present
      */
     static <T> Semigroup<Option<T>> firstPresentOption() {
         return (a, b) -> a.isDefined() ? a : b;

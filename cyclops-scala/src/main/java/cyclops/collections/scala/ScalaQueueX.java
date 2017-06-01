@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.collections.mutable.QueueX;
@@ -31,7 +32,7 @@ import scala.collection.immutable.Queue$;
 import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaQueueX<T> extends AbstractQueue<T> implements PQueue<T>, HasScalaCollection<T> {
+public class ScalaQueueX<T> extends AbstractQueue<T> implements PQueue<T>, HasScalaCollection<T>,Unwrapable {
     public LazyPQueueX<T> plusLoop(int max, IntFunction<T> value) {
         Queue<T> toUse = this.queue;
         final CanBuildFrom<Queue<?>, T, Queue<T>> builder = Queue.<T> canBuildFrom();
@@ -42,6 +43,11 @@ public class ScalaQueueX<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
         }
         return lazyQueue(toUse);
 
+    }
+
+    @Override
+    public <R> R unwrap() {
+        return (R)queue;
     }
 
     public LazyPQueueX<T> plusLoop(Supplier<Optional<T>> supplier) {

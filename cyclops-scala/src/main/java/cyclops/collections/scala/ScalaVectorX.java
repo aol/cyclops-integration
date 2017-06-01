@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Reducer;
@@ -31,8 +32,13 @@ import scala.collection.immutable.Vector;
 import scala.collection.immutable.Vector$;
 import scala.collection.immutable.VectorBuilder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaVectorX<T> extends AbstractList<T> implements PVector<T>, HasScalaCollection<T> {
-    
+public class ScalaVectorX<T> extends AbstractList<T> implements PVector<T>, HasScalaCollection<T>, Unwrapable {
+
+    @Override
+    public <R> R unwrap() {
+        return (R)vector;
+    }
+
     public LazyPVectorX<T> plusLoop(int max, IntFunction<T> value){
         
             Vector<T> toUse = vector;
@@ -51,6 +57,7 @@ public class ScalaVectorX<T> extends AbstractList<T> implements PVector<T>, HasS
         }
         return lazyVector(toUse);
     }
+
     
     /**
      * Create a LazyPVectorX from a Stream

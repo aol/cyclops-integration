@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
@@ -31,7 +32,12 @@ import scala.collection.mutable.Builder;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaHashSetX<T> extends AbstractSet<T>implements PSet<T>, HasScalaCollection<T> {
+public class ScalaHashSetX<T> extends AbstractSet<T>implements PSet<T>, HasScalaCollection<T>, Unwrapable {
+
+    @Override
+    public <R> R unwrap() {
+        return (R)set;
+    }
 
     public LazyPSetX<T> plusLoop(int max, IntFunction<T> value) {
         HashSet<T> toUse = set;

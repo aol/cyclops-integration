@@ -69,7 +69,7 @@ public class ScalaTypes {
      * <pre>
      *     {@code
      *     TreeSet<Integer> set =  OrderedSetX.of(1,2,3)
-     *                                        .type(ScalaTypes.treeSet(Comparator.naturalOrdering()))
+     *                                        .type(ScalaTypes.treeSet(Comparator.naturalOrder()))
      *                                        .map(i->i*2)
      *                                        .to(ScalaConverters::TreeSet);
      *     }
@@ -81,6 +81,41 @@ public class ScalaTypes {
      */
     public static <T> Reducer<POrderedSet<T>> treeSet(Comparator<T> ordering) {
         return ScalaTreeSetX.toPOrderedSet(ordering);
+    }
+    /**
+     * Use to set the type of an OrderedSetX to Scala TreeSet
+     * <pre>
+     *     {@code
+     *     TreeSet<Integer> set =  OrderedSetX.of(1,2,3)
+     *                                        .type(ScalaTypes.treeSet())
+     *                                        .map(i->i*2)
+     *                                        .to(ScalaConverters::TreeSet);
+     *     }
+     *
+     * </pre>
+     *
+     * @param <T> Data type
+     * @return Reducer to convert a sequence of data to a Scala Set that implements POrderedSet interface
+     */
+    public static <T extends Comparable<T>> Reducer<POrderedSet<T>> treeSet() {
+        return ScalaTreeSetX.<T>toPOrderedSet(Comparator.<T>naturalOrder());
+    }
+    /**
+     * Use to set the type of an OrderedSetX to Scala TreeSet
+     * <pre>
+     *     {@code
+     *     TreeSet<Integer> set =  OrderedSetX.of(1,2,3)
+     *                                        .type(ScalaTypes.treeSet())
+     *                                        .map(i->i*2)
+     *                                        .to(ScalaConverters::TreeSet);
+     *     }
+     *
+     * </pre>
+     *
+     * @return Reducer to convert a sequence of data to a Scala Set that implements POrderedSet interface
+     */
+    public static Reducer<POrderedSet<Integer>> bitset() {
+        return ScalaBitSetX.toPOrderedSet();
     }
 
     /**

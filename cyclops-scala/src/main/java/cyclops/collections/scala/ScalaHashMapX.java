@@ -5,6 +5,7 @@ import java.util.*;
 
 import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
+import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.control.Eval;
@@ -27,10 +28,16 @@ import scala.collection.immutable.MapLike;
 import scala.collection.immutable.TreeMap;
 import scala.collection.mutable.Builder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaHashMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, HasScalaCollection {
+public class ScalaHashMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, HasScalaCollection, Unwrapable {
     
     @Wither
     HashMap<K,V> map;
+
+    @Override
+    public <R> R unwrap() {
+        return (R)map;
+    }
+
     public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX() {
         return Reducer.<PersistentMapX<K, V>> of(empty(), (final PersistentMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
             final List w = ((TupleWrapper) () -> in).values();
