@@ -15,7 +15,7 @@ import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
-import javaslang.collection.Stream;
+import io.vavr.collection.Stream;
 import lombok.experimental.UtilityClass;
 
 import java.util.function.BiFunction;

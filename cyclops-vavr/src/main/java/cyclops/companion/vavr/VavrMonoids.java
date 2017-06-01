@@ -1,19 +1,19 @@
 package cyclops.companion.vavr;
 
 import cyclops.function.Monoid;
-import javaslang.collection.*;
-import javaslang.collection.HashSet;
-import javaslang.collection.LinkedHashSet;
-import javaslang.collection.List;
-import javaslang.collection.Queue;
-import javaslang.collection.Set;
-import javaslang.collection.TreeSet;
-import javaslang.collection.Vector;
-import javaslang.concurrent.Future;
-import javaslang.concurrent.Promise;
-import javaslang.control.Either;
-import javaslang.control.Option;
-import javaslang.control.Try;
+import io.vavr.collection.*;
+import io.vavr.collection.HashSet;
+import io.vavr.collection.LinkedHashSet;
+import io.vavr.collection.List;
+import io.vavr.collection.Queue;
+import io.vavr.collection.Set;
+import io.vavr.collection.TreeSet;
+import io.vavr.collection.Vector;
+import io.vavr.concurrent.Future;
+import io.vavr.concurrent.Promise;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 
 import java.util.*;
 

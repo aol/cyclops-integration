@@ -17,7 +17,7 @@ import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
-import javaslang.collection.List;
+import io.vavr.collection.List;
 import lombok.experimental.UtilityClass;
 
 import java.util.function.*;
