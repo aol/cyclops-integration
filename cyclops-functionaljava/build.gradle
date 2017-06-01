@@ -36,7 +36,7 @@ dependencies {
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
 	compile "org.functionaljava:functionaljava:"+functionalJavaVersion
 	compile "org.functionaljava:functionaljava-java8:"+functionalJavaVersion
-	provided 'io.javaslang:javaslang:'+javaslangVersion
+	provided group: 'io.vavr', name: 'vavr', version: vavrVersion
 	testCompile project(':cyclops-javaslang')
 	testCompile group: 'junit', name: 'junit', version: '4.12'
 	testCompile  group: 'org.hamcrest', name: 'hamcrest-all', version:'1.3'

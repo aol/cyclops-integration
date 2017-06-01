@@ -1,12 +1,9 @@
 package cyclops.collections.vavr;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
+import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.control.Eval;
@@ -15,20 +12,34 @@ import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
-import javaslang.collection.TreeMap;
+import io.vavr.collection.TreeMap;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
+public class VavrTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, Unwrapable{
     
     @Wither
     TreeMap<K,V> map;
+    @Override
+    public <R> R unwrap() {
+        return (R)map;
+    }
+    public static <K,V> PersistentMapX<K,V> copyFromMap(Map<K,V> map,Comparator<? super K> c){
+        return VavrTreeMapX.<K,V>empty(c)
+                .plusAll(map);
+    }
     public static <K extends Comparable<? super K>, V> Reducer<PersistentMapX<K, V>> toPersistentMapX() {
         return Reducer.<PersistentMapX<K, V>> of(empty(), (final PersistentMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
             final List w = ((TupleWrapper) () -> in).values();
             return singleton((K) w.get(0), (V) w.get(1));
+        });
+    }
+    public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX(Comparator<? super K> c) {
+        return Reducer.<PersistentMapX<K, V>> of(empty(c), (final PersistentMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
+            final List w = ((TupleWrapper) () -> in).values();
+            return singleton((K) w.get(0), (V) w.get(1),c);
         });
     }
     public static <K,V> VavrTreeMapX<K,V> fromMap(@NonNull TreeMap<K,V> map){
@@ -41,6 +52,9 @@ public class VavrTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
         TreeMap<K,V> res = TreeMap.ofAll((Map)map);
         return fromMap(res);
     }
+    public static <K,V> PersistentMapX<K,V> empty(Comparator<? super K> c){
+        return new ExtensiblePMapX<K,V>(fromMap(TreeMap.<K,V>empty(c)), Eval.later(()->toPersistentMapX(c)));
+    }
     public static <K extends Comparable<? super K>,V> PersistentMapX<K,V> empty(){
        return new ExtensiblePMapX<K,V>(fromMap(TreeMap.<K,V>empty()), Eval.later(()->toPersistentMapX()));
     }
@@ -52,6 +66,10 @@ public class VavrTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
         TreeMap<K,V> map = TreeMap.of(key, value);
         return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()-> VavrTreeMapX.<K,V>toPersistentMapX()));
      }
+    public static <K,V> PersistentMapX<K,V> singleton(K key,V value, Comparator<? super K> c){
+        TreeMap<K,V> map = TreeMap.of(c,key, value);
+        return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()-> VavrTreeMapX.<K,V>toPersistentMapX(c)));
+    }
     
     public static <K extends Comparable<? super K>,V> PersistentMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){
         return stream.mapReduce(toPersistentMapX());

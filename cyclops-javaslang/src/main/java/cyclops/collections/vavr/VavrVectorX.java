@@ -17,7 +17,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PVector;
 
 
-import javaslang.collection.Vector;
+import io.vavr.collection.Vector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;

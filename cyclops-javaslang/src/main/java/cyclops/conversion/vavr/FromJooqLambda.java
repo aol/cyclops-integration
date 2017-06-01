@@ -1,14 +1,14 @@
 package cyclops.conversion.vavr;
 
-import javaslang.Tuple0;
-import javaslang.Tuple1;
-import javaslang.Tuple2;
-import javaslang.Tuple3;
-import javaslang.Tuple4;
-import javaslang.Tuple5;
-import javaslang.Tuple6;
-import javaslang.Tuple7;
-import javaslang.Tuple8;
+import io.vavr.Tuple0;
+import io.vavr.Tuple1;
+import io.vavr.Tuple2;
+import io.vavr.Tuple3;
+import io.vavr.Tuple4;
+import io.vavr.Tuple5;
+import io.vavr.Tuple6;
+import io.vavr.Tuple7;
+import io.vavr.Tuple8;
 
 import org.jooq.lambda.function.Function1;
 import org.jooq.lambda.function.Function2;

@@ -1,7 +1,7 @@
 package cyclops.conversion.vavr;
 
-import javaslang.Function1;
-import javaslang.control.Option;
+import io.vavr.Function1;
+import io.vavr.control.Option;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;

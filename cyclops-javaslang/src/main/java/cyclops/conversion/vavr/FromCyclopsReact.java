@@ -7,13 +7,14 @@ import com.aol.cyclops2.types.MonadicValue;
 import com.aol.cyclops2.types.Value;
 import cyclops.control.Eval;
 import cyclops.control.Xor;
-import javaslang.Lazy;
-import javaslang.concurrent.Future;
-import javaslang.concurrent.Promise;
-import javaslang.control.Either;
-import javaslang.control.Option;
-import javaslang.control.Try;
-import javaslang.control.Validation;
+import io.vavr.Lazy;
+import io.vavr.concurrent.Future;
+import io.vavr.concurrent.Promise;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
+import io.vavr.control.Validation;
+
 
 public class FromCyclopsReact {
     public static <T> Lazy<T> eval(Eval<T> opt){
@@ -25,8 +26,8 @@ public class FromCyclopsReact {
         future.peek(n->result.complete(Try.success(n)));
         return result.future();
     }
-    public static <T> javaslang.collection.Stream<T> fromStream(Stream<T> s) {
-        return javaslang.collection.Stream.ofAll(() -> s.iterator());
+    public static <T> io.vavr.collection.Stream<T> fromStream(Stream<T> s) {
+        return io.vavr.collection.Stream.ofAll(() -> s.iterator());
     }
 
     public static <T> Try<T> toTry(MonadicValue<T> value) {

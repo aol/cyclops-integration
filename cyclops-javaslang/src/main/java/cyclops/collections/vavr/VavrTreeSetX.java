@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -19,15 +20,15 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.POrderedSet;
 
 
-import javaslang.collection.SortedSet;
-import javaslang.collection.TreeSet;
+import io.vavr.collection.SortedSet;
+import io.vavr.collection.TreeSet;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T> {
+public class VavrTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T>, Unwrapable {
 
     public static <T> OrderedSetX<T> copyFromCollection(CollectionX<T> vec, Comparator<T> comp) {
 
@@ -35,6 +36,12 @@ public class VavrTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T> {
                 .plusAll(vec);
 
     }
+
+    @Override
+    public <R> R unwrap() {
+        return (R)set;
+    }
+
     /**
      * Create a LazyPOrderedSetX from a Stream
      * 
@@ -227,7 +234,7 @@ public class VavrTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T> {
                   .zipWithIndex()
                   .find(t -> t._1.equals(o))
                   .map(t -> t._2)
-                  .getOrElse(-1l)
+                  .getOrElse(-1)
                   .intValue();
     }
 

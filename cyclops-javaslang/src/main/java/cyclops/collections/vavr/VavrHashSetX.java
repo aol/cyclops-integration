@@ -1,5 +1,6 @@
 package cyclops.collections.vavr;
 
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -8,26 +9,32 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
+import io.vavr.collection.HashSet;
+import io.vavr.collection.Set;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PSet;
 
 
-import javaslang.collection.HashSet;
-import javaslang.collection.Set;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrHashSetX<T> extends AbstractSet<T>  implements PSet<T> {
+public class VavrHashSetX<T> extends AbstractSet<T> implements PSet<T>, Unwrapable {
     public static <T> PersistentSetX<T> copyFromCollection(CollectionX<? extends T> vec) {
         PersistentSetX<T> res = VavrHashSetX.<T>empty()
                 .plusAll(vec);
         return res;
+    }
+    @Override
+    public <R> R unwrap() {
+        return (R)set;
     }
     /**
      * Create a LazyPSetX from a Stream

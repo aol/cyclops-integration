@@ -17,7 +17,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PStack;
 
 
-import javaslang.collection.List;
+import io.vavr.collection.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;

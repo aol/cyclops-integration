@@ -19,23 +19,11 @@ import java.util.stream.Stream;
 
 
 import com.aol.cyclops2.hkt.Higher;
-import javaslang.Function1;
-import javaslang.Tuple1;
-import javaslang.Tuple2;
-import javaslang.Tuple3;
-import javaslang.collection.Array;
-import javaslang.collection.CharSeq;
-import javaslang.collection.IndexedSeq;
-import javaslang.collection.Iterator;
-import javaslang.collection.Queue;
-import javaslang.collection.Seq;
-import javaslang.collection.Stack;
-import javaslang.collection.Tree;
-import javaslang.collection.Vector;
-import javaslang.control.Either;
-import javaslang.control.Option;
-import javaslang.control.Try;
-import javaslang.control.Try.CheckedSupplier;
+
+import io.vavr.collection.Array;
+import io.vavr.collection.IndexedSeq;
+import io.vavr.collection.Seq;
+import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
@@ -49,7 +37,7 @@ import lombok.AllArgsConstructor;
  * @param <T> Data type stored within the Array
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
+public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T> {
     /**
      * Witness type
      * 
@@ -150,14 +138,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param zero
      * @param combine
      * @return
-     * @see javaslang.collection.Foldable#fold(java.lang.Object, java.util.function.BiFunction)
+     * @see io.vavr.collection.Foldable#fold(java.lang.Object, java.util.function.BiFunction)
      */
     public  T fold(T zero, BiFunction<? super T, ? super T, ? extends T> combine) {
         return boxed.fold(zero, combine);
     }
     /**
      * @return
-     * @see javaslang.λ#isMemoized()
+     *
      */
     public  boolean isMemoized() {
         return boxed.isMemoized();
@@ -165,7 +153,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param op
      * @return
-     * @see javaslang.collection.Foldable#reduce(java.util.function.BiFunction)
+     * @see io.vavr.collection.Foldable#reduce(java.util.function.BiFunction)
      */
     public  T reduce(BiFunction<? super T, ? super T, ? extends T> op) {
         return boxed.reduce(op);
@@ -173,7 +161,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param that
      * @return
-     * @see javaslang.collection.IndexedSeq#endsWith(javaslang.collection.Seq)
+     * @see io.vavr.collection.IndexedSeq#endsWith(io.vavr.collection.Seq)
      */
     public  boolean endsWith(Seq<? extends T> that) {
         return boxed.endsWith(that);
@@ -181,15 +169,15 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param op
      * @return
-     * @see javaslang.collection.Foldable#reduceOption(java.util.function.BiFunction)
+     * @see io.vavr.collection.Foldable#reduceOption(java.util.function.BiFunction)
      */
-    public  Option<T> reduceOption(BiFunction<? super T, ? super T, ? extends T> op) {
+    public Option<T> reduceOption(BiFunction<? super T, ? super T, ? extends T> op) {
         return boxed.reduceOption(op);
     }
     /**
      * @param index
      * @return
-     * @see javaslang.collection.Seq#apply(java.lang.Integer)
+     * @see io.vavr.collection.Seq#apply(java.lang.Integer)
      */
     public  T apply(Integer index) {
         return boxed.apply(index);
@@ -198,7 +186,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param predicate
      * @param from
      * @return
-     * @see javaslang.collection.IndexedSeq#indexWhere(java.util.function.Predicate, int)
+     * @see io.vavr.collection.IndexedSeq#indexWhere(java.util.function.Predicate, int)
      */
     public  int indexWhere(Predicate<? super T> predicate, int from) {
         return boxed.indexWhere(predicate, from);
@@ -241,7 +229,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     }
     /**
      * @return
-     * @see javaslang.collection.IndexedSeq#last()
+     * @see io.vavr.collection.IndexedSeq#last()
      */
     public  T last() {
         return boxed.last();
@@ -266,7 +254,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param that
      * @param end
      * @return
-     * @see javaslang.collection.IndexedSeq#lastIndexOfSlice(java.lang.Iterable, int)
+     * @see io.vavr.collection.IndexedSeq#lastIndexOfSlice(java.lang.Iterable, int)
      */
     public  int lastIndexOfSlice(Iterable<? extends T> that, int end) {
         return boxed.lastIndexOfSlice(that, end);
@@ -275,7 +263,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param predicate
      * @param end
      * @return
-     * @see javaslang.collection.IndexedSeq#lastIndexWhere(java.util.function.Predicate, int)
+     * @see io.vavr.collection.IndexedSeq#lastIndexWhere(java.util.function.Predicate, int)
      */
     public  int lastIndexWhere(Predicate<? super T> predicate, int end) {
         return boxed.lastIndexWhere(predicate, end);
@@ -283,7 +271,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param that
      * @return
-     * @see javaslang.collection.Seq#containsSlice(java.lang.Iterable)
+     * @see io.vavr.collection.Seq#containsSlice(java.lang.Iterable)
      */
     public  boolean containsSlice(Iterable<? extends T> that) {
         return boxed.containsSlice(that);
@@ -298,7 +286,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#average()
+     * @see io.vavr.collection.Traversable#average()
      */
     public  Option<Double> average() {
         return boxed.average();
@@ -313,7 +301,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     }
     /**
      * @return
-     * @see javaslang.collection.Seq#crossProduct()
+     * @see io.vavr.collection.Seq#crossProduct()
      */
     public  Iterator<Tuple2<T, T>> crossProduct() {
         return boxed.crossProduct();
@@ -328,7 +316,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     }
     /**
      * @return
-     * @see javaslang.collection.IndexedSeq#reverseIterator()
+     * @see io.vavr.collection.IndexedSeq#reverseIterator()
      */
     public  Iterator<T> reverseIterator() {
         return boxed.reverseIterator();
@@ -336,7 +324,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param that
      * @return
-     * @see javaslang.collection.Seq#crossProduct(java.lang.Iterable)
+     * @see io.vavr.collection.Seq#crossProduct(java.lang.Iterable)
      */
     public  <U> Iterator<Tuple2<T, U>> crossProduct(Iterable<? extends U> that) {
         return boxed.crossProduct(that);
@@ -345,7 +333,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param predicate
      * @param from
      * @return
-     * @see javaslang.collection.IndexedSeq#segmentLength(java.util.function.Predicate, int)
+     * @see io.vavr.collection.IndexedSeq#segmentLength(java.util.function.Predicate, int)
      */
     public  int segmentLength(Predicate<? super T> predicate, int from) {
         return boxed.segmentLength(predicate, from);
@@ -353,7 +341,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param elements
      * @return
-     * @see javaslang.collection.Traversable#containsAll(java.lang.Iterable)
+     * @see io.vavr.collection.Traversable#containsAll(java.lang.Iterable)
      */
     public  boolean containsAll(Iterable<? extends T> elements) {
         return boxed.containsAll(elements);
@@ -370,7 +358,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param that
      * @param offset
      * @return
-     * @see javaslang.collection.IndexedSeq#startsWith(java.lang.Iterable, int)
+     * @see io.vavr.collection.IndexedSeq#startsWith(java.lang.Iterable, int)
      */
     public  boolean startsWith(Iterable<? extends T> that, int offset) {
         return boxed.startsWith(that, offset);
@@ -378,7 +366,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Traversable#count(java.util.function.Predicate)
+     * @see io.vavr.collection.Traversable#count(java.util.function.Predicate)
      */
     public  int count(Predicate<? super T> predicate) {
         return boxed.count(predicate);
@@ -394,7 +382,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param element
      * @return
-     * @see javaslang.collection.Seq#indexOf(java.lang.Object)
+     * @see io.vavr.collection.Seq#indexOf(java.lang.Object)
      */
     public  int indexOf(T element) {
         return boxed.indexOf(element);
@@ -416,7 +404,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param that
      * @return
-     * @see javaslang.collection.Seq#indexOfSlice(java.lang.Iterable)
+     * @see io.vavr.collection.Seq#indexOfSlice(java.lang.Iterable)
      */
     public  int indexOfSlice(Iterable<? extends T> that) {
         return boxed.indexOfSlice(that);
@@ -441,7 +429,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param that
      * @param from
      * @return
-     * @see javaslang.collection.Seq#indexOfSlice(java.lang.Iterable, int)
+     * @see io.vavr.collection.Seq#indexOfSlice(java.lang.Iterable, int)
      */
     public  int indexOfSlice(Iterable<? extends T> that, int from) {
         return boxed.indexOfSlice(that, from);
@@ -458,7 +446,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param element
      * @return
-     * @see javaslang.collection.IndexedSeq#search(java.lang.Object)
+     * @see io.vavr.collection.IndexedSeq#search(java.lang.Object)
      */
     public  int search(T element) {
         return boxed.search(element);
@@ -474,7 +462,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param p
      * @return
-     * @see javaslang.collection.Seq#indexWhere(java.util.function.Predicate)
+     * @see io.vavr.collection.Seq#indexWhere(java.util.function.Predicate)
      */
     public  int indexWhere(Predicate<? super T> p) {
         return boxed.indexWhere(p);
@@ -483,7 +471,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param element
      * @param comparator
      * @return
-     * @see javaslang.collection.IndexedSeq#search(java.lang.Object, java.util.Comparator)
+     * @see io.vavr.collection.IndexedSeq#search(java.lang.Object, java.util.Comparator)
      */
     public  int search(T element, Comparator<? super T> comparator) {
         return boxed.search(element, comparator);
@@ -491,7 +479,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Traversable#existsUnique(java.util.function.Predicate)
+     * @see io.vavr.collection.Traversable#existsUnique(java.util.function.Predicate)
      */
     public  boolean existsUnique(Predicate<? super T> predicate) {
         return boxed.existsUnique(predicate);
@@ -506,7 +494,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Traversable#find(java.util.function.Predicate)
+     * @see io.vavr.collection.Traversable#find(java.util.function.Predicate)
      */
     public  Option<T> find(Predicate<? super T> predicate) {
         return boxed.find(predicate);
@@ -514,7 +502,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param index
      * @return
-     * @see javaslang.collection.Seq#iterator(int)
+     * @see io.vavr.collection.Seq#iterator(int)
      */
     public  Iterator<T> iterator(int index) {
         return boxed.iterator(index);
@@ -529,7 +517,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Traversable#findLast(java.util.function.Predicate)
+     * @see io.vavr.collection.Traversable#findLast(java.util.function.Predicate)
      */
     public  Option<T> findLast(Predicate<? super T> predicate) {
         return boxed.findLast(predicate);
@@ -537,7 +525,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param element
      * @return
-     * @see javaslang.collection.Seq#lastIndexOf(java.lang.Object)
+     * @see io.vavr.collection.Seq#lastIndexOf(java.lang.Object)
      */
     public  int lastIndexOf(T element) {
         return boxed.lastIndexOf(element);
@@ -552,7 +540,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Seq#lastIndexWhere(java.util.function.Predicate)
+     * @see io.vavr.collection.Seq#lastIndexWhere(java.util.function.Predicate)
      */
     public  int lastIndexWhere(Predicate<? super T> predicate) {
         return boxed.lastIndexWhere(predicate);
@@ -561,7 +549,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param zero
      * @param f
      * @return
-     * @see javaslang.collection.Traversable#foldLeft(java.lang.Object, java.util.function.BiFunction)
+     * @see io.vavr.collection.Traversable#foldLeft(java.lang.Object, java.util.function.BiFunction)
      */
     public  <U> U foldLeft(U zero, BiFunction<? super U, ? super T, ? extends U> f) {
         return boxed.foldLeft(zero, f);
@@ -590,7 +578,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param that
      * @return
-     * @see javaslang.collection.Seq#lastIndexOfSlice(java.lang.Iterable)
+     * @see io.vavr.collection.Seq#lastIndexOfSlice(java.lang.Iterable)
      */
     public  int lastIndexOfSlice(Iterable<? extends T> that) {
         return boxed.lastIndexOfSlice(that);
@@ -605,7 +593,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#get()
+     * @see io.vavr.collection.Traversable#get()
      */
     public  T get() {
         return boxed.get();
@@ -628,7 +616,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param element
      * @return
-     * @see javaslang.collection.Array#append(java.lang.Object)
+     * @see io.vavr.collection.Array#append(java.lang.Object)
      */
     public Array<T> append(T element) {
         return boxed.append(element);
@@ -636,21 +624,21 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param elements
      * @return
-     * @see javaslang.collection.Array#appendAll(java.lang.Iterable)
+     * @see io.vavr.collection.Array#appendAll(java.lang.Iterable)
      */
     public Array<T> appendAll(Iterable<? extends T> elements) {
         return boxed.appendAll(elements);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#hasDefiniteSize()
+     * @see io.vavr.collection.Array#hasDefiniteSize()
      */
     public boolean hasDefiniteSize() {
         return boxed.hasDefiniteSize();
     }
     /**
      * @return
-     * @see javaslang.collection.Array#isTraversableAgain()
+     * @see io.vavr.collection.Array#isTraversableAgain()
      */
     public boolean isTraversableAgain() {
         return boxed.isTraversableAgain();
@@ -664,7 +652,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     }
     /**
      * @return
-     * @see javaslang.collection.Array#iterator()
+     * @see io.vavr.collection.Array#iterator()
      */
     public Iterator<T> iterator() {
         return boxed.iterator();
@@ -680,14 +668,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Seq#prefixLength(java.util.function.Predicate)
+     * @see io.vavr.collection.Seq#prefixLength(java.util.function.Predicate)
      */
     public  int prefixLength(Predicate<? super T> predicate) {
         return boxed.prefixLength(predicate);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#combinations()
+     * @see io.vavr.collection.Array#combinations()
      */
     public Array<Array<T>> combinations() {
         return boxed.combinations();
@@ -695,7 +683,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param k
      * @return
-     * @see javaslang.collection.Array#combinations(int)
+     * @see io.vavr.collection.Array#combinations(int)
      */
     public Array<Array<T>> combinations(int k) {
         return boxed.combinations(k);
@@ -711,14 +699,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param power
      * @return
-     * @see javaslang.collection.Array#crossProduct(int)
+     * @see io.vavr.collection.Array#crossProduct(int)
      */
     public Iterator<Array<T>> crossProduct(int power) {
         return boxed.crossProduct(power);
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#headOption()
+     * @see io.vavr.collection.Traversable#headOption()
      */
     public  Option<T> headOption() {
         return boxed.headOption();
@@ -726,7 +714,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param index
      * @return
-     * @see javaslang.collection.Array#get(int)
+     * @see io.vavr.collection.Array#get(int)
      */
     public T get(int index) {
         return boxed.get(index);
@@ -743,7 +731,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     }
     /**
      * @return
-     * @see javaslang.collection.Array#distinct()
+     * @see io.vavr.collection.Array#distinct()
      */
     public Array<T> distinct() {
         return boxed.distinct();
@@ -751,7 +739,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param comparator
      * @return
-     * @see javaslang.collection.Array#distinctBy(java.util.Comparator)
+     * @see io.vavr.collection.Array#distinctBy(java.util.Comparator)
      */
     public Array<T> distinctBy(Comparator<? super T> comparator) {
         return boxed.distinctBy(comparator);
@@ -759,7 +747,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param keyExtractor
      * @return
-     * @see javaslang.collection.Array#distinctBy(java.util.function.Function)
+     * @see io.vavr.collection.Array#distinctBy(java.util.function.Function)
      */
     public <U> Array<T> distinctBy(Function<? super T, ? extends U> keyExtractor) {
         return boxed.distinctBy(keyExtractor);
@@ -767,14 +755,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param n
      * @return
-     * @see javaslang.collection.Array#drop(long)
+     * @see io.vavr.collection.Array#drop(long)
      */
     public Array<T> drop(long n) {
         return boxed.drop(n);
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#isSingleValued()
+     * @see io.vavr.collection.Traversable#isSingleValued()
      */
     public  boolean isSingleValued() {
         return boxed.isSingleValued();
@@ -782,7 +770,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param n
      * @return
-     * @see javaslang.collection.Array#dropRight(long)
+     * @see io.vavr.collection.Array#dropRight(long)
      */
     public Array<T> dropRight(long n) {
         return boxed.dropRight(n);
@@ -797,7 +785,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#dropUntil(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#dropUntil(java.util.function.Predicate)
      */
     public Array<T> dropUntil(Predicate<? super T> predicate) {
         return boxed.dropUntil(predicate);
@@ -812,7 +800,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#dropWhile(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#dropWhile(java.util.function.Predicate)
      */
     public Array<T> dropWhile(Predicate<? super T> predicate) {
         return boxed.dropWhile(predicate);
@@ -828,7 +816,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#filter(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#filter(java.util.function.Predicate)
      */
     public Array<T> filter(Predicate<? super T> predicate) {
         return boxed.filter(predicate);
@@ -843,7 +831,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param mapper
      * @return
-     * @see javaslang.collection.Array#flatMap(java.util.function.Function)
+     * @see io.vavr.collection.Array#flatMap(java.util.function.Function)
      */
     public <U> Array<U> flatMap(Function<? super T, ? extends Iterable<? extends U>> mapper) {
         return boxed.flatMap(mapper);
@@ -858,7 +846,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#lastOption()
+     * @see io.vavr.collection.Traversable#lastOption()
      */
     public  Option<T> lastOption() {
         return boxed.lastOption();
@@ -866,9 +854,9 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param classifier
      * @return
-     * @see javaslang.collection.Array#groupBy(java.util.function.Function)
+     * @see io.vavr.collection.Array#groupBy(java.util.function.Function)
      */
-    public <C> javaslang.collection.Map<C, Array<T>> groupBy(Function<? super T, ? extends C> classifier) {
+    public <C> io.vavr.collection.Map<C, Array<T>> groupBy(Function<? super T, ? extends C> classifier) {
         return boxed.groupBy(classifier);
     }
     /**
@@ -882,14 +870,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param size
      * @return
-     * @see javaslang.collection.Array#grouped(long)
+     * @see io.vavr.collection.Array#grouped(long)
      */
     public Iterator<Array<T>> grouped(long size) {
         return boxed.grouped(size);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#head()
+     * @see io.vavr.collection.Array#head()
      */
     public T head() {
         return boxed.head();
@@ -898,21 +886,21 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @return
      * @see javaslang.Value#toList()
      */
-    public  javaslang.collection.List<T> toList() {
+    public  io.vavr.collection.List<T> toList() {
         return boxed.toList();
     }
     /**
      * @param element
      * @param from
      * @return
-     * @see javaslang.collection.Array#indexOf(java.lang.Object, int)
+     * @see io.vavr.collection.Array#indexOf(java.lang.Object, int)
      */
     public int indexOf(T element, int from) {
         return boxed.indexOf(element, from);
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#max()
+     * @see io.vavr.collection.Traversable#max()
      */
     public  Option<T> max() {
         return boxed.max();
@@ -922,27 +910,27 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @return
      * @see javaslang.Value#toMap(java.util.function.Function)
      */
-    public  <K, V> javaslang.collection.Map<K, V> toMap(
+    public  <K, V> io.vavr.collection.Map<K, V> toMap(
             Function<? super T, ? extends Tuple2<? extends K, ? extends V>> f) {
         return boxed.toMap(f);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#init()
+     * @see io.vavr.collection.Array#init()
      */
     public Array<T> init() {
         return boxed.init();
     }
     /**
      * @return
-     * @see javaslang.collection.Array#initOption()
+     * @see io.vavr.collection.Array#initOption()
      */
     public Option<Array<T>> initOption() {
         return boxed.initOption();
     }
     /**
      * @return
-     * @see javaslang.collection.Array#isEmpty()
+     * @see io.vavr.collection.Array#isEmpty()
      */
     public boolean isEmpty() {
         return boxed.isEmpty();
@@ -950,7 +938,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param comparator
      * @return
-     * @see javaslang.collection.Traversable#maxBy(java.util.Comparator)
+     * @see io.vavr.collection.Traversable#maxBy(java.util.Comparator)
      */
     public  Option<T> maxBy(Comparator<? super T> comparator) {
         return boxed.maxBy(comparator);
@@ -966,7 +954,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param index
      * @param element
      * @return
-     * @see javaslang.collection.Array#insert(int, java.lang.Object)
+     * @see io.vavr.collection.Array#insert(int, java.lang.Object)
      */
     public Array<T> insert(int index, T element) {
         return boxed.insert(index, element);
@@ -989,7 +977,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param f
      * @return
-     * @see javaslang.collection.Traversable#maxBy(java.util.function.Function)
+     * @see io.vavr.collection.Traversable#maxBy(java.util.function.Function)
      */
     public  <U extends Comparable<? super U>> Option<T> maxBy(Function<? super T, ? extends U> f) {
         return boxed.maxBy(f);
@@ -998,7 +986,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param index
      * @param elements
      * @return
-     * @see javaslang.collection.Array#insertAll(int, java.lang.Iterable)
+     * @see io.vavr.collection.Array#insertAll(int, java.lang.Iterable)
      */
     public Array<T> insertAll(int index, Iterable<? extends T> elements) {
         return boxed.insertAll(index, elements);
@@ -1014,14 +1002,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param element
      * @return
-     * @see javaslang.collection.Array#intersperse(java.lang.Object)
+     * @see io.vavr.collection.Array#intersperse(java.lang.Object)
      */
     public Array<T> intersperse(T element) {
         return boxed.intersperse(element);
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#min()
+     * @see io.vavr.collection.Traversable#min()
      */
     public  Option<T> min() {
         return boxed.min();
@@ -1030,7 +1018,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @return
      * @see javaslang.Value#toSet()
      */
-    public  javaslang.collection.Set<T> toSet() {
+    public  io.vavr.collection.Set<T> toSet() {
         return boxed.toSet();
     }
     /**
@@ -1044,7 +1032,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param element
      * @param end
      * @return
-     * @see javaslang.collection.Array#lastIndexOf(java.lang.Object, int)
+     * @see io.vavr.collection.Array#lastIndexOf(java.lang.Object, int)
      */
     public int lastIndexOf(T element, int end) {
         return boxed.lastIndexOf(element, end);
@@ -1052,7 +1040,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param that
      * @return
-     * @see javaslang.collection.Seq#startsWith(java.lang.Iterable)
+     * @see io.vavr.collection.Seq#startsWith(java.lang.Iterable)
      */
     public  boolean startsWith(Iterable<? extends T> that) {
         return boxed.startsWith(that);
@@ -1061,12 +1049,12 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @return
      * @see javaslang.Value#toStream()
      */
-    public  javaslang.collection.Stream<T> toStream() {
+    public  io.vavr.collection.Stream<T> toStream() {
         return boxed.toStream();
     }
     /**
      * @return
-     * @see javaslang.collection.Array#length()
+     * @see io.vavr.collection.Array#length()
      */
     public int length() {
         return boxed.length();
@@ -1074,7 +1062,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param mapper
      * @return
-     * @see javaslang.collection.Array#map(java.util.function.Function)
+     * @see io.vavr.collection.Array#map(java.util.function.Function)
      */
     public <U> Array<U> map(Function<? super T, ? extends U> mapper) {
         return boxed.map(mapper);
@@ -1082,7 +1070,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param comparator
      * @return
-     * @see javaslang.collection.Traversable#minBy(java.util.Comparator)
+     * @see io.vavr.collection.Traversable#minBy(java.util.Comparator)
      */
     public  Option<T> minBy(Comparator<? super T> comparator) {
         return boxed.minBy(comparator);
@@ -1098,7 +1086,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param length
      * @param element
      * @return
-     * @see javaslang.collection.Array#padTo(int, java.lang.Object)
+     * @see io.vavr.collection.Array#padTo(int, java.lang.Object)
      */
     public Array<T> padTo(int length, T element) {
         return boxed.padTo(length, element);
@@ -1116,7 +1104,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param that
      * @param replaced
      * @return
-     * @see javaslang.collection.Array#patch(int, java.lang.Iterable, int)
+     * @see io.vavr.collection.Array#patch(int, java.lang.Iterable, int)
      */
     public Array<T> patch(int from, Iterable<? extends T> that, int replaced) {
         return boxed.patch(from, that, replaced);
@@ -1124,7 +1112,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param f
      * @return
-     * @see javaslang.collection.Traversable#minBy(java.util.function.Function)
+     * @see io.vavr.collection.Traversable#minBy(java.util.function.Function)
      */
     public  <U extends Comparable<? super U>> Option<T> minBy(Function<? super T, ? extends U> f) {
         return boxed.minBy(f);
@@ -1132,7 +1120,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#partition(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#partition(java.util.function.Predicate)
      */
     public Tuple2<Array<T>, Array<T>> partition(Predicate<? super T> predicate) {
         return boxed.partition(predicate);
@@ -1154,21 +1142,21 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param action
      * @return
-     * @see javaslang.collection.Array#peek(java.util.function.Consumer)
+     * @see io.vavr.collection.Array#peek(java.util.function.Consumer)
      */
     public Array<T> peek(Consumer<? super T> action) {
         return boxed.peek(action);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#permutations()
+     * @see io.vavr.collection.Array#permutations()
      */
     public Array<Array<T>> permutations() {
         return boxed.permutations();
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#mkString()
+     * @see io.vavr.collection.Traversable#mkString()
      */
     public  String mkString() {
         return boxed.mkString();
@@ -1176,7 +1164,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param delimiter
      * @return
-     * @see javaslang.collection.Traversable#mkString(java.lang.CharSequence)
+     * @see io.vavr.collection.Traversable#mkString(java.lang.CharSequence)
      */
     public  String mkString(CharSequence delimiter) {
         return boxed.mkString(delimiter);
@@ -1184,7 +1172,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param element
      * @return
-     * @see javaslang.collection.Array#prepend(java.lang.Object)
+     * @see io.vavr.collection.Array#prepend(java.lang.Object)
      */
     public Array<T> prepend(T element) {
         return boxed.prepend(element);
@@ -1192,7 +1180,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param elements
      * @return
-     * @see javaslang.collection.Array#prependAll(java.lang.Iterable)
+     * @see io.vavr.collection.Array#prependAll(java.lang.Iterable)
      */
     public Array<T> prependAll(Iterable<? extends T> elements) {
         return boxed.prependAll(elements);
@@ -1200,7 +1188,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param element
      * @return
-     * @see javaslang.collection.Array#remove(java.lang.Object)
+     * @see io.vavr.collection.Array#remove(java.lang.Object)
      */
     public Array<T> remove(T element) {
         return boxed.remove(element);
@@ -1210,7 +1198,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param delimiter
      * @param suffix
      * @return
-     * @see javaslang.collection.Traversable#mkString(java.lang.CharSequence, java.lang.CharSequence, java.lang.CharSequence)
+     * @see io.vavr.collection.Traversable#mkString(java.lang.CharSequence, java.lang.CharSequence, java.lang.CharSequence)
      */
     public  String mkString(CharSequence prefix, CharSequence delimiter, CharSequence suffix) {
         return boxed.mkString(prefix, delimiter, suffix);
@@ -1218,7 +1206,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#removeFirst(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#removeFirst(java.util.function.Predicate)
      */
     public Array<T> removeFirst(Predicate<T> predicate) {
         return boxed.removeFirst(predicate);
@@ -1226,14 +1214,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#removeLast(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#removeLast(java.util.function.Predicate)
      */
     public Array<T> removeLast(Predicate<T> predicate) {
         return boxed.removeLast(predicate);
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#nonEmpty()
+     * @see io.vavr.collection.Traversable#nonEmpty()
      */
     public  boolean nonEmpty() {
         return boxed.nonEmpty();
@@ -1241,7 +1229,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param index
      * @return
-     * @see javaslang.collection.Array#removeAt(int)
+     * @see io.vavr.collection.Array#removeAt(int)
      */
     public Array<T> removeAt(int index) {
         return boxed.removeAt(index);
@@ -1249,14 +1237,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param element
      * @return
-     * @see javaslang.collection.Array#removeAll(java.lang.Object)
+     * @see io.vavr.collection.Array#removeAll(java.lang.Object)
      */
     public Array<T> removeAll(T element) {
         return boxed.removeAll(element);
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#product()
+     * @see io.vavr.collection.Traversable#product()
      */
     public  Number product() {
         return boxed.product();
@@ -1264,7 +1252,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param elements
      * @return
-     * @see javaslang.collection.Array#removeAll(java.lang.Iterable)
+     * @see io.vavr.collection.Array#removeAll(java.lang.Iterable)
      */
     public Array<T> removeAll(Iterable<? extends T> elements) {
         return boxed.removeAll(elements);
@@ -1273,7 +1261,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param currentElement
      * @param newElement
      * @return
-     * @see javaslang.collection.Array#replace(java.lang.Object, java.lang.Object)
+     * @see io.vavr.collection.Array#replace(java.lang.Object, java.lang.Object)
      */
     public Array<T> replace(T currentElement, T newElement) {
         return boxed.replace(currentElement, newElement);
@@ -1282,7 +1270,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param currentElement
      * @param newElement
      * @return
-     * @see javaslang.collection.Array#replaceAll(java.lang.Object, java.lang.Object)
+     * @see io.vavr.collection.Array#replaceAll(java.lang.Object, java.lang.Object)
      */
     public Array<T> replaceAll(T currentElement, T newElement) {
         return boxed.replaceAll(currentElement, newElement);
@@ -1290,7 +1278,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param op
      * @return
-     * @see javaslang.collection.Traversable#reduceLeft(java.util.function.BiFunction)
+     * @see io.vavr.collection.Traversable#reduceLeft(java.util.function.BiFunction)
      */
     public  T reduceLeft(BiFunction<? super T, ? super T, ? extends T> op) {
         return boxed.reduceLeft(op);
@@ -1299,7 +1287,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param zero
      * @param f
      * @return
-     * @see javaslang.collection.Seq#foldRight(java.lang.Object, java.util.function.BiFunction)
+     * @see io.vavr.collection.Seq#foldRight(java.lang.Object, java.util.function.BiFunction)
      */
     public  <U> U foldRight(U zero, BiFunction<? super T, ? super U, ? extends U> f) {
         return boxed.foldRight(zero, f);
@@ -1307,7 +1295,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param elements
      * @return
-     * @see javaslang.collection.Array#retainAll(java.lang.Iterable)
+     * @see io.vavr.collection.Array#retainAll(java.lang.Iterable)
      */
     public Array<T> retainAll(Iterable<? extends T> elements) {
         return boxed.retainAll(elements);
@@ -1315,14 +1303,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param op
      * @return
-     * @see javaslang.collection.Traversable#reduceLeftOption(java.util.function.BiFunction)
+     * @see io.vavr.collection.Traversable#reduceLeftOption(java.util.function.BiFunction)
      */
     public  Option<T> reduceLeftOption(BiFunction<? super T, ? super T, ? extends T> op) {
         return boxed.reduceLeftOption(op);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#reverse()
+     * @see io.vavr.collection.Array#reverse()
      */
     public Array<T> reverse() {
         return boxed.reverse();
@@ -1330,7 +1318,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param op
      * @return
-     * @see javaslang.collection.Traversable#reduceRight(java.util.function.BiFunction)
+     * @see io.vavr.collection.Traversable#reduceRight(java.util.function.BiFunction)
      */
     public  T reduceRight(BiFunction<? super T, ? super T, ? extends T> op) {
         return boxed.reduceRight(op);
@@ -1339,7 +1327,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param zero
      * @param operation
      * @return
-     * @see javaslang.collection.Array#scan(java.lang.Object, java.util.function.BiFunction)
+     * @see io.vavr.collection.Array#scan(java.lang.Object, java.util.function.BiFunction)
      */
     public Array<T> scan(T zero, BiFunction<? super T, ? super T, ? extends T> operation) {
         return boxed.scan(zero, operation);
@@ -1348,7 +1336,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param zero
      * @param operation
      * @return
-     * @see javaslang.collection.Array#scanLeft(java.lang.Object, java.util.function.BiFunction)
+     * @see io.vavr.collection.Array#scanLeft(java.lang.Object, java.util.function.BiFunction)
      */
     public <U> Array<U> scanLeft(U zero, BiFunction<? super U, ? super T, ? extends U> operation) {
         return boxed.scanLeft(zero, operation);
@@ -1356,7 +1344,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param op
      * @return
-     * @see javaslang.collection.Traversable#reduceRightOption(java.util.function.BiFunction)
+     * @see io.vavr.collection.Traversable#reduceRightOption(java.util.function.BiFunction)
      */
     public  Option<T> reduceRightOption(BiFunction<? super T, ? super T, ? extends T> op) {
         return boxed.reduceRightOption(op);
@@ -1365,7 +1353,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param zero
      * @param operation
      * @return
-     * @see javaslang.collection.Array#scanRight(java.lang.Object, java.util.function.BiFunction)
+     * @see io.vavr.collection.Array#scanRight(java.lang.Object, java.util.function.BiFunction)
      */
     public <U> Array<U> scanRight(U zero, BiFunction<? super T, ? super U, ? extends U> operation) {
         return boxed.scanRight(zero, operation);
@@ -1374,7 +1362,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param beginIndex
      * @param endIndex
      * @return
-     * @see javaslang.collection.Array#slice(long, long)
+     * @see io.vavr.collection.Array#slice(long, long)
      */
     public Array<T> slice(long beginIndex, long endIndex) {
         return boxed.slice(beginIndex, endIndex);
@@ -1382,7 +1370,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param size
      * @return
-     * @see javaslang.collection.Array#sliding(long)
+     * @see io.vavr.collection.Array#sliding(long)
      */
     public Iterator<Array<T>> sliding(long size) {
         return boxed.sliding(size);
@@ -1391,14 +1379,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param size
      * @param step
      * @return
-     * @see javaslang.collection.Array#sliding(long, long)
+     * @see io.vavr.collection.Array#sliding(long, long)
      */
     public Iterator<Array<T>> sliding(long size, long step) {
         return boxed.sliding(size, step);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#sorted()
+     * @see io.vavr.collection.Array#sorted()
      */
     public Array<T> sorted() {
         return boxed.sorted();
@@ -1406,7 +1394,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param comparator
      * @return
-     * @see javaslang.collection.Array#sorted(java.util.Comparator)
+     * @see io.vavr.collection.Array#sorted(java.util.Comparator)
      */
     public Array<T> sorted(Comparator<? super T> comparator) {
         return boxed.sorted(comparator);
@@ -1414,7 +1402,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param mapper
      * @return
-     * @see javaslang.collection.Array#sortBy(java.util.function.Function)
+     * @see io.vavr.collection.Array#sortBy(java.util.function.Function)
      */
     public <U extends Comparable<? super U>> Array<T> sortBy(Function<? super T, ? extends U> mapper) {
         return boxed.sortBy(mapper);
@@ -1423,7 +1411,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param comparator
      * @param mapper
      * @return
-     * @see javaslang.collection.Array#sortBy(java.util.Comparator, java.util.function.Function)
+     * @see io.vavr.collection.Array#sortBy(java.util.Comparator, java.util.function.Function)
      */
     public <U> Array<T> sortBy(Comparator<? super U> comparator, Function<? super T, ? extends U> mapper) {
         return boxed.sortBy(comparator, mapper);
@@ -1431,7 +1419,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param n
      * @return
-     * @see javaslang.collection.Array#splitAt(long)
+     * @see io.vavr.collection.Array#splitAt(long)
      */
     public Tuple2<Array<T>, Array<T>> splitAt(long n) {
         return boxed.splitAt(n);
@@ -1439,7 +1427,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#splitAt(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#splitAt(java.util.function.Predicate)
      */
     public Tuple2<Array<T>, Array<T>> splitAt(Predicate<? super T> predicate) {
         return boxed.splitAt(predicate);
@@ -1447,14 +1435,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#splitAtInclusive(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#splitAtInclusive(java.util.function.Predicate)
      */
     public Tuple2<Array<T>, Array<T>> splitAtInclusive(Predicate<? super T> predicate) {
         return boxed.splitAtInclusive(predicate);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#spliterator()
+     * @see io.vavr.collection.Array#spliterator()
      */
     public Spliterator<T> spliterator() {
         return boxed.spliterator();
@@ -1462,7 +1450,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#span(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#span(java.util.function.Predicate)
      */
     public Tuple2<Array<T>, Array<T>> span(Predicate<? super T> predicate) {
         return boxed.span(predicate);
@@ -1470,14 +1458,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param beginIndex
      * @return
-     * @see javaslang.collection.Array#subSequence(int)
+     * @see io.vavr.collection.Array#subSequence(int)
      */
     public Array<T> subSequence(int beginIndex) {
         return boxed.subSequence(beginIndex);
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#size()
+     * @see io.vavr.collection.Traversable#size()
      */
     public  int size() {
         return boxed.size();
@@ -1486,21 +1474,21 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param beginIndex
      * @param endIndex
      * @return
-     * @see javaslang.collection.Array#subSequence(int, int)
+     * @see io.vavr.collection.Array#subSequence(int, int)
      */
     public Array<T> subSequence(int beginIndex, int endIndex) {
         return boxed.subSequence(beginIndex, endIndex);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#tail()
+     * @see io.vavr.collection.Array#tail()
      */
     public Array<T> tail() {
         return boxed.tail();
     }
     /**
      * @return
-     * @see javaslang.collection.Array#tailOption()
+     * @see io.vavr.collection.Array#tailOption()
      */
     public Option<Array<T>> tailOption() {
         return boxed.tailOption();
@@ -1508,7 +1496,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param n
      * @return
-     * @see javaslang.collection.Array#take(long)
+     * @see io.vavr.collection.Array#take(long)
      */
     public Array<T> take(long n) {
         return boxed.take(n);
@@ -1516,7 +1504,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param n
      * @return
-     * @see javaslang.collection.Array#takeRight(long)
+     * @see io.vavr.collection.Array#takeRight(long)
      */
     public Array<T> takeRight(long n) {
         return boxed.takeRight(n);
@@ -1524,7 +1512,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#takeUntil(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#takeUntil(java.util.function.Predicate)
      */
     public Array<T> takeUntil(Predicate<? super T> predicate) {
         return boxed.takeUntil(predicate);
@@ -1532,14 +1520,14 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param predicate
      * @return
-     * @see javaslang.collection.Array#takeWhile(java.util.function.Predicate)
+     * @see io.vavr.collection.Array#takeWhile(java.util.function.Predicate)
      */
     public Array<T> takeWhile(Predicate<? super T> predicate) {
         return boxed.takeWhile(predicate);
     }
     /**
      * @return
-     * @see javaslang.collection.Traversable#sum()
+     * @see io.vavr.collection.Traversable#sum()
      */
     public  Number sum() {
         return boxed.sum();
@@ -1547,7 +1535,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param f
      * @return
-     * @see javaslang.collection.Array#transform(java.util.function.Function)
+     * @see io.vavr.collection.Array#transform(java.util.function.Function)
      */
     public <U> U transformFn(Function<? super Array<T>, ? extends U> f) {
         return boxed.transform(f);
@@ -1555,7 +1543,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param iterable
      * @return
-     * @see javaslang.collection.Array#unit(java.lang.Iterable)
+     * @see io.vavr.collection.Array#unit(java.lang.Iterable)
      */
     public <U> Array<U> unit(Iterable<? extends U> iterable) {
         return boxed.unit(iterable);
@@ -1563,7 +1551,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param unzipper
      * @return
-     * @see javaslang.collection.Array#unzip(java.util.function.Function)
+     * @see io.vavr.collection.Array#unzip(java.util.function.Function)
      */
     public <T1, T2> Tuple2<Array<T1>, Array<T2>> unzip(
             Function<? super T, Tuple2<? extends T1, ? extends T2>> unzipper) {
@@ -1572,7 +1560,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param unzipper
      * @return
-     * @see javaslang.collection.Array#unzip3(java.util.function.Function)
+     * @see io.vavr.collection.Array#unzip3(java.util.function.Function)
      */
     public <T1, T2, T3> Tuple3<Array<T1>, Array<T2>, Array<T3>> unzip3(
             Function<? super T, Tuple3<? extends T1, ? extends T2, ? extends T3>> unzipper) {
@@ -1582,7 +1570,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param index
      * @param element
      * @return
-     * @see javaslang.collection.Array#update(int, java.lang.Object)
+     * @see io.vavr.collection.Array#update(int, java.lang.Object)
      */
     public Array<T> update(int index, T element) {
         return boxed.update(index, element);
@@ -1590,7 +1578,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
     /**
      * @param that
      * @return
-     * @see javaslang.collection.Array#zip(java.lang.Iterable)
+     * @see io.vavr.collection.Array#zip(java.lang.Iterable)
      */
     public <U> Array<Tuple2<T, U>> zip(Iterable<? extends U> that) {
         return boxed.zip(that);
@@ -1600,21 +1588,21 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>,IndexedSeq<T>{
      * @param thisElem
      * @param thatElem
      * @return
-     * @see javaslang.collection.Array#zipAll(java.lang.Iterable, java.lang.Object, java.lang.Object)
+     * @see io.vavr.collection.Array#zipAll(java.lang.Iterable, java.lang.Object, java.lang.Object)
      */
     public <U> Array<Tuple2<T, U>> zipAll(Iterable<? extends U> that, T thisElem, U thatElem) {
         return boxed.zipAll(that, thisElem, thatElem);
     }
     /**
      * @return
-     * @see javaslang.collection.Array#zipWithIndex()
+     * @see io.vavr.collection.Array#zipWithIndex()
      */
     public Array<Tuple2<T, Long>> zipWithIndex() {
         return boxed.zipWithIndex();
     }
     /**
      * @return
-     * @see javaslang.collection.Array#stringPrefix()
+     * @see io.vavr.collection.Array#stringPrefix()
      */
     public String stringPrefix() {
         return boxed.stringPrefix();

@@ -5,10 +5,10 @@ import java.util.function.Function;
 
 
 
-import javaslang.Function1;
-import javaslang.Function2;
-import javaslang.collection.Stream;
-import javaslang.control.Option;
+import io.vavr.Function1;
+import io.vavr.Function2;
+import io.vavr.collection.Stream;
+import io.vavr.control.Option;
 
 public class FromJDK<T, R> {
 

@@ -7,25 +7,33 @@ import java.util.Map;
 import java.util.Set;
 
 import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
+import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.control.Eval;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
+import io.vavr.collection.HashMap;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PMap;
 
-import javaslang.collection.HashMap;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrHashMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
+public class VavrHashMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, Unwrapable{
 
     public static <K,V> PersistentMapX<K,V> copyFromMap(Map<K,V> map){
         return VavrHashMapX.<K,V>empty()
                 .plusAll(map);
     }
+
+    @Override
+    public <R> R unwrap() {
+        return (R)map;
+    }
+
     @Wither
     HashMap<K,V> map;
     public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX() {

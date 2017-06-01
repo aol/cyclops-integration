@@ -26,37 +26,83 @@ import java.util.function.Function;
 public interface VavrConverters {
 
 
-
-    public static <K,V> HashMap<K,V> HashMap(PersistentMapX<K, V> vec){
-        return vec.unwrapIfInstance(HashMap.class,
-                ()-> VavrHashMapX.copyFromMap(vec).unwrap());
+    public static <K,V> HashMap<K,V> HashMap(PersistentMapX<K,V> vec){
+        return vec.unwrapNested(HashMap.class,
+                ()->{
+                    VavrHashMapX<K,V> map = VavrHashMapX.copyFromMap(vec).unwrap();
+                    return map.unwrap();
+                } );
+    }
+    public static <K extends Comparable<K>,V> TreeMap<K,V> TreeMap(PersistentMapX<K,V> vec){
+        return vec.unwrapNested(TreeMap.class,
+                ()->{
+                    VavrTreeMapX<K,V> map = VavrTreeMapX.copyFromMap(vec,(Comparator<K>) Comparator.naturalOrder()).unwrap();
+                    return map.unwrap();
+                } );
+    }
+    public static <K,V> TreeMap<K,V> TreeMap(PersistentMapX<K,V> vec, Comparator<K> comp){
+        return vec.unwrapNested(TreeMap.class,
+                ()->{
+                    VavrTreeMapX<K,V> map = VavrTreeMapX.copyFromMap(vec,comp).unwrap();
+                    return map.unwrap();
+                } );
     }
     public static <T extends Comparable<? extends T>> TreeSet<T> TreeSet(CollectionX<T> vec){
-        return vec.unwrapIfInstance(TreeSet.class,
-                ()-> VavrTreeSetX.copyFromCollection(vec,(Comparator<T>)Comparator.naturalOrder()).unwrap());
+        return vec.unwrapNested(TreeSet.class,
+                ()->{
+                    VavrTreeSetX<T> set = VavrTreeSetX.copyFromCollection(vec,(Comparator<T>)Comparator.naturalOrder()).unwrap();
+                    return set.unwrap();
+                });
     }
     public static <T> HashSet<T> HashSet(CollectionX<T> vec){
-        return vec.unwrapIfInstance(HashSet.class,
-                ()-> VavrHashSetX.copyFromCollection(vec).unwrap());
+        return vec.unwrapNested(HashSet.class,
+                ()-> {
+                    VavrHashSetX<T> set = VavrHashSetX.copyFromCollection(vec, (Comparator<T>) Comparator.naturalOrder()).unwrap();
+                    return set.unwrap();
+                });
     }
-    public static <T> TreeSet<T> TreeSet(CollectionX<T> vec, Comparator<T> comp){
-        return vec.unwrapIfInstance(TreeSet.class,
-                ()-> VavrTreeSetX.copyFromCollection(vec,comp).unwrap());
+    public static <T> TreeSet<T> TreeSet(CollectionX<T> vec, Comparator<T> comp) {
+        return vec.unwrapNested(TreeSet.class,
+                () -> {
+                    VavrTreeSetX<T> set = VavrTreeSetX.copyFromCollection(vec, comp).unwrap();
+                    return set.unwrap();
+                });
     }
-
-
+    public static <T> HashSet<T> HashSet(CollectionX<T> vec, Comparator<T> comp) {
+        return vec.unwrapNested(HashSet.class,
+                () -> {
+                    VavrHashSetX<T> set = VavrHashSetX.copyFromCollection(vec, comp).unwrap();
+                    return set.unwrap();
+                });
+    }
+    public static  BitSet BitSet(CollectionX<Integer> vec){
+        return vec.unwrapNested(BitSet.class,
+                ()->{
+                    VavrBitSetX set = VavrBitSetX.copyFromCollection(vec).unwrap();
+                    return set.unwrap();
+                } );
+    }
     public static <T> Queue<T> Queue(CollectionX<T> vec){
-        return vec.unwrapIfInstance(Queue.class,
-                ()-> VavrQueueX.copyFromCollection(vec).unwrap());
+        return vec.unwrapNested(Queue.class,
+                ()-> {
+                    VavrQueueX<T> queue = VavrQueueX.copyFromCollection(vec).unwrap();
+                    return queue.unwrap();
+                });
     }
     public static <T> List<T> List(CollectionX<T> vec){
-        return vec.unwrapIfInstance(List.class,
-                ()-> VavrListX.copyFromCollection(vec).unwrap());
-    }
-    public static <T> Vector<T> Vector(CollectionX<T> vec){
-        return vec.unwrapIfInstance(Vector.class,
-                ()-> VavrVectorX.copyFromCollection(vec).unwrap());
+        return vec.unwrapNested(List.class,
+                ()-> {
+                    VavrListX<T> vector =  VavrListX.copyFromCollection(vec).unwrap();
+                    return vector.unwrap();
+                });
     }
 
+    public static <T> Vector<T> Vector(CollectionX<T> vec){
+        return vec.unwrapNested(Vector.class,
+                ()-> {
+                    VavrVectorX<T> vector =  VavrVectorX.copyFromCollection(vec).unwrap();
+                    return vector.unwrap();
+                });
+    }
 
 }
