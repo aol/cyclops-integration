@@ -7,9 +7,9 @@ import cyclops.conversion.functionaljava.FromJavaslang;
 import org.junit.Test;
 
 import fj.P;
-import javaslang.Tuple;
-import javaslang.control.Either;
-import javaslang.control.Option;
+import io.vavr.Tuple;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
 
 public class JavaslangTest {
 

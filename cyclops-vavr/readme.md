@@ -186,7 +186,6 @@ Vector<Integer> vec = suspend((Integer i) -> i != 4, s -> {
                   }
                ).to()
                 .vectorX(LAZY)
-                .type(VavrTypes.vector())
                 .take(5)
                 .to(VavrConverters::Vector);
 

@@ -34,7 +34,6 @@ public class GeneratorTest {
           }
                ).to()
                 .vectorX(LAZY)
-                .type(VavrTypes.vector())
                 .take(5)
                 .to(VavrConverters::Vector);
 
