@@ -1,7 +1,8 @@
-package cyclops.monads.transformers.reactor;
+package cyclops.monads.transformers;
 
 
 
+import com.aol.cyclops2.types.Zippable;
 import com.aol.cyclops2.types.anyM.transformers.FoldableTransformerSeq;
 
 import com.aol.cyclops2.types.foldable.CyclopsCollectable;
@@ -21,9 +22,11 @@ import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
 
 import cyclops.stream.ReactiveSeq;
+import cyclops.stream.Spouts;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
 import java.util.*;
@@ -241,13 +244,7 @@ public class FluxT<W extends WitnessType<W>,T> implements To<FluxT<W,T>>,
         return stream().iterator();
     }
 
-    /* (non-Javadoc)
-     * @see com.aol.cyclops2.types.reactiveFlux.CyclopsCollectable#collectable()
-     
-    @Override
-    public Collectable<T> collectable() {
-       return this;
-    } */
+
     @Override
     public <R> FluxT<W,R> unitIterator(final Iterator<R> it) {
         return of(run.unitIterator(it)
@@ -366,11 +363,51 @@ public class FluxT<W extends WitnessType<W>,T> implements To<FluxT<W,T>>,
         return (FluxT) FoldableTransformerSeq.super.zip(other);
     }
 
+    @Override
+    public FluxT<W,T> zip(BinaryOperator<Zippable<T>> combiner, Zippable<T> app) {
+        return (FluxT) FoldableTransformerSeq.super.zip(combiner,app);
+    }
 
+    @Override
+    public <R> FluxT<W,R> zipWith(Iterable<Function<? super T, ? extends R>> fn) {
+        return (FluxT) FoldableTransformerSeq.super.zipWith(fn);
+    }
+
+    @Override
+    public <R> FluxT<W,R> zipWithS(Stream<Function<? super T, ? extends R>> fn) {
+        return (FluxT) FoldableTransformerSeq.super.zipWithS(fn);
+    }
+
+    @Override
+    public <R> FluxT<W,R> zipWithP(Publisher<Function<? super T, ? extends R>> fn) {
+        return (FluxT) FoldableTransformerSeq.super.zipWithP(fn);
+    }
+
+    @Override
+    public <T2, R> FluxT<W,R> zipP(Publisher<? extends T2> publisher, BiFunction<? super T, ? super T2, ? extends R> fn) {
+        return (FluxT) FoldableTransformerSeq.super.zipP(publisher,fn);
+    }
+
+    @Override
+    public <U> FluxT<W,Tuple2<T, U>> zipP(Publisher<? extends U> other) {
+        AnyM<W, Zippable<? extends Tuple2<T, ? extends U>>> zipped = transformerStream().map(s -> s.zipP(other));
+        return unitAnyM(zipped.map(a-> Spouts.from((Publisher)a)));
+      //  return (FluxT) FoldableTransformerSeq.super.zipP(other);
+    }
+
+    @Override
+    public <S, U, R> FluxT<W,R> zip3(Iterable<? extends S> second, Iterable<? extends U> third, Fn3<? super T, ? super S, ? super U, ? extends R> fn3) {
+        return (FluxT) FoldableTransformerSeq.super.zip3(second,third,fn3);
+    }
+
+    @Override
+    public <T2, T3, T4, R> FluxT<W,R> zip4(Iterable<? extends T2> second, Iterable<? extends T3> third, Iterable<? extends T4> fourth, Fn4<? super T, ? super T2, ? super T3, ? super T4, ? extends R> fn) {
+        return (FluxT) FoldableTransformerSeq.super.zip4(second,third,fourth,fn);
+    }
 
     /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ListT#zip3(java.util.reactiveFlux.Flux, java.util.reactiveFlux.Flux)
-     */
+         * @see cyclops2.monads.transformers.values.ListT#zip3(java.util.reactiveFlux.Flux, java.util.reactiveFlux.Flux)
+         */
     @Override
     public <S, U> FluxT<W,Tuple3<T, S, U>> zip3(final Iterable<? extends S> second, final Iterable<? extends U> third) {
 

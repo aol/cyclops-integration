@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
+import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.companion.MapXs;
@@ -26,10 +28,14 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
+public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, Unwrapable, To<ClojureTreeMapX<K,V>> {
     
     @Wither
     PersistentTreeMap map;
+    @Override
+    public <R> R unwrap() {
+        return (R)map;
+    }
     public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX() {
         return Reducer.<PersistentMapX<K, V>> of(empty(), (final PersistentMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
             final List w = ((TupleWrapper) () -> in).values();
@@ -125,8 +131,16 @@ public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
     public V get(Object key) {
        return (V)map.valAt(key);
     }
-   
-    
+
+    public static <K,V> PersistentMapX<K,V> copyFromMap(Map<K,V> map){
+        return ClojureTreeMapX.<K,V>empty()
+                .plusAll(map);
+    }
+
+    public static <K,V> PersistentMapX<K,V> copyFromMap(Comparator<K> c,Map<K,V> map){
+        return ClojureTreeMapX.<K,V>empty(c)
+                .plusAll(map);
+    }
    
    
 }

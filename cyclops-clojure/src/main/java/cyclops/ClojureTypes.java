@@ -82,6 +82,9 @@ public class ClojureTypes {
     public static <T> Reducer<POrderedSet<T>> treeSet(Comparator<T> ordering) {
         return ClojureTreeSetX.toPOrderedSet(ordering);
     }
+    public static <T extends Comparable<T>> Reducer<POrderedSet<T>> treeSet() {
+        return ClojureTreeSetX.<T>toPOrderedSet(Comparator.naturalOrder());
+    }
 
     /**
      * Use to set the type of an PersistentSetX to Clojure TreeSet

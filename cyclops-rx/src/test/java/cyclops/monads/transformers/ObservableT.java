@@ -1,4 +1,4 @@
-package cyclops.monads.transformers.rx;
+package cyclops.monads.transformers;
 
 
 import com.aol.cyclops2.types.anyM.transformers.FoldableTransformerSeq;
@@ -15,7 +15,6 @@ import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 
-import cyclops.monads.RxWitness;
 import cyclops.monads.RxWitness.obsvervable;
 import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;

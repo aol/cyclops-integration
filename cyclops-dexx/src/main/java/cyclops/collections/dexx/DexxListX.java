@@ -1,9 +1,6 @@
 package cyclops.collections.dexx;
 
-import java.util.AbstractList;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -42,9 +39,15 @@ public class DexxListX<T> extends AbstractList<T>implements PStack<T>, Unwrapabl
 
     public static <T> LinkedListX<T> copyFromCollection(CollectionX<T> vec) {
 
-        return DexxListX.<T>empty()
-                .plusAll(vec);
+        return PStack(from(vec.iterator(),0));
 
+    }
+    private static <E> List<E> from(final Iterator<E> i, int depth) {
+
+        if(!i.hasNext())
+            return ConsList.empty();
+        E e = i.next();
+        return  from(i,depth++).prepend(e);
     }
     /**
      * Create a LazyLinkedListX from a Stream

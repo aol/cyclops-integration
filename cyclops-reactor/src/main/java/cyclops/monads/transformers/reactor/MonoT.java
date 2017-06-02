@@ -111,10 +111,11 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
      */
     @Override
     public MonoT<W,T> peek(final Consumer<? super T> peek) {
-        return of(run.peek(Mono -> Mono.map(a -> {
-            peek.accept(a);
-            return a;
-        })));
+        return map(e->{
+            peek.accept(e);
+            return e;
+        });
+
     }
 
     /**

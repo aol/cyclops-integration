@@ -8,6 +8,7 @@ import clojure.lang.*;
 import java.util.Comparator;
 
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 /**
@@ -27,37 +28,78 @@ import java.util.function.Function;
 public interface ClojureConverters {
 
 
-
-    public static <K,V> PersistentHashMap PersistentHashMap(PersistentMapX<K, V> vec){
-        return vec.unwrapIfInstance(HashMap.class,
-                ()-> ClojureHashMapX.copyFromMap(vec).unwrap());
+    public static <K,V> PersistentHashMap PersistentHashMap(PersistentMapX<K,V> vec){
+        return vec.unwrapNested(PersistentHashMap.class,
+                ()->{
+                    ClojureHashMapX<K,V> map = ClojureHashMapX.copyFromMap(vec).unwrap();
+                    return map.unwrap();
+                } );
+    }
+    public static <K extends Comparable<K>,V> PersistentTreeMap PersistentTreeMap(PersistentMapX<K,V> vec){
+        return vec.unwrapNested(PersistentTreeMap.class,
+                ()->{
+                    ClojureTreeMapX<K,V> map = ClojureTreeMapX.copyFromMap((Comparator<K>) Comparator.naturalOrder(),vec).unwrap();
+                    return map.unwrap();
+                } );
+    }
+    public static <K,V> PersistentTreeMap PersistentTreeMap(PersistentMapX<K,V> vec, Comparator<K> comp){
+        return vec.unwrapNested(TreeMap.class,
+                ()->{
+                    ClojureTreeMapX<K,V> map = ClojureTreeMapX.copyFromMap(comp,vec).unwrap();
+                    return map.unwrap();
+                } );
     }
     public static <T extends Comparable<? extends T>> PersistentTreeSet PersistentTreeSet(CollectionX<T> vec){
-        return vec.unwrapIfInstance(PersistentTreeSet.class,
-                ()-> ClojureTreeSetX.copyFromCollection(vec,(Comparator<T>)Comparator.naturalOrder()).unwrap());
+        return vec.unwrapNested(PersistentTreeSet.class,
+                ()->{
+                    ClojureTreeSetX<T> set = ClojureTreeSetX.copyFromCollection(vec,(Comparator<T>)Comparator.naturalOrder()).unwrap();
+                    return set.unwrap();
+                });
     }
     public static <T> PersistentHashSet PersistentHashSet(CollectionX<T> vec){
-        return vec.unwrapIfInstance(PersistentHashSet.class,
-                ()-> ClojureHashSetX.copyFromCollection(vec).unwrap());
+        return vec.unwrapNested(PersistentHashSet.class,
+                ()-> {
+                    ClojureHashSetX<T> set = ClojureHashSetX.copyFromCollection(vec).unwrap();
+                    return set.unwrap();
+                });
     }
-    public static <T> PersistentTreeSet PersistentTreeSet(CollectionX<T> vec, Comparator<T> comp){
-        return vec.unwrapIfInstance(PersistentTreeSet.class,
-                ()-> ClojureTreeSetX.copyFromCollection(vec,comp).unwrap());
+    public static <T> PersistentTreeSet PersistentTreeSet(CollectionX<T> vec, Comparator<T> comp) {
+        return vec.unwrapNested(PersistentTreeSet.class,
+                () -> {
+                    ClojureTreeSetX<T> set = ClojureTreeSetX.copyFromCollection(vec, comp).unwrap();
+                    return set.unwrap();
+                });
     }
-
-
+    public static <T> PersistentHashSet PersistentHashSet(CollectionX<T> vec, Comparator<T> comp) {
+        return vec.unwrapNested(PersistentHashSet.class,
+                () -> {
+                    ClojureHashSetX<T> set = ClojureHashSetX.copyFromCollection(vec).unwrap();
+                    return set.unwrap();
+                });
+    }
+    
     public static <T> PersistentQueue PersistentQueue(CollectionX<T> vec){
-        return vec.unwrapIfInstance(PersistentQueue.class,
-                ()-> ClojureQueueX.copyFromCollection(vec).unwrap());
+        return vec.unwrapNested(PersistentQueue.class,
+                ()-> {
+                    ClojureQueueX<T> queue = ClojureQueueX.copyFromCollection(vec).unwrap();
+                    return queue.unwrap();
+                });
     }
-    public static <T> PersistentList List(CollectionX<T> vec){
-        return vec.unwrapIfInstance(PersistentList.class,
-                ()-> ClojureListX.copyFromCollection(vec).unwrap());
-    }
-    public static <T> PersistentVector PersistentVector(CollectionX<T> vec){
-        return vec.unwrapIfInstance(PersistentVector.class,
-                ()-> ClojureVectorX.copyFromCollection(vec).unwrap());
+    public static <T> PersistentList PersistentList(CollectionX<T> vec){
+        return vec.unwrapNested(PersistentList.class,
+                ()-> {
+                    ClojureListX<T> vector =  ClojureListX.copyFromCollection(vec).unwrap();
+                    return vector.unwrap();
+                });
     }
 
+    public static <T> PersistentVector PersistentVector(CollectionX<T> vec){
+        return vec.unwrapNested(PersistentVector.class,
+                ()-> {
+                    ClojureVectorX<T> vector =  ClojureVectorX.copyFromCollection(vec).unwrap();
+                    return vector.unwrap();
+                });
+    }
+    
 
 }

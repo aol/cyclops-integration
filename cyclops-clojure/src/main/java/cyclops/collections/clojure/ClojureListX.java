@@ -1,10 +1,6 @@
 package cyclops.collections.clojure;
 
-import java.util.AbstractList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -12,6 +8,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
@@ -28,11 +25,21 @@ import lombok.experimental.Wither;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClojureListX<T> extends AbstractList<T>implements PStack<T> {
+public class ClojureListX<T> extends AbstractList<T>implements PStack<T>, Unwrapable {
     public static <T> LinkedListX<T> copyFromCollection(CollectionX<T> vec) {
-        return ClojureListX.<T>empty()
-                .plusAll(vec);
+        return fromPStack(new ClojureListX<T>(from(vec.iterator(),0)),toPStack());
 
+    }
+    private static <E> IPersistentList from(final Iterator<E> i, int depth) {
+
+        if(!i.hasNext())
+            return PersistentList.create(Arrays.asList());
+        E e = i.next();
+        return  (IPersistentList) from(i,depth++).cons(e);
+    }
+    @Override
+    public <R> R unwrap() {
+        return (R)list;
     }
     /**
      * Create a LazyLinkedListX from a Stream

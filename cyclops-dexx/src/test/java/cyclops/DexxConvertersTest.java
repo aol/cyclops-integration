@@ -31,7 +31,7 @@ public class DexxConvertersTest {
                                         .map(i->i*2)
                                         .to(DexxConverters::List);
 
-        assertThat(list.toString(), equalTo( "List(2, 4, 6)"));
+        assertThat(list.toString(), equalTo( "Cons(2, 4, 6)"));
     }
     @Test
     public void listAlien(){
@@ -40,7 +40,7 @@ public class DexxConvertersTest {
                 .map(i->i*2)
                 .to(DexxConverters::List);
 
-        assertThat(list.toString(), equalTo( "List(2, 4, 6)"));
+        assertThat(list.toString(), equalTo( "Cons(2, 4, 6)"));
     }
     @Test
     public void vectorNative() {

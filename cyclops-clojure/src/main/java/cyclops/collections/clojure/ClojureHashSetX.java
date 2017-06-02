@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -26,11 +27,15 @@ import lombok.experimental.Wither;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClojureHashSetX<T> extends AbstractSet<T>implements PSet<T> {
+public class ClojureHashSetX<T> extends AbstractSet<T>implements PSet<T>,Unwrapable {
     public static <T> PersistentSetX<T> copyFromCollection(CollectionX<? extends T> vec) {
         PersistentSetX<T> res = ClojureHashSetX.<T>empty()
                 .plusAll(vec);
         return res;
+    }
+    @Override
+    public <R> R unwrap() {
+        return (R)set;
     }
     /**
      * Create a LazyPSetX from a Stream

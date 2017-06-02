@@ -3,6 +3,7 @@ package cyclops.collections.clojure;
 import clojure.lang.PersistentHashMap;
 import clojure.lang.PersistentVector;
 import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
+import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.mixins.TupleWrapper;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.companion.MapXs;
@@ -16,13 +17,18 @@ import org.pcollections.PMap;
 
 import java.util.*;
 
-public class ClojureHashMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
+public class ClojureHashMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, Unwrapable{
     
     @Wither
     private final PersistentHashMap map;
 
     private ClojureHashMapX(PersistentHashMap map) {
         this.map = map;
+    }
+
+    @Override
+    public <R> R unwrap() {
+        return (R)map;
     }
 
     public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX() {
