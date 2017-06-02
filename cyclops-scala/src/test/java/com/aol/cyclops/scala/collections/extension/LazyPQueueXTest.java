@@ -1,14 +1,11 @@
 package com.aol.cyclops.scala.collections.extension;
 
 
-import com.aol.cyclops.scala.collections.ScalaPQueue;
+import cyclops.collections.scala.ScalaQueueX;
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.LazyFluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPStackX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PQueueX;
-import cyclops.collections.immutable.PStackX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.PersistentQueueX;
+import cyclops.collections.immutable.LinkedListX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -25,7 +22,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        PQueueX<T> list = ScalaPQueue.empty();
+        PersistentQueueX<T> list = ScalaQueueX.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -36,9 +33,9 @@ public class LazyPQueueXTest extends AbstractCollectionXTest {
 
     @Test
     public void onEmptySwitch() {
-        assertThat(ScalaPQueue.empty()
-                          .onEmptySwitch(() -> PQueueX.of(1, 2, 3)).toList(),
-                   equalTo(PQueueX.of(1, 2, 3).toList()));
+        assertThat(ScalaQueueX.empty()
+                          .onEmptySwitch(() -> PersistentQueueX.of(1, 2, 3)).toList(),
+                   equalTo(PersistentQueueX.of(1, 2, 3).toList()));
     }
 
     /*
@@ -50,7 +47,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return PStackX.empty();
+        return LinkedListX.empty();
     }
 
     
@@ -58,34 +55,34 @@ public class LazyPQueueXTest extends AbstractCollectionXTest {
     @Test
     public void remove() {
 
-        ScalaPQueue.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+        ScalaQueueX.of(1, 2, 3)
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return  ScalaPQueue.range(start, end);
+        return  ScalaQueueX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return ScalaPQueue.rangeLong(start, end);
+        return ScalaQueueX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return ScalaPQueue.iterate(times, seed, fn);
+        return ScalaQueueX.iterate(times, seed, fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return ScalaPQueue.generate(times, fn);
+        return ScalaQueueX.generate(times, fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return ScalaPQueue.unfold(seed, unfolder);
+        return ScalaQueueX.unfold(seed, unfolder);
     }
 }

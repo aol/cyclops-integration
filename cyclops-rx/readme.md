@@ -27,7 +27,7 @@ Use Rx.observable to create wrapped RxJava Monads.
 
 ```java
 
-import static com.aol.cyclops.rx.Observables.forEach;
+import static cyclops.companion.rx.Observables.forEach;
 
 Observable<Integer> result = forEach(Obserbable.just(10,20),a->Observable.<Integer>just(a+10)
                                                           ,(a,b)->a+b);

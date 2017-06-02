@@ -1,6 +1,6 @@
 package com.aol.cyclops.functionaljava.adapter;
 
-import com.aol.cyclops.functionaljava.FJWitness.iterableW;
+import cyclops.monads.FJWitness.iterableW;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
 

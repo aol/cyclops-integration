@@ -1,6 +1,6 @@
 package com.aol.cyclops.functionaljava.adapter;
 
-import com.aol.cyclops.functionaljava.FJWitness.nonEmptyList;
+import cyclops.monads.FJWitness.nonEmptyList;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
 import cyclops.stream.ReactiveSeq;

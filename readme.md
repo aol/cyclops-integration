@@ -32,8 +32,8 @@ public <W extends WitnessType<W>> AnyMSeq<W,Integer> sumAdjacent(AnyMSeq<W,Integ
 Use them with Vavr 
 
 ```java
-import static com.aol.cyclops.vavr.VavrWitness.list;
-import com.aol.cyclops.vavr.Lists;
+import static cyclops.monads.VavrWitness.list;
+import cyclops.companion.vavr.Lists;
 
 
 AnyMSeq<list,Integer> vavrList = Lists.anyM(List.range(0, 10));
@@ -46,8 +46,8 @@ List<Integer> backToVavr = VavrWitness.list(summedVavr);
 Or RxJava
 
 ```java
-import static com.aol.cyclops.rx.RxWitness.observable;
-import com.aol.cyclops.rx.Observables;
+import static cyclops.monads.RxWitness.observable;
+import cyclops.companion.rx.Observables;
 
 AnyMSeq<observable,Integer> rxObservable = Observables.anyM(Observable.range(0, 10));
 AnyMSeq<observable,Integer> summedRx = sumAdjacent(rxObservable);
@@ -61,7 +61,7 @@ Observable<Integer> backToRx = RxWitness.observable(summedRx);
 For comprehensions
 
 ```java
-import static com.aol.cyclops.vavr.Trys.*;
+import static cyclops.companion.vavr.Trys.*;
 
         
 Try<String> result = Trys.forEach4(grind("arabica beans"),
@@ -95,7 +95,7 @@ String combine(String espresso, String frothedMilk) {
 ```
 
 ```java
-import static com.aol.cyclops.reactor.Fluxs.*;
+import static cyclops.companion.reactor.Fluxs.*;
 
 Flux<Integer> result = Fluxs.forEach(Flux.just(10, 20), a -> Flux.<Integer> just(a + 10), (a, b) -> a + b);
 result.collectList()
@@ -122,7 +122,7 @@ The code for this performance testing speeding up the execution of functional op
 cyclops also allows data to be pushed asynchronously into collection types from the major functional libraries. For example to asynchronously populate a JavaSlang / Vavr Vector we can write
 
 ```java
-PVectorX<Integer> asyncPopulated = JavaSlangPVector.fromStream(Spouts.publishOn(ReactiveSeq.of(1,2,3),
+VectorX<Integer> asyncPopulated = JavaSlangPVector.fromStream(Spouts.publishOn(ReactiveSeq.of(1,2,3),
                 Executors.newFixedThreadPool(1));
 ```
 
@@ -133,8 +133,8 @@ E.g. Using a functor and applicative type classes on FunctionalJava Lists (Highe
 ```java
 
 import static com.aol.cyclops.functionaljava.ListKind;
-import static com.aol.cyclops.functionaljava.Lists.Instances.functor;
-import static com.aol.cyclops.functionaljava.Lists.Instances.zippingApplicative;
+import static cyclops.companion.functionaljava.Lists.Instances.functor;
+import static cyclops.companion.functionaljava.Lists.Instances.zippingApplicative;
 
 ListKind<Fn1<Integer,Integer>> listFn = ListKind.widen(List.list((Lambda.λ((Integer i) ->i*2))
                                                 .convert(ListKind::narrowK);

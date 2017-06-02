@@ -1,33 +1,28 @@
 package com.aol.cyclops.functionaljava;
 
-import static com.aol.cyclops.functionaljava.FJ.stream;
+import static cyclops.monads.FJ.stream;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
+import cyclops.companion.functionaljava.Options;
+import cyclops.monads.FJ;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 
 
-import fj.Monoid;
-import fj.control.Trampoline;
 import fj.data.Either;
-import fj.data.IOFunctions;
 import fj.data.IterableW;
 import fj.data.List;
 import fj.data.Option;
-import fj.data.Reader;
-import fj.data.State;
 import fj.data.Stream;
 import fj.data.Validation;
-import fj.data.Writer;
 
 public class AnyFunctionalJavaMTest {
     @Rule
@@ -77,7 +72,7 @@ public class AnyFunctionalJavaMTest {
     public void eitherTest() {
         assertThat(FJ.either(Either.right("hello world"))
                      .map(String::toUpperCase)
-                     .toLazyCollection(),
+                     .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -85,7 +80,7 @@ public class AnyFunctionalJavaMTest {
     public void eitherLeftTest() {
         assertThat(FJ.either(Either.<String, String> left("hello world"))
                      .map(String::toUpperCase)
-                     .toLazyCollection(),
+                     .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList()));
     }
 
@@ -105,7 +100,7 @@ public class AnyFunctionalJavaMTest {
     public void optionTest() {
         assertThat(FJ.option(Option.some("hello world"))
                      .map(String::toUpperCase)
-                     .toLazyCollection(),
+                     .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -114,7 +109,7 @@ public class AnyFunctionalJavaMTest {
         assertThat(FJ.option(Option.some("hello world"))
                      .map(String::toUpperCase)
                      .flatMap(a -> FJ.option(Option.some(a)))
-                     .toLazyCollection(),
+                     .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -122,7 +117,7 @@ public class AnyFunctionalJavaMTest {
     public void optionEmptyTest() {
         assertThat(FJ.option(Option.<String> none())
                      .map(String::toUpperCase)
-                     .toLazyCollection(),
+                     .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList()));
     }
 
@@ -173,7 +168,7 @@ public class AnyFunctionalJavaMTest {
     public void validateTest() {
         assertThat(FJ.validation(Validation.success(success()))
                      .map(String::toUpperCase)
-                     .toLazyCollection(),
+                     .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
@@ -181,7 +176,7 @@ public class AnyFunctionalJavaMTest {
     public void validationTestFailure() {
 
         FJ.validation(Validation.fail(new RuntimeException()))
-                .toLazyCollection()
+                .to(e->e.stream().collect(Collectors.toList()))
           .forEach(System.out::println);
 
     }
@@ -191,7 +186,7 @@ public class AnyFunctionalJavaMTest {
 
         Exception e = new RuntimeException();
         assertThat(FJ.validation(Validation.fail(e))
-                        .toLazyCollection(),
+                        .to(r->r.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList()));
 
     }
@@ -201,7 +196,7 @@ public class AnyFunctionalJavaMTest {
         assertThat(FJ.validation(Validation.success(success()))
                      .map(String::toUpperCase)
                      .flatMap(a -> FJ.option(Option.some(a)))
-                        .toLazyCollection(),
+                        .to(e->e.stream().collect(Collectors.toList())),
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 

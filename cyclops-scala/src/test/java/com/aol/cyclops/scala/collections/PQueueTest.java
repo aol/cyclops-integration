@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import cyclops.collections.scala.ScalaQueueX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.AmortizedPQueue;
@@ -18,17 +19,17 @@ public class PQueueTest {
     @Before
     public void setup(){
        org = AmortizedPQueue.empty();
-       test = ScalaPQueue.empty();
+       test = ScalaQueueX.empty();
      
     }
     
     @Test
     public void empty(){
-        assertThat(TreePVector.empty().toArray(),equalTo(ScalaPQueue.empty().toArray()));
+        assertThat(TreePVector.empty().toArray(),equalTo(ScalaQueueX.empty().toArray()));
     }
     @Test
     public void singleton(){
-        assertThat(TreePVector.singleton(1).toArray(),equalTo(ScalaPQueue.singleton(1).toArray()));
+        assertThat(TreePVector.singleton(1).toArray(),equalTo(ScalaQueueX.singleton(1).toArray()));
     }
     
     @Test
@@ -57,7 +58,7 @@ public class PQueueTest {
     @Test
     public void plusAllScala(){
         assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(Arrays.asList(5,6,7)).toArray(),
-                   equalTo(test.plusAll(ScalaPQueue.of(1,2,3)).plusAll(Arrays.asList(5,6,7)).toArray()));
+                   equalTo(test.plusAll(ScalaQueueX.of(1,2,3)).plusAll(Arrays.asList(5,6,7)).toArray()));
     }
    
 }

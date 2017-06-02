@@ -3,9 +3,9 @@ package com.aol.cyclops.guava.hkt;
 
 import java.util.Set;
 
-import com.aol.cyclops.guava.FromCyclopsReact;
-import com.aol.cyclops.guava.FromJDK;
-import com.aol.cyclops.guava.ToCyclopsReact;
+import cyclops.conversion.guava.FromCyclopsReact;
+import cyclops.conversion.guava.FromJDK;
+import cyclops.conversion.guava.ToCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 import com.google.common.base.Function;
@@ -82,7 +82,8 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      * @param optional Optional to construct Optional from
      * @return Optional created from Optional
      */
-    public static <T> OptionalKind<T> fromOptional(Higher<cyclops.higherkindedtypes.OptionalKind.µ,T> optional){
+    public static <T> OptionalKind<T> fromOptional(Higher<cyclops.companion.Optionals.OptionalKind.µ,T> optional){
+
         return widen(FromCyclopsReact.optional(Maybe.fromOptional(optional)));
     }
     /**
@@ -177,7 +178,7 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      * If the supplied Optional implements OptionalKind it is returned already, otherwise it
      * is wrapped into a Optional implementation that does implement OptionalKind
      * 
-     * @param Optional Optional to widen to a OptionalKind
+     * @param maybe Optional to widen to a OptionalKind
      * @return OptionalKind encoding HKT info about Optionals
      */
     public static <T> OptionalKind<T> widen(final Optional<T> maybe) {
@@ -189,7 +190,7 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
     /**
      * Convert the HigherKindedType definition for a Optional into
      * 
-     * @param Optional Type Constructor to convert back into narrowed type
+     * @param maybe Type Constructor to convert back into narrowed type
      * @return OptionalX from Higher Kinded Type
      */
     public static <T> Optional<T> narrow(final Higher<OptionalKind.µ, T> maybe) {

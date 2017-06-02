@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Optional;
 
+import cyclops.conversion.guava.FromJDK;
 import org.junit.Test;
 
 /**

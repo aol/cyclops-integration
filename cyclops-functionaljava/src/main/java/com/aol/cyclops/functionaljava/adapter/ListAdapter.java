@@ -1,13 +1,10 @@
 package com.aol.cyclops.functionaljava.adapter;
 
-import com.aol.cyclops.functionaljava.FJWitness;
-import com.aol.cyclops.functionaljava.FJWitness.list;
+import cyclops.monads.FJWitness.list;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
 import cyclops.stream.ReactiveSeq;
 import fj.data.List;
-import javaslang.collection.Traversable;
-import lombok.AllArgsConstructor;
 
 import java.util.function.Function;
 import java.util.function.Predicate;

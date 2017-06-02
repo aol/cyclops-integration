@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.aol.cyclops.reactor.Monos;
+import cyclops.companion.reactor.Monos;
 import com.aol.cyclops.reactor.hkt.MonoKind;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.async.Future;

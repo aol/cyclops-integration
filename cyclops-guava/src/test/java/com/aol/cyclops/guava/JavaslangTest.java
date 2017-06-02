@@ -2,7 +2,9 @@ package com.aol.cyclops.guava;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import javaslang.control.Option;
+
+import cyclops.conversion.guava.FromJavaslang;
+import io.vavr.control.Option;
 
 import org.junit.Test;
 

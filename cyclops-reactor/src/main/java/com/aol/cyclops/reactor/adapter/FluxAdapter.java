@@ -1,8 +1,8 @@
 package com.aol.cyclops.reactor.adapter;
 
-import com.aol.cyclops.reactor.Fluxs;
-import com.aol.cyclops.reactor.ReactorWitness;
-import com.aol.cyclops.reactor.ReactorWitness.flux;
+import cyclops.companion.reactor.Fluxs;
+import cyclops.monads.ReactorWitness;
+import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
 import lombok.AllArgsConstructor;

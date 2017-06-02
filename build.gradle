@@ -7,7 +7,7 @@ buildscript {
 	repositories {
 		jcenter()
 	}
-	
+
 }
 
 task wrapper(type: Wrapper) {

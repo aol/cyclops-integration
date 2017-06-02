@@ -1,13 +1,11 @@
 package com.aol.cyclops.reactor.adapter;
 
-import com.aol.cyclops.reactor.Fluxs;
-import com.aol.cyclops.reactor.Monos;
-import com.aol.cyclops.reactor.ReactorWitness.mono;
+import cyclops.companion.reactor.Monos;
+import cyclops.monads.ReactorWitness.mono;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.async.Future;
 import cyclops.monads.AnyM;
 import lombok.AllArgsConstructor;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.function.Function;

@@ -1,5 +1,6 @@
 package com.aol.cyclops.functionaljava;
 
+import cyclops.conversion.functionaljava.FromGuava;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;

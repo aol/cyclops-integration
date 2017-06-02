@@ -9,13 +9,13 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import cyclops.collections.immutable.PBagX;
-import cyclops.collections.immutable.PVectorX;
+import cyclops.collections.immutable.BagX;
+import cyclops.collections.immutable.VectorX;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
 
-import com.aol.cyclops.scala.collections.ScalaPVector;
+import cyclops.collections.scala.ScalaVectorX;
 
 import reactor.core.publisher.Flux;
 
@@ -23,7 +23,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        PVectorX<T> list = ScalaPVector.empty();
+        VectorX<T> list = ScalaVectorX.empty();
         for (T next : values) {
             list = list.plus(list.size(), next);
         }
@@ -34,9 +34,9 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Test
     public void onEmptySwitch() {
-        assertThat(ScalaPVector.empty()
-                          .onEmptySwitch(() -> PVectorX.of(1, 2, 3)),
-                   equalTo(PVectorX.of(1, 2, 3)));
+        assertThat(ScalaVectorX.empty()
+                          .onEmptySwitch(() -> VectorX.of(1, 2, 3)),
+                   equalTo(VectorX.of(1, 2, 3)));
     }
 
     /*
@@ -48,7 +48,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return ScalaPVector.empty();
+        return ScalaVectorX.empty();
     }
 
     
@@ -56,34 +56,34 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
     @Test
     public void remove() {
 
-        ScalaPVector.of(1, 2, 3)
-               .minusAll(PBagX.of(2, 3))
+        ScalaVectorX.of(1, 2, 3)
+               .minusAll(BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 
     @Override
     public FluentCollectionX<Integer> range(int start, int end) {
-        return ScalaPVector.range(start, end);
+        return ScalaVectorX.range(start, end);
     }
 
     @Override
     public FluentCollectionX<Long> rangeLong(long start, long end) {
-        return ScalaPVector.rangeLong(start, end);
+        return ScalaVectorX.rangeLong(start, end);
     }
 
     @Override
     public <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn) {
-        return ScalaPVector.iterate(times, seed, fn);
+        return ScalaVectorX.iterate(times, seed, fn);
     }
 
     @Override
     public <T> FluentCollectionX<T> generate(int times, Supplier<T> fn) {
-        return ScalaPVector.generate(times, fn);
+        return ScalaVectorX.generate(times, fn);
     }
 
     @Override
     public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
-        return ScalaPVector.unfold(seed, unfolder);
+        return ScalaVectorX.unfold(seed, unfolder);
     }
 }

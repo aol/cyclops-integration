@@ -1,20 +1,14 @@
 package com.aol.cyclops.functionaljava.hkt.typeclesses.instances;
 
-import static cyclops.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.function.Function;
-
-import com.aol.cyclops.functionaljava.NonEmptyLists;
+import cyclops.companion.functionaljava.NonEmptyLists;
 import com.aol.cyclops.functionaljava.hkt.NonEmptyListKind;
 import org.junit.Test;
 
-import com.aol.cyclops2.hkt.Higher;
-import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
-import cyclops.function.Monoid;
 
 import fj.data.List;
 import fj.data.NonEmptyList;

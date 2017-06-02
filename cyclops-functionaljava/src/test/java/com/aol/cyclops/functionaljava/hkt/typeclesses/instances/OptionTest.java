@@ -4,9 +4,7 @@ import static cyclops.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.function.Function;
-
-import com.aol.cyclops.functionaljava.Options;
+import cyclops.companion.functionaljava.Options;
 import com.aol.cyclops.functionaljava.hkt.OptionKind;
 import org.junit.Test;
 import com.aol.cyclops2.hkt.Higher;
