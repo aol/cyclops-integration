@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -25,7 +26,11 @@ import lombok.experimental.Wither;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class DexxHashSetX<T> extends AbstractSet<T>implements PSet<T> {
+public class DexxHashSetX<T> extends AbstractSet<T>implements PSet<T>, Unwrapable {
+    @Override
+    public <R> R unwrap() {
+        return (R)set;
+    }
     public static <T> PersistentSetX<T> copyFromCollection(CollectionX<? extends T> vec) {
         PersistentSetX<T> res = DexxHashSetX.<T>empty()
                 .plusAll(vec);

@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -25,8 +26,11 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class DexxVectorX<T> extends AbstractList<T> implements PVector<T> {
-
+public class DexxVectorX<T> extends AbstractList<T> implements PVector<T>, Unwrapable {
+    @Override
+    public <R> R unwrap() {
+        return (R)vector;
+    }
     public static <T> VectorX<T> copyFromCollection(CollectionX<T> vec) {
 
         return DexxVectorX.<T>empty()

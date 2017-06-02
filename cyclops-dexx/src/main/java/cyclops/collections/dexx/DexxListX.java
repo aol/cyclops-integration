@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -32,7 +33,13 @@ import lombok.experimental.Wither;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class DexxListX<T> extends AbstractList<T>implements PStack<T> {
+public class DexxListX<T> extends AbstractList<T>implements PStack<T>, Unwrapable {
+
+    @Override
+    public <R> R unwrap() {
+        return (R)list;
+    }
+
     public static <T> LinkedListX<T> copyFromCollection(CollectionX<T> vec) {
 
         return DexxListX.<T>empty()

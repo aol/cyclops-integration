@@ -1,3 +1,5 @@
+package cyclops;
+
 import cyclops.collections.dexx.DexxHashSetX;
 import cyclops.collections.dexx.DexxListX;
 import cyclops.collections.dexx.DexxTreeSetX;
@@ -15,9 +17,9 @@ public class DexxTypes {
      * <pre>
      *     {@code
      *     List<Integer> list = LinkedListX.of(1,2,3)
-                                           .type(DexxTypes.list())
+                                           .type(cyclops.DexxTypes.list())
                                            .map(i->i*2)
-                                           .to(DexxConverters::List);
+                                           .to(cyclops.DexxConverters::List);
      *     }
      *
      * </pre>
@@ -33,9 +35,9 @@ public class DexxTypes {
      * <pre>
      *     {@code
      *     Vector<Integer> list = VectorX.of(1,2,3)
-                                         .type(DexxTypes.list())
+                                         .type(cyclops.DexxTypes.list())
                                          .map(i->i*2)
-                                         .to(DexxConverters::Vector);
+                                         .to(cyclops.DexxConverters::Vector);
      *     }
      *
      * </pre>
@@ -52,9 +54,9 @@ public class DexxTypes {
      * <pre>
      *     {@code
      *     TreeSet<Integer> set =  OrderedSetX.of(1,2,3)
-     *                                        .type(DexxTypes.treeSet(Comparator.naturalOrdering()))
+     *                                        .type(cyclops.DexxTypes.treeSet(Comparator.naturalOrdering()))
      *                                        .map(i->i*2)
-     *                                        .to(DexxConverters::TreeSet);
+     *                                        .to(cyclops.DexxConverters::TreeSet);
      *     }
      *
      * </pre>
@@ -65,15 +67,18 @@ public class DexxTypes {
     public static <T> Reducer<POrderedSet<T>> treeSet(Comparator<T> ordering) {
         return DexxTreeSetX.toPOrderedSet(ordering);
     }
+    public static <T extends Comparable<T>> Reducer<POrderedSet<T>> treeSet() {
+        return DexxTypes.<T>treeSet(Comparator.naturalOrder());
+    }
 
     /**
      * Use to set the type of an PersistentSetX to Dexx TreeSet
      * <pre>
      *     {@code
      *     HashSet<Integer> set =  PersistentSetX.of(1,2,3)
-     *                                           .type(DexxTypes.hashSet(Comparator.naturalOrdering()))
+     *                                           .type(cyclops.DexxTypes.hashSet(Comparator.naturalOrdering()))
      *                                           .map(i->i*2)
-     *                                           .to(DexxConverters::HashSet);
+     *                                           .to(cyclops.DexxConverters::HashSet);
      *     }
      *
      * </pre>

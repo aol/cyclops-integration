@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -29,7 +30,12 @@ import lombok.experimental.Wither;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class DexxTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T> {
+public class DexxTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T>, Unwrapable {
+
+    @Override
+    public <R> R unwrap() {
+        return (R)set;
+    }
     public static <T> OrderedSetX<T> copyFromCollection(CollectionX<T> vec, Comparator<T> comp) {
 
         return DexxTreeSetX.empty(comp)
