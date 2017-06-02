@@ -38,6 +38,9 @@ public class VavrQueueX<T> extends AbstractQueue<T> implements PQueue<T>, Unwrap
                 .plusAll(vec);
 
     }
+    public static <T> PersistentQueueX<T> from(Queue<T> q) {
+        return fromPQueue(new VavrQueueX<>(q), toPQueue());
+    }
     /**
      * Create a LazyPQueueX from a Stream
      * 
