@@ -83,7 +83,7 @@ public final class StreamKind<T> implements Higher<StreamKind.µ, T>, Publisher<
     public static <T> StreamKind<T> widen(final Publisher<T> completableStream) {
 
         return new StreamKind<>(
-                                Stream.ofAll((Stream<T>)ReactiveSeq.fromPublisher(completableStream)));
+                                Stream.ofAll((java.util.stream.Stream<T>)ReactiveSeq.fromPublisher(completableStream)));
     }
 
     /**
