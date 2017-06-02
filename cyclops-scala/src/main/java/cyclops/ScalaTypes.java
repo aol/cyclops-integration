@@ -104,10 +104,10 @@ public class ScalaTypes {
      * Use to set the type of an OrderedSetX to Scala TreeSet
      * <pre>
      *     {@code
-     *     TreeSet<Integer> set =  OrderedSetX.of(1,2,3)
-     *                                        .type(ScalaTypes.treeSet())
+     *     BitSet<Integer> set =  OrderedSetX.of(1,2,3)
+     *                                        .type(ScalaTypes.bitSet())
      *                                        .map(i->i*2)
-     *                                        .to(ScalaConverters::TreeSet);
+     *                                        .to(ScalaConverters::BitSet);
      *     }
      *
      * </pre>

@@ -57,7 +57,7 @@ public interface VavrConverters {
     public static <T> HashSet<T> HashSet(CollectionX<T> vec){
         return vec.unwrapNested(HashSet.class,
                 ()-> {
-                    VavrHashSetX<T> set = VavrHashSetX.copyFromCollection(vec, (Comparator<T>) Comparator.naturalOrder()).unwrap();
+                    VavrHashSetX<T> set = VavrHashSetX.copyFromCollection(vec).unwrap();
                     return set.unwrap();
                 });
     }
@@ -68,13 +68,7 @@ public interface VavrConverters {
                     return set.unwrap();
                 });
     }
-    public static <T> HashSet<T> HashSet(CollectionX<T> vec, Comparator<T> comp) {
-        return vec.unwrapNested(HashSet.class,
-                () -> {
-                    VavrHashSetX<T> set = VavrHashSetX.copyFromCollection(vec, comp).unwrap();
-                    return set.unwrap();
-                });
-    }
+
     public static  BitSet BitSet(CollectionX<Integer> vec){
         return vec.unwrapNested(BitSet.class,
                 ()->{

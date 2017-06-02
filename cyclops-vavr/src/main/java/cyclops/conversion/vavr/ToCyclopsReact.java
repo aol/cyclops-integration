@@ -32,6 +32,7 @@ public class ToCyclopsReact {
         return either.fold(Xor::secondary,Xor::primary);
     }
     public static <T> Try<T,Throwable> toTry(io.vavr.control.Try<T> t){
+
         if(t.isFailure()){
             return Try.failure(t.getCause());
         }

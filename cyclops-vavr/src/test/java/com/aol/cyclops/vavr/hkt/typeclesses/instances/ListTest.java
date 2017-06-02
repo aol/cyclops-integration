@@ -18,7 +18,7 @@ import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
-import javaslang.collection.List;
+import io.vavr.collection.List;
 
 public class ListTest {
 

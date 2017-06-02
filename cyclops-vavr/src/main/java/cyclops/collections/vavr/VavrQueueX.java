@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -24,7 +25,13 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrQueueX<T> extends AbstractQueue<T> implements PQueue<T> {
+public class VavrQueueX<T> extends AbstractQueue<T> implements PQueue<T>, Unwrapable {
+
+    @Override
+    public <R> R unwrap() {
+        return (R)this.list;
+    }
+
     public static <T> PersistentQueueX<T> copyFromCollection(CollectionX<T> vec) {
 
         return VavrQueueX.<T>empty()

@@ -82,6 +82,9 @@ public class VavrTypes {
     public static <T> Reducer<POrderedSet<T>> treeSet(Comparator<T> ordering) {
         return VavrTreeSetX.toPOrderedSet(ordering);
     }
+    public static <T extends Comparable<T>> Reducer<POrderedSet<T>> treeSet() {
+        return VavrTreeSetX.toPOrderedSet(Comparator.naturalOrder());
+    }
 
     /**
      * Use to set the type of an PersistentSetX to Vavr TreeSet
@@ -100,5 +103,23 @@ public class VavrTypes {
      */
     public static <T> Reducer<PSet<T>> hashSet() {
         return VavrHashSetX.toPSet();
+    }
+
+    /**
+     * Use to set the type of an OrderedSetX to Scala TreeSet
+     * <pre>
+     *     {@code
+     *     BitSet set =  OrderedSetX.of(1,2,3)
+     *                                        .type(VavrTypes.bitSet())
+     *                                        .map(i->i*2)
+     *                                        .to(VavrConverters::BitSet);
+     *     }
+     *
+     * </pre>
+     *
+     * @return Reducer to convert a sequence of data to a Scala Set that implements POrderedSet interface
+     */
+    public static Reducer<POrderedSet<Integer>> bitset() {
+        return VavrBitSetX.toPOrderedSet();
     }
 }

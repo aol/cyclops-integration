@@ -16,7 +16,7 @@ import cyclops.function.Fn1;
 import cyclops.function.Lambda;
 import cyclops.function.Monoid;
 
-import javaslang.collection.Vector;
+import io.vavr.collection.Vector;
 
 public class VectorsTest {
 

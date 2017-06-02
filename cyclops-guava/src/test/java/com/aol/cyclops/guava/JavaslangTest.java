@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import cyclops.conversion.guava.FromJavaslang;
-import javaslang.control.Option;
+import io.vavr.control.Option;
 
 import org.junit.Test;
 

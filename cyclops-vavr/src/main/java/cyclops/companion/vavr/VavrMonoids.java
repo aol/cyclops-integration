@@ -81,7 +81,10 @@ public interface VavrMonoids {
         return VavrMonoids.setConcat(HashSet.empty());
     }
     static <T extends Comparable<T>> Monoid<TreeSet<T>> treeSetConcat() {
-        return VavrMonoids.setConcat(TreeSet.empty());
+        return VavrMonoids.<T,TreeSet<T>>setConcat(TreeSet.empty(Comparator.naturalOrder()));
+    }
+    static <T> Monoid<TreeSet<T>> treeSetConcat(Comparator<? super T> c) {
+        return VavrMonoids.<T,TreeSet<T>>setConcat(TreeSet.empty(c));
     }
 
 
@@ -122,7 +125,7 @@ public interface VavrMonoids {
         return VavrMonoids.firstNonEmptySet(HashSet.empty());
     }
     static <T extends Comparable<T>> Monoid<TreeSet<T>> firstNonEmptyTreeSet() {
-        return VavrMonoids.firstNonEmptySet(TreeSet.empty());
+        return VavrMonoids.<T,TreeSet<T>>firstNonEmptySet(TreeSet.empty());
     }
 
     /**
@@ -162,7 +165,7 @@ public interface VavrMonoids {
         return VavrMonoids.lastNonEmptySet(HashSet.empty());
     }
     static <T extends Comparable<T>> Monoid<TreeSet<T>> lastNonEmptyTreeSet() {
-        return VavrMonoids.lastNonEmptySet(TreeSet.empty());
+        return VavrMonoids.<T,TreeSet<T>>lastNonEmptySet(TreeSet.empty());
     }
     /**
      * @return Combine two Future's by taking the first result

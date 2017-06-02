@@ -14,7 +14,7 @@ import cyclops.function.Fn1;
 import cyclops.function.Lambda;
 import cyclops.function.Monoid;
 
-import javaslang.control.Option;
+import io.vavr.control.Option;
 
 public class OptionsTest {
 

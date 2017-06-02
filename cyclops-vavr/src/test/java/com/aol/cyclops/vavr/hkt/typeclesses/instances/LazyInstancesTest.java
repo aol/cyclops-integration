@@ -15,7 +15,7 @@ import org.junit.Test;
 
 
 
-import javaslang.Lazy;
+import io.vavr.Lazy;
 
 public class LazyInstancesTest {
 

@@ -2,6 +2,7 @@ package cyclops.collections.vavr;
 
 import java.util.AbstractList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -10,6 +11,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
+import com.aol.cyclops2.types.Unwrapable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -23,12 +25,25 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrListX<T> extends AbstractList<T> implements PStack<T> {
+public class VavrListX<T> extends AbstractList<T> implements PStack<T>, Unwrapable {
+
+    @Override
+    public <R> R unwrap() {
+        return (R)list;
+    }
+
+
     public static <T> LinkedListX<T> copyFromCollection(CollectionX<T> vec) {
+        List<T> list = from(vec.iterator(),0);
+        return from(list);
 
-        return VavrListX.<T>empty()
-                .plusAll(vec);
+    }
+    private static <E> List<E> from(final Iterator<E> i, int depth) {
 
+        if(!i.hasNext())
+            return List.empty();
+        E e = i.next();
+        return  from(i,depth++).prepend(e);
     }
     /**
      * Create a LazyLinkedListX from a Stream
@@ -145,6 +160,9 @@ public class VavrListX<T> extends AbstractList<T> implements PStack<T> {
         return fromPStack(new VavrListX<T>(q), toPStack());
     }
     public static <T> LazyLinkedListX<T> PStack(List<T> q) {
+        return fromPStack(new VavrListX<>(q), toPStack());
+    }
+    public static <T> LazyLinkedListX<T> from(List<T> q) {
         return fromPStack(new VavrListX<>(q), toPStack());
     }
     @SafeVarargs

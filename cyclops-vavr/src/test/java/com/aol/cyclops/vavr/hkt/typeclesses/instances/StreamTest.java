@@ -11,6 +11,8 @@ import cyclops.companion.vavr.Streams;
 import com.aol.cyclops.vavr.hkt.StreamKind;
 
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.functor.Functor;
 import org.junit.Test;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -18,7 +20,7 @@ import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
 
-import javaslang.collection.Stream;
+import io.vavr.collection.Stream;
 
 public class StreamTest {
 
@@ -33,12 +35,25 @@ public class StreamTest {
     }
     @Test
     public void functor(){
-        
+        Pure<StreamKind.µ> unit = Streams.Instances.unit();
         StreamKind<Integer> list = Streams.Instances.unit()
                                      .unit("hello")
                                      .apply(h->Streams.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(StreamKind::narrowK);
         
+        assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
+    }
+    @Test
+    public void functor2(){
+
+        Pure<StreamKind.µ> pure = Streams.Instances.unit();
+        Functor<StreamKind.µ> functor = Streams.Instances.functor();
+
+        StreamKind<Integer> list = pure.unit("hello")
+                                       .apply(h->functor.map((String v) ->v.length(), h))
+                                       .convert(StreamKind::narrowK);
+
+
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
     }
     @Test

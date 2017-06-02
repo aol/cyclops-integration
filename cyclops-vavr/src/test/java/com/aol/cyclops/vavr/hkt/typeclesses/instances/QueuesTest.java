@@ -16,7 +16,7 @@ import cyclops.function.Fn1;
 import cyclops.function.Lambda;
 import cyclops.function.Monoid;
 
-import javaslang.collection.Queue;
+import io.vavr.collection.Queue;
 
 public class QueuesTest {
 
