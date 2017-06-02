@@ -3,6 +3,7 @@ package com.aol.cyclops.scala.collections.extension;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -19,6 +20,10 @@ import java.util.stream.Stream;
 import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.PersistentSetX;
+import cyclops.collections.mutable.ListX;
+import cyclops.companion.Reducers;
+import cyclops.companion.Semigroups;
+import cyclops.stream.Streamable;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -34,6 +39,59 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
 
         assertThat(of(1, 2, 3).forEach2(a -> Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), (a, b) -> a + b).size(),
                 equalTo(12));
+    }
+    @Test
+    public void concurrentLazyStreamable(){
+        Streamable<Integer> repeat = of(1,2,3,4,5,6)
+                .map(i->i*2)
+                .to().lazyStreamableSynchronized();
+
+        assertThat(repeat.reactiveSeq()
+                .toList()
+                .size(),equalTo(Arrays.asList(2,4,6,8,10,12).size()));
+        assertThat(repeat.reactiveSeq()
+                .toList()
+                .size(),equalTo(Arrays.asList(2,4,6,8,10,12).size()));
+    }
+    @Test
+    public void sorted() {
+        assertThat(of(1,5,3,4,2).sorted().collect(Collectors.toList()).size(),is(Arrays.asList(1,2,3,4,5).size()));
+    }
+    @Test
+    public void streamable(){
+        Streamable<Integer> repeat = (of(1,2,3,4,5,6)
+                .map(i->i*2)
+        )
+                .to().streamable();
+
+        assertThat(repeat.reactiveSeq().toList().size(),equalTo(Arrays.asList(2,4,6,8,10,12).size()));
+        assertThat(repeat.reactiveSeq().toList().size(),equalTo(Arrays.asList(2,4,6,8,10,12).size()));
+    }
+
+    @Test
+    public void testScanRightSumMonoid() {
+        assertThat(of("a", "ab", "abc").peek(System.out::println)
+                .map(str -> str.length())
+                .peek(System.out::println)
+                .scanRight(Reducers.toTotalInt()).toList().size(), is(4));
+
+    }
+    @Test
+    public void combineNoOrder(){
+        assertThat(of(1,2,3)
+                .combine((a, b)->a.equals(b), Semigroups.intSum)
+                .toListX().size(),equalTo(ListX.of(1,3,2).size()));
+
+    }
+    @Test
+    public void testScanLeftStringConcatMonoid() {
+        assertThat(of("a", "b", "c").scanLeft(Reducers.toString("")).toList().size(), is(asList("", "a", "ab", "abc").size()));
+    }
+    @Test
+    public void testScanLeftSumMonoid() {
+
+        assertThat(of("a", "ab", "abc").map(str -> str.length()).
+                peek(System.out::println).scanLeft(Reducers.toTotalInt()).toList().size(), is(asList(0, 6, 3, 2).size()));
     }
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
