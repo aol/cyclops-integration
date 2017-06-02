@@ -154,7 +154,7 @@ import static cyclops.monads.Vavr.stream;
 
 stream(Stream.ofAll(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThreadPool(1))
 							 .connect()
-							 .forEach(System.out::println)
+							 .forEach(System.out::println);
 ```
 
 
@@ -167,6 +167,32 @@ assertThat(Javaslang.tryM(Try.of(this::success))
 			.toList(),equalTo(Arrays.asList("HELLO WORLD")));
 ```
 
+# Kotlin style sequence generators
+
+```java
+import static com.aol.cyclops2.types.foldable.ConvertableSequence.Conversion.LAZY;
+import static cyclops.stream.Generator.suspend;
+import static cyclops.stream.Generator.times;
+
+i = 100;
+k = 9999;
+
+Vector<Integer> vec = suspend((Integer i) -> i != 4, s -> {
+
+                         Generator<Integer> gen1 = suspend(times(2), s2 -> s2.yield(i++));
+                         Generator<Integer> gen2 = suspend(times(2), s2 -> s2.yield(k--));
+
+                         return s.yieldAll(gen1.stream(), gen2.stream());
+                  }
+               ).to()
+                .vectorX(LAZY)
+                .type(VavrTypes.vector())
+                .take(5)
+                .to(VavrConverters::Vector);
+
+System.out.println(vec);
+//Vector(100, 101, 9999, 9998, 102)
+```
 
 # Higher Kinded Typeclasses
 
