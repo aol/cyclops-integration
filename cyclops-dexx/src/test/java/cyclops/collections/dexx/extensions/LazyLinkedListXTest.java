@@ -40,6 +40,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
                    equalTo(LinkedListX.of(1, 2, 3)));
     }
 
+
     /*
      * (non-Javadoc)
      * 

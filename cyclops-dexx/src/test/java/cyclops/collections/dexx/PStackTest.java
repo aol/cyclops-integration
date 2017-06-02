@@ -62,8 +62,10 @@ public class PStackTest {
         assertThat(LinkedListX.of(1,2,3).plus(1,10),
                    equalTo(DexxListX.of(1,2,3).plus(1,10)));
     }
+
     @Test
     public void plusMinus(){
+
         System.out.println(test.plusAll(Arrays.asList(1,2,3)));
         System.out.println(test.plusAll(Arrays.asList(1,2,3)).minus(1));
         

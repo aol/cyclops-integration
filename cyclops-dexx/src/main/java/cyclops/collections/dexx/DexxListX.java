@@ -296,13 +296,14 @@ public class DexxListX<T> extends AbstractList<T>implements PStack<T>, Unwrapabl
                                                 "Index " + i + " is out of bounds - size : " + size());
         if (i == 0)
             return withList(list.drop(1));
+/**
         if (i == size() - 1)
-           return fromPStack(this, toPStack()).dropRight(1);
-        
+           return fromPStack(this, toPStack()).dropRight(1).materialize();
+**/
         return fromPStack(this,toPStack())
                           .zipWithIndex()
                           .filter(t->t.v2.intValue()!=i)
-                          .map(t->t.v1);
+                          .map(t->t.v1).materialize();
       
     }
 
