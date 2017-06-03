@@ -3,6 +3,7 @@ package cyclops.monads.transformers;
 import cyclops.monads.AnyM;
 import cyclops.monads.Witness.optional;
 import org.jooq.lambda.tuple.Tuple2;
+import org.junit.Ignore;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 
@@ -13,6 +14,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
 
+@Ignore
 public class FluxTSeqTraversableTest extends AbstractTraversableTest {
     @Test
     public void zipInOrder(){

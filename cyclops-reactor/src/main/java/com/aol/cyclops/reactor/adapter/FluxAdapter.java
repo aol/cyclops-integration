@@ -5,6 +5,7 @@ import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
+import cyclops.stream.ReactiveSeq;
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Flux;
 
@@ -68,6 +69,8 @@ public class FluxAdapter extends AbstractFunctionalAdapter<ReactorWitness.flux> 
         return Fluxs.anyM(Flux.just(o));
     }
 
-
-
+    @Override
+    public <T> ReactiveSeq<T> toStream(AnyM<flux, T> t) {
+        return ReactiveSeq.fromPublisher(ReactorWitness.flux(t));
+    }
 }
