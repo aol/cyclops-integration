@@ -61,7 +61,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <U> U foldRight(U identity, BiFunction<? super T, ? super U, ? extends U> accumulator) {
-        return flux.reduce(identity,(a,b)->accumulator.apply(a,b)).block();
+        return flux.reduce(identity,(a,b)->accumulator.apply(b,a)).block();
     }
 
     @Override
@@ -109,7 +109,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public Tuple2<Optional<T>, ReactiveSeq<T>> splitAtHead() {
-        return Spouts.from(flux).splitAtHead().map((s1,s2)->Tuple.tuple(s1,flux(s2));
+        return Spouts.from(flux).splitAtHead().map((s1,s2)->Tuple.tuple(s1,flux(s2)));
     }
 
     @Override
@@ -178,7 +178,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<ListX<T>> groupedBySizeAndTime(int size, long time, TimeUnit t) {
-        return flux(flux.buffer(size, Duration.ofNanos(t.toNanos(time))).map(ListX::fromIterable)));
+        return flux(flux.buffer(size, Duration.ofNanos(t.toNanos(time))).map(ListX::fromIterable));
     }
 
     @Override
@@ -218,7 +218,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> groupedWhile(Predicate<? super T> predicate, Supplier<C> factory) {
-        return flux(Spouts.from(flux).groupedWhile(predicate,factory);
+        return flux(Spouts.from(flux).groupedWhile(predicate,factory));
     }
 
     @Override
@@ -433,22 +433,22 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <R> ReactiveSeq<R> flatMap(Function<? super T, ? extends Stream<? extends R>> fn) {
-        return flux(flux.flatMap(s->ReactiveSeq.fromStream(fn.apply(s)));
+        return flux(flux.flatMap(s->ReactiveSeq.fromStream(fn.apply(s))));
     }
 
     @Override
     public IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper) {
-        return flux(Spouts.from(flux).flatMapToInt(mapper);
+        return Spouts.from(flux).flatMapToInt(mapper);
     }
 
     @Override
     public LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper) {
-        return flux(Spouts.from(flux).flatMapToLong(mapper);
+        return Spouts.from(flux).flatMapToLong(mapper);
     }
 
     @Override
     public DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper) {
-        return flux(Spouts.from(flux).flatMapToDouble(mapper);
+        return Spouts.from(flux).flatMapToDouble(mapper);
     }
 
     @Override
@@ -516,7 +516,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> reverse() {
-        return flux(Spouts.from(flux).reverse();
+        return flux(Spouts.from(flux).reverse());
     }
 
     @Override
