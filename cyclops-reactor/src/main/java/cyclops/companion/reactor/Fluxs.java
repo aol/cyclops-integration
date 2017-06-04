@@ -1,5 +1,6 @@
 package cyclops.companion.reactor;
 
+import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
@@ -9,6 +10,9 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.Witness;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.foldable.Foldable;
@@ -17,9 +21,18 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
+import org.reactivestreams.Subscriber;
+import reactor.core.Fuseable;
+import reactor.core.publisher.*;
+import reactor.core.scheduler.Schedulers;
+import reactor.core.scheduler.TimedScheduler;
 
+import java.time.Duration;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.function.*;
+import java.util.stream.Stream;
 
 /**
  * Companion class for working with Reactor Flux types
@@ -29,6 +42,137 @@ import java.util.function.*;
  */
 @UtilityClass
 public class Fluxs {
+
+    public static <W extends WitnessType<W>,T> StreamT<W,T> fluxify(StreamT<W,T> nested){
+        AnyM<W, Stream<T>> anyM = nested.unwrap();
+        AnyM<W, ReactiveSeq<T>> fluxM = anyM.map(s -> {
+            if (s instanceof FluxReactiveSeq) {
+                return (FluxReactiveSeq)s;
+            }
+            if (s instanceof Publisher) {
+                return new FluxReactiveSeq<T>(Flux.from((Publisher) s));
+            }
+            return new FluxReactiveSeq<T>(Flux.fromStream(s));
+        });
+        StreamT<W, T> res = StreamT.of(fluxM);
+        return res;
+    }
+
+    public static <W extends WitnessType<W>,T> AnyM<W,Flux<T>> nestedFlux(StreamT<W,T> nested){
+        AnyM<W, Stream<T>> anyM = nested.unwrap();
+        return anyM.map(s->{
+            if(s instanceof FluxReactiveSeq){
+                return ((FluxReactiveSeq)s).getFlux();
+            }
+            if(s instanceof Publisher){
+                return Flux.from((Publisher)s);
+            }
+            return Flux.fromStream(s);
+        });
+    }
+
+    public static <W extends WitnessType<W>,T> StreamT<W,T> liftT(AnyM<W,Flux<T>> nested){
+        AnyM<W, ReactiveSeq<T>> monad = nested.map(s -> new FluxReactiveSeq<T>(s));
+        return StreamT.of(monad);
+    }
+
+    public static <T> ReactiveSeq<T> seq(Flux<T> flux){
+        return new FluxReactiveSeq<>(flux);
+    }
+
+    public static <T> ReactiveSeq<T> create(Consumer<? super FluxSink<T>> emitter) {
+        return seq(Flux.create(emitter));
+    }
+
+
+    public static <T> ReactiveSeq<T> create(Consumer<? super FluxSink<T>> emitter, FluxSink.OverflowStrategy backpressure) {
+        return seq(Flux.create(emitter,backpressure));
+    }
+
+
+    public static <T> ReactiveSeq<T> defer(Supplier<? extends Publisher<T>> supplier) {
+        return seq(Flux.defer(supplier));
+    }
+
+    public static <T> ReactiveSeq<T> empty() {
+        return seq(Flux.empty());
+    }
+
+
+    public static <T> ReactiveSeq<T> error(Throwable error) {
+        return seq(Flux.error(error));
+    }
+
+
+    public static <O> ReactiveSeq<O> error(Throwable throwable, boolean whenRequested) {
+        return seq(Flux.error(throwable,whenRequested));
+    }
+
+
+    @SafeVarargs
+    public static <I> ReactiveSeq<I> firstEmitting(Publisher<? extends I>... sources) {
+        return seq(Flux.firstEmitting(sources));
+    }
+
+
+    public static <I> ReactiveSeq<I> firstEmitting(Iterable<? extends Publisher<? extends I>> sources) {
+        return seq(Flux.firstEmitting(sources));
+    }
+
+
+    public static <T> ReactiveSeq<T> from(Publisher<? extends T> source) {
+       return seq(Flux.from(source));
+    }
+
+
+    public static <T> ReactiveSeq<T> fromIterable(Iterable<? extends T> it) {
+        return seq(Flux.fromIterable(it));
+    }
+
+
+    public static <T> ReactiveSeq<T> fromStream(Stream<? extends T> s) {
+        return seq(Flux.fromStream(s));
+    }
+
+
+    public static <T> ReactiveSeq<T> generate(Consumer<SynchronousSink<T>> generator) {
+        return seq(Flux.generate(generator));
+    }
+
+
+    public static <T, S> ReactiveSeq<T> generate(Callable<S> stateSupplier, BiFunction<S, SynchronousSink<T>, S> generator) {
+        return seq(Flux.generate(stateSupplier,generator));
+    }
+
+
+    public static <T, S> ReactiveSeq<T> generate(Callable<S> stateSupplier, BiFunction<S, SynchronousSink<T>, S> generator, Consumer<? super S> stateConsumer) {
+        return seq(Flux.generate(stateSupplier,generator,stateConsumer));
+    }
+
+
+    public static ReactiveSeq<Long> interval(Duration period) {
+        return seq(Flux.interval(period));
+    }
+
+
+    public static ReactiveSeq<Long> interval(Duration delay, Duration period) {
+        return seq(Flux.interval(delay,period));
+    }
+
+
+    public static ReactiveSeq<Long> intervalMillis(long period) {
+        return seq(Flux.intervalMillis(period));
+    }
+    @SafeVarargs
+    public static <T> ReactiveSeq<T> just(T... data) {
+        return seq(Flux.just(data));
+    }
+
+
+    public static <T> ReactiveSeq<T> just(T data) {
+        return seq(Flux.just(data));
+    }
+
 
     /**
      * Construct an AnyM type from a Flux. This allows the Flux to be manipulated according to a standard interface
@@ -48,12 +192,13 @@ public class Fluxs {
      * @return AnyMSeq wrapping a flux
      */
     public static <T> AnyMSeq<flux,T> anyM(Flux<T> flux) {
-        return AnyM.ofSeq(flux, ReactorWitness.flux.INSTANCE);
+        return AnyM.ofSeq(seq(flux), ReactorWitness.flux.INSTANCE);
     }
 
     public static <T> Flux<T> flux(AnyM<flux,T> flux) {
 
-        return (Flux<T>)flux.unwrap();
+        FluxReactiveSeq<T> fluxSeq = flux.unwrap();
+        return fluxSeq.getFlux();
     }
 
     /**

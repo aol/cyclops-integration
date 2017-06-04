@@ -3,11 +3,15 @@ package com.aol.cyclops.reactor.adapter;
 import com.aol.cyclops2.internal.stream.ReactiveStreamX;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import com.aol.cyclops2.types.stream.HeadAndTail;
+import com.aol.cyclops2.types.traversable.FoldableTraversable;
 import com.aol.cyclops2.types.traversable.Traversable;
+import cyclops.async.Future;
 import cyclops.async.adapters.QueueFactory;
 import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
+import cyclops.control.Eval;
 import cyclops.control.Maybe;
+import cyclops.control.Try;
 import cyclops.control.lazy.Either;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
@@ -17,16 +21,20 @@ import cyclops.monads.Witness.reactiveSeq;
 import cyclops.stream.ReactiveSeq;
 import cyclops.stream.Spouts;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.experimental.Wither;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 import org.jooq.lambda.tuple.Tuple4;
 import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.stream.*;
@@ -37,6 +45,7 @@ import java.util.stream.*;
 @AllArgsConstructor
 public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
     @Wither
+    @Getter
     Flux<T> flux;
 
     public <R> FluxReactiveSeq<R> flux(Flux<R> flux){
@@ -403,7 +412,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> stream() {
-        return flux(Spouts.from(flux));
+        return Spouts.from(flux);
     }
 
     @Override
@@ -479,8 +488,11 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
     @Override
     public <R> ReactiveSeq<R> flatMapStream(Function<? super T, BaseStream<? extends R, ?>> fn) {
         
-        return flux(flux.flatMap(fn.andThen(s->
-            s instanceof ReactiveSeq ? (ReactiveSeq)s : ReactiveSeq.fromSpliterator(s.spliterator())
+        return this.<R>flux((Flux)flux.flatMap(fn.andThen(s->{
+            ReactiveSeq<R> res = s instanceof ReactiveSeq ? (ReactiveSeq) s : (ReactiveSeq) ReactiveSeq.fromSpliterator(s.spliterator());
+           return res;
+                }
+            
         )));
     }
 
@@ -687,5 +699,29 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
     @Override
     public ReactiveSeq<T> changes() {
         return flux(Spouts.from(flux).changes());
+    }
+
+
+
+    @Override
+    public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer) {
+        return Spouts.from(flux).forEachSubscribe(consumer);
+    }
+
+    @Override
+    public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer, Consumer<? super Throwable> consumerError) {
+        return Spouts.from(flux).forEachSubscribe(consumer, consumerError);
+    }
+
+    @Override
+    public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer, Consumer<? super Throwable> consumerError, Runnable onComplete) {
+        return Spouts.from(flux).forEachSubscribe(consumer, consumerError,onComplete);
+    }
+
+
+
+    @Override
+    public void subscribe(Subscriber<? super T> s) {
+        flux.subscribe(s);
     }
 }

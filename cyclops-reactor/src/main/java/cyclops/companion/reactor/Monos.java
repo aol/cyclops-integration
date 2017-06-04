@@ -9,7 +9,9 @@ import java.util.function.Predicate;
 
 import com.aol.cyclops2.react.Status;
 import cyclops.collections.mutable.ListX;
-import cyclops.conversion.reactor.ToCyclopsReact;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.lazy.Either;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.mono;
 import com.aol.cyclops.reactor.hkt.MonoKind;
@@ -44,6 +46,29 @@ import reactor.core.publisher.Mono;
 @UtilityClass
 public class Monos {
 
+    public static <T> Future[] futures(Mono<T>... futures){
+
+        Future[] array = new Future[futures.length];
+        for(int i=0;i<array.length;i++){
+            array[i]=future(futures[i]);
+        }
+        return array;
+    }
+    public static <T> Future<T> future(Mono<T> future){
+        return Future.of(future.toFuture());
+    }
+
+    public static <R> Either<Throwable,R> either(Mono<R> either){
+        return Either.fromFuture(future(either));
+
+    }
+
+    public static <T> Maybe<T> maybe(Mono<T> opt){
+        return Maybe.fromFuture(future(opt));
+    }
+    public static <T> Eval<T> eval(Mono<T> opt){
+        return Eval.fromFuture(future(opt));
+    }
     
     /**
      * Construct an AnyM type from a Mono. This allows the Mono to be manipulated according to a standard interface
@@ -76,7 +101,7 @@ public class Monos {
      * @return First Mono to complete
      */
     public static <T> Mono<T> anyOf(Mono<T>... fts) {
-        return Mono.from(Future.anyOf(ToCyclopsReact.futures(fts)));
+        return Mono.from(Future.anyOf(futures(fts)));
 
     }
     /**
@@ -90,7 +115,7 @@ public class Monos {
      */
     public static <T> Mono<T> allOf(Mono<T>... fts) {
 
-        return Mono.from(Future.allOf(ToCyclopsReact.futures(fts)));
+        return Mono.from(Future.allOf(futures(fts)));
     }
     /**
      * Block until a Quorum of results have returned as determined by the provided Predicate
@@ -117,7 +142,7 @@ public class Monos {
     @SafeVarargs
     public static <T> Mono<ListX<T>> quorum(Predicate<Status<T>> breakout, Consumer<Throwable> errorHandler, Mono<T>... fts) {
 
-        return Mono.from(cyclops.async.Future.quorum(breakout,errorHandler,ToCyclopsReact.futures(fts)));
+        return Mono.from(cyclops.async.Future.quorum(breakout,errorHandler,futures(fts)));
 
 
     }
@@ -145,7 +170,7 @@ public class Monos {
     @SafeVarargs
     public static <T> Mono<ListX<T>> quorum(Predicate<Status<T>> breakout, Mono<T>... fts) {
 
-        return Mono.from(cyclops.async.Future.quorum(breakout,ToCyclopsReact.futures(fts)));
+        return Mono.from(cyclops.async.Future.quorum(breakout,futures(fts)));
 
 
     }
@@ -167,7 +192,7 @@ public class Monos {
      */
     @SafeVarargs
     public static <T> Mono<T> firstSuccess(Mono<T>... fts) {
-        return Mono.from(cyclops.async.Future.firstSuccess(ToCyclopsReact.futures(fts)));
+        return Mono.from(cyclops.async.Future.firstSuccess(futures(fts)));
 
     }
 
