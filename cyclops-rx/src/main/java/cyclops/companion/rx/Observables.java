@@ -55,7 +55,25 @@ import rx.schedulers.Schedulers;
  */
 @UtilityClass
 public class Observables {
+    public static <T> ReactiveSeq<T> reactiveSeq(Observable<T> observable) {
+        return new ObservableReactiveSeq<>(observable);
+    }
+    public static  <T> Observable<T> observableFrom(ReactiveSeq<T> stream){
+        if(stream instanceof ReactiveStreamX){
+            ReactiveStreamX<T> seq = (ReactiveStreamX<T>)stream;
+            if(seq.getType()== ReactiveStreamX.Type.NO_BACKPRESSURE){
+                return Observable.create(new Observable.OnSubscribe<T>() {
+                    @Override
+                    public void call(final rx.Subscriber<? super T> rxSubscriber) {
+                        rxSubscriber.onStart();
+                        stream.forEach(rxSubscriber::onNext,rxSubscriber::onError,rxSubscriber::onCompleted);
+                    }
+                });
+            }
+        }
+        return fromStream(stream);
 
+    }
     public static  <T> Observable<T> fromStream(Stream<T> stream){
         return Observable.from(ReactiveSeq.fromStream(stream));
     }
@@ -64,6 +82,9 @@ public class Observables {
         AnyM<W, ReactiveSeq<T>> fluxM = anyM.map(s -> {
             if (s instanceof ObservableReactiveSeq) {
                 return (ObservableReactiveSeq)s;
+            }
+            if(s instanceof ReactiveSeq){
+                return new ObservableReactiveSeq<T>(Observables.observableFrom((ReactiveSeq<T>) s));
             }
             if (s instanceof Publisher) {
                 return new ObservableReactiveSeq<T>(Observables.observable((Publisher) s));
@@ -79,14 +100,17 @@ public class Observables {
     }
     public static <W extends WitnessType<W>,T> AnyM<W,Observable<T>> nestedObservable(StreamT<W,T> nested){
         AnyM<W, Stream<T>> anyM = nested.unwrap();
-        return anyM.map(s->{
+        return anyM.map((Stream<T> s)->{
             if(s instanceof ObservableReactiveSeq){
                 return ((ObservableReactiveSeq)s).getObservable();
             }
-            if(s instanceof Publisher){
-                return new ObservableReactiveSeq<>(Observables.publisher((Publisher)s));
+            if(s instanceof ReactiveSeq){
+                return Observables.observableFrom((ReactiveSeq<T>) s);
             }
-            return Flux.fromStream(s);
+            if (s instanceof Publisher) {
+                return Observables.observable((Publisher) s);
+            }
+            return Observables.fromStream(s);
         });
     }
 
@@ -110,14 +134,12 @@ public class Observables {
      * @param observable To conver
      * @return ReactiveSeq
      */
-    public static <T> ReactiveSeq<T> reactiveStreamX(Observable<T> observable) {
+    public static <T> ReactiveSeq<T> connectToReactiveSeq(Observable<T> observable) {
         AsyncSubscriber<T> res = Spouts.asyncSubscriber();
         observable.subscribe(a->res.onNext(a),res::onError,res::onComplete);
         return res.stream();
     }
-    public static <T> ReactiveSeq<T> reactiveSeq(Observable<T> observable) {
-        return new ObservableReactiveSeq<>(observable);
-    }
+
 
     /**
      * Convert a Publisher to an observable
