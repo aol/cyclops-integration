@@ -231,7 +231,7 @@ public class ObservableT<W extends WitnessType<W>,T> implements To<ObservableT<W
     @Override
     public ReactiveSeq<T> stream() {
         return run.stream()
-                  .flatMap(e -> Observables.reactiveSeq(e));
+                  .flatMap(e -> Observables.reactiveStreamX(e));
     }
 
     @Override
@@ -259,13 +259,13 @@ public class ObservableT<W extends WitnessType<W>,T> implements To<ObservableT<W
 
     @Override
     public AnyM<W,? extends FoldableTraversable<T>> nestedFoldables() {
-        return run.map(o->Observables.reactiveSeq(o));
+        return run.map(o->Observables.reactiveStreamX(o));
 
     }
 
     @Override
     public AnyM<W,? extends CyclopsCollectable<T>> nestedCollectables() {
-        return run.map(o->Observables.reactiveSeq(o));
+        return run.map(o->Observables.reactiveStreamX(o));
 
     }
 
@@ -278,7 +278,7 @@ public class ObservableT<W extends WitnessType<W>,T> implements To<ObservableT<W
     @Override
     public AnyM<W,? extends FoldableTraversable<T>> transformerStream() {
 
-        return run.map(o->Observables.reactiveSeq(o));
+        return run.map(o->Observables.reactiveStreamX(o));
     }
 
     public static <W extends WitnessType<W>,T> ObservableT<W,T> emptyList(W witness) {

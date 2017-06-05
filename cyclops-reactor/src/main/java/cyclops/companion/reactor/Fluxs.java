@@ -1,6 +1,10 @@
 package cyclops.companion.reactor;
 
 import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
+import com.aol.cyclops2.internal.stream.ReactiveStreamX;
+import com.aol.cyclops2.internal.stream.spliterators.push.RangeIntOperator;
+import com.aol.cyclops2.internal.stream.spliterators.push.RangeLongOperator;
+import com.aol.cyclops2.internal.stream.spliterators.push.SingleValueOperator;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
@@ -58,6 +62,9 @@ public class Fluxs {
         return res;
     }
 
+    public static <W extends WitnessType<W>,T,R> R nestedFlux(StreamT<W,T> nested, Function<? super AnyM<W,Flux<T>>,? extends R> mapper){
+        return mapper.apply(nestedFlux(nested));
+    }
     public static <W extends WitnessType<W>,T> AnyM<W,Flux<T>> nestedFlux(StreamT<W,T> nested){
         AnyM<W, Stream<T>> anyM = nested.unwrap();
         return anyM.map(s->{
@@ -80,6 +87,22 @@ public class Fluxs {
         return new FluxReactiveSeq<>(flux);
     }
 
+    public static ReactiveSeq<Integer> range(int start, int end){
+       return seq(Flux.range(start,end));
+    }
+    public static <T> ReactiveSeq<T> of(T... data) {
+        return seq(Flux.just(data));
+    }
+    public static  <T> ReactiveSeq<T> of(T value){
+        return seq(Flux.just(value));
+    }
+
+    public static <T> ReactiveSeq<T> ofNullable(T nullable){
+        if(nullable==null){
+            return empty();
+        }
+        return of(nullable);
+    }
     public static <T> ReactiveSeq<T> create(Consumer<? super FluxSink<T>> emitter) {
         return seq(Flux.create(emitter));
     }

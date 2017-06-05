@@ -1,17 +1,13 @@
-package com.aol.cyclops.reactor.adapter;
+package com.aol.cyclops.rx.adapter;
 
-import com.aol.cyclops2.internal.stream.ReactiveStreamX;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import com.aol.cyclops2.types.stream.HeadAndTail;
-import com.aol.cyclops2.types.traversable.FoldableTraversable;
 import com.aol.cyclops2.types.traversable.Traversable;
-import cyclops.async.Future;
 import cyclops.async.adapters.QueueFactory;
 import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
-import cyclops.control.Eval;
+import cyclops.companion.rx.Observables;
 import cyclops.control.Maybe;
-import cyclops.control.Try;
 import cyclops.control.lazy.Either;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
@@ -19,7 +15,6 @@ import cyclops.monads.AnyM;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.reactiveSeq;
 import cyclops.stream.ReactiveSeq;
-import cyclops.stream.Spouts;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Wither;
@@ -30,47 +25,46 @@ import org.jooq.lambda.tuple.Tuple4;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-import reactor.core.publisher.Flux;
+import rx.Observable;
 
-import java.time.Duration;
+
 import java.util.*;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.stream.*;
 
 
-
-
 @AllArgsConstructor
-public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
+public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     @Wither
     @Getter
-    Flux<T> flux;
+    Observable<T> observable;
 
-    public <R> FluxReactiveSeq<R> flux(Flux<R> flux){
-        return new FluxReactiveSeq<>(flux);
+    public <R> ObservableReactiveSeq<R> observable(Observable<R> observable){
+        return new ObservableReactiveSeq<>(observable);
     }
-    public <R> FluxReactiveSeq<R> flux(ReactiveSeq<R> flux){
-        if(flux instanceof FluxReactiveSeq){
-            return  (FluxReactiveSeq)flux;
+    public <R> ObservableReactiveSeq<R> observable(ReactiveSeq<R> observable){
+        if(observable instanceof ObservableReactiveSeq){
+            return  (ObservableReactiveSeq)observable;
         }
-        return new FluxReactiveSeq<>(Flux.from(flux));
+        return new ObservableReactiveSeq<>(Observable.from(observable));
     }
 
     @Override
     public <R> ReactiveSeq<R> coflatMap(Function<? super ReactiveSeq<T>, ? extends R> fn) {
-        return flux(Flux.just(fn.apply(this)));
+        return observable(Observable.just(fn.apply(this)));
     }
 
     @Override
     public <T1> ReactiveSeq<T1> unit(T1 unit) {
-        return flux(Flux.just(unit));
+        return observable(Observable.just(unit));
     }
 
     @Override
     public <U> U foldRight(U identity, BiFunction<? super T, ? super U, ? extends U> accumulator) {
-        return flux.reduce(identity,(a,b)->accumulator.apply(b,a)).block();
+        return observable.reduce(identity,(a,b)->accumulator.apply(b,a))
+                         .toBlocking()
+                         .first();
     }
 
     @Override
@@ -78,77 +72,78 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
         if(other instanceof Publisher){
             return zipP((Publisher<U>)other,zipper);
         }
-        return flux(flux.zipWithIterable(ReactiveSeq.fromStream((Stream<U>)other),zipper));
+        return observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b)));
     }
 
     @Override
     public <U, R> ReactiveSeq<R> zipLatest(Publisher<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-        return flux(Flux.combineLatest(flux,other,zipper));
+        Observable<R> obs = Observable.combineLatest(observable, Observables.observable(other), (a, b) -> zipper.apply((T)a, (U)b));
+        return observable(obs);
     }
 
     @Override
     public <U, R> ReactiveSeq<R> zipP(Publisher<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-        return flux(flux.zipWith(other,zipper));
+        return observable(observable.zipWith(Observables.observable(other),(a,b)->zipper.apply(a,b)));
     }
 
     @Override
     public <U> ReactiveSeq<Tuple2<T, U>> zipP(Publisher<? extends U> other) {
-        return flux(flux.zipWith(other,Tuple::tuple));
+        return observable(observable.zipWith(Observables.observable(other),Tuple::tuple));
     }
 
     @Override
     public ReactiveSeq<T> cycle() {
-        return flux(flux.repeat());
+        return observable(observable.repeat());
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> duplicate() {
-        return Spouts.from(flux).duplicate().map((s1,s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Observables.reactiveStreamX(observable).duplicate().map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> duplicate(Supplier<Deque<T>> bufferFactory) {
-        return Spouts.from(flux).duplicate(bufferFactory).map((s1,s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Observables.reactiveStreamX(observable).duplicate(bufferFactory).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple3<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> triplicate() {
-        return Spouts.from(flux).triplicate().map((s1,s2,s3)->Tuple.tuple(flux(s1),flux(s2),flux(s3)));
+        return Observables.reactiveStreamX(observable).triplicate().map((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
     }
 
     @Override
     public Tuple3<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> triplicate(Supplier<Deque<T>> bufferFactory) {
-        return Spouts.from(flux).triplicate(bufferFactory).map((s1,s2,s3)->Tuple.tuple(flux(s1),flux(s2),flux(s3)));
+        return Observables.reactiveStreamX(observable).triplicate(bufferFactory).map((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
     }
 
     @Override
     public Tuple4<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> quadruplicate() {
-        return Spouts.from(flux).quadruplicate().map((s1,s2,s3,s4)->Tuple.tuple(flux(s1),flux(s2),flux(s3),flux(s4)));
+        return Observables.reactiveStreamX(observable).quadruplicate().map((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
     }
 
     @Override
     public Tuple4<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> quadruplicate(Supplier<Deque<T>> bufferFactory) {
-        return Spouts.from(flux).quadruplicate(bufferFactory).map((s1,s2,s3,s4)->Tuple.tuple(flux(s1),flux(s2),flux(s3),flux(s4)));
+        return Observables.reactiveStreamX(observable).quadruplicate(bufferFactory).map((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
     }
 
     @Override
     public Tuple2<Optional<T>, ReactiveSeq<T>> splitAtHead() {
-        return Spouts.from(flux).splitAtHead().map((s1,s2)->Tuple.tuple(s1,flux(s2)));
+        return Observables.reactiveStreamX(observable).splitAtHead().map((s1, s2)->Tuple.tuple(s1,observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> splitAt(int where) {
-        return Spouts.from(flux).splitAt(where).map((s1,s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Observables.reactiveStreamX(observable).splitAt(where).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> splitBy(Predicate<T> splitter) {
-        return Spouts.from(flux).splitBy(splitter).map((s1,s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Observables.reactiveStreamX(observable).splitBy(splitter).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> partition(Predicate<? super T> splitter) {
-        return Spouts.from(flux).partition(splitter).map((s1,s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Observables.reactiveStreamX(observable).partition(splitter).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
@@ -172,47 +167,47 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<VectorX<T>> sliding(int windowSize, int increment) {
-        return flux(Spouts.from(flux).sliding(windowSize,increment));
+        return observable(Observables.reactiveStreamX(observable).sliding(windowSize,increment));
     }
 
     @Override
     public ReactiveSeq<ListX<T>> grouped(int groupSize) {
-        return flux(flux.buffer(groupSize).map(ListX::fromIterable));
+        return observable(observable.buffer(groupSize).map(ListX::fromIterable));
     }
 
     @Override
     public ReactiveSeq<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        return flux(Spouts.from(flux).groupedStatefullyUntil(predicate));
+        return observable(Observables.reactiveStreamX(observable).groupedStatefullyUntil(predicate));
     }
 
     @Override
     public <C extends Collection<T>, R> ReactiveSeq<R> groupedStatefullyUntil(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return flux(Spouts.from(flux).groupedStatefullyUntil(predicate,factory,finalizer));
+        return observable(Observables.reactiveStreamX(observable).groupedStatefullyUntil(predicate,factory,finalizer));
     }
 
     @Override
     public ReactiveSeq<ListX<T>> groupedStatefullyWhile(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        return flux(Spouts.from(flux).groupedStatefullyWhile(predicate));
+        return observable(Observables.reactiveStreamX(observable).groupedStatefullyWhile(predicate));
     }
 
     @Override
     public <C extends Collection<T>, R> ReactiveSeq<R> groupedStatefullyWhile(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return flux(Spouts.from(flux).groupedStatefullyWhile(predicate,factory,finalizer));
+        return observable(Observables.reactiveStreamX(observable).groupedStatefullyWhile(predicate,factory,finalizer));
     }
 
     @Override
     public ReactiveSeq<ListX<T>> groupedBySizeAndTime(int size, long time, TimeUnit t) {
-        return flux(Spouts.from(flux).groupedBySizeAndTime(size, time, t));
+        return observable(Observables.reactiveStreamX(observable).groupedBySizeAndTime(size, time, t));
     }
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> groupedBySizeAndTime(int size, long time, TimeUnit unit, Supplier<C> factory) {
-        return flux(Spouts.from(flux).groupedBySizeAndTime(size,time,unit,factory));
+        return observable(Observables.reactiveStreamX(observable).groupedBySizeAndTime(size,time,unit,factory));
     }
 
     @Override
     public <C extends Collection<? super T>, R> ReactiveSeq<R> groupedBySizeAndTime(int size, long time, TimeUnit unit, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return flux(Spouts.from(flux).groupedBySizeAndTime(size,time,unit,factory,finalizer));
+        return observable(Observables.reactiveStreamX(observable).groupedBySizeAndTime(size,time,unit,factory,finalizer));
     }
 
     @Override
@@ -222,97 +217,97 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<ListX<T>> groupedByTime(long time, TimeUnit t) {
-        return flux(Spouts.from(flux).groupedByTime(time, t));
+        return observable(Observables.reactiveStreamX(observable).groupedByTime(time, t));
     }
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> groupedByTime(long time, TimeUnit unit, Supplier<C> factory) {
-        return flux(Spouts.from(flux).groupedByTime(time, unit, factory));
+        return observable(Observables.reactiveStreamX(observable).groupedByTime(time, unit, factory));
     }
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> grouped(int size, Supplier<C> supplier) {
-        return flux(flux.buffer(size,supplier));
+        return observable(Observables.reactiveStreamX(observable).grouped(size,supplier));
     }
 
     @Override
     public ReactiveSeq<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
-        return flux(Spouts.from(flux).groupedWhile(predicate));
+        return observable(Observables.reactiveStreamX(observable).groupedWhile(predicate));
     }
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> groupedWhile(Predicate<? super T> predicate, Supplier<C> factory) {
-        return flux(Spouts.from(flux).groupedWhile(predicate,factory));
+        return observable(Observables.reactiveStreamX(observable).groupedWhile(predicate,factory));
     }
 
     @Override
     public ReactiveSeq<T> distinct() {
-        return flux(flux.distinct());
+        return observable(observable.distinct());
     }
 
     @Override
     public <U> ReactiveSeq<U> scanLeft(U seed, BiFunction<? super U, ? super T, ? extends U> function) {
-        return flux(flux.scan(seed,(a,b)->function.apply(a,b)));
+        return observable(observable.scan(seed,(a,b)->function.apply(a,b)));
     }
 
     @Override
     public ReactiveSeq<T> sorted() {
-        return flux(flux.sort());
+        return observable(Observables.reactiveStreamX(observable).sorted());
     }
 
     @Override
     public ReactiveSeq<T> skip(long num) {
-        return flux(flux.skip(num));
+        return observable(observable.skip((int)num));
     }
 
 
     @Override
     public void forEach(Consumer<? super T> action) {
-        Spouts.from(flux).forEach(action);
+        Observables.reactiveStreamX(observable).forEach(action);
     }
 
     @Override
     public void forEachOrdered(Consumer<? super T> action) {
-        Spouts.from(flux).forEachOrdered(action);
+        Observables.reactiveStreamX(observable).forEachOrdered(action);
     }
 
     @Override
     public Object[] toArray() {
-        return Spouts.from(flux).toArray();
+        return Observables.reactiveStreamX(observable).toArray();
     }
 
     @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
-        return Spouts.from(flux).toArray(generator);
+        return Observables.reactiveStreamX(observable).toArray(generator);
     }
 
     @Override
     public ReactiveSeq<T> skipWhile(Predicate<? super T> p) {
-        return flux(flux.skipWhile(p));
+        return observable(observable.skipWhile(t->p.test(t)));
     }
 
     @Override
     public ReactiveSeq<T> limit(long num) {
-        return flux(flux.take(num));
+        return observable(observable.take((int)num));
     }
 
     @Override
     public ReactiveSeq<T> limitWhile(Predicate<? super T> p) {
-        return flux(Spouts.from(flux).takeWhile(p));
+        return observable(Observables.reactiveStreamX(observable).takeWhile(p));
     }
     @Override
     public ReactiveSeq<T> limitWhileClosed(Predicate<? super T> p) {
-        return flux(flux.takeWhile(p));
+        return observable(observable.takeWhile(t->p.test(t)));
     }
 
     @Override
     public ReactiveSeq<T> limitUntil(Predicate<? super T> p) {
-       return flux(Spouts.from(flux).limitUntil(p));
+       return observable(Observables.reactiveStreamX(observable).limitUntil(p));
     }
 
     @Override
     public ReactiveSeq<T> limitUntilClosed(Predicate<? super T> p) {
-        return flux(flux.takeUntil(p));
+        return observable(observable.takeUntil(t->p.test(t)));
     }
 
     @Override
@@ -322,137 +317,137 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public boolean allMatch(Predicate<? super T> c) {
-        return Spouts.from(flux).allMatch(c);
+        return Observables.reactiveStreamX(observable).allMatch(c);
     }
 
     @Override
     public boolean anyMatch(Predicate<? super T> c) {
-        return Spouts.from(flux).anyMatch(c);
+        return Observables.reactiveStreamX(observable).anyMatch(c);
     }
 
     @Override
     public boolean xMatch(int num, Predicate<? super T> c) {
-        return Spouts.from(flux).xMatch(num,c);
+        return Observables.reactiveStreamX(observable).xMatch(num,c);
     }
 
     @Override
     public boolean noneMatch(Predicate<? super T> c) {
-        return Spouts.from(flux).noneMatch(c);
+        return Observables.reactiveStreamX(observable).noneMatch(c);
     }
 
     @Override
     public String join() {
-        return Spouts.from(flux).join();
+        return Observables.reactiveStreamX(observable).join();
     }
 
     @Override
     public String join(String sep) {
-        return Spouts.from(flux).join(sep);
+        return Observables.reactiveStreamX(observable).join(sep);
     }
 
     @Override
     public String join(String sep, String start, String end) {
-        return Spouts.from(flux).join(sep,start,end);
+        return Observables.reactiveStreamX(observable).join(sep,start,end);
     }
 
     @Override
     public HeadAndTail<T> headAndTail() {
-        return Spouts.from(flux).headAndTail();
+        return Observables.reactiveStreamX(observable).headAndTail();
     }
 
     @Override
     public Optional<T> findFirst() {
-        return Spouts.from(flux).findFirst();
+        return Observables.reactiveStreamX(observable).findFirst();
     }
 
     @Override
     public Maybe<T> findOne() {
-        return Spouts.from(flux).findOne();
+        return Observables.reactiveStreamX(observable).findOne();
     }
 
     @Override
     public Either<Throwable, T> findFirstOrError() {
-        return Spouts.from(flux).findFirstOrError();
+        return Observables.reactiveStreamX(observable).findFirstOrError();
     }
 
     @Override
     public Optional<T> findAny() {
-        return Spouts.from(flux).findAny();
+        return Observables.reactiveStreamX(observable).findAny();
     }
 
     @Override
     public <R> R mapReduce(Reducer<R> reducer) {
-        return Spouts.from(flux).mapReduce(reducer);
+        return Observables.reactiveStreamX(observable).mapReduce(reducer);
     }
 
     @Override
     public <R> R mapReduce(Function<? super T, ? extends R> mapper, Monoid<R> reducer) {
-        return Spouts.from(flux).mapReduce(mapper,reducer);
+        return Observables.reactiveStreamX(observable).mapReduce(mapper,reducer);
     }
 
     @Override
     public T reduce(Monoid<T> reducer) {
-        return Spouts.from(flux).reduce(reducer);
+        return Observables.reactiveStreamX(observable).reduce(reducer);
     }
 
     @Override
     public Optional<T> reduce(BinaryOperator<T> accumulator) {
-        return Spouts.from(flux).reduce(accumulator);
+        return Observables.reactiveStreamX(observable).reduce(accumulator);
     }
 
     @Override
     public T reduce(T identity, BinaryOperator<T> accumulator) {
-        return Spouts.from(flux).reduce(identity,accumulator);
+        return Observables.reactiveStreamX(observable).reduce(identity,accumulator);
     }
 
     @Override
     public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner) {
-        return Spouts.from(flux).reduce(identity, accumulator, combiner);
+        return Observables.reactiveStreamX(observable).reduce(identity, accumulator, combiner);
     }
 
     @Override
     public ListX<T> reduce(Stream<? extends Monoid<T>> reducers) {
-        return Spouts.from(flux).reduce(reducers);
+        return Observables.reactiveStreamX(observable).reduce(reducers);
     }
 
     @Override
     public ListX<T> reduce(Iterable<? extends Monoid<T>> reducers) {
-        return Spouts.from(flux).reduce(reducers);
+        return Observables.reactiveStreamX(observable).reduce(reducers);
     }
 
     @Override
     public T foldRight(Monoid<T> reducer) {
-        return Spouts.from(flux).foldRight(reducer);
+        return Observables.reactiveStreamX(observable).foldRight(reducer);
     }
 
     @Override
     public T foldRight(T identity, BinaryOperator<T> accumulator) {
-        return Spouts.from(flux).foldRight(identity,accumulator);
+        return Observables.reactiveStreamX(observable).foldRight(identity,accumulator);
     }
 
     @Override
     public <T1> T1 foldRightMapToType(Reducer<T1> reducer) {
-        return Spouts.from(flux).foldRightMapToType(reducer);
+        return Observables.reactiveStreamX(observable).foldRightMapToType(reducer);
     }
 
     @Override
     public ReactiveSeq<T> stream() {
-        return Spouts.from(flux);
+        return Observables.reactiveStreamX(observable);
     }
 
     @Override
     public <U> Traversable<U> unitIterator(Iterator<U> U) {
-        return new FluxReactiveSeq<>(Flux.fromIterable(()->U));
+        return new ObservableReactiveSeq<>(Observable.from(()->U));
     }
 
     @Override
     public boolean startsWithIterable(Iterable<T> iterable) {
-        return Spouts.from(flux).startsWithIterable(iterable);
+        return Observables.reactiveStreamX(observable).startsWithIterable(iterable);
     }
 
     @Override
     public boolean startsWith(Stream<T> stream) {
-        return Spouts.from(flux).startsWith(stream);
+        return Observables.reactiveStreamX(observable).startsWith(stream);
     }
 
     @Override
@@ -462,78 +457,78 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <R> ReactiveSeq<R> map(Function<? super T, ? extends R> fn) {
-        return flux(flux.map(fn));
+        return observable(observable.map(e->fn.apply(e)));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMap(Function<? super T, ? extends Stream<? extends R>> fn) {
-        return flux(flux.flatMap(s->ReactiveSeq.fromStream(fn.apply(s))));
+        return observable(observable.flatMap(s->Observables.observable(ReactiveSeq.fromStream(fn.apply(s)))));
     }
 
     @Override
     public IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper) {
-        return Spouts.from(flux).flatMapToInt(mapper);
+        return Observables.reactiveStreamX(observable).flatMapToInt(mapper);
     }
 
     @Override
     public LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper) {
-        return Spouts.from(flux).flatMapToLong(mapper);
+        return Observables.reactiveStreamX(observable).flatMapToLong(mapper);
     }
 
     @Override
     public DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper) {
-        return Spouts.from(flux).flatMapToDouble(mapper);
+        return Observables.reactiveStreamX(observable).flatMapToDouble(mapper);
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapAnyM(Function<? super T, AnyM<Witness.stream, ? extends R>> fn) {
-        return flux(flux.flatMap(fn));
+        return observable(observable.flatMap(a->Observables.observable(fn.apply(a))));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
-        return flux(flux.flatMapIterable(fn));
+        return observable(observable.flatMapIterable(a->fn.apply(a)));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapP(int maxConcurrency, QueueFactory<R> factory, Function<? super T, ? extends Publisher<? extends R>> mapper) {
-        return flux(flux.flatMap(mapper,maxConcurrency));
+        return observable(observable.flatMap(a->Observables.observable(mapper.apply(a))));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapP(Function<? super T, ? extends Publisher<? extends R>> fn) {
-        return flux(flux.flatMap(fn));
+        return observable(observable.flatMap(a->Observables.observable(fn.apply(a))));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapP(int maxConcurrency, Function<? super T, ? extends Publisher<? extends R>> fn) {
-        return flux(flux.flatMap(fn,maxConcurrency));
+        return observable(observable.flatMap(a->Observables.observable(fn.apply(a))));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapStream(Function<? super T, BaseStream<? extends R, ?>> fn) {
         
-        return this.<R>flux((Flux)flux.flatMap(fn.andThen(s->{
+        return this.<R>observable((Observable)observable.flatMap(a->fn.andThen(s->{
             ReactiveSeq<R> res = s instanceof ReactiveSeq ? (ReactiveSeq) s : (ReactiveSeq) ReactiveSeq.fromSpliterator(s.spliterator());
-           return res;
+           return Observables.observable(res);
                 }
             
-        )));
+        ).apply(a)));
     }
 
     @Override
     public ReactiveSeq<T> filter(Predicate<? super T> fn) {
-        return flux(flux.filter(fn));
+        return observable(observable.filter(t->fn.test(t)));
     }
 
     @Override
     public Iterator<T> iterator() {
-        return flux.toIterable().iterator();
+        return Observables.reactiveStreamX(observable).iterator();
     }
 
     @Override
     public Spliterator<T> spliterator() {
-        return flux.toIterable().spliterator();
+        return Observables.reactiveStreamX(observable).spliterator();
     }
 
     @Override
@@ -553,12 +548,12 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> reverse() {
-        return flux(Spouts.from(flux).reverse());
+        return observable(Observables.reactiveStreamX(observable).reverse());
     }
 
     @Override
     public ReactiveSeq<T> onClose(Runnable closeHandler) {
-        return flux(flux.doOnComplete(closeHandler));
+        return observable(observable.doOnCompleted(()->closeHandler.run()));
     }
 
     @Override
@@ -568,193 +563,193 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> prependS(Stream<? extends T> stream) {
-        return flux(Spouts.from(flux).prependS(stream));
+        return observable(Observables.reactiveStreamX(observable).prependS(stream));
     }
 
     @Override
     public ReactiveSeq<T> append(T... values) {
-        return flux(Spouts.from(flux).append(values));
+        return observable(Observables.reactiveStreamX(observable).append(values));
     }
 
     @Override
     public ReactiveSeq<T> append(T value) {
-        return flux(Spouts.from(flux).append(value));
+        return observable(Observables.reactiveStreamX(observable).append(value));
     }
 
     @Override
     public ReactiveSeq<T> prepend(T value) {
-        return flux(Spouts.from(flux).prepend(value));
+        return observable(Observables.reactiveStreamX(observable).prepend(value));
     }
 
     @Override
     public ReactiveSeq<T> prepend(T... values) {
-        return flux(Spouts.from(flux).prepend(values));
+        return observable(Observables.reactiveStreamX(observable).prepend(values));
     }
 
     @Override
     public boolean endsWithIterable(Iterable<T> iterable) {
-        return Spouts.from(flux).endsWithIterable(iterable);
+        return Observables.reactiveStreamX(observable).endsWithIterable(iterable);
     }
 
     @Override
     public boolean endsWith(Stream<T> stream) {
-        return Spouts.from(flux).endsWith(stream);
+        return Observables.reactiveStreamX(observable).endsWith(stream);
     }
 
     @Override
     public ReactiveSeq<T> skip(long time, TimeUnit unit) {
-        return flux(flux.skip(Duration.ofNanos(unit.toNanos(time))));
+        return observable(observable.skip(time,unit));
     }
 
     @Override
     public ReactiveSeq<T> limit(long time, TimeUnit unit) {
-        return flux(flux.take(Duration.ofNanos(unit.toNanos(time))));
+        return observable(observable.take(time,unit));
     }
 
     @Override
     public ReactiveSeq<T> skipLast(int num) {
-        return flux(flux.skipLast(num));
+        return observable(observable.skipLast(num));
     }
 
     @Override
     public ReactiveSeq<T> limitLast(int num) {
-        return flux(flux.takeLast(num));
+        return observable(observable.takeLast(num));
     }
 
     @Override
     public T firstValue() {
-        return flux.blockFirst();
+        return observable.toBlocking().first();
     }
 
     @Override
     public ReactiveSeq<T> onEmptySwitch(Supplier<? extends Stream<T>> switchTo) {
-        return flux(Spouts.from(flux).onEmptySwitch(switchTo));
+        return observable(Observables.reactiveStreamX(observable).onEmptySwitch(switchTo));
     }
 
     @Override
     public ReactiveSeq<T> onEmptyGet(Supplier<? extends T> supplier) {
-        return flux(Spouts.from(flux).onEmptyGet(supplier));
+        return observable(Observables.reactiveStreamX(observable).onEmptyGet(supplier));
     }
 
     @Override
     public <X extends Throwable> ReactiveSeq<T> onEmptyThrow(Supplier<? extends X> supplier) {
-        return flux(Spouts.from(flux).onEmptyThrow(supplier));
+        return observable(Observables.reactiveStreamX(observable).onEmptyThrow(supplier));
     }
 
     @Override
     public <U> ReactiveSeq<T> distinct(Function<? super T, ? extends U> keyExtractor) {
-        return flux(flux.distinct(keyExtractor));
+        return observable(observable.distinct(a->keyExtractor.apply(a)));
     }
 
     @Override
     public ReactiveSeq<T> xPer(int x, long time, TimeUnit t) {
-        return flux(Spouts.from(flux).xPer(x,time,t));
+        return observable(Observables.reactiveStreamX(observable).xPer(x,time,t));
     }
 
     @Override
     public ReactiveSeq<T> onePer(long time, TimeUnit t) {
-        return flux(Spouts.from(flux).onePer(time,t));
+        return observable(Observables.reactiveStreamX(observable).onePer(time,t));
     }
 
     @Override
     public ReactiveSeq<T> debounce(long time, TimeUnit t) {
-        return flux(Spouts.from(flux).debounce(time,t));
+        return observable(Observables.reactiveStreamX(observable).debounce(time,t));
     }
 
     @Override
     public ReactiveSeq<T> fixedDelay(long l, TimeUnit unit) {
-        return flux(Spouts.from(flux).fixedDelay(l,unit));
+        return observable(Observables.reactiveStreamX(observable).fixedDelay(l,unit));
     }
 
     @Override
     public ReactiveSeq<T> jitter(long maxJitterPeriodInNanos) {
-        return flux(Spouts.from(flux).jitter(maxJitterPeriodInNanos));
+        return observable(Observables.reactiveStreamX(observable).jitter(maxJitterPeriodInNanos));
     }
 
     @Override
     public ReactiveSeq<T> recover(Function<? super Throwable, ? extends T> fn) {
-        return flux(Spouts.from(flux).recover(fn));
+        return observable(Observables.reactiveStreamX(observable).recover(fn));
     }
 
     @Override
     public <EX extends Throwable> ReactiveSeq<T> recover(Class<EX> exceptionClass, Function<? super EX, ? extends T> fn) {
-        return flux(Spouts.from(flux).recover(exceptionClass,fn));
+        return observable(Observables.reactiveStreamX(observable).recover(exceptionClass,fn));
     }
 
     @Override
     public long count() {
-        return Spouts.from(flux).count();
+        return Observables.reactiveStreamX(observable).count();
     }
 
     @Override
     public ReactiveSeq<T> appendS(Stream<? extends T> other) {
-        return flux(Spouts.from(flux).appendS(other));
+        return observable(Observables.reactiveStreamX(observable).appendS(other));
     }
 
     @Override
     public ReactiveSeq<T> append(Iterable<? extends T> other) {
-        return  flux(Spouts.from(flux).append(other));
+        return  observable(Observables.reactiveStreamX(observable).append(other));
     }
 
     @Override
     public ReactiveSeq<T> prepend(Iterable<? extends T> other) {
-        return flux(Spouts.from(flux).prepend(other));
+        return observable(Observables.reactiveStreamX(observable).prepend(other));
     }
 
     @Override
     public ReactiveSeq<T> cycle(long times) {
-        return flux(flux.repeat(times));
+        return observable(observable.repeat(times));
     }
 
     @Override
     public ReactiveSeq<T> skipWhileClosed(Predicate<? super T> predicate) {
-        return flux(Spouts.from(flux).skipWhileClosed(predicate));
+        return observable(Observables.reactiveStreamX(observable).skipWhileClosed(predicate));
     }
 
 
     @Override
     public String format() {
-        return Spouts.from(flux).format();
+        return Observables.reactiveStreamX(observable).format();
     }
 
     @Override
     public ReactiveSeq<T> changes() {
-        return flux(Spouts.from(flux).changes());
+        return observable(Observables.reactiveStreamX(observable).changes());
     }
 
 
 
     @Override
     public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer) {
-        return Spouts.from(flux).forEachSubscribe(consumer);
+        return Observables.reactiveStreamX(observable).forEachSubscribe(consumer);
     }
 
     @Override
     public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer, Consumer<? super Throwable> consumerError) {
-        return Spouts.from(flux).forEachSubscribe(consumer, consumerError);
+        return Observables.reactiveStreamX(observable).forEachSubscribe(consumer, consumerError);
     }
 
     @Override
     public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer, Consumer<? super Throwable> consumerError, Runnable onComplete) {
-        return Spouts.from(flux).forEachSubscribe(consumer, consumerError,onComplete);
+        return Observables.reactiveStreamX(observable).forEachSubscribe(consumer, consumerError,onComplete);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
 
-        return flux.toStream().collect(supplier,accumulator,combiner);
+        return Observables.reactiveStreamX(observable).collect(supplier,accumulator,combiner);
     }
 
     @Override
     public <R, A> ReactiveSeq<R> collectStream(Collector<? super T, A, R> collector) {
-        return flux(Flux.from(flux.collect((Collector<T,A,R>)collector)));
+        return observable(Observables.reactiveStreamX(observable).collectStream(collector));
     }
 
     @Override
     public <R, A> R collect(Collector<? super T, A, R> collector) {
-        return flux.collect((Collector<T,A,R>)collector).block();
+        return Observables.reactiveStreamX(observable).collect((Collector<T,A,R>)collector);
     }
-
+    
 
     @Override
     public T single() {
@@ -768,41 +763,11 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public Optional<T> singleOptional() {
-        Maybe.CompletableMaybe<T,T> maybe = Maybe.<T>maybe();
-        flux.subscribe(new Subscriber<T>() {
-            T value = null;
-            Subscription sub;
-            @Override
-            public void onSubscribe(Subscription s) {
-                this.sub=s;
-                s.request(Long.MAX_VALUE);
-            }
-
-            @Override
-            public void onNext(T t) {
-                if(value==null)
-                    value = t;
-                else {
-                    maybe.complete(null);
-                    sub.cancel();
-                }
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                maybe.completeExceptionally(t);
-            }
-
-            @Override
-            public void onComplete() {
-                maybe.complete(value);
-            }
-        });
-        return maybe.toOptional();
+        return Observables.reactiveStreamX(observable).singleOptional();
     }
 
     @Override
     public void subscribe(Subscriber<? super T> s) {
-        flux.subscribe(s);
+        Observables.publisher(observable).subscribe(s);
     }
 }

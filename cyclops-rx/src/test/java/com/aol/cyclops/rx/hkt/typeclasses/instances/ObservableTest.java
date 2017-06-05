@@ -31,7 +31,7 @@ public class ObservableTest {
                                      .unit("hello")
                                      .convert(ObservableKind::narrowK);
         
-        assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello")));
+        assertThat(Observables.reactiveStreamX(list.narrow()).toList(),equalTo(Arrays.asList("hello")));
     }
     @Test
     public void functor(){
@@ -41,7 +41,7 @@ public class ObservableTest {
                                      .apply(h->Observables.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(ObservableKind::narrowK);
         
-        assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello".length())));
+        assertThat(Observables.reactiveStreamX(list.narrow()).toList(),equalTo(Arrays.asList("hello".length())));
     }
     @Test
     public void apSimple(){
@@ -62,7 +62,7 @@ public class ObservableTest {
                                      .apply(h->Observables.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(ObservableKind::narrowK);
         
-        assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello".length()*2)));
+        assertThat(Observables.reactiveStreamX(list.narrow()).toList(),equalTo(Arrays.asList("hello".length()*2)));
     }
     @Test
     public void monadSimple(){
@@ -78,7 +78,7 @@ public class ObservableTest {
                                      .apply(h->Observables.Instances.monad().flatMap((String v) ->Observables.Instances.unit().unit(v.length()), h))
                                      .convert(ObservableKind::narrowK);
         
-        assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello".length())));
+        assertThat(Observables.reactiveStreamX(list.narrow()).toList(),equalTo(Arrays.asList("hello".length())));
     }
     @Test
     public void monadZeroFilter(){
@@ -88,7 +88,7 @@ public class ObservableTest {
                                      .apply(h->Observables.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(ObservableKind::narrowK);
         
-        assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello")));
+        assertThat(Observables.reactiveStreamX(list.narrow()).toList(),equalTo(Arrays.asList("hello")));
     }
     @Test
     public void monadZeroFilterOut(){
@@ -98,7 +98,7 @@ public class ObservableTest {
                                      .apply(h->Observables.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(ObservableKind::narrowK);
         
-        assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList()));
+        assertThat(Observables.reactiveStreamX(list.narrow()).toList(),equalTo(Arrays.asList()));
     }
     
     @Test
@@ -106,7 +106,7 @@ public class ObservableTest {
         ObservableKind<Integer> list = Observables.Instances.<Integer>monadPlus()
                                       .plus(ObservableKind.widen(Observable.empty()), ObservableKind.widen(Observable.just(10)))
                                       .convert(ObservableKind::narrowK);
-        assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList(10)));
+        assertThat(Observables.reactiveStreamX(list.narrow()).toList(),equalTo(Arrays.asList(10)));
     }
 /**
     @Test
@@ -140,7 +140,7 @@ public class ObservableTest {
                                                          .convert(Maybe::narrowK);
        
        
-       assertThat(res.map(i->Observables.reactiveSeq(ObservableKind.narrow(i)).toList()),
+       assertThat(res.map(i->Observables.reactiveStreamX(ObservableKind.narrow(i)).toList()),
                   equalTo(Maybe.just(ListX.of(2,4,6))));
     }
    
