@@ -8,7 +8,6 @@ import cyclops.companion.Reducers;
 import cyclops.companion.Semigroups;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
-import cyclops.monads.Witness.optional;
 import cyclops.stream.ReactiveSeq;
 import cyclops.stream.Spouts;
 import org.jooq.lambda.tuple.Tuple2;
@@ -30,8 +29,8 @@ import static org.junit.Assert.*;
 
 
 public abstract class AbstractTraversableTest {
-    public abstract <T> FluxT<optional,T> of(T...elements);
-    public abstract <T> FluxT<optional,T> empty();
+    public abstract <T> Traversable<T> of(T...elements);
+    public abstract <T> Traversable<T> empty();
     
     @Test
     public void publishAndSubscribe(){
@@ -322,14 +321,10 @@ public abstract class AbstractTraversableTest {
     }
     @Test
     public void zipInOrder(){
-
-        FluxT<optional,Integer> flux1 = of(1, 2, 3, 4, 5, 6);
-        FluxT<optional,Integer> flux2 = of(100, 200, 300, 400);
-
-        //flux1.zip(flux2).toListOfLists().printOut();
-        List<Tuple2<Integer,Integer>> list = flux1.zip(flux2)
-                                                  .stream()
-                                                    .toListX();;
+        
+        List<Tuple2<Integer,Integer>> list =  ReactiveSeq.fromIterable(of(1,2,3,4,5,6)
+                                                    .zip( of(100,200,300,400).stream()))
+                                                    .toListX();
         
         assertThat(asList(1,2,3,4,5,6),hasItem(list.get(0).v1));
         assertThat(asList(100,200,300,400),hasItem(list.get(0).v2));
