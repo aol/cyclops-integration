@@ -45,7 +45,7 @@ public  class AsyncRSReactiveStreamXTest {
 	}
 
 	protected <U> ReactiveSeq<U> of(U... array){
-		return Fluxs.seq(Flux.just(array).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())));
+		return Fluxs.reactiveSeq(Flux.just(array).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())));
 
 	}
 	
@@ -636,7 +636,7 @@ public  class AsyncRSReactiveStreamXTest {
 	    }
 	    
 	   
-	    //tests converted from lazy-seq suite
+	    //tests converted from lazy-reactiveSeq suite
 	    @Test
 		public void flattenEmpty() throws Exception {
 				assertTrue(this.<ReactiveSeq<Integer>>of().to(ReactiveSeq::flatten).toList().isEmpty());

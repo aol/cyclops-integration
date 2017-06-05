@@ -18,7 +18,7 @@ import static org.junit.Assert.assertThat;
 public class SyncJDKStreamTest {
 	protected <U> ReactiveSeq<U> of(U... array){
 
-		return Fluxs.seq(Flux.just(array));
+		return Fluxs.reactiveSeq(Flux.just(array));
 	}
 	@Test
 	public void testAnyMatch(){

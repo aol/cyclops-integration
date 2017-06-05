@@ -18,7 +18,7 @@ public class SyncSchedulingTest {
 
 	protected <U> ReactiveSeq<U> of(U... array){
 
-		return Fluxs.seq(Flux.just(array));
+		return Fluxs.reactiveSeq(Flux.just(array));
 	}
 	ScheduledExecutorService ex =Executors.newScheduledThreadPool(1);
 	AtomicInteger count = new AtomicInteger(0);

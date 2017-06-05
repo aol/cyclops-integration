@@ -55,6 +55,7 @@ import rx.schedulers.Schedulers;
  */
 @UtilityClass
 public class Observables {
+
     public static <T> ReactiveSeq<T> reactiveSeq(Observable<T> observable) {
         return new ObservableReactiveSeq<>(observable);
     }

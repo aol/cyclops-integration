@@ -10,7 +10,7 @@ public class SyncRSCollectableTest extends CollectableTest {
 
 
     public <T> Collectable<T> of(T... values){
-        return Fluxs.seq(Flux.just(values)).collectors();
+        return Fluxs.reactiveSeq(Flux.just(values)).collectors();
     }
 
 }

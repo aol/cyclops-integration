@@ -13,7 +13,7 @@ public class AsyncRSCollectableTest extends CollectableTest {
 
     public <T> Collectable<T> of(T... values){
 
-        return Fluxs.seq(Flux.just(values)
+        return Fluxs.reactiveSeq(Flux.just(values)
                 .subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())))
                 .collectors();
     }

@@ -1300,7 +1300,7 @@ public class BaseSequentialTest {
     }
 
 
-    //tests converted from maybe-seq suite
+    //tests converted from maybe-reactiveSeq suite
     @Test
     public void flattenEmpty() throws Exception {
         assertTrue(this.<Integer>of().flatMap(i -> asList(i, -i).stream()).toList().isEmpty());

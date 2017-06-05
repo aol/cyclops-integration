@@ -1,10 +1,6 @@
 package cyclops.companion.reactor;
 
 import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
-import com.aol.cyclops2.internal.stream.ReactiveStreamX;
-import com.aol.cyclops2.internal.stream.spliterators.push.RangeIntOperator;
-import com.aol.cyclops2.internal.stream.spliterators.push.RangeLongOperator;
-import com.aol.cyclops2.internal.stream.spliterators.push.SingleValueOperator;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
@@ -14,7 +10,6 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
-import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
@@ -25,16 +20,10 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
-import reactor.core.Fuseable;
 import reactor.core.publisher.*;
-import reactor.core.scheduler.Schedulers;
-import reactor.core.scheduler.TimedScheduler;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.stream.Stream;
 
@@ -83,18 +72,18 @@ public class Fluxs {
         return StreamT.of(monad);
     }
 
-    public static <T> ReactiveSeq<T> seq(Flux<T> flux){
+    public static <T> ReactiveSeq<T> reactiveSeq(Flux<T> flux){
         return new FluxReactiveSeq<>(flux);
     }
 
     public static ReactiveSeq<Integer> range(int start, int end){
-       return seq(Flux.range(start,end));
+       return reactiveSeq(Flux.range(start,end));
     }
     public static <T> ReactiveSeq<T> of(T... data) {
-        return seq(Flux.just(data));
+        return reactiveSeq(Flux.just(data));
     }
     public static  <T> ReactiveSeq<T> of(T value){
-        return seq(Flux.just(value));
+        return reactiveSeq(Flux.just(value));
     }
 
     public static <T> ReactiveSeq<T> ofNullable(T nullable){
@@ -104,96 +93,96 @@ public class Fluxs {
         return of(nullable);
     }
     public static <T> ReactiveSeq<T> create(Consumer<? super FluxSink<T>> emitter) {
-        return seq(Flux.create(emitter));
+        return reactiveSeq(Flux.create(emitter));
     }
 
 
     public static <T> ReactiveSeq<T> create(Consumer<? super FluxSink<T>> emitter, FluxSink.OverflowStrategy backpressure) {
-        return seq(Flux.create(emitter,backpressure));
+        return reactiveSeq(Flux.create(emitter,backpressure));
     }
 
 
     public static <T> ReactiveSeq<T> defer(Supplier<? extends Publisher<T>> supplier) {
-        return seq(Flux.defer(supplier));
+        return reactiveSeq(Flux.defer(supplier));
     }
 
     public static <T> ReactiveSeq<T> empty() {
-        return seq(Flux.empty());
+        return reactiveSeq(Flux.empty());
     }
 
 
     public static <T> ReactiveSeq<T> error(Throwable error) {
-        return seq(Flux.error(error));
+        return reactiveSeq(Flux.error(error));
     }
 
 
     public static <O> ReactiveSeq<O> error(Throwable throwable, boolean whenRequested) {
-        return seq(Flux.error(throwable,whenRequested));
+        return reactiveSeq(Flux.error(throwable,whenRequested));
     }
 
 
     @SafeVarargs
     public static <I> ReactiveSeq<I> firstEmitting(Publisher<? extends I>... sources) {
-        return seq(Flux.firstEmitting(sources));
+        return reactiveSeq(Flux.firstEmitting(sources));
     }
 
 
     public static <I> ReactiveSeq<I> firstEmitting(Iterable<? extends Publisher<? extends I>> sources) {
-        return seq(Flux.firstEmitting(sources));
+        return reactiveSeq(Flux.firstEmitting(sources));
     }
 
 
     public static <T> ReactiveSeq<T> from(Publisher<? extends T> source) {
-       return seq(Flux.from(source));
+       return reactiveSeq(Flux.from(source));
     }
 
 
     public static <T> ReactiveSeq<T> fromIterable(Iterable<? extends T> it) {
-        return seq(Flux.fromIterable(it));
+        return reactiveSeq(Flux.fromIterable(it));
     }
 
 
     public static <T> ReactiveSeq<T> fromStream(Stream<? extends T> s) {
-        return seq(Flux.fromStream(s));
+        return reactiveSeq(Flux.fromStream(s));
     }
 
 
     public static <T> ReactiveSeq<T> generate(Consumer<SynchronousSink<T>> generator) {
-        return seq(Flux.generate(generator));
+        return reactiveSeq(Flux.generate(generator));
     }
 
 
     public static <T, S> ReactiveSeq<T> generate(Callable<S> stateSupplier, BiFunction<S, SynchronousSink<T>, S> generator) {
-        return seq(Flux.generate(stateSupplier,generator));
+        return reactiveSeq(Flux.generate(stateSupplier,generator));
     }
 
 
     public static <T, S> ReactiveSeq<T> generate(Callable<S> stateSupplier, BiFunction<S, SynchronousSink<T>, S> generator, Consumer<? super S> stateConsumer) {
-        return seq(Flux.generate(stateSupplier,generator,stateConsumer));
+        return reactiveSeq(Flux.generate(stateSupplier,generator,stateConsumer));
     }
 
 
     public static ReactiveSeq<Long> interval(Duration period) {
-        return seq(Flux.interval(period));
+        return reactiveSeq(Flux.interval(period));
     }
 
 
     public static ReactiveSeq<Long> interval(Duration delay, Duration period) {
-        return seq(Flux.interval(delay,period));
+        return reactiveSeq(Flux.interval(delay,period));
     }
 
 
     public static ReactiveSeq<Long> intervalMillis(long period) {
-        return seq(Flux.intervalMillis(period));
+        return reactiveSeq(Flux.intervalMillis(period));
     }
     @SafeVarargs
     public static <T> ReactiveSeq<T> just(T... data) {
-        return seq(Flux.just(data));
+        return reactiveSeq(Flux.just(data));
     }
 
 
     public static <T> ReactiveSeq<T> just(T data) {
-        return seq(Flux.just(data));
+        return reactiveSeq(Flux.just(data));
     }
 
 
@@ -215,7 +204,7 @@ public class Fluxs {
      * @return AnyMSeq wrapping a flux
      */
     public static <T> AnyMSeq<flux,T> anyM(Flux<T> flux) {
-        return AnyM.ofSeq(seq(flux), ReactorWitness.flux.INSTANCE);
+        return AnyM.ofSeq(reactiveSeq(flux), ReactorWitness.flux.INSTANCE);
     }
 
     public static <T> Flux<T> flux(AnyM<flux,T> flux) {

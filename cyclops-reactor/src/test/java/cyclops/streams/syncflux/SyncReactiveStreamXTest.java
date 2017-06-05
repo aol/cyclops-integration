@@ -48,7 +48,7 @@ public  class SyncReactiveStreamXTest {
 
 	protected <U> ReactiveSeq<U> of(U... array){
 
-		return Fluxs.seq(Flux.just(array));
+		return Fluxs.reactiveSeq(Flux.just(array));
 	}
 	
 	
@@ -564,7 +564,7 @@ public  class SyncReactiveStreamXTest {
 	    }
 	    
 	   
-	    //tests converted from lazy-seq suite
+	    //tests converted from lazy-reactiveSeq suite
 	    @Test
 		public void flattenEmpty() throws Exception {
 				assertTrue(this.<ReactiveSeq<Integer>>of().to(ReactiveSeq::flatten).toList().isEmpty());

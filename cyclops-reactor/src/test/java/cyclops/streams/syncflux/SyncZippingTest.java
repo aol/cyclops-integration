@@ -31,7 +31,7 @@ public class SyncZippingTest {
 
 	protected <U> ReactiveSeq<U> of(U... array){
 
-		return Fluxs.seq(Flux.just(array));
+		return Fluxs.reactiveSeq(Flux.just(array));
 	}
 	@Test
 	public void zipInOrderNoLimit(){

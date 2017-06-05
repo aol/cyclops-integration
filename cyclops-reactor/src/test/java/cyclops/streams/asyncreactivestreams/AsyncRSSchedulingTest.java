@@ -19,7 +19,7 @@ import static org.junit.Assert.assertThat;
 public class AsyncRSSchedulingTest {
 
 	protected <U> ReactiveSeq<U> of(U... array){
-		return Fluxs.seq(Flux.just(array).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())));
+		return Fluxs.reactiveSeq(Flux.just(array).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())));
 
 	}
 	ScheduledExecutorService ex =Executors.newScheduledThreadPool(1);

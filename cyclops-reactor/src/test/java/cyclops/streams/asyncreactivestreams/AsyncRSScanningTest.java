@@ -18,7 +18,7 @@ public class AsyncRSScanningTest {
 
 	protected <U> ReactiveSeq<U> of(U... array){
 
-		return Fluxs.seq(Flux.just(array).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())));
+		return Fluxs.reactiveSeq(Flux.just(array).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())));
 
 	}
 	@Test

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 public class SyncBatchingTest {
 	protected <U> ReactiveSeq<U> of(U... array){
 
-		return Fluxs.seq(Flux.just(array));
+		return Fluxs.reactiveSeq(Flux.just(array));
 	}
 	@Test
 	public void batchUntil(){

@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 
 public class AsyncRSPartitionAndSplittingTest {
 	protected <U> ReactiveSeq<U> of(U... array){
-		return Fluxs.seq(Flux.just(array).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())));
+		return Fluxs.reactiveSeq(Flux.just(array).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())));
 
 	}
 	@Test
