@@ -810,4 +810,9 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
     public void subscribe(Subscriber<? super T> s) {
         flux.subscribe(s);
     }
+
+    public <R> R visit(Function<? super ReactiveSeq<T>,? extends R> sync,Function<? super ReactiveSeq<T>,? extends R> reactiveStreams,
+                         Function<? super ReactiveSeq<T>,? extends R> asyncNoBackPressure){
+        return reactiveStreams.apply(this);
+    }
 }

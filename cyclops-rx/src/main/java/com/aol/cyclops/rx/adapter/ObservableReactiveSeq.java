@@ -99,52 +99,52 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> duplicate() {
-        return Observables.reactiveSeq(observable).duplicate().map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).duplicate().map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> duplicate(Supplier<Deque<T>> bufferFactory) {
-        return Observables.reactiveSeq(observable).duplicate(bufferFactory).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).duplicate(bufferFactory).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple3<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> triplicate() {
-        return Observables.reactiveSeq(observable).triplicate().map((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
+        return Observables.connectToReactiveSeq(observable).triplicate().map((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
     }
 
     @Override
     public Tuple3<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> triplicate(Supplier<Deque<T>> bufferFactory) {
-        return Observables.reactiveSeq(observable).triplicate(bufferFactory).map((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
+        return Observables.connectToReactiveSeq(observable).triplicate(bufferFactory).map((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
     }
 
     @Override
     public Tuple4<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> quadruplicate() {
-        return Observables.reactiveSeq(observable).quadruplicate().map((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
+        return Observables.connectToReactiveSeq(observable).quadruplicate().map((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
     }
 
     @Override
     public Tuple4<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> quadruplicate(Supplier<Deque<T>> bufferFactory) {
-        return Observables.reactiveSeq(observable).quadruplicate(bufferFactory).map((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
+        return Observables.connectToReactiveSeq(observable).quadruplicate(bufferFactory).map((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
     }
 
     @Override
     public Tuple2<Optional<T>, ReactiveSeq<T>> splitAtHead() {
-        return Observables.reactiveSeq(observable).splitAtHead().map((s1, s2)->Tuple.tuple(s1,observable(s2)));
+        return Observables.connectToReactiveSeq(observable).splitAtHead().map((s1, s2)->Tuple.tuple(s1,observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> splitAt(int where) {
-        return Observables.reactiveSeq(observable).splitAt(where).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).splitAt(where).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> splitBy(Predicate<T> splitter) {
-        return Observables.reactiveSeq(observable).splitBy(splitter).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).splitBy(splitter).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> partition(Predicate<? super T> splitter) {
-        return Observables.reactiveSeq(observable).partition(splitter).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).partition(splitter).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
@@ -168,7 +168,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<VectorX<T>> sliding(int windowSize, int increment) {
-        return observable(Observables.reactiveSeq(observable).sliding(windowSize,increment));
+        return observable(Observables.connectToReactiveSeq(observable).sliding(windowSize,increment));
     }
 
     @Override
@@ -178,37 +178,37 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        return observable(Observables.reactiveSeq(observable).groupedStatefullyUntil(predicate));
+        return observable(Observables.connectToReactiveSeq(observable).groupedStatefullyUntil(predicate));
     }
 
     @Override
     public <C extends Collection<T>, R> ReactiveSeq<R> groupedStatefullyUntil(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return observable(Observables.reactiveSeq(observable).groupedStatefullyUntil(predicate,factory,finalizer));
+        return observable(Observables.connectToReactiveSeq(observable).groupedStatefullyUntil(predicate,factory,finalizer));
     }
 
     @Override
     public ReactiveSeq<ListX<T>> groupedStatefullyWhile(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        return observable(Observables.reactiveSeq(observable).groupedStatefullyWhile(predicate));
+        return observable(Observables.connectToReactiveSeq(observable).groupedStatefullyWhile(predicate));
     }
 
     @Override
     public <C extends Collection<T>, R> ReactiveSeq<R> groupedStatefullyWhile(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return observable(Observables.reactiveSeq(observable).groupedStatefullyWhile(predicate,factory,finalizer));
+        return observable(Observables.connectToReactiveSeq(observable).groupedStatefullyWhile(predicate,factory,finalizer));
     }
 
     @Override
     public ReactiveSeq<ListX<T>> groupedBySizeAndTime(int size, long time, TimeUnit t) {
-        return observable(Observables.reactiveSeq(observable).groupedBySizeAndTime(size, time, t));
+        return observable(Observables.connectToReactiveSeq(observable).groupedBySizeAndTime(size, time, t));
     }
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> groupedBySizeAndTime(int size, long time, TimeUnit unit, Supplier<C> factory) {
-        return observable(Observables.reactiveSeq(observable).groupedBySizeAndTime(size,time,unit,factory));
+        return observable(Observables.connectToReactiveSeq(observable).groupedBySizeAndTime(size,time,unit,factory));
     }
 
     @Override
     public <C extends Collection<? super T>, R> ReactiveSeq<R> groupedBySizeAndTime(int size, long time, TimeUnit unit, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return observable(Observables.reactiveSeq(observable).groupedBySizeAndTime(size,time,unit,factory,finalizer));
+        return observable(Observables.connectToReactiveSeq(observable).groupedBySizeAndTime(size,time,unit,factory,finalizer));
     }
 
     @Override
@@ -218,27 +218,27 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<ListX<T>> groupedByTime(long time, TimeUnit t) {
-        return observable(Observables.reactiveSeq(observable).groupedByTime(time, t));
+        return observable(Observables.connectToReactiveSeq(observable).groupedByTime(time, t));
     }
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> groupedByTime(long time, TimeUnit unit, Supplier<C> factory) {
-        return observable(Observables.reactiveSeq(observable).groupedByTime(time, unit, factory));
+        return observable(Observables.connectToReactiveSeq(observable).groupedByTime(time, unit, factory));
     }
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> grouped(int size, Supplier<C> supplier) {
-        return observable(Observables.reactiveSeq(observable).grouped(size,supplier));
+        return observable(Observables.connectToReactiveSeq(observable).grouped(size,supplier));
     }
 
     @Override
     public ReactiveSeq<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
-        return observable(Observables.reactiveSeq(observable).groupedWhile(predicate));
+        return observable(Observables.connectToReactiveSeq(observable).groupedWhile(predicate));
     }
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> groupedWhile(Predicate<? super T> predicate, Supplier<C> factory) {
-        return observable(Observables.reactiveSeq(observable).groupedWhile(predicate,factory));
+        return observable(Observables.connectToReactiveSeq(observable).groupedWhile(predicate,factory));
     }
 
     @Override
@@ -253,7 +253,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> sorted() {
-        return observable(Observables.reactiveSeq(observable).sorted());
+        return observable(Observables.connectToReactiveSeq(observable).sorted());
     }
 
     @Override
@@ -264,22 +264,22 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public void forEach(Consumer<? super T> action) {
-        Observables.reactiveSeq(observable).forEach(action);
+        Observables.connectToReactiveSeq(observable).forEach(action);
     }
 
     @Override
     public void forEachOrdered(Consumer<? super T> action) {
-        Observables.reactiveSeq(observable).forEachOrdered(action);
+        Observables.connectToReactiveSeq(observable).forEachOrdered(action);
     }
 
     @Override
     public Object[] toArray() {
-        return Observables.reactiveSeq(observable).toArray();
+        return Observables.connectToReactiveSeq(observable).toArray();
     }
 
     @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
-        return Observables.reactiveSeq(observable).toArray(generator);
+        return Observables.connectToReactiveSeq(observable).toArray(generator);
     }
 
     @Override
@@ -294,7 +294,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> limitWhile(Predicate<? super T> p) {
-        return observable(Observables.reactiveSeq(observable).takeWhile(p));
+        return observable(Observables.connectToReactiveSeq(observable).takeWhile(p));
     }
     @Override
     public ReactiveSeq<T> limitWhileClosed(Predicate<? super T> p) {
@@ -303,7 +303,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> limitUntil(Predicate<? super T> p) {
-       return observable(Observables.reactiveSeq(observable).limitUntil(p));
+       return observable(Observables.connectToReactiveSeq(observable).limitUntil(p));
     }
 
     @Override
@@ -318,122 +318,122 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public boolean allMatch(Predicate<? super T> c) {
-        return Observables.reactiveSeq(observable).allMatch(c);
+        return Observables.connectToReactiveSeq(observable).allMatch(c);
     }
 
     @Override
     public boolean anyMatch(Predicate<? super T> c) {
-        return Observables.reactiveSeq(observable).anyMatch(c);
+        return Observables.connectToReactiveSeq(observable).anyMatch(c);
     }
 
     @Override
     public boolean xMatch(int num, Predicate<? super T> c) {
-        return Observables.reactiveSeq(observable).xMatch(num,c);
+        return Observables.connectToReactiveSeq(observable).xMatch(num,c);
     }
 
     @Override
     public boolean noneMatch(Predicate<? super T> c) {
-        return Observables.reactiveSeq(observable).noneMatch(c);
+        return Observables.connectToReactiveSeq(observable).noneMatch(c);
     }
 
     @Override
     public String join() {
-        return Observables.reactiveSeq(observable).join();
+        return Observables.connectToReactiveSeq(observable).join();
     }
 
     @Override
     public String join(String sep) {
-        return Observables.reactiveSeq(observable).join(sep);
+        return Observables.connectToReactiveSeq(observable).join(sep);
     }
 
     @Override
     public String join(String sep, String start, String end) {
-        return Observables.reactiveSeq(observable).join(sep,start,end);
+        return Observables.connectToReactiveSeq(observable).join(sep,start,end);
     }
 
     @Override
     public HeadAndTail<T> headAndTail() {
-        return Observables.reactiveSeq(observable).headAndTail();
+        return Observables.connectToReactiveSeq(observable).headAndTail();
     }
 
     @Override
     public Optional<T> findFirst() {
-        return Observables.reactiveSeq(observable).findFirst();
+        return Observables.connectToReactiveSeq(observable).findFirst();
     }
 
     @Override
     public Maybe<T> findOne() {
-        return Observables.reactiveSeq(observable).findOne();
+        return Observables.connectToReactiveSeq(observable).findOne();
     }
 
     @Override
     public Either<Throwable, T> findFirstOrError() {
-        return Observables.reactiveSeq(observable).findFirstOrError();
+        return Observables.connectToReactiveSeq(observable).findFirstOrError();
     }
 
     @Override
     public Optional<T> findAny() {
-        return Observables.reactiveSeq(observable).findAny();
+        return Observables.connectToReactiveSeq(observable).findAny();
     }
 
     @Override
     public <R> R mapReduce(Reducer<R> reducer) {
-        return Observables.reactiveSeq(observable).mapReduce(reducer);
+        return Observables.connectToReactiveSeq(observable).mapReduce(reducer);
     }
 
     @Override
     public <R> R mapReduce(Function<? super T, ? extends R> mapper, Monoid<R> reducer) {
-        return Observables.reactiveSeq(observable).mapReduce(mapper,reducer);
+        return Observables.connectToReactiveSeq(observable).mapReduce(mapper,reducer);
     }
 
     @Override
     public T reduce(Monoid<T> reducer) {
-        return Observables.reactiveSeq(observable).reduce(reducer);
+        return Observables.connectToReactiveSeq(observable).reduce(reducer);
     }
 
     @Override
     public Optional<T> reduce(BinaryOperator<T> accumulator) {
-        return Observables.reactiveSeq(observable).reduce(accumulator);
+        return Observables.connectToReactiveSeq(observable).reduce(accumulator);
     }
 
     @Override
     public T reduce(T identity, BinaryOperator<T> accumulator) {
-        return Observables.reactiveSeq(observable).reduce(identity,accumulator);
+        return Observables.connectToReactiveSeq(observable).reduce(identity,accumulator);
     }
 
     @Override
     public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner) {
-        return Observables.reactiveSeq(observable).reduce(identity, accumulator, combiner);
+        return Observables.connectToReactiveSeq(observable).reduce(identity, accumulator, combiner);
     }
 
     @Override
     public ListX<T> reduce(Stream<? extends Monoid<T>> reducers) {
-        return Observables.reactiveSeq(observable).reduce(reducers);
+        return Observables.connectToReactiveSeq(observable).reduce(reducers);
     }
 
     @Override
     public ListX<T> reduce(Iterable<? extends Monoid<T>> reducers) {
-        return Observables.reactiveSeq(observable).reduce(reducers);
+        return Observables.connectToReactiveSeq(observable).reduce(reducers);
     }
 
     @Override
     public T foldRight(Monoid<T> reducer) {
-        return Observables.reactiveSeq(observable).foldRight(reducer);
+        return Observables.connectToReactiveSeq(observable).foldRight(reducer);
     }
 
     @Override
     public T foldRight(T identity, BinaryOperator<T> accumulator) {
-        return Observables.reactiveSeq(observable).foldRight(identity,accumulator);
+        return Observables.connectToReactiveSeq(observable).foldRight(identity,accumulator);
     }
 
     @Override
     public <T1> T1 foldRightMapToType(Reducer<T1> reducer) {
-        return Observables.reactiveSeq(observable).foldRightMapToType(reducer);
+        return Observables.connectToReactiveSeq(observable).foldRightMapToType(reducer);
     }
 
     @Override
     public ReactiveSeq<T> stream() {
-        return Observables.reactiveSeq(observable);
+        return Observables.connectToReactiveSeq(observable);
     }
 
     @Override
@@ -443,12 +443,12 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public boolean startsWithIterable(Iterable<T> iterable) {
-        return Observables.reactiveSeq(observable).startsWithIterable(iterable);
+        return Observables.connectToReactiveSeq(observable).startsWithIterable(iterable);
     }
 
     @Override
     public boolean startsWith(Stream<T> stream) {
-        return Observables.reactiveSeq(observable).startsWith(stream);
+        return Observables.connectToReactiveSeq(observable).startsWith(stream);
     }
 
     @Override
@@ -468,17 +468,17 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper) {
-        return Observables.reactiveSeq(observable).flatMapToInt(mapper);
+        return Observables.connectToReactiveSeq(observable).flatMapToInt(mapper);
     }
 
     @Override
     public LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper) {
-        return Observables.reactiveSeq(observable).flatMapToLong(mapper);
+        return Observables.connectToReactiveSeq(observable).flatMapToLong(mapper);
     }
 
     @Override
     public DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper) {
-        return Observables.reactiveSeq(observable).flatMapToDouble(mapper);
+        return Observables.connectToReactiveSeq(observable).flatMapToDouble(mapper);
     }
 
     @Override
@@ -524,12 +524,12 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return Observables.reactiveSeq(observable).iterator();
+        return Observables.connectToReactiveSeq(observable).iterator();
     }
 
     @Override
     public Spliterator<T> spliterator() {
-        return Observables.reactiveSeq(observable).spliterator();
+        return Observables.connectToReactiveSeq(observable).spliterator();
     }
 
     @Override
@@ -549,7 +549,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> reverse() {
-        return observable(Observables.reactiveSeq(observable).reverse());
+        return observable(Observables.connectToReactiveSeq(observable).reverse());
     }
 
     @Override
@@ -564,37 +564,37 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> prependS(Stream<? extends T> stream) {
-        return observable(Observables.reactiveSeq(observable).prependS(stream));
+        return observable(Observables.connectToReactiveSeq(observable).prependS(stream));
     }
 
     @Override
     public ReactiveSeq<T> append(T... values) {
-        return observable(Observables.reactiveSeq(observable).append(values));
+        return observable(Observables.connectToReactiveSeq(observable).append(values));
     }
 
     @Override
     public ReactiveSeq<T> append(T value) {
-        return observable(Observables.reactiveSeq(observable).append(value));
+        return observable(Observables.connectToReactiveSeq(observable).append(value));
     }
 
     @Override
     public ReactiveSeq<T> prepend(T value) {
-        return observable(Observables.reactiveSeq(observable).prepend(value));
+        return observable(Observables.connectToReactiveSeq(observable).prepend(value));
     }
 
     @Override
     public ReactiveSeq<T> prepend(T... values) {
-        return observable(Observables.reactiveSeq(observable).prepend(values));
+        return observable(Observables.connectToReactiveSeq(observable).prepend(values));
     }
 
     @Override
     public boolean endsWithIterable(Iterable<T> iterable) {
-        return Observables.reactiveSeq(observable).endsWithIterable(iterable);
+        return Observables.connectToReactiveSeq(observable).endsWithIterable(iterable);
     }
 
     @Override
     public boolean endsWith(Stream<T> stream) {
-        return Observables.reactiveSeq(observable).endsWith(stream);
+        return Observables.connectToReactiveSeq(observable).endsWith(stream);
     }
 
     @Override
@@ -624,17 +624,17 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> onEmptySwitch(Supplier<? extends Stream<T>> switchTo) {
-        return observable(Observables.reactiveSeq(observable).onEmptySwitch(switchTo));
+        return observable(Observables.connectToReactiveSeq(observable).onEmptySwitch(switchTo));
     }
 
     @Override
     public ReactiveSeq<T> onEmptyGet(Supplier<? extends T> supplier) {
-        return observable(Observables.reactiveSeq(observable).onEmptyGet(supplier));
+        return observable(Observables.connectToReactiveSeq(observable).onEmptyGet(supplier));
     }
 
     @Override
     public <X extends Throwable> ReactiveSeq<T> onEmptyThrow(Supplier<? extends X> supplier) {
-        return observable(Observables.reactiveSeq(observable).onEmptyThrow(supplier));
+        return observable(Observables.connectToReactiveSeq(observable).onEmptyThrow(supplier));
     }
 
     @Override
@@ -644,57 +644,57 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> xPer(int x, long time, TimeUnit t) {
-        return observable(Observables.reactiveSeq(observable).xPer(x,time,t));
+        return observable(Observables.connectToReactiveSeq(observable).xPer(x,time,t));
     }
 
     @Override
     public ReactiveSeq<T> onePer(long time, TimeUnit t) {
-        return observable(Observables.reactiveSeq(observable).onePer(time,t));
+        return observable(Observables.connectToReactiveSeq(observable).onePer(time,t));
     }
 
     @Override
     public ReactiveSeq<T> debounce(long time, TimeUnit t) {
-        return observable(Observables.reactiveSeq(observable).debounce(time,t));
+        return observable(Observables.connectToReactiveSeq(observable).debounce(time,t));
     }
 
     @Override
     public ReactiveSeq<T> fixedDelay(long l, TimeUnit unit) {
-        return observable(Observables.reactiveSeq(observable).fixedDelay(l,unit));
+        return observable(Observables.connectToReactiveSeq(observable).fixedDelay(l,unit));
     }
 
     @Override
     public ReactiveSeq<T> jitter(long maxJitterPeriodInNanos) {
-        return observable(Observables.reactiveSeq(observable).jitter(maxJitterPeriodInNanos));
+        return observable(Observables.connectToReactiveSeq(observable).jitter(maxJitterPeriodInNanos));
     }
 
     @Override
     public ReactiveSeq<T> recover(Function<? super Throwable, ? extends T> fn) {
-        return observable(Observables.reactiveSeq(observable).recover(fn));
+        return observable(Observables.connectToReactiveSeq(observable).recover(fn));
     }
 
     @Override
     public <EX extends Throwable> ReactiveSeq<T> recover(Class<EX> exceptionClass, Function<? super EX, ? extends T> fn) {
-        return observable(Observables.reactiveSeq(observable).recover(exceptionClass,fn));
+        return observable(Observables.connectToReactiveSeq(observable).recover(exceptionClass,fn));
     }
 
     @Override
     public long count() {
-        return Observables.reactiveSeq(observable).count();
+        return Observables.connectToReactiveSeq(observable).count();
     }
 
     @Override
     public ReactiveSeq<T> appendS(Stream<? extends T> other) {
-        return observable(Observables.reactiveSeq(observable).appendS(other));
+        return observable(Observables.connectToReactiveSeq(observable).appendS(other));
     }
 
     @Override
     public ReactiveSeq<T> append(Iterable<? extends T> other) {
-        return  observable(Observables.reactiveSeq(observable).append(other));
+        return  observable(Observables.connectToReactiveSeq(observable).append(other));
     }
 
     @Override
     public ReactiveSeq<T> prepend(Iterable<? extends T> other) {
-        return observable(Observables.reactiveSeq(observable).prepend(other));
+        return observable(Observables.connectToReactiveSeq(observable).prepend(other));
     }
 
     @Override
@@ -704,51 +704,51 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> skipWhileClosed(Predicate<? super T> predicate) {
-        return observable(Observables.reactiveSeq(observable).skipWhileClosed(predicate));
+        return observable(Observables.connectToReactiveSeq(observable).skipWhileClosed(predicate));
     }
 
 
     @Override
     public String format() {
-        return Observables.reactiveSeq(observable).format();
+        return Observables.connectToReactiveSeq(observable).format();
     }
 
     @Override
     public ReactiveSeq<T> changes() {
-        return observable(Observables.reactiveSeq(observable).changes());
+        return observable(Observables.connectToReactiveSeq(observable).changes());
     }
 
 
 
     @Override
     public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer) {
-        return Observables.reactiveSeq(observable).forEachSubscribe(consumer);
+        return Observables.connectToReactiveSeq(observable).forEachSubscribe(consumer);
     }
 
     @Override
     public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer, Consumer<? super Throwable> consumerError) {
-        return Observables.reactiveSeq(observable).forEachSubscribe(consumer, consumerError);
+        return Observables.connectToReactiveSeq(observable).forEachSubscribe(consumer, consumerError);
     }
 
     @Override
     public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer, Consumer<? super Throwable> consumerError, Runnable onComplete) {
-        return Observables.reactiveSeq(observable).forEachSubscribe(consumer, consumerError,onComplete);
+        return Observables.connectToReactiveSeq(observable).forEachSubscribe(consumer, consumerError,onComplete);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
 
-        return Observables.reactiveSeq(observable).collect(supplier,accumulator,combiner);
+        return Observables.connectToReactiveSeq(observable).collect(supplier,accumulator,combiner);
     }
 
     @Override
     public <R, A> ReactiveSeq<R> collectStream(Collector<? super T, A, R> collector) {
-        return observable(Observables.reactiveSeq(observable).collectStream(collector));
+        return observable(Observables.connectToReactiveSeq(observable).collectStream(collector));
     }
 
     @Override
     public <R, A> R collect(Collector<? super T, A, R> collector) {
-        return Observables.reactiveSeq(observable).collect((Collector<T,A,R>)collector);
+        return Observables.connectToReactiveSeq(observable).collect((Collector<T,A,R>)collector);
     }
     
 
@@ -764,16 +764,21 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public Optional<T> singleOptional() {
-        return Observables.reactiveSeq(observable).singleOptional();
+        return Observables.connectToReactiveSeq(observable).singleOptional();
     }
 
     @Override
     public ListX<ReactiveSeq<T>> multicast(int num) {
-        return Observables.reactiveSeq(observable).multicast(num).map(s->observable(s));
+        return Observables.connectToReactiveSeq(observable).multicast(num).map(s->observable(s));
     }
 
     @Override
     public void subscribe(Subscriber<? super T> s) {
         Observables.publisher(observable).subscribe(s);
+    }
+
+    public <R> R visit(Function<? super ReactiveSeq<T>,? extends R> sync,Function<? super ReactiveSeq<T>,? extends R> reactiveStreams,
+                       Function<? super ReactiveSeq<T>,? extends R> asyncNoBackPressure){
+        return asyncNoBackPressure.apply(this);
     }
 }

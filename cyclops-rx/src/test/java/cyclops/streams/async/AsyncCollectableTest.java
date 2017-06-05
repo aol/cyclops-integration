@@ -1,0 +1,27 @@
+package cyclops.streams.async;
+
+
+import cyclops.companion.rx.Observables;
+import cyclops.stream.ReactiveSeq;
+import cyclops.stream.Spouts;
+import org.jooq.lambda.Collectable;
+
+public class AsyncCollectableTest extends CollectableTest {
+
+
+    public <T> Collectable<T> of(T... values){
+
+        ReactiveSeq<T> seq = Spouts.<T>async(s->{
+            Thread t = new Thread(()-> {
+                for (T next : values) {
+                    s.onNext(next);
+                }
+                s.onComplete();
+            });
+            t.start();
+        });
+
+        return Observables.reactiveSeq(Observables.observableFrom(seq)).collectors();
+    }
+
+}
