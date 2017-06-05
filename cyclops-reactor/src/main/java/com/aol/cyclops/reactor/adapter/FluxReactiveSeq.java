@@ -802,6 +802,11 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
+    public ListX<ReactiveSeq<T>> multicast(int num) {
+        return Spouts.from(flux).multicast(num).map(s->flux(s));
+    }
+
+    @Override
     public void subscribe(Subscriber<? super T> s) {
         flux.subscribe(s);
     }

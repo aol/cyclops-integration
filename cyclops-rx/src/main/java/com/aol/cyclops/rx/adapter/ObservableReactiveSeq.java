@@ -15,6 +15,7 @@ import cyclops.monads.AnyM;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.reactiveSeq;
 import cyclops.stream.ReactiveSeq;
+import cyclops.stream.Spouts;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Wither;
@@ -47,6 +48,8 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
         if(observable instanceof ObservableReactiveSeq){
             return  (ObservableReactiveSeq)observable;
         }
+        //should create non-backpressure aware push streams where appriopriate
+        //this is just doing iteration atm
         return new ObservableReactiveSeq<>(Observable.from(observable));
     }
 
@@ -764,6 +767,11 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     @Override
     public Optional<T> singleOptional() {
         return Observables.reactiveStreamX(observable).singleOptional();
+    }
+
+    @Override
+    public ListX<ReactiveSeq<T>> multicast(int num) {
+        return Observables.reactiveSeq(observable).multicast(num).map(s->observable(s));
     }
 
     @Override
