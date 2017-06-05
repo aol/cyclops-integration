@@ -254,9 +254,17 @@ public class Observables {
     public static <T> ReactiveSeq<T> just(final T value) {
         return reactiveSeq(Observable.just(value));
     }
+    @SafeVarargs
     public static <T> ReactiveSeq<T> just(final T... values) {
         T[] array = values;
         return reactiveSeq(Observable.from(array));
+    }
+    public static <T> ReactiveSeq<T> of(final T value) {
+        return just(value);
+    }
+    @SafeVarargs
+    public static <T> ReactiveSeq<T> of(final T... values) {
+        return just(values);
     }
 
    

@@ -14,6 +14,8 @@ import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.reactiveSeq;
+import cyclops.monads.Witness.stream;
+import cyclops.monads.transformers.ListT;
 import cyclops.stream.ReactiveSeq;
 import cyclops.stream.Spouts;
 import lombok.AllArgsConstructor;
@@ -482,7 +484,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <R> ReactiveSeq<R> flatMapAnyM(Function<? super T, AnyM<Witness.stream, ? extends R>> fn) {
+    public <R> ReactiveSeq<R> flatMapAnyM(Function<? super T, AnyM<stream, ? extends R>> fn) {
         return observable(observable.flatMap(a->Observables.observable(fn.apply(a))));
     }
 
@@ -780,5 +782,34 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     public <R> R visit(Function<? super ReactiveSeq<T>,? extends R> sync,Function<? super ReactiveSeq<T>,? extends R> reactiveStreams,
                        Function<? super ReactiveSeq<T>,? extends R> asyncNoBackPressure){
         return asyncNoBackPressure.apply(this);
+    }
+    @Override
+    public ListT<stream, T> groupedT(int groupSize) {
+        return ListT.fromStream(grouped(groupSize));
+    }
+
+    @Override
+    public ListT<stream, T> slidingT(int windowSize, int increment) {
+        return ListT.fromStream(sliding(windowSize,increment));
+    }
+
+    @Override
+    public ListT<stream, T> slidingT(int windowSize) {
+        return ListT.fromStream(sliding(windowSize));
+    }
+
+    @Override
+    public ListT<stream, T> groupedUntilT(Predicate<? super T> predicate) {
+        return ListT.fromStream(groupedUntil(predicate));
+    }
+
+    @Override
+    public ListT<stream, T> groupedStatefullyUntilT(BiPredicate<ListX<? super T>, ? super T> predicate) {
+        return ListT.fromStream(groupedStatefullyWhile(predicate));
+    }
+
+    @Override
+    public ListT<stream, T> groupedWhileT(Predicate<? super T> predicate) {
+        return ListT.fromStream(groupedWhile(predicate));
     }
 }
