@@ -56,12 +56,14 @@ import rx.schedulers.Schedulers;
 @UtilityClass
 public class Observables {
 
-
+    public static <T> Observable<T> narrow(Observable<? extends T> observable) {
+        return (Observable<T>)observable;
+    }
     public static <T> ReactiveSeq<T> reactiveSeq(Observable<T> observable) {
         return new ObservableReactiveSeq<>(observable);
     }
     public static  <T> Observable<T> observableFrom(ReactiveSeq<T> stream){
-        if(stream instanceof ReactiveStreamX){ //switch to visit method here
+        if(stream instanceof ReactiveStreamX){ //TODO switch to visit method here
             ReactiveStreamX<T> seq = (ReactiveStreamX<T>)stream;
             if(seq.getType()== ReactiveStreamX.Type.NO_BACKPRESSURE){
                 return Observable.create(new Observable.OnSubscribe<T>() {

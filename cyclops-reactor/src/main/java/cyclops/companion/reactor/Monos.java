@@ -421,6 +421,10 @@ public class Monos {
 
     }
 
+    public static <R> Mono<R> narrow(Mono<? extends R> apply) {
+        return (Mono<R>)apply;
+    }
+
     /**
      * Companion class for creating Type Class instances for working with Monos
      * @author johnmcclean

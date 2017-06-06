@@ -1,6 +1,7 @@
 package cyclops.companion.reactor;
 
 import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
+import com.aol.cyclops2.internal.stream.ReactiveStreamX;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
@@ -35,6 +36,17 @@ import java.util.stream.Stream;
  */
 @UtilityClass
 public class Fluxs {
+    public static <T> Flux<T> narrow(Flux<? extends T> observable) {
+        return (Flux<T>)observable;
+    }
+    public static  <T> Flux<T> fluxFrom(ReactiveSeq<T> stream){
+        if(stream instanceof ReactiveStreamX){ //TODO switch to visit method here
+
+            return Flux.from(stream);
+        }
+        return Flux.fromStream(stream);
+
+    }
 
     public static <W extends WitnessType<W>,T> StreamT<W,T> fluxify(StreamT<W,T> nested){
         AnyM<W, Stream<T>> anyM = nested.unwrap();
