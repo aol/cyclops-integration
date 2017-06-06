@@ -1,5 +1,7 @@
 package com.aol.cyclops.rx.adapter;
 
+import com.aol.cyclops2.internal.stream.ReactiveStreamX;
+import com.aol.cyclops2.internal.stream.StreamX;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import com.aol.cyclops2.types.stream.HeadAndTail;
 import com.aol.cyclops2.types.traversable.Traversable;
@@ -72,9 +74,17 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <U, R> ReactiveSeq<R> zipS(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+        if(other instanceof ReactiveStreamX){
+            if(((ReactiveStreamX)other).getType()== ReactiveStreamX.Type.SYNC){
+                return observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b)));
+            }
+        }else if(other instanceof ReactiveSeq){
+            return observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b)));
+        }
         if(other instanceof Publisher){
             return zipP((Publisher<U>)other,zipper);
         }
+
         return observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b)));
     }
 
@@ -151,9 +161,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <U> ReactiveSeq<Tuple2<T, U>> zipS(Stream<? extends U> other) {
-        if(other instanceof Publisher){
-            return zipP((Publisher<U>)other);
-        }
+
         return zipS(other,Tuple::tuple);
     }
 
@@ -465,7 +473,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <R> ReactiveSeq<R> flatMap(Function<? super T, ? extends Stream<? extends R>> fn) {
-        return observable(observable.flatMap(s->Observables.observable(ReactiveSeq.fromStream(fn.apply(s)))));
+        return observable(observable.flatMap(s->Observables.fromStream(fn.apply(s))));
     }
 
     @Override
@@ -495,17 +503,18 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <R> ReactiveSeq<R> flatMapP(int maxConcurrency, QueueFactory<R> factory, Function<? super T, ? extends Publisher<? extends R>> mapper) {
-        return observable(observable.flatMap(a->Observables.observable(mapper.apply(a))));
+
+        return observable(Observable.merge(observable.map(a->Observables.observable(mapper.apply(a))),maxConcurrency));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapP(Function<? super T, ? extends Publisher<? extends R>> fn) {
-        return observable(observable.flatMap(a->Observables.observable(fn.apply(a))));
+        return observable(Observable.merge(observable.map(a->Observables.observable(fn.apply(a)))));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapP(int maxConcurrency, Function<? super T, ? extends Publisher<? extends R>> fn) {
-        return observable(observable.flatMap(a->Observables.observable(fn.apply(a))));
+        return observable(Observable.merge(observable.map(a->Observables.observable(fn.apply(a))),maxConcurrency));
     }
 
     @Override
@@ -513,7 +522,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
         
         return this.<R>observable((Observable)observable.flatMap(a->fn.andThen(s->{
             ReactiveSeq<R> res = s instanceof ReactiveSeq ? (ReactiveSeq) s : (ReactiveSeq) ReactiveSeq.fromSpliterator(s.spliterator());
-           return Observables.observable(res);
+           return Observables.fromStream(res);
                 }
             
         ).apply(a)));

@@ -279,7 +279,7 @@ public  class AsyncReactiveStreamXTest {
 	public void cast(){
         AtomicReference<Throwable> error = new AtomicReference<>(null);
         AtomicBoolean complete=  new AtomicBoolean(false);
-		of(1,2,3).cast(String.class).forEach(System.out::println,e->error.set(e),()->complete.set(true));
+		of(1,2,3).cast(String.class).forEach(System.out::println,e->{error.set(e); complete.set(true);},()->complete.set(true));
 		while(!complete.get()){
             LockSupport.parkNanos(100l);
         }

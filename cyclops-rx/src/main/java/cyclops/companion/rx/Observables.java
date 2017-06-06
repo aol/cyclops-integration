@@ -70,13 +70,15 @@ public class Observables {
                         rxSubscriber.onStart();
                         stream.forEach(rxSubscriber::onNext,rxSubscriber::onError,rxSubscriber::onCompleted);
                     }
-                });
+                }).onBackpressureBuffer(Long.MAX_VALUE);
             }
         }
         return fromStream(stream);
 
     }
     public static  <T> Observable<T> fromStream(Stream<T> stream){
+        //TODO check the type using the forthcoming visit method on ReactiveSeq here to convert
+        //appropriately
         return Observable.from(ReactiveSeq.fromStream(stream));
     }
     public static <W extends WitnessType<W>,T> StreamT<W,T> fluxify(StreamT<W,T> nested){

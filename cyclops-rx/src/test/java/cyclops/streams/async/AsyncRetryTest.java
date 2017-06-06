@@ -96,7 +96,7 @@ public class AsyncRetryTest {
 					.recover(IOException.class,e->"hello")
 					.firstValue(),equalTo("hello"));
 	}
-	@Test(expected=IOException.class)
+	@Test(expected=Exception.class)
 	
 	public void recoverIOUnhandledThrown(){
 		assertThat(of(1,2,3,4)

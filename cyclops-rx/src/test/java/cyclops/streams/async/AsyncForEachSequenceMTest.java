@@ -66,7 +66,7 @@ public class AsyncForEachSequenceMTest {
         of(1, 2, 3, 4, 5, 6, 7, 8, 9)
                     .map(this::load)
                    .forEach(Long.MAX_VALUE,System.out::println,
-                aEx -> System.err.println(aEx + ":" + aEx.getMessage()), () -> {
+                aEx -> {System.err.println(aEx + ":" + aEx.getMessage()); times.incrementAndGet();}, () -> {
                        times.incrementAndGet();
                     System.out.println("Over");
                 });
@@ -113,7 +113,7 @@ public class AsyncForEachSequenceMTest {
 	public void forEachWithErrors2() throws InterruptedException {
 		error = null;
 		List<Integer> result = new ArrayList<>();
-		of(1,2,3,4,5,6)
+		of(1,2,3,4,5,6,7)
 				.map(this::errors)
 				.forEach(e->result.add(e), e->error=e);
 
@@ -121,7 +121,7 @@ public class AsyncForEachSequenceMTest {
 		assertNotNull(error);
 		System.out.println(result);
 		assertThat(result,hasItems(1,3,4,5,6));
-		assertThat(result,not(hasItems(2)));
+		assertThat(result,not(hasItems(7)));
 	}
 	
 	@Test
@@ -129,16 +129,16 @@ public class AsyncForEachSequenceMTest {
 		error = null;
 		 complete = false;
 		List<Integer> result = new ArrayList<>();
-		of(1,2,3,4,5,6)
+		of(1,2,3,4,5,6,7)
 				.map(this::errors)
 				.forEach(e->result.add(e), e->error=e,()->complete=true);
         Thread.sleep(100);
 		assertNotNull(error);
 		assertThat(result,hasItems(1,3,4,5,6));
-		assertThat(result,not(hasItems(2)));
+		assertThat(result,not(hasItems(7)));
 	}
 	public Integer errors(Integer ints){
-		if(ints ==2)
+		if(ints ==7)
 			throw new RuntimeException();
 		return ints;
 	}
@@ -182,7 +182,7 @@ public class AsyncForEachSequenceMTest {
 		
 		Subscription s = of(()->1,()->2,()->3,(Supplier<Integer>)()->{ throw new RuntimeException();}).map(Supplier::get)
 						.forEach( 2, i->list.add(i),
-								e->error=e,()->complete=true);
+                                e->{error=e; complete=true;},()->complete=true);
 
 		while(!complete){
 
@@ -224,7 +224,7 @@ public class AsyncForEachSequenceMTest {
 		assertThat(error,nullValue());
 		of(()->1,()->2,()->3,(Supplier<Integer>)()->{ throw new RuntimeException();})
 				.map(Supplier::get)
-				 .forEach(i->list.add(i), e->error=e,()->complete=true);
+				 .forEach(i->list.add(i), e->{error=e; complete=true;},()->complete=true);
 		
 		while(!complete){
             LockSupport.parkNanos(0l);

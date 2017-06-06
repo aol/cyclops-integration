@@ -508,9 +508,9 @@ public class BaseSequentialTest {
     @Test
     public void flatMapStream() {
         for (int i = 0; i < ITERATIONS; i++) {
-            assertThat(of(1, 2, 3, null).flatMap(Stream::of)
+            assertThat(of(1, 2, 3).flatMap(Stream::of)
                             .collect(Collectors.toList()),
-                    Matchers.equalTo(Arrays.asList(1, 2, 3, null)));
+                    Matchers.equalTo(Arrays.asList(1, 2, 3)));
         }
     }
 
