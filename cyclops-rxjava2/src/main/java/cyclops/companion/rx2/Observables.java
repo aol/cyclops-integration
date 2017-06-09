@@ -1,19 +1,14 @@
-package cyclops.companion.rx;
+package cyclops.companion.rx2;
 
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.aol.cyclops.rx.adapter.ObservableReactiveSeq;
-import com.aol.cyclops2.internal.stream.ReactiveStreamX;
-import com.aol.cyclops2.types.reactive.AsyncSubscriber;
-import cyclops.monads.RxWitness;
-import cyclops.monads.RxWitness.obsvervable;
-import com.aol.cyclops.rx.hkt.ObservableKind;
+import com.aol.cyclops.rx2.adapter.ObservableReactiveSeq;
+import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.obsvervable;
+import com.aol.cyclops.rx2.hkt.ObservableKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
@@ -31,22 +26,12 @@ import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import io.reactivex.*;
+import io.reactivex.schedulers.Schedulers;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
-import rx.*;
-import rx.Observable;
-import rx.Observer;
-import rx.annotations.Beta;
-import rx.annotations.Experimental;
-import rx.exceptions.Exceptions;
-import rx.functions.*;
-import rx.internal.operators.*;
-import rx.internal.util.RxRingBuffer;
-import rx.internal.util.ScalarSynchronousObservable;
-import rx.internal.util.UtilityFunctions;
-import rx.observables.AsyncOnSubscribe;
-import rx.observables.SyncOnSubscribe;
-import rx.schedulers.Schedulers;
+import org.reactivestreams.Subscriber;
+
 
 /**
  * Companion class for working with RxJava Observable types
@@ -61,7 +46,7 @@ public class Observables {
         return anyM.map(s->fromStream(s));
     }
     public static <T> Observable<T> raw(AnyM<obsvervable,T> anyM){
-        return RxWitness.observable(anyM);
+        return Rx2Witness.observable(anyM);
     }
     public static <T> Observable<T> narrow(Observable<? extends T> observable) {
         return (Observable<T>)observable;
@@ -72,13 +57,14 @@ public class Observables {
     public static  <T> Observable<T> observableFrom(ReactiveSeq<T> stream){
         return stream.visit(sync->fromStream(stream),
                 rs->observable(stream),
-                async->Observable.create(new Observable.OnSubscribe<T>() {
-            @Override
-            public void call(final rx.Subscriber<? super T> rxSubscriber) {
-                rxSubscriber.onStart();
-                stream.forEach(rxSubscriber::onNext,rxSubscriber::onError,rxSubscriber::onCompleted);
-            }
-        }).onBackpressureBuffer(Long.MAX_VALUE));
+                async->Observable.create(new ObservableOnSubscribe<T>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<T> rxSubscriber) throws Exception {
+
+                        stream.forEach(rxSubscriber::onNext,rxSubscriber::onError,rxSubscriber::onComplete);
+                    }
+
+        });
 
 
     }
@@ -86,18 +72,17 @@ public class Observables {
 
         if(s instanceof  ReactiveSeq) {
             ReactiveSeq<T> stream = (ReactiveSeq<T>)s;
-
-            return stream.visit(sync -> Observable.from(stream),
+            return stream.visit(sync -> Observable.fromIterable(stream),
                     rs -> observable(stream),
-                    async -> Observable.create(new Observable.OnSubscribe<T>() {
+                    async -> Observable.create(new ObservableOnSubscribe<T>() {
                         @Override
-                        public void call(final rx.Subscriber<? super T> rxSubscriber) {
-                            rxSubscriber.onStart();
-                            stream.forEach(rxSubscriber::onNext, rxSubscriber::onError, rxSubscriber::onCompleted);
+                        public void subscribe(ObservableEmitter<T> rxSubscriber) throws Exception {
+
+                            stream.forEach(rxSubscriber::onNext,rxSubscriber::onError,rxSubscriber::onComplete);
                         }
-                    }).onBackpressureBuffer(Long.MAX_VALUE));
+                    });
         }
-        return Observable.from(ReactiveSeq.fromStream(s));
+        return Observable.fromIterable(ReactiveSeq.fromStream(s));
     }
     public static <W extends WitnessType<W>,T> StreamT<W,T> observablify(StreamT<W,T> nested){
         AnyM<W, Stream<T>> anyM = nested.unwrap();
@@ -148,7 +133,7 @@ public class Observables {
      * @return reactive-streams Publisher
      */
     public static <T> Publisher<T> publisher(Observable<T> observable) {
-        return RxReactiveStreams.toPublisher(observable);
+        return observable.toFlowable(BackpressureStrategy.BUFFER);
     }
 
     /**
@@ -176,7 +161,7 @@ public class Observables {
      * @return Observable
      */
     public static <T> Observable<T> observable(Publisher<T> publisher) {
-        return RxReactiveStreams.toObservable(publisher);
+        return Flowable.fromPublisher(publisher).toObservable();
     }
 
 
@@ -238,11 +223,12 @@ public class Observables {
 
    
     public static <T> ReactiveSeq<T> from(Iterable<? extends T> iterable) {
-        return reactiveSeq(Observable.from(iterable));
+        return reactiveSeq(Observable.fromIterable(iterable));
     }
 
     
     public static <T> ReactiveSeq<T> from(T... params) {
+
         T[] array = params;
         int n = array.length;
         if (n == 0) {
@@ -251,7 +237,7 @@ public class Observables {
         if (n == 1) {
             return just(array[0]);
         }
-        return create(new OnSubscribeFromArray<T>(array));
+        return create(Observable.<T>fromArray(params));
     }
 
    
@@ -281,7 +267,7 @@ public class Observables {
     @SafeVarargs
     public static <T> ReactiveSeq<T> just(final T... values) {
         T[] array = values;
-        return reactiveSeq(Observable.from(array));
+        return reactiveSeq(Observable.fromArray(array));
     }
     public static <T> ReactiveSeq<T> of(final T value) {
         return just(value);
@@ -336,10 +322,6 @@ public class Observables {
        return reactiveSeq(Observable.range(start,count));
     }
 
-    
-    public static ReactiveSeq<Integer> range(int start, int count, Scheduler scheduler) {
-        return reactiveSeq(Observable.range(start,count,scheduler));
-    }
 
    
     public static <T> ReactiveSeq<T> switchOnNext(Observable<? extends Observable<? extends T>> sequenceOfSequences) {
@@ -363,7 +345,7 @@ public class Observables {
 
  
     public static ReactiveSeq<Long> timer(long delay, TimeUnit unit, Scheduler scheduler) {
-        return create(new OnSubscribeTimerOnce(delay, unit, scheduler));
+        return reactiveSeq(Observable.timer(delay,unit,scheduler));
     }
 
     

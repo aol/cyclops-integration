@@ -157,7 +157,7 @@ String type = seq.visit(sync->"synchronous",rs->"reactive-streams",async->"pure 
 Use RxJava to extend cyclops-react's array of operations
 
 ```java
-import static cyclops.streams.RxOperators.observable;
+import static cyclops.streams.Rx2Operators.observable;
 
 ReactiveSeq<List<Integer>> seq = Observables.of(1,2,3)
                                             .map(i->i+1)
@@ -167,7 +167,7 @@ ReactiveSeq<List<Integer>> seq = Observables.of(1,2,3)
 Use custom Rx Operators
 
 ```java
-import static cyclops.streams.RxOperators.observable;
+import static cyclops.streams.Rx2Operators.observable;
 
 ReactiveSeq<List<Integer>> seq = Observables.of(1,2,3)
                                             .to(lift(new Observable.Operator<Integer,Integer>(){

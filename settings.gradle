@@ -7,3 +7,5 @@ include ':cyclops-rx'
 include ':cyclops-dexx'
 include ':cyclops-scala'
 include ':cyclops-clojure'
+include 'cyclops-rxjava2'
+
