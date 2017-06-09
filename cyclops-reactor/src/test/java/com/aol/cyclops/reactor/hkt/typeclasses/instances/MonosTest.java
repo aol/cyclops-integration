@@ -143,7 +143,7 @@ public class MonosTest {
         Maybe<Higher<MonoKind.µ, Integer>> res = traverse.traverseA(applicative, (Integer a)-> Maybe.just(a*2),mono)
                                                         .convert(Maybe::narrowK);
 
-       
+
 
        assertThat(res.map(h->h.convert(MonoKind::narrowK).block()),
                   equalTo(Maybe.just(Mono.just(2).block())));
