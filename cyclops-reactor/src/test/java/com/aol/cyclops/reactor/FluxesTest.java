@@ -22,6 +22,7 @@ import org.junit.Test;
 import reactor.core.publisher.Flux;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FluxesTest {
@@ -32,6 +33,7 @@ public class FluxesTest {
     }
     @Test
     public void fluxifyTest(){
+
         StreamT<optional,Integer> streamT = ReactiveSeq.of(1,2,3).liftM(optional.INSTANCE);
         StreamT<optional,Integer> fluxes = Fluxs.fluxify(streamT);
         AnyM<optional, Stream<Integer>> anyM = fluxes.unwrap();

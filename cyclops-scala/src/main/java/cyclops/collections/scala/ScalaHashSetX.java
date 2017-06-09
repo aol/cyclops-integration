@@ -11,6 +11,7 @@ import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
@@ -34,6 +35,9 @@ import scala.collection.mutable.Builder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ScalaHashSetX<T> extends AbstractSet<T>implements PSet<T>, HasScalaCollection<T>, Unwrapable {
 
+    public static <T> PersistentSetX<T> listX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
     @Override
     public <R> R unwrap() {
         return (R)set;
@@ -64,7 +68,7 @@ public class ScalaHashSetX<T> extends AbstractSet<T>implements PSet<T>, HasScala
      * @return LazyPSetX
      */
     public static <T> LazyPSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream), toPSet());
+        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream), toPSet(), Evaluation.LAZY);
     }
 
     /**
@@ -157,7 +161,7 @@ public class ScalaHashSetX<T> extends AbstractSet<T>implements PSet<T>, HasScala
     }
 
     private static <T> LazyPSetX<T> fromPSet(PSet<T> ts, Reducer<PSet<T>> pSetReducer) {
-        return new LazyPSetX<T>(ts,null,pSetReducer);
+        return new LazyPSetX<T>(ts,null,pSetReducer, Evaluation.LAZY);
     }
 
     public static <T> ScalaHashSetX<T> fromSet(HashSet<T> set) {

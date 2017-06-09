@@ -18,6 +18,7 @@ import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -38,7 +39,12 @@ import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, HasScalaCollection<T>, Unwrapable {
-
+    public static <T> OrderedSetX<T> treeSetX(ReactiveSeq<T> stream, Comparator<? super T> c){
+        return fromStream(stream,c);
+    }
+    public static <T extends Comparable<? super T>> OrderedSetX<T> treeSetX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
     @Override
     public <R> R unwrap() {
         return (R)set;
@@ -71,7 +77,13 @@ public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, 
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> fromStream(Stream<T> stream) {
         Reducer<POrderedSet<T>> reducer = ScalaTreeSetX.<T>toPOrderedSet(Comparator.naturalOrder());
         return new LazyPOrderedSetX<T>(null, ReactiveSeq.fromStream(stream),
-                                  reducer);
+                                  reducer,Evaluation.LAZY);
+    }
+
+    public static <T> LazyPOrderedSetX<T> fromStream(Stream<T> stream,Comparator<? super T> c) {
+        Reducer<POrderedSet<T>> reducer = ScalaTreeSetX.<T>toPOrderedSet((Comparator<T>)c);
+        return new LazyPOrderedSetX<T>(null, ReactiveSeq.fromStream(stream),
+                reducer, Evaluation.LAZY);
     }
 
     /**
@@ -176,7 +188,7 @@ public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, 
     }
 
     private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
-        return  new LazyPOrderedSetX<T>(ordered,null,reducer);
+        return  new LazyPOrderedSetX<T>(ordered,null,reducer, Evaluation.LAZY);
     }
 
     public static <T extends Comparable<? super T>> ScalaTreeSetX<T> emptyPOrderedSet() {

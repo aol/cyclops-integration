@@ -161,15 +161,15 @@ public class ExtensionOperatorsRSTest {
 	}
 	@Test
 	public void singleOptionalTest(){
-		assertThat(Fluxs.of(1).singleOptional().get(),equalTo(1));
+		assertThat(Fluxs.of(1).single().get(),equalTo(1));
 	}
 	@Test
 	public void singleOptionalEmpty(){
-		assertFalse(Fluxs.of().singleOptional().isPresent());
+		assertFalse(Fluxs.of().single().isPresent());
 	}
 	@Test
 	public void singleOptonal2(){
-		assertFalse(Fluxs.of(1,2).singleOptional().isPresent());
+		assertFalse(Fluxs.of(1,2).single().isPresent());
 	}
 	@Test
 	public void limitTime(){

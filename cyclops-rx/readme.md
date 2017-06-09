@@ -266,8 +266,8 @@ Monad Transformers allow us to manipulate nested types - for example we could us
 
 Via liftM in Observables
 ```java
-ListX<Observables<Integer>> nested;
-StreamT<list,Integer> listOfObservables = Observables.liftM(listX.anyM());
+ListX<Observables<Integer>> nested = ListX.of(Observable.just(10,20));
+StreamT<list,Integer> listOfObservables = Observables.liftM(nested.anyM());
 StreamT<list,Integer> doubled = listOfObservables.map(i->i*2);
 ```
 

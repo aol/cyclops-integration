@@ -4,6 +4,7 @@ package cyclops.collections.vavr;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -26,6 +27,10 @@ import java.util.stream.Stream;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VavrBitSetX extends AbstractSet<Integer>implements POrderedSet<Integer>, Unwrapable {
 
+    public static OrderedSetX<Integer> bitSetX(ReactiveSeq<Integer> stream){
+        return fromStream(stream);
+    }
+
     @Override
     public <R> R unwrap() {
         return (R)set;
@@ -40,7 +45,7 @@ public class VavrBitSetX extends AbstractSet<Integer>implements POrderedSet<Inte
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<Integer> fromStream(Stream<Integer> stream) {
         Reducer<POrderedSet<Integer>> reducer = VavrBitSetX.toPOrderedSet();
         return new LazyPOrderedSetX( null, ReactiveSeq.<Integer>fromStream(stream),
-                                  reducer
+                                  reducer, Evaluation.LAZY
                                    );
     }
 
@@ -156,7 +161,7 @@ public class VavrBitSetX extends AbstractSet<Integer>implements POrderedSet<Inte
 
 
     private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
-        return  new LazyPOrderedSetX<T>(ordered,null,reducer);
+        return  new LazyPOrderedSetX<T>(ordered,null,reducer, Evaluation.LAZY);
     }
     public static  LazyPOrderedSetX<Integer> POrderedSet(BitSet q) {
         return fromPOrderedSet(new VavrBitSetX(

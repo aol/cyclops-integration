@@ -37,6 +37,7 @@ public class ReactorOperators {
 
 
     public static <T,R> Function<Future<T>,Future<R>> mono(final Function<? super Mono<? super T>,? extends Mono<? extends R>> fn){
+
             return s-> Future.fromPublisher(Monos.narrow(fn.apply(Mono.from(s))));
     }
     public static <T,R> Function<Mono<T>,Mono<R>> future(final Function<? super Future<? super T>,? extends ReactiveSeq<? extends R>> fn){

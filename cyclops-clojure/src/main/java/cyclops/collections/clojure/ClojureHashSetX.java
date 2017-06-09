@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -28,6 +29,10 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClojureHashSetX<T> extends AbstractSet<T>implements PSet<T>,Unwrapable {
+    public static <T> PersistentSetX<T> listX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
+
     public static <T> PersistentSetX<T> copyFromCollection(CollectionX<? extends T> vec) {
         PersistentSetX<T> res = ClojureHashSetX.<T>empty()
                 .plusAll(vec);
@@ -45,7 +50,7 @@ public class ClojureHashSetX<T> extends AbstractSet<T>implements PSet<T>,Unwrapa
      */
     public static <T> LazyPSetX<T> fromStream(Stream<T> stream) {
         Reducer<PSet<T>> r = toPSet();
-        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream), r);
+        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream), r, Evaluation.LAZY);
     }
 
     /**
@@ -152,7 +157,7 @@ public class ClojureHashSetX<T> extends AbstractSet<T>implements PSet<T>,Unwrapa
                                   toPSet());
     }
     private static <T> LazyPSetX<T> fromPSet(PSet<T> ts, Reducer<PSet<T>> pSetReducer) {
-        return new LazyPSetX<T>(ts,null,pSetReducer);
+        return new LazyPSetX<T>(ts,null,pSetReducer, Evaluation.LAZY);
     }
 
 

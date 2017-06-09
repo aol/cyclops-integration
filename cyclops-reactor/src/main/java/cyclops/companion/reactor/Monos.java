@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
 import com.aol.cyclops2.react.Status;
 import cyclops.collections.mutable.ListX;
 import cyclops.control.Eval;
@@ -23,6 +24,10 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
+import cyclops.monads.transformers.reactor.MonoT;
+import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -45,6 +50,15 @@ import reactor.core.publisher.Mono;
  */
 @UtilityClass
 public class Monos {
+
+    public static <T> Mono<T> raw(AnyM<mono,T> anyM){
+        return ReactorWitness.mono(anyM);
+    }
+
+
+    public static <W extends WitnessType<W>,T> MonoT<W,T> liftM(AnyM<W,Mono<T>> nested){
+        return MonoT.of(nested);
+    }
 
     public static <T> Future[] futures(Mono<T>... futures){
 

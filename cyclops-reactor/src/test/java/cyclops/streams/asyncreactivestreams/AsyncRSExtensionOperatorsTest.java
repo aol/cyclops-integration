@@ -172,15 +172,15 @@ public class AsyncRSExtensionOperatorsTest {
     }
     @Test
     public void singleOptionalTest(){
-        assertThat(of(1).singleOptional().get(),equalTo(1));
+        assertThat(of(1).single().get(),equalTo(1));
     }
     @Test
     public void singleOptionalEmpty(){
-        assertFalse(of().singleOptional().isPresent());
+        assertFalse(of().single().isPresent());
     }
     @Test
     public void singleOptonal2(){
-        assertFalse(of(1,2).singleOptional().isPresent());
+        assertFalse(of(1,2).single().isPresent());
     }
     @Test
     public void limitTime(){

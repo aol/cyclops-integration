@@ -14,6 +14,7 @@ import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Reducer;
@@ -34,6 +35,9 @@ import scala.collection.immutable.VectorBuilder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ScalaVectorX<T> extends AbstractList<T> implements PVector<T>, HasScalaCollection<T>, Unwrapable {
 
+    public static <T> VectorX<T> vectorX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
     @Override
     public <R> R unwrap() {
         return (R)vector;
@@ -66,7 +70,7 @@ public class ScalaVectorX<T> extends AbstractList<T> implements PVector<T>, HasS
      * @return LazyPVectorX
      */
     public static <T> LazyPVectorX<T> fromStream(Stream<T> stream) {
-        return new LazyPVectorX<T>(null, ReactiveSeq.fromStream(stream),toPVector());
+        return new LazyPVectorX<T>(null, ReactiveSeq.fromStream(stream),toPVector(), Evaluation.LAZY);
     }
 
     /**
@@ -165,7 +169,7 @@ public class ScalaVectorX<T> extends AbstractList<T> implements PVector<T>, HasS
     }
 
     private static <T> LazyPVectorX<T> fromPVector(PVector<T> vec, Reducer<PVector<T>> pVectorReducer) {
-        return new LazyPVectorX<T>(vec,null, pVectorReducer);
+        return new LazyPVectorX<T>(vec,null, pVectorReducer,Evaluation.LAZY);
     }
 
     public static <T> ScalaVectorX<T> emptyPVector(){

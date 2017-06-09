@@ -10,6 +10,7 @@ import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -33,7 +34,9 @@ import scala.collection.mutable.Builder;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ScalaBitSetX extends AbstractSet<Integer>implements POrderedSet<Integer>, HasScalaCollection, Unwrapable {
-
+    public static OrderedSetX<Integer> bitSetX(ReactiveSeq<Integer> stream){
+        return fromStream(stream);
+    }
     @Override
     public <R> R unwrap() {
         return (R)set;
@@ -48,8 +51,8 @@ public class ScalaBitSetX extends AbstractSet<Integer>implements POrderedSet<Int
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<Integer> fromStream(Stream<Integer> stream) {
         Reducer<POrderedSet<Integer>> reducer = ScalaBitSetX.toPOrderedSet();
         return new LazyPOrderedSetX( null, ReactiveSeq.<Integer>fromStream(stream),
-                                  reducer
-                                   );
+                                  reducer,
+                Evaluation.LAZY);
     }
 
     /**
@@ -167,7 +170,7 @@ public class ScalaBitSetX extends AbstractSet<Integer>implements POrderedSet<Int
 
 
     private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
-        return  new LazyPOrderedSetX<T>(ordered,null,reducer);
+        return  new LazyPOrderedSetX<T>(ordered,null,reducer,Evaluation.LAZY);
     }
     public static  LazyPOrderedSetX<Integer> POrderedSet(BitSet q) {
         return fromPOrderedSet(new ScalaBitSetX(

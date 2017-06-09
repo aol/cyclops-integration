@@ -36,6 +36,13 @@ import java.util.stream.Stream;
  */
 @UtilityClass
 public class Fluxs {
+
+    public static <T> Flux<T> raw(AnyM<flux,T> anyM){
+        return ReactorWitness.flux(anyM);
+    }
+    public static <T,W extends WitnessType<W>> AnyM<W,Flux<T>> fromStream(AnyM<W,Stream<T>> anyM){
+        return anyM.map(s->fluxFrom(ReactiveSeq.fromStream(s)));
+    }
     public static <T> Flux<T> narrow(Flux<? extends T> observable) {
         return (Flux<T>)observable;
     }
@@ -77,7 +84,7 @@ public class Fluxs {
         });
     }
 
-    public static <W extends WitnessType<W>,T> StreamT<W,T> liftT(AnyM<W,Flux<T>> nested){
+    public static <W extends WitnessType<W>,T> StreamT<W,T> liftM(AnyM<W,Flux<T>> nested){
         AnyM<W, ReactiveSeq<T>> monad = nested.map(s -> new FluxReactiveSeq<T>(s));
         return StreamT.of(monad);
     }
