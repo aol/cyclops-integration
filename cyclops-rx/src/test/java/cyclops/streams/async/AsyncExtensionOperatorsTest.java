@@ -192,15 +192,15 @@ public class AsyncExtensionOperatorsTest {
 	}
 	@Test
 	public void singleTest(){
-		assertThat(of(1).single(),equalTo(1));
+		assertThat(of(1).singleUnsafe(),equalTo(1));
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void singleEmpty(){
-		of().single();
+		of().singleUnsafe();
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void single2(){
-		of(1,2).single();
+		of(1,2).singleUnsafe();
 	}
 	@Test
 	public void singleOptionalTest(){
@@ -222,7 +222,7 @@ public class AsyncExtensionOperatorsTest {
 										.toList();
 		
 		
-		assertThat(result,equalTo(Arrays.asList(1,2,3)));
+		assertThat(result,hasItems(1,2,3));
 	}
 	@Test
 	public void limitTimeEmpty(){

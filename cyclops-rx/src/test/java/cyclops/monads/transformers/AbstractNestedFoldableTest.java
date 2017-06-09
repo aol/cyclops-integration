@@ -41,39 +41,39 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
     @Test
     public void visitPresent() {
 
-        assertThat(of(1,2,3,4).visit((a, b)->"world",()->"hello" ).single(),equalTo("world"));
+        assertThat(of(1,2,3,4).visit((a, b)->"world",()->"hello" ).singleUnsafe(),equalTo("world"));
     }
     @Test
     public void visitEmpty() {
         System.out.println(empty().visit((a, b)->"world",()->"hello" ));
-        assertThat(empty().visit((a, b)->"world",()->"hello" ).single(),equalTo("hello"));
+        assertThat(empty().visit((a, b)->"world",()->"hello" ).singleUnsafe(),equalTo("hello"));
     }
     @Test
     public void visitPresentHead() {
-        assertThat(of(1,2,3,4).visit((a, b)->a,()->-1 ).single(),equalTo(1));
+        assertThat(of(1,2,3,4).visit((a, b)->a,()->-1 ).singleUnsafe(),equalTo(1));
     }
     @Test
     public void visitPresentTail() {
-        assertThat(of(1,2,3,4).visit((a, b)->b.toList().size(),()->Arrays.asList().size()).single(),equalTo(3));
+        assertThat(of(1,2,3,4).visit((a, b)->b.toList().size(),()->Arrays.asList().size()).singleUnsafe(),equalTo(3));
     }
     @Test
     public void visitMaybe() {
-        assertThat(of(1,2,3,4).visit((a, b)->"world",()->"hello").single(),equalTo("world"));
+        assertThat(of(1,2,3,4).visit((a, b)->"world",()->"hello").singleUnsafe(),equalTo("world"));
     }
     @Test
     public void visitMaybeEmpty() {
-        assertThat(this.<Integer>empty().visit((a, b)->a,()->10).single(),equalTo(10));
+        assertThat(this.<Integer>empty().visit((a, b)->a,()->10).single().get(),equalTo(10));
     }
 
 
     @Test
     public void mapReduce() {
-        assertThat(of("hello","2","world","4").mapReduce(Reducers.toCountInt()).single(),equalTo(4));
+        assertThat(of("hello","2","world","4").mapReduce(Reducers.toCountInt()).singleUnsafe(),equalTo(4));
     }
 
     @Test
     public void testMapReduceFunctionOfQsuperTQextendsRMonoidOfR() {
-        assertThat(of("one","two","three","four").mapReduce(this::toInt, Reducers.toTotalInt()).single(),
+        assertThat(of("one","two","three","four").mapReduce(this::toInt, Reducers.toTotalInt()).singleUnsafe(),
                 equalTo(10));
     }
     int toInt(String s){
@@ -96,19 +96,19 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
 
     @Test
     public void reduceBinaryOperator() {
-        assertThat(of(100,200,300,400,500).reduce( (acc,next) -> acc+next).stream().single(),is(Optional.of(1500)));
+        assertThat(of(100,200,300,400,500).reduce( (acc,next) -> acc+next).stream().singleUnsafe(),is(Optional.of(1500)));
     }
 
     @Test
     public void reduceIdentity() {
-        assertThat(of(100,200,300,400,500).reduce( 0,(acc,next) -> acc+next).stream().single(),is(1500));
+        assertThat(of(100,200,300,400,500).reduce( 0,(acc,next) -> acc+next).stream().singleUnsafe(),is(1500));
     }
 
     @Test
     public void reduceCombiner() {
         assertThat(of(100,200,300,400,500).reduce( 0,
                 (acc, next) -> acc+next,
-                Integer::sum).single(),equalTo(1500));
+                Integer::sum).singleUnsafe(),equalTo(1500));
     }
 
     @Test
@@ -135,7 +135,7 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
 
     @Test
     public void foldRightIdentity() {
-        assertThat(of(100,200,300,400,500).foldRight( 0,(acc,next) -> acc+next).stream().single(),is(1500));
+        assertThat(of(100,200,300,400,500).foldRight( 0,(acc,next) -> acc+next).stream().singleUnsafe(),is(1500));
     }
 
     
@@ -296,28 +296,28 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
 
     @Test
     public void testFirstValue() {
-        assertThat(of(1,2,3).firstValue().single(),anyOf(equalTo(1),equalTo(2),equalTo(3)));
+        assertThat(of(1,2,3).firstValue().singleUnsafe(),anyOf(equalTo(1),equalTo(2),equalTo(3)));
     }
 
     @Test
     public void testSingle() {
-        assertThat(of(1).single().single(),equalTo(1));
+        assertThat(of(1).singleUnsafe().singleUnsafe(),equalTo(1));
     }
 
     @Test
     public void testSinglePredicateOfQsuperT() {
-        assertThat(of(1,11).single(i->i>10).single(),equalTo(11));
+        assertThat(of(1,11).single(i->i>10).singleUnsafe().get(),equalTo(11));
     }
 
     @Test
     public void testSingleOptional() {
         
-        assertThat(of(1,11).single().stream().toListX(),equalTo(ListX.of(Optional.empty())));
+        assertThat(of(1,11).single().stream().toListX(),equalTo(ListX.of(Maybe.none())));
     }
 
     @Test
     public void testGet() {
-        assertThat(of(1).get(0).stream().single(),equalTo(Optional.of(1)));
+        assertThat(of(1).get(0).stream().singleUnsafe(),equalTo(Maybe.of(1)));
     }
 
     @Test

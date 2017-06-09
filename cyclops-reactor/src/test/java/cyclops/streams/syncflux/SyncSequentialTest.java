@@ -44,6 +44,9 @@ public class SyncSequentialTest extends BaseSequentialTest {
         }
     }
 
+
+
+
     @Test
     public void testLimitUntilWithNulls() {
 
@@ -136,6 +139,19 @@ public class SyncSequentialTest extends BaseSequentialTest {
 
     @Test
     public void multicast(){
+        final ListX<ReactiveSeq<Integer>> t = of(1,2,3,4,5,6,7,8).multicast(2);
+
+//        t.v1.forEach(e->System.out.println("First " + e));
+        //       t.v2.printOut();
+
+
+        assertThat(t.get(0).limit(1).toList(),equalTo(ListX.of(1)));
+        System.out.println("Second!");
+        assertThat(t.get(1).limit(1).toList(),equalTo(ListX.of(1)));
+
+    }
+    @Test
+    public void duplicate(){
         final Tuple2<ReactiveSeq<Integer>, ReactiveSeq<Integer>> t = of(1,2,3,4,5,6,7,8).duplicate();
 
 //        t.v1.forEach(e->System.out.println("First " + e));

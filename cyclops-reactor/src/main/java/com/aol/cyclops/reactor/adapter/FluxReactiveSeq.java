@@ -1,6 +1,7 @@
 package com.aol.cyclops.reactor.adapter;
 
 import com.aol.cyclops2.internal.stream.ReactiveStreamX;
+import com.aol.cyclops2.internal.stream.spliterators.push.PublisherToOperator;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import com.aol.cyclops2.types.stream.HeadAndTail;
 import com.aol.cyclops2.types.traversable.FoldableTraversable;
@@ -9,6 +10,7 @@ import cyclops.async.Future;
 import cyclops.async.adapters.QueueFactory;
 import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.*;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Try;
@@ -32,7 +34,9 @@ import org.jooq.lambda.tuple.Tuple4;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSource;
 
 import java.time.Duration;
 import java.util.*;
@@ -799,11 +803,33 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
         });
         return maybe;
     }
+    /**
+    @Override
+   public <R> ReactiveSeq<R> fanOut(Function<? super ReactiveSeq<T>, ? extends ReactiveSeq<? extends R>> path1,
+                                      Function<? super ReactiveSeq<T>, ? extends ReactiveSeq<? extends R>> path2,
+                                      Function<? super ReactiveSeq<T>, ? extends ReactiveSeq<? extends R>> path3){
 
+        Flux<T> co = flux.doOnSubscribe(s -> System.out.println("subscribed to source")).publish().autoConnect(3);
+        ListX<ReactiveSeq<T>> list = multicast(3);
+        Publisher<R> pub2 = (Publisher<R>)path2.apply(list.get(1));
+        Publisher<R> pub3 = (Publisher<R>)path3.apply(list.get(2));
+        ReactiveSeq<R> seq = (ReactiveSeq<R>)path1.apply(list.get(0));
+        return  flux(Flux.merge(pub2,pub3,seq));
+
+
+
+    }
     @Override
     public ListX<ReactiveSeq<T>> multicast(int num) {
-        return Spouts.from(flux).multicast(num).map(s->flux(s));
+        ListX<ReactiveSeq<T>> result = ListX.empty();
+         for(int i=0;i<num;i++) {
+
+            result.add(flux(FluxSource.wrap()));
+        }
+
+        return result;
     }
+     **/
 
     @Override
     public void subscribe(Subscriber<? super T> s) {
@@ -845,6 +871,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
     public ListT<stream, T> groupedWhileT(Predicate<? super T> predicate) {
         return ListT.fromStream(groupedWhile(predicate));
     }
+
 
 
 }

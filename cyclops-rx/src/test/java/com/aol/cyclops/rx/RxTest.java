@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 public class RxTest {
     @Test
     public void observableTest(){
-        Observable.just(1,2).single().toBlocking().first();
+        Observable.just(1).single().toBlocking().first();
     }
     @Test
     public void asyncList(){

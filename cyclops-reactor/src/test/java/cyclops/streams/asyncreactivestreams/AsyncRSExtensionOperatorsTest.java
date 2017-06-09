@@ -160,15 +160,15 @@ public class AsyncRSExtensionOperatorsTest {
     }
     @Test
     public void singleTest(){
-        assertThat(of(1).single(),equalTo(1));
+        assertThat(of(1).singleUnsafe(),equalTo(1));
     }
     @Test(expected=NoSuchElementException.class)
     public void singleEmpty(){
-        of().single();
+        of().singleUnsafe();
     }
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected=NoSuchElementException.class)
     public void single2(){
-        of(1,2).single();
+        of(1,2).singleUnsafe();
     }
     @Test
     public void singleOptionalTest(){

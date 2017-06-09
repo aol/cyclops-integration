@@ -26,7 +26,7 @@ public class ExtensionOperatorsRSTest {
 
 	@Test
 	public void flatMapStreamFilterSimple(){
-		assertThat(Fluxs.of(1,null).flatMap(i-> ReactiveSeq.of(i).filter(Objects::nonNull))
+		assertThat(Fluxs.of(1,2).flatMap(i-> ReactiveSeq.of(i).filter(x->x<2))
 						.to(Streamable::fromStream).collect(Collectors.toList()),
 				Matchers.equalTo(Arrays.asList(1)));
 	}
@@ -149,15 +149,15 @@ public class ExtensionOperatorsRSTest {
 	}
 	@Test
 	public void singleTest(){
-		assertThat(Fluxs.of(1).single(),equalTo(1));
+		assertThat(Fluxs.of(1).singleUnsafe(),equalTo(1));
 	}
-	@Test(expected=UnsupportedOperationException.class)
+	@Test(expected=NoSuchElementException.class)
 	public void singleEmpty(){
-		Fluxs.of().single();
+		Fluxs.of().singleUnsafe();
 	}
-	@Test(expected=UnsupportedOperationException.class)
+	@Test(expected=NoSuchElementException.class)
 	public void single2(){
-		Fluxs.of(1,2).single();
+		Fluxs.of(1,2).singleUnsafe();
 	}
 	@Test
 	public void singleOptionalTest(){
@@ -393,11 +393,11 @@ public class ExtensionOperatorsRSTest {
 
 		
 
-		assertThat(Fluxs.of(1, "a", 2, "b", 3, null).ofType(Integer.class).toList(),containsInAnyOrder(1, 2, 3));
+		assertThat(Fluxs.of(1, "a", 2, "b", 3).ofType(Integer.class).toList(),containsInAnyOrder(1, 2, 3));
 
-		assertThat(Fluxs.of(1, "a", 2, "b", 3, null).ofType(Integer.class).toList(),not(containsInAnyOrder("a", "b",null)));
+		assertThat(Fluxs.of(1, "a", 2, "b", 3).ofType(Integer.class).toList(),not(containsInAnyOrder("a", "b",null)));
 
-		assertThat(Fluxs.of(1, "a", 2, "b", 3, null)
+		assertThat(Fluxs.of(1, "a", 2, "b", 3)
 
 				.ofType(Serializable.class).toList(),containsInAnyOrder(1, "a", 2, "b", 3));
 
@@ -418,12 +418,7 @@ public class ExtensionOperatorsRSTest {
 				  								.to(Streamable::fromStream).collect(Collectors.toList()),
 				  								equalTo(Arrays.asList(3,4,5)));
 	}
-	@Test
-	public void flatMapMaybe(){
-		assertThat(Fluxs.of(1,2,3,null).flatMapI(Maybe::ofNullable)
-			      										.to(Streamable::fromStream).collect(Collectors.toList()),
-			      										equalTo(Arrays.asList(1,2,3)));
-	}
+
 	@Test
 	public void testIntersperse() {
 		
