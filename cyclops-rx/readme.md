@@ -72,3 +72,11 @@ Completed? true
 ```
 
 # ReactiveSeq integration
+
+## Extension operators
+
+# AnyM monad abstraction
+
+# StreamT monad transformer
+
+# Higher Kinded Types and Type classes

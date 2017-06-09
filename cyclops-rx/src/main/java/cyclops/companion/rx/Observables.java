@@ -63,25 +63,33 @@ public class Observables {
         return new ObservableReactiveSeq<>(observable);
     }
     public static  <T> Observable<T> observableFrom(ReactiveSeq<T> stream){
-        if(stream instanceof ReactiveStreamX){ //TODO switch to visit method here
-            ReactiveStreamX<T> seq = (ReactiveStreamX<T>)stream;
-            if(seq.getType()== ReactiveStreamX.Type.NO_BACKPRESSURE){
-                return Observable.create(new Observable.OnSubscribe<T>() {
-                    @Override
-                    public void call(final rx.Subscriber<? super T> rxSubscriber) {
-                        rxSubscriber.onStart();
-                        stream.forEach(rxSubscriber::onNext,rxSubscriber::onError,rxSubscriber::onCompleted);
-                    }
-                }).onBackpressureBuffer(Long.MAX_VALUE);
+        return stream.visit(sync->fromStream(stream),
+                rs->observable(stream),
+                async->Observable.create(new Observable.OnSubscribe<T>() {
+            @Override
+            public void call(final rx.Subscriber<? super T> rxSubscriber) {
+                rxSubscriber.onStart();
+                stream.forEach(rxSubscriber::onNext,rxSubscriber::onError,rxSubscriber::onCompleted);
             }
-        }
-        return fromStream(stream);
+        }).onBackpressureBuffer(Long.MAX_VALUE));
+
 
     }
-    public static  <T> Observable<T> fromStream(Stream<T> stream){
-        //TODO check the type using the forthcoming visit method on ReactiveSeq here to convert
-        //appropriately
-        return Observable.from(ReactiveSeq.fromStream(stream));
+    public static  <T> Observable<T> fromStream(Stream<T> s){
+
+        if(s instanceof  ReactiveSeq) {
+            ReactiveSeq<T> stream = (ReactiveSeq<T>)s;
+            return stream.visit(sync -> Observable.from(stream),
+                    rs -> observable(stream),
+                    async -> Observable.create(new Observable.OnSubscribe<T>() {
+                        @Override
+                        public void call(final rx.Subscriber<? super T> rxSubscriber) {
+                            rxSubscriber.onStart();
+                            stream.forEach(rxSubscriber::onNext, rxSubscriber::onError, rxSubscriber::onCompleted);
+                        }
+                    }).onBackpressureBuffer(Long.MAX_VALUE));
+        }
+        return Observable.from(ReactiveSeq.fromStream(s));
     }
     public static <W extends WitnessType<W>,T> StreamT<W,T> fluxify(StreamT<W,T> nested){
         AnyM<W, Stream<T>> anyM = nested.unwrap();
@@ -142,7 +150,10 @@ public class Observables {
      */
     public static <T> ReactiveSeq<T> connectToReactiveSeq(Observable<T> observable) {
         return Spouts.async(s->{
-           observable.subscribe(s::onNext,s::onError,s::onComplete);
+           observable.subscribe(s::onNext,e->{
+               s.onError(e);
+               s.onComplete();
+           },s::onComplete);
 
         });
 

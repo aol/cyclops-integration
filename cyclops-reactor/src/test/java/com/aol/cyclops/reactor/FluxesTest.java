@@ -25,6 +25,11 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public class FluxesTest {
+
+    @Test
+    public void fluxTest(){
+        Flux.just(1,2).single().block();
+    }
     @Test
     public void fluxifyTest(){
         StreamT<optional,Integer> streamT = ReactiveSeq.of(1,2,3).liftM(optional.INSTANCE);

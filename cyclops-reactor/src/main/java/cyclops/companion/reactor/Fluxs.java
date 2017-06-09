@@ -40,11 +40,9 @@ public class Fluxs {
         return (Flux<T>)observable;
     }
     public static  <T> Flux<T> fluxFrom(ReactiveSeq<T> stream){
-        if(stream instanceof ReactiveStreamX){ //TODO switch to visit method here
 
-            return Flux.from(stream);
-        }
-        return Flux.fromStream(stream);
+        return stream.visit(sync->Flux.fromStream(stream),rs->Flux.from(stream),async->Flux.from(stream));
+
 
     }
 

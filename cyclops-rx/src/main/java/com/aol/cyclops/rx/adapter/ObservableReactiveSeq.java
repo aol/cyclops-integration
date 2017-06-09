@@ -74,12 +74,12 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <U, R> ReactiveSeq<R> zipS(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-        if(other instanceof ReactiveStreamX){
-            if(((ReactiveStreamX)other).getType()== ReactiveStreamX.Type.SYNC){
-                return observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b)));
-            }
-        }else if(other instanceof ReactiveSeq){
-            return observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b)));
+         if(other instanceof ReactiveSeq){
+            ReactiveSeq<U> o = (ReactiveSeq<U>)other;
+            return o.visit(sync->observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b))),
+                    rs->observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b))),
+                    async->observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b))));
+
         }
         if(other instanceof Publisher){
             return zipP((Publisher<U>)other,zipper);
@@ -502,12 +502,6 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <R> ReactiveSeq<R> flatMapP(int maxConcurrency, QueueFactory<R> factory, Function<? super T, ? extends Publisher<? extends R>> mapper) {
-
-        return observable(Observable.merge(observable.map(a->Observables.observable(mapper.apply(a))),maxConcurrency));
-    }
-
-    @Override
     public <R> ReactiveSeq<R> flatMapP(Function<? super T, ? extends Publisher<? extends R>> fn) {
         return observable(Observable.merge(observable.map(a->Observables.observable(fn.apply(a)))));
     }
@@ -764,18 +758,18 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     
 
     @Override
-    public T single() {
-        return singleOptional().get();
+    public T singleUnsafe() {
+        return single().get();
     }
 
     @Override
-    public T single(Predicate<? super T> predicate) {
+    public Maybe<T> single(Predicate<? super T> predicate) {
         return filter(predicate).single();
     }
 
     @Override
-    public Optional<T> singleOptional() {
-        return Observables.connectToReactiveSeq(observable).singleOptional();
+    public Maybe<T> single() {
+        return Observables.connectToReactiveSeq(observable).single();
     }
 
     @Override
@@ -787,7 +781,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     public void subscribe(Subscriber<? super T> s) {
         Observables.publisher(observable).subscribe(s);
     }
-
+    @Override
     public <R> R visit(Function<? super ReactiveSeq<T>,? extends R> sync,Function<? super ReactiveSeq<T>,? extends R> reactiveStreams,
                        Function<? super ReactiveSeq<T>,? extends R> asyncNoBackPressure){
         return asyncNoBackPressure.apply(this);

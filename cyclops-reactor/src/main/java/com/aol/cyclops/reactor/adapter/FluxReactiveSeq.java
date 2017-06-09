@@ -497,10 +497,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
         return flux(flux.flatMapIterable(fn));
     }
 
-    @Override
-    public <R> ReactiveSeq<R> flatMapP(int maxConcurrency, QueueFactory<R> factory, Function<? super T, ? extends Publisher<? extends R>> mapper) {
-        return flux(flux.flatMap(mapper,maxConcurrency));
-    }
+
 
     @Override
     public <R> ReactiveSeq<R> flatMapP(Function<? super T, ? extends Publisher<? extends R>> fn) {
@@ -759,17 +756,17 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
 
     @Override
-    public T single() {
-        return singleOptional().get();
+    public T singleUnsafe() {
+        return single().get();
     }
 
     @Override
-    public T single(Predicate<? super T> predicate) {
+    public Maybe<T> single(Predicate<? super T> predicate) {
         return filter(predicate).single();
     }
 
     @Override
-    public Optional<T> singleOptional() {
+    public Maybe<T> single() {
         Maybe.CompletableMaybe<T,T> maybe = Maybe.<T>maybe();
         flux.subscribe(new Subscriber<T>() {
             T value = null;
@@ -800,7 +797,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
                 maybe.complete(value);
             }
         });
-        return maybe.toOptional();
+        return maybe;
     }
 
     @Override
@@ -813,6 +810,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
         flux.subscribe(s);
     }
 
+    @Override
     public <R> R visit(Function<? super ReactiveSeq<T>,? extends R> sync,Function<? super ReactiveSeq<T>,? extends R> reactiveStreams,
                          Function<? super ReactiveSeq<T>,? extends R> asyncNoBackPressure){
         return reactiveStreams.apply(this);
@@ -847,4 +845,6 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
     public ListT<stream, T> groupedWhileT(Predicate<? super T> predicate) {
         return ListT.fromStream(groupedWhile(predicate));
     }
+
+
 }

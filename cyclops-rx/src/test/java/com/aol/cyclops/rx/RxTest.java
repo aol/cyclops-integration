@@ -11,7 +11,7 @@ import cyclops.stream.Spouts;
 import org.junit.Test;
 
 
-
+import reactor.core.publisher.Flux;
 import rx.Observable;
 
 import java.util.concurrent.Executors;
@@ -19,7 +19,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 public class RxTest {
-
+    @Test
+    public void observableTest(){
+        Observable.just(1,2).single().toBlocking().first();
+    }
     @Test
     public void asyncList(){
 
