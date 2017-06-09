@@ -30,7 +30,7 @@ cyclops-scala provides Java friendly bindings to the Scala collections API. We m
 
 
 |  Scala collection | cyclops-scala   |  JDK Interface  | Description  |
-|---|---|---|---|---|
+|---|---|---|---|
 | List   | ScalaListX   | List  | LinkedListX  : extended persistent linkedlist |
 |  Vector | ScalaVectorX  |  List   | VectorX : extended persistent ArrayList   |
 |  Queue | ScalaQueueX   | Queue  | PersistentQueueX : extended Persistent Queue  |
