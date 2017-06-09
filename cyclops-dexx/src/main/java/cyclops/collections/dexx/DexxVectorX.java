@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -27,6 +28,10 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DexxVectorX<T> extends AbstractList<T> implements PVector<T>, Unwrapable {
+
+    public static <T> VectorX<T> vectorX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
     @Override
     public <R> R unwrap() {
         return (R)vector;
@@ -45,7 +50,7 @@ public class DexxVectorX<T> extends AbstractList<T> implements PVector<T>, Unwra
      */
     public static <T> LazyPVectorX<T> fromStream(Stream<T> stream) {
         Reducer<PVector<T>> r = toPVector();
-        return new LazyPVectorX<T>(null, ReactiveSeq.fromStream(stream),r);
+        return new LazyPVectorX<T>(null, ReactiveSeq.fromStream(stream),r, Evaluation.LAZY);
     }
 
     /**
@@ -161,7 +166,7 @@ public class DexxVectorX<T> extends AbstractList<T> implements PVector<T>, Unwra
         return fromPVector(new DexxVectorX<T>(q), toPVector());
     }
     private static <T> LazyPVectorX<T> fromPVector(PVector<T> vec, Reducer<PVector<T>> pVectorReducer) {
-        return new LazyPVectorX<T>(vec,null, pVectorReducer);
+        return new LazyPVectorX<T>(vec,null, pVectorReducer,Evaluation.LAZY);
     }
     @SafeVarargs
     public static <T> LazyPVectorX<T> PVector(T... elements){

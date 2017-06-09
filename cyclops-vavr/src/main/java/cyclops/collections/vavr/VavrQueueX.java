@@ -12,7 +12,10 @@ import java.util.stream.Stream;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.PersistentQueueX;
+import cyclops.collections.immutable.VectorX;
+import cyclops.collections.mutable.QueueX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
@@ -26,7 +29,9 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VavrQueueX<T> extends AbstractQueue<T> implements PQueue<T>, Unwrapable {
-
+    public static <T> PersistentQueueX<T> queueX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
     @Override
     public <R> R unwrap() {
         return (R)this.list;
@@ -48,7 +53,7 @@ public class VavrQueueX<T> extends AbstractQueue<T> implements PQueue<T>, Unwrap
      * @return LazyPQueueX
      */
     public static <T> LazyPQueueX<T> fromStream(Stream<T> stream) {
-        return new LazyPQueueX<T>(null, ReactiveSeq.fromStream(stream),toPQueue());
+        return new LazyPQueueX<T>(null, ReactiveSeq.fromStream(stream),toPQueue(), Evaluation.LAZY);
     }
 
     /**
@@ -144,7 +149,7 @@ public class VavrQueueX<T> extends AbstractQueue<T> implements PQueue<T>, Unwrap
        
     }
     private static <T> LazyPQueueX<T> fromPQueue(PQueue<T> ts, Reducer<PQueue<T>> pQueueReducer) {
-        return new LazyPQueueX<T>(ts,null,pQueueReducer);
+        return new LazyPQueueX<T>(ts,null,pQueueReducer, Evaluation.LAZY);
     }
     public static <T> LazyPQueueX<T> singleton(T t){
         return  fromPQueue(new VavrQueueX<>(Queue.of(t)),toPQueue());

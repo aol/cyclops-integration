@@ -1,15 +1,19 @@
 package com.aol.cyclops.reactor.adapter;
 
 import cyclops.companion.reactor.Monos;
+import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.mono;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.async.Future;
 import cyclops.monads.AnyM;
+import cyclops.stream.ReactiveSeq;
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static cyclops.monads.ReactorWitness.mono;
 
 
 @AllArgsConstructor
@@ -67,6 +71,9 @@ public class MonoAdapter extends AbstractFunctionalAdapter<mono> {
         return Monos.anyM(Mono.just(o));
     }
 
-
+    @Override
+    public <T> ReactiveSeq<T> toStream(AnyM<mono, T> t) {
+        return ReactiveSeq.fromPublisher(mono(t));
+    }
 
 }

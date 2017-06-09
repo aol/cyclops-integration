@@ -1,18 +1,78 @@
 package com.aol.cyclops.rx;
 
+import static cyclops.collections.mutable.ListX.listX;
+import static cyclops.companion.rx.Observables.reactiveSeq;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.aol.cyclops.rx.adapter.ObservableReactiveSeq;
+import com.aol.cyclops2.types.anyM.AnyMSeq;
+import cyclops.monads.RxWitness.obsvervable;
+
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx.Observables;
+import cyclops.monads.RxWitness;
+import cyclops.stream.ReactiveSeq;
+import cyclops.stream.Spouts;
 import org.junit.Test;
 
 
-
+import reactor.core.publisher.Flux;
 import rx.Observable;
 
-public class RxTest {
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
+public class RxTest {
+    @Test
+    public void observableTest(){
+        Observable.just(1,2).single().toBlocking().first();
+    }
+    @Test
+    public void asyncList(){
+
+        AtomicBoolean complete = new AtomicBoolean(false);
+
+
+        Observable<Integer> async =  Observables.fromStream(Spouts.async(Stream.of(100,200,300), Executors.newFixedThreadPool(1)))
+                                                .doOnCompleted(()->complete.set(true));
+
+        ListX<Integer> asyncList = listX(reactiveSeq(async))
+                                        .map(i->i+1);
+
+        System.out.println("Blocked? " + complete.get());
+
+        System.out.println("First value is "  + asyncList.get(0));
+
+        System.out.println("Blocked? " + complete.get());
+
+
+
+
+    }
+
+    @Test
+    public void anyMAsync(){
+
+
+
+        AtomicBoolean complete = new AtomicBoolean(false);
+
+        ReactiveSeq<Integer> asyncSeq = Spouts.async(Stream.of(1, 2, 3), Executors.newFixedThreadPool(1));
+        Observable<Integer> observableAsync = Observables.observableFrom(asyncSeq);
+        AnyMSeq<obsvervable,Integer> monad = Observables.anyM(observableAsync);
+
+        monad.map(i->i*2)
+                .forEach(System.out::println,System.err::println,()->complete.set(true));
+
+        System.out.println("Blocked? " + complete.get());
+        while(!complete.get()){
+            Thread.yield();
+        }
+
+        Observable<Integer> converted = Observables.raw(monad);
+    }
     @Test
     public void observable() {
         assertThat(Observables.anyM(Observable.just(1, 2, 3))

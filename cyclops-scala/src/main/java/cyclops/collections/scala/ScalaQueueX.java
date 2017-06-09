@@ -11,6 +11,7 @@ import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.collections.mutable.QueueX;
@@ -33,6 +34,11 @@ import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ScalaQueueX<T> extends AbstractQueue<T> implements PQueue<T>, HasScalaCollection<T>,Unwrapable {
+
+    public static <T> PersistentQueueX<T> queueX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
+
     public LazyPQueueX<T> plusLoop(int max, IntFunction<T> value) {
         Queue<T> toUse = this.queue;
         final CanBuildFrom<Queue<?>, T, Queue<T>> builder = Queue.<T> canBuildFrom();
@@ -68,7 +74,7 @@ public class ScalaQueueX<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
      * @return LazyPQueueX
      */
     public static <T> LazyPQueueX<T> fromStream(Stream<T> stream) {
-        return new LazyPQueueX<T>(null,ReactiveSeq.fromStream(stream), toPQueue());
+        return new LazyPQueueX<T>(null,ReactiveSeq.fromStream(stream), toPQueue(), Evaluation.LAZY);
     }
 
     /**
@@ -166,7 +172,7 @@ public class ScalaQueueX<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
     }
 
     private static <T> LazyPQueueX<T> fromPQueue(PQueue<T> ts, Reducer<PQueue<T>> pQueueReducer) {
-        return new LazyPQueueX<T>(ts,null,pQueueReducer);
+        return new LazyPQueueX<T>(ts,null,pQueueReducer,Evaluation.LAZY);
     }
 
     public static <T> ScalaQueueX<T> emptyPQueue() {

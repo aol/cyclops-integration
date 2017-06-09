@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -32,6 +33,13 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClojureTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T> ,Unwrapable{
+
+    public static <T> OrderedSetX<T> treeSetX(ReactiveSeq<T> stream, Comparator<? super T> c){
+        return fromStream(stream,c);
+    }
+    public static <T extends Comparable<? super T>> OrderedSetX<T> treeSetX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
     @Override
     public <R> R unwrap() {
         return (R)set;
@@ -51,8 +59,14 @@ public class ClojureTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T> 
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> fromStream(Stream<T> stream) {
         Reducer<POrderedSet<T>> r = ClojureTreeSetX.<T>toPOrderedSet(Comparator.naturalOrder());
         return new LazyPOrderedSetX<T>(null, ReactiveSeq.fromStream(stream),
-                                      r);
+                                      r, Evaluation.LAZY);
     }
+    public static <T> LazyPOrderedSetX<T> fromStream(Stream<T> stream, Comparator<? super T> c) {
+        Reducer<POrderedSet<T>> r = ClojureTreeSetX.<T>toPOrderedSet((Comparator<T>)c);
+        return new LazyPOrderedSetX<T>(null, ReactiveSeq.fromStream(stream),
+                r, Evaluation.LAZY);
+    }
+
 
     /**
      * Create a LazyPOrderedSetX that contains the Integers between start and end
@@ -197,7 +211,7 @@ public class ClojureTreeSetX<T> extends AbstractSet<T>implements POrderedSet<T> 
                                                 toPOrderedSet(comp));
     }
     private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
-        return  new LazyPOrderedSetX<T>(ordered,null,reducer);
+        return  new LazyPOrderedSetX<T>(ordered,null,reducer, Evaluation.LAZY);
     }
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> of(T... t) {
 

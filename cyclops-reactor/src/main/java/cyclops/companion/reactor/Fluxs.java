@@ -1,5 +1,7 @@
 package cyclops.companion.reactor;
 
+import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
+import com.aol.cyclops2.internal.stream.ReactiveStreamX;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
@@ -9,6 +11,8 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.foldable.Foldable;
@@ -17,9 +21,12 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.*;
 
+import java.time.Duration;
+import java.util.concurrent.Callable;
 import java.util.function.*;
+import java.util.stream.Stream;
 
 /**
  * Companion class for working with Reactor Flux types
@@ -29,6 +36,172 @@ import java.util.function.*;
  */
 @UtilityClass
 public class Fluxs {
+
+    public static <T> Flux<T> raw(AnyM<flux,T> anyM){
+        return ReactorWitness.flux(anyM);
+    }
+    public static <T,W extends WitnessType<W>> AnyM<W,Flux<T>> fromStream(AnyM<W,Stream<T>> anyM){
+        return anyM.map(s->fluxFrom(ReactiveSeq.fromStream(s)));
+    }
+    public static <T> Flux<T> narrow(Flux<? extends T> observable) {
+        return (Flux<T>)observable;
+    }
+    public static  <T> Flux<T> fluxFrom(ReactiveSeq<T> stream){
+
+        return stream.visit(sync->Flux.fromStream(stream),rs->Flux.from(stream),async->Flux.from(stream));
+
+
+    }
+
+    public static <W extends WitnessType<W>,T> StreamT<W,T> fluxify(StreamT<W,T> nested){
+        AnyM<W, Stream<T>> anyM = nested.unwrap();
+        AnyM<W, ReactiveSeq<T>> fluxM = anyM.map(s -> {
+            if (s instanceof FluxReactiveSeq) {
+                return (FluxReactiveSeq)s;
+            }
+            if (s instanceof Publisher) {
+                return new FluxReactiveSeq<T>(Flux.from((Publisher) s));
+            }
+            return new FluxReactiveSeq<T>(Flux.fromStream(s));
+        });
+        StreamT<W, T> res = StreamT.of(fluxM);
+        return res;
+    }
+
+    public static <W extends WitnessType<W>,T,R> R nestedFlux(StreamT<W,T> nested, Function<? super AnyM<W,Flux<T>>,? extends R> mapper){
+        return mapper.apply(nestedFlux(nested));
+    }
+    public static <W extends WitnessType<W>,T> AnyM<W,Flux<T>> nestedFlux(StreamT<W,T> nested){
+        AnyM<W, Stream<T>> anyM = nested.unwrap();
+        return anyM.map(s->{
+            if(s instanceof FluxReactiveSeq){
+                return ((FluxReactiveSeq)s).getFlux();
+            }
+            if(s instanceof Publisher){
+                return Flux.from((Publisher)s);
+            }
+            return Flux.fromStream(s);
+        });
+    }
+
+    public static <W extends WitnessType<W>,T> StreamT<W,T> liftM(AnyM<W,Flux<T>> nested){
+        AnyM<W, ReactiveSeq<T>> monad = nested.map(s -> new FluxReactiveSeq<T>(s));
+        return StreamT.of(monad);
+    }
+
+    public static <T> ReactiveSeq<T> reactiveSeq(Flux<T> flux){
+        return new FluxReactiveSeq<>(flux);
+    }
+
+    public static ReactiveSeq<Integer> range(int start, int end){
+       return reactiveSeq(Flux.range(start,end));
+    }
+    public static <T> ReactiveSeq<T> of(T... data) {
+        return reactiveSeq(Flux.just(data));
+    }
+    public static  <T> ReactiveSeq<T> of(T value){
+        return reactiveSeq(Flux.just(value));
+    }
+
+    public static <T> ReactiveSeq<T> ofNullable(T nullable){
+        if(nullable==null){
+            return empty();
+        }
+        return of(nullable);
+    }
+    public static <T> ReactiveSeq<T> create(Consumer<? super FluxSink<T>> emitter) {
+        return reactiveSeq(Flux.create(emitter));
+    }
+
+
+    public static <T> ReactiveSeq<T> create(Consumer<? super FluxSink<T>> emitter, FluxSink.OverflowStrategy backpressure) {
+        return reactiveSeq(Flux.create(emitter,backpressure));
+    }
+
+
+    public static <T> ReactiveSeq<T> defer(Supplier<? extends Publisher<T>> supplier) {
+        return reactiveSeq(Flux.defer(supplier));
+    }
+
+    public static <T> ReactiveSeq<T> empty() {
+        return reactiveSeq(Flux.empty());
+    }
+
+
+    public static <T> ReactiveSeq<T> error(Throwable error) {
+        return reactiveSeq(Flux.error(error));
+    }
+
+
+    public static <O> ReactiveSeq<O> error(Throwable throwable, boolean whenRequested) {
+        return reactiveSeq(Flux.error(throwable,whenRequested));
+    }
+
+
+    @SafeVarargs
+    public static <I> ReactiveSeq<I> firstEmitting(Publisher<? extends I>... sources) {
+        return reactiveSeq(Flux.firstEmitting(sources));
+    }
+
+
+    public static <I> ReactiveSeq<I> firstEmitting(Iterable<? extends Publisher<? extends I>> sources) {
+        return reactiveSeq(Flux.firstEmitting(sources));
+    }
+
+
+    public static <T> ReactiveSeq<T> from(Publisher<? extends T> source) {
+       return reactiveSeq(Flux.from(source));
+    }
+
+
+    public static <T> ReactiveSeq<T> fromIterable(Iterable<? extends T> it) {
+        return reactiveSeq(Flux.fromIterable(it));
+    }
+
+
+    public static <T> ReactiveSeq<T> fromStream(Stream<? extends T> s) {
+        return reactiveSeq(Flux.fromStream(s));
+    }
+
+
+    public static <T> ReactiveSeq<T> generate(Consumer<SynchronousSink<T>> generator) {
+        return reactiveSeq(Flux.generate(generator));
+    }
+
+
+    public static <T, S> ReactiveSeq<T> generate(Callable<S> stateSupplier, BiFunction<S, SynchronousSink<T>, S> generator) {
+        return reactiveSeq(Flux.generate(stateSupplier,generator));
+    }
+
+
+    public static <T, S> ReactiveSeq<T> generate(Callable<S> stateSupplier, BiFunction<S, SynchronousSink<T>, S> generator, Consumer<? super S> stateConsumer) {
+        return reactiveSeq(Flux.generate(stateSupplier,generator,stateConsumer));
+    }
+
+
+    public static ReactiveSeq<Long> interval(Duration period) {
+        return reactiveSeq(Flux.interval(period));
+    }
+
+
+    public static ReactiveSeq<Long> interval(Duration delay, Duration period) {
+        return reactiveSeq(Flux.interval(delay,period));
+    }
+
+
+    public static ReactiveSeq<Long> intervalMillis(long period) {
+        return reactiveSeq(Flux.intervalMillis(period));
+    }
+    @SafeVarargs
+    public static <T> ReactiveSeq<T> just(T... data) {
+        return reactiveSeq(Flux.just(data));
+    }
+
+
+    public static <T> ReactiveSeq<T> just(T data) {
+        return reactiveSeq(Flux.just(data));
+    }
+
 
     /**
      * Construct an AnyM type from a Flux. This allows the Flux to be manipulated according to a standard interface
@@ -48,12 +221,13 @@ public class Fluxs {
      * @return AnyMSeq wrapping a flux
      */
     public static <T> AnyMSeq<flux,T> anyM(Flux<T> flux) {
-        return AnyM.ofSeq(flux, ReactorWitness.flux.INSTANCE);
+        return AnyM.ofSeq(reactiveSeq(flux), ReactorWitness.flux.INSTANCE);
     }
 
     public static <T> Flux<T> flux(AnyM<flux,T> flux) {
 
-        return (Flux<T>)flux.unwrap();
+        FluxReactiveSeq<T> fluxSeq = flux.unwrap();
+        return fluxSeq.getFlux();
     }
 
     /**

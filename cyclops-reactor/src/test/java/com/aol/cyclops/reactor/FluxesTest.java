@@ -1,10 +1,18 @@
 package com.aol.cyclops.reactor;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.reactor.Fluxs;
+import cyclops.monads.AnyM;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.optional;
+import cyclops.monads.transformers.StreamT;
+import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
@@ -13,7 +21,28 @@ import org.junit.Test;
 
 import reactor.core.publisher.Flux;
 
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class FluxesTest {
+
+    @Test
+    public void fluxTest(){
+        Flux.just(1,2).single().block();
+    }
+    @Test
+    public void fluxifyTest(){
+
+        StreamT<optional,Integer> streamT = ReactiveSeq.of(1,2,3).liftM(optional.INSTANCE);
+        StreamT<optional,Integer> fluxes = Fluxs.fluxify(streamT);
+        AnyM<optional, Stream<Integer>> anyM = fluxes.unwrap();
+        Optional<Stream<Integer>> opt = Witness.optional(anyM);
+        Stream<Integer> stream = opt.get();
+        assertTrue(stream instanceof FluxReactiveSeq);
+        FluxReactiveSeq<Integer> f = (FluxReactiveSeq)stream;
+        assertTrue(f.getFlux() instanceof Flux);
+    }
     @Test
     public void fluxComp() {
        

@@ -14,6 +14,7 @@ import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.function.Reducer;
@@ -37,6 +38,10 @@ import scala.collection.mutable.Builder;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScalaCollection<T>, Unwrapable {
+
+    public static <T> LinkedListX<T> listX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
     @Override
     public <R> R unwrap() {
         return (R)list;
@@ -68,7 +73,7 @@ public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScala
      * @return LazyLinkedListX
      */
     public static <T> LazyLinkedListX<T> fromStream(Stream<T> stream) {
-        return new LazyLinkedListX<T>(null,ReactiveSeq.fromStream(stream), toPStack());
+        return new LazyLinkedListX<T>(null,ReactiveSeq.fromStream(stream), toPStack(), Evaluation.LAZY);
     }
 
     /**
@@ -166,7 +171,7 @@ public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScala
     }
 
     private static <T> LazyLinkedListX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
-        return new LazyLinkedListX<T>(s,null, pStackReducer);
+        return new LazyLinkedListX<T>(s,null, pStackReducer,Evaluation.LAZY);
     }
 
 

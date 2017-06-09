@@ -7,9 +7,11 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Stream;
 
 import cyclops.collections.mutable.SetX;
+import cyclops.companion.reactor.Fluxs;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
@@ -19,6 +21,7 @@ import org.junit.Test;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class ReactorTest {
 
@@ -33,5 +36,14 @@ public class ReactorTest {
         SetX.fromPublisher(Flux.firstEmitting(ReactiveSeq.of(1, 2, 3), Flux.just(10, 20, 30)));
     }
 
+    @Test
+    public void anyMTest(){
+        System.out.println("Start");
+        //Flux.just(1,2,3,4,5).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())).subscribe(System.out::println);
+        Fluxs.anyM(Flux.just(1,2,3,4,5).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())))
+                .forEach(System.out::println,System.err::println);
+        System.out.println("Set up");
+
+    }
 
 }

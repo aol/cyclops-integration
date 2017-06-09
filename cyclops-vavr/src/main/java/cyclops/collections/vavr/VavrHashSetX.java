@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
+import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
@@ -27,6 +29,10 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VavrHashSetX<T> extends AbstractSet<T> implements PSet<T>, Unwrapable {
+
+    public static <T> PersistentSetX<T> listX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
     public static <T> PersistentSetX<T> copyFromCollection(CollectionX<? extends T> vec) {
         PersistentSetX<T> res = VavrHashSetX.<T>empty()
                 .plusAll(vec);
@@ -43,7 +49,7 @@ public class VavrHashSetX<T> extends AbstractSet<T> implements PSet<T>, Unwrapab
      * @return LazyPSetX
      */
     public static <T> LazyPSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream),toPSet());
+        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream),toPSet(), Evaluation.LAZY);
     }
 
     /**
@@ -141,7 +147,7 @@ public class VavrHashSetX<T> extends AbstractSet<T> implements PSet<T>, Unwrapab
         return fromPSet( new VavrHashSetX<>(HashSet.empty()), toPSet());
     }
     private static <T> LazyPSetX<T> fromPSet(PSet<T> ts, Reducer<PSet<T>> pSetReducer) {
-        return new LazyPSetX<T>(ts,null,pSetReducer);
+        return new LazyPSetX<T>(ts,null,pSetReducer, Evaluation.LAZY);
     }
     public static <T> LazyPSetX<T> singleton(T t){
         return fromPSet(new VavrHashSetX<>(HashSet.of(t)), toPSet());

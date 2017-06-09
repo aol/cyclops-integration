@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPSetX;
 import com.aol.cyclops2.types.Unwrapable;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
@@ -27,6 +28,10 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DexxHashSetX<T> extends AbstractSet<T>implements PSet<T>, Unwrapable {
+
+    public static <T> PersistentSetX<T> listX(ReactiveSeq<T> stream){
+        return fromStream(stream);
+    }
     @Override
     public <R> R unwrap() {
         return (R)set;
@@ -44,7 +49,7 @@ public class DexxHashSetX<T> extends AbstractSet<T>implements PSet<T>, Unwrapabl
      */
     public static <T> LazyPSetX<T> fromStream(Stream<T> stream) {
         Reducer<PSet<T>> r = toPSet();
-        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream), r);
+        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream), r, Evaluation.LAZY);
     }
 
     /**
@@ -151,7 +156,7 @@ public class DexxHashSetX<T> extends AbstractSet<T>implements PSet<T>, Unwrapabl
                                   toPSet());
     }
     private static <T> LazyPSetX<T> fromPSet(PSet<T> ts, Reducer<PSet<T>> pSetReducer) {
-        return new LazyPSetX<T>(ts,null,pSetReducer);
+        return new LazyPSetX<T>(ts,null,pSetReducer,Evaluation.LAZY);
     }
 
     public static <T> LazyPSetX<T> singleton(T t) {
