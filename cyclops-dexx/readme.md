@@ -2,8 +2,6 @@
 
 Dexx is a libary for Persistent Collections for Java, It is a port of the Scala persistent collections.
 
-v8.4.0 of cyclops uses 0.6 of Dexx
-
 ## Get cyclops-dexx
 
 
@@ -19,12 +17,12 @@ cyclops-dexx provides a powerful API over the Dexx Scala Persistent Collections 
 * Also see [JavaSlang and cyclops collections](https://github.com/aol/cyclops-react/wiki/JavaSlang-and-cyclops-collections)
 
 
-|  Dexx collection | cyclops-scala   | pcollections interface   | JDK Interface  | Description  |
-|---|---|---|---|---|
-| List   | DexxPStack   | PStack  | List  | LinkedListX  : extended persistent linkedlist |
-|  Vector | DexxPVector  | PVector   | List   | VectorX : extended persistent ArrayList   |
-|  HashSet | DexxPSet  | PSet  | Set  | PersistentSetX : extended Persistent Set  |
-|  TreeSet | DexxPOrderedSet  | POrderedSet  | SortedSet  | OrderedSetX : extended Persistent Ordered Set  |
+|  Dexx collection | cyclops-scala   |  JDK Interface  | Description  |
+|---|---|---|---|
+| List   | DexxListX     | List  | LinkedListX  : extended persistent linkedlist |
+|  Vector | DexxVectorX    | List   | VectorX : extended persistent ArrayList   |
+|  HashSet | DexxHashSetX   | Set  | PersistentSetX : extended Persistent Set  |
+|  TreeSet | DexxTreeSetX   | SortedSet  | OrderedSetX : extended Persistent Ordered Set  |
 
 
 
