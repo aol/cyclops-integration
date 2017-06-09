@@ -18,7 +18,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.aol.cyclops2.types.foldable.ConvertableSequence.Conversion.LAZY;
+
+import static com.aol.cyclops2.types.foldable.Evaluation.LAZY;
 import static cyclops.monads.VavrWitness.option;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;

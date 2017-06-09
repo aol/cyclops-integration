@@ -6,7 +6,8 @@ import cyclops.stream.ReactiveSeq;
 import io.vavr.collection.Vector;
 import org.junit.Test;
 
-import static com.aol.cyclops2.types.foldable.ConvertableSequence.Conversion.LAZY;
+
+import static com.aol.cyclops2.types.foldable.Evaluation.LAZY;
 import static cyclops.stream.Generator.suspend;
 import static cyclops.stream.Generator.times;
 import static org.hamcrest.Matchers.equalTo;
