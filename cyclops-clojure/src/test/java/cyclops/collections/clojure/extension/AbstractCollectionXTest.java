@@ -930,15 +930,15 @@ public abstract class AbstractCollectionXTest {
 	}
 	@Test
 	public void singleTest(){
-		assertThat(of(1).single(),equalTo(1));
+		assertThat(of(1).single().get(),equalTo(1));
 	}
-	@Test(expected=UnsupportedOperationException.class)
+	@Test(expected=NoSuchElementException.class)
 	public void singleEmpty(){
-		of().single();
+		of().single().get();
 	}
-	@Test(expected=UnsupportedOperationException.class)
+	@Test(expected=NoSuchElementException.class)
 	public void single2(){
-		of(1,2).single();
+		of(1,2).single().get();
 	}
 	@Test
 	public void singleOptionalTest(){
@@ -1664,14 +1664,14 @@ public abstract class AbstractCollectionXTest {
 	        public void groupedFunctionNoOrder(){
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").count(),equalTo((2L)));
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").filter(t->t.v1.equals("a"))
-	                            .map(t->t.v2).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).single(),
+	                            .map(t->t.v2).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).single().get(),
 	                                equalTo((ListX.of(1,2))));
 	        }
 	        @Test
 	        public void groupedFunctionCollectorNoOrder(){
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).count(),equalTo((2L)));
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).filter(t->t.v1.equals("a"))
-	                    .map(t->t.v2).single(),
+	                    .map(t->t.v2).single().get(),
 	                        equalTo((Arrays.asList(1,2))));
 	        }
 	        @Test
