@@ -29,7 +29,7 @@ public class FluxesTest {
 
     @Test
     public void fluxTest(){
-        Flux.just(1,2).single().block();
+        Flux.just(2).single().block();
     }
     @Test
     public void fluxifyTest(){
