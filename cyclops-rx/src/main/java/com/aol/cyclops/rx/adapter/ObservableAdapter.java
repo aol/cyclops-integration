@@ -40,7 +40,8 @@ public class ObservableAdapter extends AbstractFunctionalAdapter<obsvervable> {
     }
 
     <T> Observable<T> observable(AnyM<obsvervable,T> anyM){
-        return anyM.unwrap();
+        ObservableReactiveSeq<T> seq = anyM.unwrap();
+        return seq.observable;
     }
 
     @Override

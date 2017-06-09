@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import com.aol.cyclops.rx.adapter.ObservableReactiveSeq;
 import com.aol.cyclops2.internal.stream.ReactiveStreamX;
 import com.aol.cyclops2.types.reactive.AsyncSubscriber;
+import cyclops.monads.RxWitness;
 import cyclops.monads.RxWitness.obsvervable;
 import com.aol.cyclops.rx.hkt.ObservableKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -56,6 +57,12 @@ import rx.schedulers.Schedulers;
 @UtilityClass
 public class Observables {
 
+    public static <T,W extends WitnessType<W>> AnyM<W,Observable<T>> fromStream(AnyM<W,Stream<T>> anyM){
+        return anyM.map(s->fromStream(s));
+    }
+    public static <T> Observable<T> raw(AnyM<obsvervable,T> anyM){
+        return RxWitness.observable(anyM);
+    }
     public static <T> Observable<T> narrow(Observable<? extends T> observable) {
         return (Observable<T>)observable;
     }
@@ -76,7 +83,8 @@ public class Observables {
 
     }
     public static  <T> Observable<T> fromStream(Stream<T> s){
-
+        //TODO check the type using the forthcoming visit method on ReactiveSeq here to convert
+        //appropriately
         if(s instanceof  ReactiveSeq) {
             ReactiveSeq<T> stream = (ReactiveSeq<T>)s;
             return stream.visit(sync -> Observable.from(stream),
@@ -91,7 +99,7 @@ public class Observables {
         }
         return Observable.from(ReactiveSeq.fromStream(s));
     }
-    public static <W extends WitnessType<W>,T> StreamT<W,T> fluxify(StreamT<W,T> nested){
+    public static <W extends WitnessType<W>,T> StreamT<W,T> observablify(StreamT<W,T> nested){
         AnyM<W, Stream<T>> anyM = nested.unwrap();
         AnyM<W, ReactiveSeq<T>> fluxM = anyM.map(s -> {
             if (s instanceof ObservableReactiveSeq) {
@@ -128,7 +136,8 @@ public class Observables {
         });
     }
 
-    public static <W extends WitnessType<W>,T> StreamT<W,T> liftT(AnyM<W,Observable<T>> nested){
+    public static <W extends WitnessType<W>,T> StreamT<W,T> liftM(AnyM<W,Observable<T>> nested){
+
         AnyM<W, ReactiveSeq<T>> monad = nested.map(s -> new ObservableReactiveSeq<T>(s));
         return StreamT.of(monad);
     }
