@@ -18,6 +18,7 @@ import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
@@ -25,6 +26,7 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.SynchronousSink;
 
 import java.time.Duration;
+import java.util.Observable;
 import java.util.concurrent.Callable;
 import java.util.function.*;
 import java.util.stream.Stream;
@@ -49,21 +51,25 @@ public class Flowables {
     }
     public static  <T> Flowable<T> flowableFrom(ReactiveSeq<T> stream){
 
-        return stream.visit(sync->Flowable.fromStream(stream),rs->Flowable.from(stream),async->Flowable.from(stream));
+        return stream.visit(sync->Flowable.fromIterable(stream),
+                            rs->Flowable.fromPublisher(stream),
+                            async-> Observables.fromStream(stream).toFlowable(BackpressureStrategy.BUFFER));
 
 
     }
 
-    public static <W extends WitnessType<W>,T> StreamT<W,T> flowableify(StreamT<W,T> nested){
+    public static <W extends WitnessType<W>,T> StreamT<W,T> flowablify(StreamT<W,T> nested){
         AnyM<W, Stream<T>> anyM = nested.unwrap();
         AnyM<W, ReactiveSeq<T>> flowableM = anyM.map(s -> {
             if (s instanceof FlowableReactiveSeq) {
                 return (FlowableReactiveSeq)s;
             }
-            if (s instanceof Publisher) {
-                return new FlowableReactiveSeq<T>(Flowable.from((Publisher) s));
+            if(s instanceof ReactiveSeq){
+            return ((ReactiveSeq<T>)s).visit(sync->new FlowableReactiveSeq<T>(Flowable.fromIterable(sync)),
+                            rs->new FlowableReactiveSeq<T>(Flowable.fromPublisher(rs)),
+                            async ->new FlowableReactiveSeq<T>(Observables.fromStream(async).toFlowable(BackpressureStrategy.BUFFER)));
             }
-            return new FlowableReactiveSeq<T>(Flowable.fromStream(s));
+             return new FlowableReactiveSeq<T>(Flowable.fromIterable(ReactiveSeq.fromStream(s)));
         });
         StreamT<W, T> res = StreamT.of(flowableM);
         return res;

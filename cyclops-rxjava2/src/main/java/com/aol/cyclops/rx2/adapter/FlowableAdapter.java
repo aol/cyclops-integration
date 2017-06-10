@@ -1,6 +1,7 @@
 package com.aol.cyclops.rx2.adapter;
 
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import cyclops.companion.rx2.Flowables;
 import cyclops.monads.AnyM;
 
 import cyclops.monads.Rx2Witness;
@@ -30,13 +31,13 @@ public class FlowableAdapter extends AbstractFunctionalAdapter<flowable> {
         Flux<T> f = stream(apply);
         Flux<? extends Function<? super T, ? extends R>> fnF = stream(fn);
         Flux<R> res = fnF.zipWith(f, (a, b) -> a.apply(b));
-        return Fluxs.anyM(res);
+        return Flowables.anyM(res);
 
     }
 
     @Override
     public <T> AnyM<flowable, T> filter(AnyM<flowable, T> t, Predicate<? super T> fn) {
-        return Fluxs.anyM(stream(t).filter(fn));
+        return Flowables.anyM(stream(t).filter(fn));
     }
 
     <T> Flux<T> stream(AnyM<flowable,T> anyM){
@@ -45,7 +46,7 @@ public class FlowableAdapter extends AbstractFunctionalAdapter<flowable> {
 
     @Override
     public <T> AnyM<flowable, T> empty() {
-        return Fluxs.anyM(Flux.empty());
+        return Flowables.anyM(Flux.empty());
     }
 
 
@@ -53,18 +54,18 @@ public class FlowableAdapter extends AbstractFunctionalAdapter<flowable> {
     @Override
     public <T, R> AnyM<flowable, R> flatMap(AnyM<flowable, T> t,
                                      Function<? super T, ? extends AnyM<flowable, ? extends R>> fn) {
-        return Fluxs.anyM(stream(t).flatMap(fn.andThen(a->stream(a))));
+        return Flowables.anyM(stream(t).flatMap(fn.andThen(a->stream(a))));
 
     }
 
     @Override
     public <T> AnyM<flowable, T> unitIterable(Iterable<T> it)  {
-        return Fluxs.anyM(Flux.fromIterable(it));
+        return Flowables.anyM(Flux.fromIterable(it));
     }
 
     @Override
     public <T> AnyM<flowable, T> unit(T o) {
-        return Fluxs.anyM(Flux.just(o));
+        return Flowables.anyM(Flux.just(o));
     }
 
     @Override

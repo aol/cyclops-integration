@@ -2,16 +2,15 @@ package cyclops.monads;
 
 
 
-import com.aol.cyclops.rx2.adapter.FlowableReactiveSeq;
-import com.aol.cyclops.rx2.adapter.ObservableAdapter;
-import com.aol.cyclops.rx2.adapter.ObservableReactiveSeq;
+import com.aol.cyclops.rx2.adapter.*;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
+import com.sun.tools.javac.comp.Flow;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 
 
 public interface Rx2Witness {
-
     public static <T> Flowable<T> flowable(AnyM<flowable, ? extends T> anyM){
         FlowableReactiveSeq<T> obs = anyM.unwrap();
         return obs.getFlowable();
@@ -20,7 +19,7 @@ public interface Rx2Witness {
     static interface FlowableWitness<W extends FlowableWitness<W>>  extends WitnessType<W> {
 
     }
-    public static enum flowable implements ObservableWitness<flowable> {
+    public static enum flowable implements FlowableWitness<flowable> {
         INSTANCE;
 
         @Override
@@ -29,6 +28,24 @@ public interface Rx2Witness {
         }
 
     }
+    public static <T> Single<T> single(AnyM<single, ? extends T> anyM){
+        return anyM.unwrap();
+
+    }
+
+    static interface SingleWitness<W extends SingleWitness<W>>  extends WitnessType<W> {
+
+    }
+    public static enum single implements SingleWitness<single> {
+        INSTANCE;
+
+        @Override
+        public FunctionalAdapter<single> adapter() {
+            return new SingleAdapter();
+        }
+
+    }
+
 
     public static <T> Observable<T> observable(AnyM<obsvervable, ? extends T> anyM){
         ObservableReactiveSeq<T> obs = anyM.unwrap();

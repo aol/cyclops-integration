@@ -57,6 +57,16 @@ public final class FlowableKind<T> implements Higher<FlowableKind.µ, T>, Publis
         this.boxed = boxed;
     }
 
+    @Override
+    public void subscribe(Subscriber<? super T> s) {
+        boxed.subscribe(s);
+    } /**
+     * @return wrapped Obsverable
+     */
+    public Flowable<T> narrow() {
+        return boxed;
+    }
+
     /**
      * Witness type
      * 
@@ -78,7 +88,7 @@ public final class FlowableKind<T> implements Higher<FlowableKind.µ, T>, Publis
     }
     public static <T> FlowableKind<T> just(T... values){
             
-            return widen(Flowable.just(values));
+            return widen(Flowable.fromArray(values));
     }
     public static <T> FlowableKind<T> empty(){
         return widen(Flowable.empty());

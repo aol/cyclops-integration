@@ -52,21 +52,24 @@ public class Fluxs {
 
 
     }
-
     public static <W extends WitnessType<W>,T> StreamT<W,T> fluxify(StreamT<W,T> nested){
         AnyM<W, Stream<T>> anyM = nested.unwrap();
-        AnyM<W, ReactiveSeq<T>> fluxM = anyM.map(s -> {
+        AnyM<W, ReactiveSeq<T>> flowableM = anyM.map(s -> {
             if (s instanceof FluxReactiveSeq) {
                 return (FluxReactiveSeq)s;
             }
-            if (s instanceof Publisher) {
-                return new FluxReactiveSeq<T>(Flux.from((Publisher) s));
+            if(s instanceof ReactiveSeq){
+                return ((ReactiveSeq<T>)s).visit(sync->new FluxReactiveSeq<T>(Flux.fromStream(sync)),
+                        rs->new FluxReactiveSeq<T>(Flux.from(rs)),
+                        async ->new FluxReactiveSeq<T>(Flux.from(async)));
             }
             return new FluxReactiveSeq<T>(Flux.fromStream(s));
         });
-        StreamT<W, T> res = StreamT.of(fluxM);
+        StreamT<W, T> res = StreamT.of(flowableM);
         return res;
     }
+
+
 
     public static <W extends WitnessType<W>,T,R> R nestedFlux(StreamT<W,T> nested, Function<? super AnyM<W,Flux<T>>,? extends R> mapper){
         return mapper.apply(nestedFlux(nested));
