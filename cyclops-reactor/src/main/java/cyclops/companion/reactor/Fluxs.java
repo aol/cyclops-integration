@@ -80,6 +80,11 @@ public class Fluxs {
             if(s instanceof FluxReactiveSeq){
                 return ((FluxReactiveSeq)s).getFlux();
             }
+            if(s instanceof ReactiveSeq){
+                ReactiveSeq<T> r = (ReactiveSeq<T>)s;
+                return r.visit(sync->Flux.fromStream(sync),rs->Flux.from((Publisher)s),
+                        async->Flux.from(async));
+            }
             if(s instanceof Publisher){
                 return Flux.from((Publisher)s);
             }

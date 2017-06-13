@@ -66,7 +66,7 @@ public final class SingleKind<T> implements Higher<SingleKind.µ, T>, Publisher<
         return widen(Single.just(value));
     }
     public static <T> SingleKind<T> empty(){
-        return widen(Single..empty());
+        return widen(Single.just(null));
     }
 
     /**
@@ -87,7 +87,7 @@ public final class SingleKind<T> implements Higher<SingleKind.µ, T>, Publisher<
     
     public static <T> SingleKind<T> widen(final Publisher<T> completableSingle) {
         
-        return new SingleKind<T>(Single.from(
+        return new SingleKind<T>(Single.fromPublisher(
                          completableSingle));
     }
         

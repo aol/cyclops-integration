@@ -34,8 +34,11 @@ public class SingleAdapter extends AbstractFunctionalAdapter<single> {
         Single<T> f = future(apply);
 
         Single<? extends Function<? super T, ? extends R>> fnF = future(fn);
-        Single<R> res = Single.fromFuture(Future.fromPublisher(fnF.toFlowable()).
-                            combine(Future.fromPublisher(f.toFlowable()), (a, b) -> a.apply(b)));
+
+        Future<T> crF1 = Future.fromPublisher(f.toFlowable());
+        Future<? extends Function<? super T, ? extends R>> crFnF = Future.fromPublisher(fnF.toFlowable());
+
+        Single<R> res = Single.fromPublisher(crF1.combine(crFnF,(a,b)->b.apply(a)));
         return Singles.anyM(res);
 
     }

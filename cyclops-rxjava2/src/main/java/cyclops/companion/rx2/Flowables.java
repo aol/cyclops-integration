@@ -1,6 +1,7 @@
 package cyclops.companion.rx2;
 
 import com.aol.cyclops.rx2.adapter.FlowableReactiveSeq;
+import com.aol.cyclops.rx2.hkt.FlowableKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
@@ -84,10 +85,15 @@ public class Flowables {
             if(s instanceof FlowableReactiveSeq){
                 return ((FlowableReactiveSeq)s).getFlowable();
             }
-            if(s instanceof Publisher){
-                return Flowable.from((Publisher)s);
+            if(s instanceof ReactiveSeq){
+                ReactiveSeq<T> r = (ReactiveSeq<T>)s;
+                return r.visit(sync->Flowable.fromIterable(sync),rs->Flowable.fromPublisher((Publisher)s),
+                        async->Flowable.fromPublisher(async));
             }
-            return Flowable.fromStream(s);
+            if(s instanceof Publisher){
+                return Flowable.<T>fromPublisher((Publisher)s);
+            }
+            return Flowable.fromIterable(ReactiveSeq.fromStream(s));
         });
     }
 
@@ -157,7 +163,7 @@ public class Flowables {
 
 
     public static <T> ReactiveSeq<T> from(Publisher<? extends T> source) {
-       return reactiveSeq(Flowable.from(source));
+       return reactiveSeq(Flowable.fromPublisher(source));
     }
 
 
@@ -228,7 +234,7 @@ public class Flowables {
      * @return AnyMSeq wrapping a flowable
      */
     public static <T> AnyMSeq<flowable,T> anyM(Flowable<T> flowable) {
-        return AnyM.ofSeq(reactiveSeq(flowable), flowable.INSTANCE);
+        return AnyM.ofSeq(reactiveSeq(flowable), Rx2Witness.flowable.INSTANCE);
     }
 
     public static <T> Flowable<T> flowable(AnyM<flowable,T> flowable) {
@@ -271,11 +277,11 @@ public class Flowables {
 
         return value1.flatMap(in -> {
 
-            Flowable<R1> a = Flowable.from(value2.apply(in));
+            Flowable<R1> a = Flowable.fromPublisher(value2.apply(in));
             return a.flatMap(ina -> {
-                Flowable<R2> b = Flowable.from(value3.apply(in,ina));
+                Flowable<R2> b = Flowable.fromPublisher(value3.apply(in,ina));
                 return b.flatMap(inb -> {
-                    Flowable<R3> c = Flowable.from(value4.apply(in,ina,inb));
+                    Flowable<R3> c = Flowable.fromPublisher(value4.apply(in,ina,inb));
                     return c.map(in2 -> yieldingFunction.apply(in, ina, inb, in2));
                 });
 
@@ -321,11 +327,11 @@ public class Flowables {
 
         return value1.flatMap(in -> {
 
-            Flowable<R1> a = Flowable.from(value2.apply(in));
+            Flowable<R1> a = Flowable.fromPublisher(value2.apply(in));
             return a.flatMap(ina -> {
-                Flowable<R2> b = Flowable.from(value3.apply(in,ina));
+                Flowable<R2> b = Flowable.fromPublisher(value3.apply(in,ina));
                 return b.flatMap(inb -> {
-                    Flowable<R3> c = Flowable.from(value4.apply(in,ina,inb));
+                    Flowable<R3> c = Flowable.fromPublisher(value4.apply(in,ina,inb));
                     return c.filter(in2->filterFunction.apply(in,ina,inb,in2))
                             .map(in2 -> yieldingFunction.apply(in, ina, inb, in2));
                 });
@@ -366,9 +372,9 @@ public class Flowables {
 
         return value1.flatMap(in -> {
 
-            Flowable<R1> a = Flowable.from(value2.apply(in));
+            Flowable<R1> a = Flowable.fromPublisher(value2.apply(in));
             return a.flatMap(ina -> {
-                Flowable<R2> b = Flowable.from(value3.apply(in, ina));
+                Flowable<R2> b = Flowable.fromPublisher(value3.apply(in, ina));
                 return b.map(in2 -> yieldingFunction.apply(in, ina, in2));
             });
 
@@ -407,9 +413,9 @@ public class Flowables {
 
         return value1.flatMap(in -> {
 
-            Flowable<R1> a = Flowable.from(value2.apply(in));
+            Flowable<R1> a = Flowable.fromPublisher(value2.apply(in));
             return a.flatMap(ina -> {
-                Flowable<R2> b = Flowable.from(value3.apply(in,ina));
+                Flowable<R2> b = Flowable.fromPublisher(value3.apply(in,ina));
                 return b.filter(in2->filterFunction.apply(in,ina,in2))
                         .map(in2 -> yieldingFunction.apply(in, ina, in2));
             });
@@ -449,7 +455,7 @@ public class Flowables {
 
         return value1.flatMap(in -> {
 
-            Flowable<R1> a = Flowable.from(value2.apply(in));
+            Flowable<R1> a = Flowable.fromPublisher(value2.apply(in));
             return a.map(in2 -> yieldingFunction.apply(in,  in2));
         });
 
@@ -491,7 +497,7 @@ public class Flowables {
 
         return value1.flatMap(in -> {
 
-            Flowable<R1> a = Flowable.from(value2.apply(in));
+            Flowable<R1> a = Flowable.fromPublisher(value2.apply(in));
             return a.filter(in2->filterFunction.apply(in,in2))
                     .map(in2 -> yieldingFunction.apply(in,  in2));
         });

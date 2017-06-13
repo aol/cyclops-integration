@@ -33,6 +33,7 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 
+
 /**
  * Companion class for working with RxJava Observable types
  * 
@@ -64,7 +65,7 @@ public class Observables {
                         stream.forEach(rxSubscriber::onNext,rxSubscriber::onError,rxSubscriber::onComplete);
                     }
 
-        });
+        }));
 
 
     }
@@ -80,7 +81,7 @@ public class Observables {
 
                             stream.forEach(rxSubscriber::onNext,rxSubscriber::onError,rxSubscriber::onComplete);
                         }
-                    });
+                    }));
         }
         return Observable.fromIterable(ReactiveSeq.fromStream(s));
     }
@@ -877,7 +878,7 @@ public class Observables {
             return ObservableKind.widen(lt.zipWith(observable.narrow(),(a, b)->a.apply(b)));
         }
         private static <T,R> Higher<ObservableKind.µ,R> flatMap(Higher<ObservableKind.µ,T> lt, Function<? super T, ? extends  Higher<ObservableKind.µ,R>> fn){
-            Func1<? super T, ? extends  Observable<R>> f = t->fn.andThen(ObservableKind::narrow).apply(t);
+            io.reactivex.functions.Function<? super T, ? extends  Observable<R>> f = t->fn.andThen(ObservableKind::narrow).apply(t);
 
             return ObservableKind.widen(ObservableKind.narrowK(lt)
                     .flatMap(f));

@@ -34,7 +34,7 @@ dependencies {
 
 	compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.0'
 	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
-	compile 'io.reactivex:rxjava-reactive-streams:1.0.1'
+	//compile 'io.reactivex:rxjava-reactive-streams:1.0.1'
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
 	provided 'io.projectreactor:reactor-core:'+reactorVersion
 	

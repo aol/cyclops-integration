@@ -126,7 +126,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public static <T1> Observable<T1> amb(Iterable<? extends ObservableSource<? extends T1>> observableSources) {   
+    public static <T1> Observable<T1> amb(Iterable<? extends ObservableSource<? extends T1>> observableSources) {
         return Observable.amb(observableSources);
     }
 
