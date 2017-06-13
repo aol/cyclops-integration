@@ -5,6 +5,7 @@ import com.aol.cyclops2.types.stream.HeadAndTail;
 import com.aol.cyclops2.types.traversable.Traversable;
 import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.rx2.Functions;
 import cyclops.control.Maybe;
 import cyclops.control.lazy.Either;
 import cyclops.function.Monoid;
@@ -16,6 +17,7 @@ import cyclops.monads.transformers.ListT;
 import cyclops.stream.ReactiveSeq;
 import cyclops.stream.Spouts;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Wither;
@@ -63,7 +65,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <U> U foldRight(U identity, BiFunction<? super T, ? super U, ? extends U> accumulator) {
-        return flowable.reduce(identity,(a, b)->accumulator.apply(b,a)).block();
+        return flowable.reduce(identity,(a, b)->accumulator.apply(b,a)).blockingGet();
     }
 
     @Override
@@ -71,17 +73,17 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
         if(other instanceof Publisher){
             return zipP((Publisher<U>)other,zipper);
         }
-        return flux(flowable.zipWith((Iterable<U>)ReactiveSeq.fromStream((Stream<U>)other),zipper));
+        return flux(flowable.zipWith((Iterable<U>)ReactiveSeq.fromStream((Stream<U>)other), Functions.rxBifunction(zipper)));
     }
 
     @Override
     public <U, R> ReactiveSeq<R> zipLatest(Publisher<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-        return flux(Flowable.combineLatest(flowable,other,zipper));
+        return flux(Flowable.combineLatest(flowable,other,(a,b)->zipper.apply(a,b)));
     }
 
     @Override
     public <U, R> ReactiveSeq<R> zipP(Publisher<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-        return flux(flowable.zipWith(other,zipper));
+        return flux(flowable.zipWith(other,Functions.rxBifunction(zipper)));
     }
 
     @Override
@@ -225,7 +227,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> grouped(int size, Supplier<C> supplier) {
-        return flux(flowable.buffer(size,supplier));
+        return flux(flowable.buffer(size,()->supplier.get()));
     }
 
     @Override
@@ -250,7 +252,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> sorted() {
-        return flux(flowable.sort());
+        return flux(flowable.sorted());
     }
 
     @Override
@@ -281,7 +283,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> skipWhile(Predicate<? super T> p) {
-        return flux(flowable.skipWhile(p));
+        return flux(flowable.skipWhile(Functions.rxPredicate(p)));
     }
 
     @Override
@@ -295,7 +297,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
     @Override
     public ReactiveSeq<T> limitWhileClosed(Predicate<? super T> p) {
-        return flux(flowable.takeWhile(p));
+        return flux(flowable.takeWhile(Functions.rxPredicate(p)));
     }
 
     @Override
@@ -305,7 +307,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> limitUntilClosed(Predicate<? super T> p) {
-        return flux(flowable.takeUntil(p));
+        return flux(flowable.takeUntil(Functions.rxPredicate(p)));
     }
 
     @Override
@@ -455,7 +457,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <R> ReactiveSeq<R> map(Function<? super T, ? extends R> fn) {
-        return flux(flowable.map(fn));
+        return flux(flowable.map(Functions.rxFunction(fn)));
     }
 
     @Override
@@ -480,50 +482,50 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <R> ReactiveSeq<R> flatMapAnyM(Function<? super T, AnyM<stream, ? extends R>> fn) {
-        return flux(flowable.flatMap(fn));
+        return flux(flowable.flatMap(Functions.rxFunction(fn)));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
-        return flux(flowable.flatMapIterable(fn));
+        return flux(flowable.flatMapIterable(Functions.rxFunction(fn)));
     }
 
 
 
     @Override
     public <R> ReactiveSeq<R> flatMapP(Function<? super T, ? extends Publisher<? extends R>> fn) {
-        return flux(flowable.flatMap(fn));
+        return flux(flowable.flatMap(Functions.rxFunction(fn)));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapP(int maxConcurrency, Function<? super T, ? extends Publisher<? extends R>> fn) {
-        return flux(flowable.flatMap(fn,maxConcurrency));
+        return flux(flowable.flatMap(Functions.rxFunction(fn),maxConcurrency));
     }
 
     @Override
     public <R> ReactiveSeq<R> flatMapStream(Function<? super T, BaseStream<? extends R, ?>> fn) {
         
-        return this.<R>flux((Flowable) flowable.flatMap(fn.andThen(s->{
+        return this.<R>flux((Flowable) flowable.flatMap(Functions.rxFunction(fn.andThen(s->{
             ReactiveSeq<R> res = s instanceof ReactiveSeq ? (ReactiveSeq) s : (ReactiveSeq) ReactiveSeq.fromSpliterator(s.spliterator());
            return res;
                 }
             
-        )));
+        ))));
     }
 
     @Override
     public ReactiveSeq<T> filter(Predicate<? super T> fn) {
-        return flux(flowable.filter(fn));
+        return flux(flowable.filter(Functions.rxPredicate(fn)));
     }
 
     @Override
     public Iterator<T> iterator() {
-        return flowable.toIterable().iterator();
+        return flowable.blockingIterable().iterator();
     }
 
     @Override
     public Spliterator<T> spliterator() {
-        return flowable.toIterable().spliterator();
+        return flowable.blockingIterable().spliterator();
     }
 
     @Override
@@ -548,7 +550,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> onClose(Runnable closeHandler) {
-        return flux(flowable.doOnComplete(closeHandler));
+        return flux(flowable.doOnComplete(()->closeHandler.run()));
     }
 
     @Override
@@ -593,12 +595,12 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> skip(long time, TimeUnit unit) {
-        return flux(flowable.skip(Duration.ofNanos(unit.toNanos(time))));
+        return flux(flowable.skip(time,unit));
     }
 
     @Override
     public ReactiveSeq<T> limit(long time, TimeUnit unit) {
-        return flux(flowable.take(Duration.ofNanos(unit.toNanos(time))));
+        return flux(flowable.take(time,unit));
     }
 
     @Override
@@ -613,7 +615,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public T firstValue() {
-        return flowable.blockFirst();
+        return flowable.blockingFirst();
     }
 
     @Override
@@ -633,7 +635,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <U> ReactiveSeq<T> distinct(Function<? super T, ? extends U> keyExtractor) {
-        return flux(flowable.distinct(keyExtractor));
+        return flux(flowable.distinct(Functions.rxFunction(keyExtractor)));
     }
 
     @Override
@@ -732,17 +734,20 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
 
-        return flowable.toStream().collect(supplier,accumulator,combiner);
+        return flowable.collect(()->supplier.get(),(a,b)->accumulator.accept(a,b)).blockingGet();
     }
 
     @Override
     public <R, A> ReactiveSeq<R> collectStream(Collector<? super T, A, R> collector) {
-        return flux(Flowable.from(flowable.collect((Collector<T,A,R>)collector)));
+        Single<A> inter = flowable.collect(()->collector.supplier().get(), (a,b)->collector.accumulator().accept(a,b));
+        return flux(inter.toFlowable().map(Functions.rxFunction(collector.finisher())));
     }
 
     @Override
     public <R, A> R collect(Collector<? super T, A, R> collector) {
-        return flowable.collect((Collector<T,A,R>)collector).block();
+
+        A inter = collect(collector.supplier(), collector.accumulator(), null);
+        return collector.finisher().apply(inter);
     }
 
 
@@ -790,33 +795,6 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
         });
         return maybe;
     }
-    /**
-    @Override
-   public <R> ReactiveSeq<R> fanOut(Function<? super ReactiveSeq<T>, ? extends ReactiveSeq<? extends R>> path1,
-                                      Function<? super ReactiveSeq<T>, ? extends ReactiveSeq<? extends R>> path2,
-                                      Function<? super ReactiveSeq<T>, ? extends ReactiveSeq<? extends R>> path3){
-
-        Flowable<T> co = flowable.doOnSubscribe(s -> System.out.println("subscribed to source")).publish().autoConnect(3);
-        ListX<ReactiveSeq<T>> list = multicast(3);
-        Publisher<R> pub2 = (Publisher<R>)path2.apply(list.get(1));
-        Publisher<R> pub3 = (Publisher<R>)path3.apply(list.get(2));
-        ReactiveSeq<R> seq = (ReactiveSeq<R>)path1.apply(list.get(0));
-        return  flowable(Flowable.merge(pub2,pub3,seq));
-
-
-
-    }
-    @Override
-    public ListX<ReactiveSeq<T>> multicast(int num) {
-        ListX<ReactiveSeq<T>> result = ListX.empty();
-         for(int i=0;i<num;i++) {
-
-            result.add(flowable(FlowableSource.wrap()));
-        }
-
-        return result;
-    }
-     **/
 
     @Override
     public void subscribe(Subscriber<? super T> s) {

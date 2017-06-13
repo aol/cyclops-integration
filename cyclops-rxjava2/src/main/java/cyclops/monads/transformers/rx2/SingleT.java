@@ -9,6 +9,7 @@ import com.aol.cyclops2.types.anyM.transformers.ValueTransformer;
 import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.async.Future;
+import cyclops.companion.rx2.Functions;
 import cyclops.control.Trampoline;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
@@ -134,7 +135,7 @@ public final class SingleT<W extends WitnessType<W>,T> extends ValueTransformer<
     @Override
     public <B> SingleT<W,B> map(final Function<? super T, ? extends B> f) {
         return new SingleT<W,B>(
-                run.map(o -> o.map(f)));
+                run.map(o -> o.map(Functions.rxFunction(f))));
     }
 
 
@@ -162,7 +163,7 @@ public final class SingleT<W extends WitnessType<W>,T> extends ValueTransformer<
     @Override
     public <B> SingleT<W,B> flatMap(final Function<? super T, ? extends MonadicValue<? extends B>> f) {
 
-        final AnyM<W,Single<? extends B>> mapped = run.map(o -> Single.from(o.flatMap(f)));
+        final AnyM<W,Single<? extends B>> mapped = run.map(o -> Single.fromPublisher(o.flatMap(f)));
         return of(narrow(mapped));
 
     }
@@ -282,7 +283,7 @@ public final class SingleT<W extends WitnessType<W>,T> extends ValueTransformer<
 
     @Override
     public <R> SingleT<W,R> empty() {
-        return of(run.unit(Single.<R>empty()));
+        return of(run.unit(Single.<R>just(null)));
     }
 
 

@@ -3,6 +3,8 @@ package com.aol.cyclops.rx2.adapter;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.async.Future;
 
+import cyclops.companion.rx2.Functions;
+import cyclops.companion.rx2.Singles;
 import cyclops.monads.AnyM;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.single;
@@ -24,21 +26,24 @@ public class SingleAdapter extends AbstractFunctionalAdapter<single> {
 
     @Override
     public <T> Iterable<T> toIterable(AnyM<single, T> t) {
-        return Future.fromPublisher(future(t));
+        return Future.fromPublisher(future(t).toFlowable());
     }
 
     @Override
     public <T, R> AnyM<single, R> ap(AnyM<single,? extends Function<? super T,? extends R>> fn, AnyM<single, T> apply) {
         Single<T> f = future(apply);
+
         Single<? extends Function<? super T, ? extends R>> fnF = future(fn);
-        Single<R> res = Single.fromFuture(fnF.toFuture().thenCombine(f.toFuture(), (a, b) -> a.apply(b)));
+        Single<R> res = Single.fromFuture(Future.fromPublisher(fnF.toFlowable()).
+                            combine(Future.fromPublisher(f.toFlowable()), (a, b) -> a.apply(b)));
         return Singles.anyM(res);
 
     }
 
     @Override
     public <T> AnyM<single, T> filter(AnyM<single, T> t, Predicate<? super T> fn) {
-        return Singles.anyM(future(t).filter(fn));
+
+        return Singles.anyM(future(t).filter(Functions.rxPredicate(fn)).toSingle());
     }
 
     <T> Single<T> future(AnyM<single,T> anyM){
@@ -50,7 +55,7 @@ public class SingleAdapter extends AbstractFunctionalAdapter<single> {
 
     @Override
     public <T> AnyM<single, T> empty() {
-        return Singles.anyM(Single.empty());
+        return Singles.anyM(Single.just(null));
     }
 
 
@@ -58,13 +63,13 @@ public class SingleAdapter extends AbstractFunctionalAdapter<single> {
     @Override
     public <T, R> AnyM<single, R> flatMap(AnyM<single, T> t,
                                      Function<? super T, ? extends AnyM<single, ? extends R>> fn) {
-        return Singles.anyM(Single.from(futureW(t).flatMap(fn.andThen(a-> futureW(a)))));
+        return Singles.anyM(Single.fromPublisher(futureW(t).flatMap(fn.andThen(a-> futureW(a)))));
 
     }
 
     @Override
     public <T> AnyM<single, T> unitIterable(Iterable<T> it)  {
-        return Singles.anyM(Single.from(Future.fromIterable(it)));
+        return Singles.anyM(Single.fromPublisher(Future.fromIterable(it)));
     }
 
     @Override
@@ -74,7 +79,7 @@ public class SingleAdapter extends AbstractFunctionalAdapter<single> {
 
     @Override
     public <T> ReactiveSeq<T> toStream(AnyM<single, T> t) {
-        return ReactiveSeq.fromPublisher(single(t));
+        return ReactiveSeq.fromPublisher(future(t).toFlowable());
     }
 
 }
