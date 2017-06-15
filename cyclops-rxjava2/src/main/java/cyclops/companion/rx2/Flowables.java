@@ -24,8 +24,6 @@ import io.reactivex.Flowable;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
-import reactor.core.publisher.SynchronousSink;
-
 import java.time.Duration;
 import java.util.Observable;
 import java.util.concurrent.Callable;
@@ -110,7 +108,7 @@ public class Flowables {
        return reactiveSeq(Flowable.range(start,end));
     }
     public static <T> ReactiveSeq<T> of(T... data) {
-        return reactiveSeq(Flowable.just(data));
+        return reactiveSeq(Flowable.fromArray(data));
     }
     public static  <T> ReactiveSeq<T> of(T value){
         return reactiveSeq(Flowable.just(value));
@@ -122,19 +120,8 @@ public class Flowables {
         }
         return of(nullable);
     }
-    public static <T> ReactiveSeq<T> create(Consumer<? super FlowableSink<T>> emitter) {
-        return reactiveSeq(Flowable.create(emitter));
-    }
 
 
-    public static <T> ReactiveSeq<T> create(Consumer<? super FlowableSink<T>> emitter, FlowableSink.OverflowStrategy backpressure) {
-        return reactiveSeq(Flowable.create(emitter,backpressure));
-    }
-
-
-    public static <T> ReactiveSeq<T> defer(Supplier<? extends Publisher<T>> supplier) {
-        return reactiveSeq(Flowable.defer(supplier));
-    }
 
     public static <T> ReactiveSeq<T> empty() {
         return reactiveSeq(Flowable.empty());
@@ -146,20 +133,9 @@ public class Flowables {
     }
 
 
-    public static <O> ReactiveSeq<O> error(Throwable throwable, boolean whenRequested) {
-        return reactiveSeq(Flowable.error(throwable,whenRequested));
-    }
 
 
-    @SafeVarargs
-    public static <I> ReactiveSeq<I> firstEmitting(Publisher<? extends I>... sources) {
-        return reactiveSeq(Flowable.firstEmitting(sources));
-    }
 
-
-    public static <I> ReactiveSeq<I> firstEmitting(Iterable<? extends Publisher<? extends I>> sources) {
-        return reactiveSeq(Flowable.firstEmitting(sources));
-    }
 
 
     public static <T> ReactiveSeq<T> from(Publisher<? extends T> source) {
@@ -173,41 +149,19 @@ public class Flowables {
 
 
     public static <T> ReactiveSeq<T> fromStream(Stream<? extends T> s) {
-        return reactiveSeq(Flowable.fromStream(s));
+        return reactiveSeq(flowableFrom(ReactiveSeq.fromStream((Stream<T>)s)));
     }
 
 
-    public static <T> ReactiveSeq<T> generate(Consumer<SynchronousSink<T>> generator) {
-        return reactiveSeq(Flowable.generate(generator));
-    }
 
 
-    public static <T, S> ReactiveSeq<T> generate(Callable<S> stateSupplier, BiFunction<S, SynchronousSink<T>, S> generator) {
-        return reactiveSeq(Flowable.generate(stateSupplier,generator));
-    }
 
 
-    public static <T, S> ReactiveSeq<T> generate(Callable<S> stateSupplier, BiFunction<S, SynchronousSink<T>, S> generator, Consumer<? super S> stateConsumer) {
-        return reactiveSeq(Flowable.generate(stateSupplier,generator,stateConsumer));
-    }
 
 
-    public static ReactiveSeq<Long> interval(Duration period) {
-        return reactiveSeq(Flowable.interval(period));
-    }
-
-
-    public static ReactiveSeq<Long> interval(Duration delay, Duration period) {
-        return reactiveSeq(Flowable.interval(delay,period));
-    }
-
-
-    public static ReactiveSeq<Long> intervalMillis(long period) {
-        return reactiveSeq(Flowable.intervalMillis(period));
-    }
     @SafeVarargs
     public static <T> ReactiveSeq<T> just(T... data) {
-        return reactiveSeq(Flowable.just(data));
+        return reactiveSeq(Flowable.fromArray(data));
     }
 
 
@@ -750,13 +704,13 @@ public class Flowables {
             return FlowableKind.widen(lt.zipWith(flowable,(a, b)->a.apply(b)));
         }
         private static <T,R> Higher<FlowableKind.µ,R> flatMap(Higher<FlowableKind.µ,T> lt, Function<? super T, ? extends  Higher<FlowableKind.µ,R>> fn){
-            return FlowableKind.widen(FlowableKind.narrowK(lt).flatMap(fn.andThen(FlowableKind::narrowK)));
+            return FlowableKind.widen(FlowableKind.narrowK(lt).flatMap(Functions.rxFunction(fn.andThen(FlowableKind::narrowK))));
         }
         private static <T,R> FlowableKind<R> map(FlowableKind<T> lt, Function<? super T, ? extends R> fn){
-            return FlowableKind.widen(lt.map(fn));
+            return FlowableKind.widen(lt.map(Functions.rxFunction(fn)));
         }
         private static <T> FlowableKind<T> filter(Higher<FlowableKind.µ,T> lt, Predicate<? super T> fn){
-            return FlowableKind.widen(FlowableKind.narrow(lt).filter(fn));
+            return FlowableKind.widen(FlowableKind.narrow(lt).filter(Functions.rxPredicate(fn)));
         }
     }
 

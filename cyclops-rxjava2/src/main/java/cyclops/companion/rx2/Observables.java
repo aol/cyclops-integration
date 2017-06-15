@@ -168,46 +168,7 @@ public class Observables {
 
 
     
-    public static <T> ReactiveSeq<T> create(Observable.OnSubscribe<T> f) {
-        return reactiveSeq(Observable.create(f));
-    }
 
-    
-    public static <S, T> ReactiveSeq<T> create(SyncOnSubscribe<S, T> syncOnSubscribe) {
-        return reactiveSeq(Observable.create(syncOnSubscribe));
-    }
-
-
-    public static <S, T> ReactiveSeq<T> create(AsyncOnSubscribe<S, T> asyncOnSubscribe) {
-        return reactiveSeq(Observable.create(asyncOnSubscribe));
-    }
-
-   
-
-
-
-    public static <T> ReactiveSeq<T> amb(Iterable<? extends Observable<? extends T>> sources) {
-        return create(OnSubscribeAmb.amb(sources));
-    }
-
-    
- 
-   
-    public static <T> ReactiveSeq<T> concat(Observable<? extends Observable<? extends T>> observables) {
-        return reactiveSeq(Observable.concat(observables));
-    }
-
-    
-
-   
-    public static <T> ReactiveSeq<T> concatDelayError(Observable<? extends Observable<? extends T>> sources) {
-        return reactiveSeq(Observable.concatDelayError(sources));
-    }
-
-    
-    public static <T> ReactiveSeq<T> defer(Supplier<Observable<T>> observableFactory) {
-        return reactiveSeq(Observable.defer(()->observableFactory.get()));
-    }
 
   
     public static <T> ReactiveSeq<T> empty() {
@@ -227,19 +188,6 @@ public class Observables {
         return reactiveSeq(Observable.fromIterable(iterable));
     }
 
-    
-    public static <T> ReactiveSeq<T> from(T... params) {
-
-        T[] array = params;
-        int n = array.length;
-        if (n == 0) {
-            return empty();
-        } else
-        if (n == 1) {
-            return just(array[0]);
-        }
-        return create(Observable.<T>fromArray(params));
-    }
 
    
     public static ReactiveSeq<Long> interval(long interval, TimeUnit unit) {

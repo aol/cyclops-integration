@@ -22,8 +22,6 @@ import java.util.function.Predicate;
 @AllArgsConstructor
 public class SingleAdapter extends AbstractFunctionalAdapter<single> {
 
-
-
     @Override
     public <T> Iterable<T> toIterable(AnyM<single, T> t) {
         return Future.fromPublisher(future(t).toFlowable());
@@ -58,7 +56,7 @@ public class SingleAdapter extends AbstractFunctionalAdapter<single> {
 
     @Override
     public <T> AnyM<single, T> empty() {
-        return Singles.anyM(Single.just(null));
+        return Singles.anyM(Single.never());
     }
 
 

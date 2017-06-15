@@ -18,11 +18,7 @@ import io.reactivex.observers.TestObserver;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-import reactor.core.Cancellation;
-import reactor.core.publisher.*;
-import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.TimedScheduler;
-import reactor.util.function.Tuple2;
+
 
 import java.time.Duration;
 import java.util.concurrent.Callable;
@@ -66,7 +62,7 @@ public final class SingleKind<T> implements Higher<SingleKind.µ, T>, Publisher<
         return widen(Single.just(value));
     }
     public static <T> SingleKind<T> empty(){
-        return widen(Single.just(null));
+        return widen(Single.never());
     }
 
     /**

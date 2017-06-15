@@ -7,7 +7,6 @@ import cyclops.companion.rx2.Singles;
 import cyclops.stream.ReactiveSeq;
 import io.reactivex.*;
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Mono;
 
 import java.util.function.Function;
 

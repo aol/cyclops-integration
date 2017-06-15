@@ -1,6 +1,7 @@
 package cyclops.companion.rx2;
 
 
+import com.aol.cyclops.rx2.hkt.SingleKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.react.Status;
 import com.aol.cyclops2.types.Value;
@@ -12,6 +13,7 @@ import cyclops.control.Maybe;
 import cyclops.control.lazy.Either;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
+import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 
 import cyclops.monads.Rx2Witness;
@@ -28,7 +30,7 @@ import cyclops.typeclasses.monad.*;
 import io.reactivex.Single;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
+
 
 
 import java.util.Iterator;
@@ -238,20 +240,20 @@ public class Singles {
             Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
-        Future<? extends R> res = Future.fromPublisher(value1.toFlowable()).flatMap(in -> {
+        Single<? extends R> res = value1.flatMap(in -> {
 
-            Future<R1> a = Future.fromPublisher(value2.apply(in).toFlowable());
+            Single<R1> a = value2.apply(in);
             return a.flatMap(ina -> {
-                Future<R2> b = Future.fromPublisher(value3.apply(in, ina).toFlowable());
+                Single<R2> b = value3.apply(in, ina);
                 return b.flatMap(inb -> {
-                    Future<R3> c = Future.fromPublisher(value4.apply(in, ina, inb).toFlowable());
+                    Single<R3> c = value4.apply(in, ina, inb);
                     return c.map(in2 -> yieldingFunction.apply(in, ina, inb, in2));
                 });
 
             });
 
         });
-        return Single.fromPublisher(res);
+        return  narrow(res);
     }
 
 
@@ -283,11 +285,12 @@ public class Singles {
             BiFunction<? super T1, ? super R1, ? extends Single<R2>> value3,
             Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
-        Future<? extends R> res = Future.fromPublisher(value1).flatMap(in -> {
 
-            Future<R1> a = Future.fromPublisher(value2.apply(in));
+        Single<? extends R> res = value1.flatMap(in -> {
+
+            Single<R1> a = value2.apply(in);
             return a.flatMap(ina -> {
-                Future<R2> b = Future.fromPublisher(value3.apply(in, ina));
+                Single<R2> b = value3.apply(in, ina);
 
 
                 return b.map(in2 -> yieldingFunction.apply(in, ina, in2));
@@ -296,7 +299,7 @@ public class Singles {
             });
 
         });
-        return Single.from(res);
+        return narrow(res);
 
     }
 
@@ -327,16 +330,16 @@ public class Singles {
                                              Function<? super T, Single<R1>> value2,
                                              BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
 
-        Future<R> res = Future.fromPublisher(value1).flatMap(in -> {
+        Single<R> res = value1.flatMap(in -> {
 
-            Future<R1> a = Future.fromPublisher(value2.apply(in));
+            Single<R1> a = value2.apply(in);
             return a.map(ina -> yieldingFunction.apply(in, ina));
 
 
         });
 
 
-        return Single.from(res);
+        return narrow(res);
 
     }
 
@@ -380,7 +383,7 @@ public class Singles {
      */
     public static <T1, T2, R> Single<R> zip(Single<? extends T1> single, Iterable<? extends T2> app,
             BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return Single.fromPublisher(Future.of(single.toFuture())
+        return Single.fromPublisher(Future.fromPublisher(single.toFlowable())
                                 .zip(app, fn));
     }
 
@@ -394,7 +397,7 @@ public class Singles {
      */
     public static <T1, T2, R> Single<R> zip(Single<? extends T1> single, BiFunction<? super T1, ? super T2, ? extends R> fn,
             Publisher<? extends T2> app) {
-        Single<R> res = Single.from(Future.of(single.toFuture()).zipP(app, fn));
+        Single<R> res = Single.fromPublisher(Future.fromPublisher(single.toFlowable()).zipP(app, fn));
         return res;
     }
 
@@ -406,7 +409,7 @@ public class Singles {
      * @return true if equal
      */
     public static <T> boolean test(Single<T> single, T test) {
-        return Future.of(single.toFuture())
+        return Future.fromPublisher(single.toFlowable())
                       .test(test);
     }
 
@@ -417,7 +420,7 @@ public class Singles {
      * @return Single containing first element from Iterable (or empty Single)
      */
     public static <T> Single<T> fromIterable(Iterable<T> t) {
-        return Single.from(Flux.fromIterable(t));
+        return Single.fromPublisher(Future.fromIterable(t));
     }
 
     /**
@@ -427,7 +430,7 @@ public class Singles {
      * @return Iterator over Single value
      */
     public static <T> Iterator<T> iterator(Single<T> pub) {
-        return Future.fromPublisher(pub).iterator();
+        return pub.toFlowable().blockingIterable().iterator();
 
     }
 
@@ -604,17 +607,17 @@ public class Singles {
         public static <T> MonadPlus<SingleKind.µ> monadPlus(){
 
 
-            Singleid<SingleKind<T>> m = Singleid.of(SingleKind.<T>widen(Single.empty()),
-                    (f,g)-> SingleKind.widen(Single.first(f.narrow(),g.narrow())));
+            Monoid<SingleKind<T>> m = Monoid.of(SingleKind.<T>widen(Single.never()),
+                    (f,g)-> SingleKind.widen(Single.ambArray(f.narrow(),g.narrow())));
 
-            Singleid<Higher<SingleKind.µ,T>> m2= (Singleid)m;
+            Monoid<Higher<SingleKind.µ,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
          *
          * <pre>
          * {@code
-         *  Singleid<SingleKind<Integer>> m = Singleid.of(SingleKind.widen(Arrays.asSingle()), (a,b)->a.isEmpty() ? b : a);
+         *  Monoid<SingleKind<Integer>> m = Monoid.of(SingleKind.widen(Arrays.asSingle()), (a,b)->a.isEmpty() ? b : a);
         SingleKind<Integer> ft = Singles.<Integer>monadPlus(m)
         .plus(SingleKind.widen(Arrays.asSingle(5)), SingleKind.widen(Arrays.asSingle(10)))
         .convert(SingleKind::narrowK);
@@ -623,11 +626,11 @@ public class Singles {
          * }
          * </pre>
          *
-         * @param m Singleid to use for combining Singles
+         * @param m Monoid to use for combining Singles
          * @return Type class for combining Singles
          */
-        public static <T> MonadPlus<SingleKind.µ> monadPlus(Singleid<SingleKind<T>> m){
-            Singleid<Higher<SingleKind.µ,T>> m2= (Singleid)m;
+        public static <T> MonadPlus<SingleKind.µ> monadPlus(Monoid<SingleKind<T>> m){
+            Monoid<Higher<SingleKind.µ,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
@@ -655,12 +658,12 @@ public class Singles {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<SingleKind.µ> foldable(){
-            BiFunction<Singleid<T>,Higher<SingleKind.µ,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), SingleKind.narrow(l).block());
-            BiFunction<Singleid<T>,Higher<SingleKind.µ,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), SingleKind.narrow(l).block());
+            BiFunction<Monoid<T>,Higher<SingleKind.µ,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), SingleKind.narrow(l).blockingGet());
+            BiFunction<Monoid<T>,Higher<SingleKind.µ,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), SingleKind.narrow(l).blockingGet());
             return General.foldable(foldRightFn, foldLeftFn);
         }
         public static <T> Comonad<SingleKind.µ> comonad(){
-            Function<? super Higher<SingleKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(SingleKind::narrow).block();
+            Function<? super Higher<SingleKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(SingleKind::narrow).blockingGet();
             return General.comonad(functor(), unit(), extractFn);
         }
 
@@ -674,17 +677,17 @@ public class Singles {
 
         }
         private static <T,R> Higher<SingleKind.µ,R> flatMap(Higher<SingleKind.µ,T> lt, Function<? super T, ? extends  Higher<SingleKind.µ,R>> fn){
-            return SingleKind.widen(SingleKind.narrow(lt).flatMap(fn.andThen(SingleKind::narrow)));
+            return SingleKind.widen(SingleKind.narrow(lt).flatMap(Functions.rxFunction(fn.andThen(SingleKind::narrow))));
         }
         private static <T,R> SingleKind<R> map(SingleKind<T> lt, Function<? super T, ? extends R> fn){
-            return SingleKind.widen(lt.narrow().map(fn));
+            return SingleKind.widen(lt.narrow().map(Functions.rxFunction(fn)));
         }
 
 
         private static <C2,T,R> Higher<C2, Higher<SingleKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
                                                                             Higher<SingleKind.µ, T> ds){
             Single<T> future = SingleKind.narrow(ds);
-            return applicative.map(SingleKind::just, fn.apply(future.block()));
+            return applicative.map(SingleKind::just, fn.apply(future.blockingGet()));
         }
 
     }
