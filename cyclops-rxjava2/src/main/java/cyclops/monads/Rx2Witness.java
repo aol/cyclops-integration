@@ -5,12 +5,32 @@ package cyclops.monads;
 import com.aol.cyclops.rx2.adapter.*;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
 import com.sun.tools.javac.comp.Flow;
+
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
 
 public interface Rx2Witness {
+
+    public static <T> Maybe<T> maybe(AnyM<maybe, ? extends T> anyM){
+        return anyM.unwrap();
+
+    }
+    static interface MaybeWitness<W extends MaybeWitness<W>>  extends WitnessType<W> {
+
+    }
+    public static enum maybe implements MaybeWitness<maybe> {
+        INSTANCE;
+
+        @Override
+        public FunctionalAdapter<maybe> adapter() {
+            return new MaybeAdapter();
+        }
+
+    }
+
     public static <T> Flowable<T> flowable(AnyM<flowable, ? extends T> anyM){
         FlowableReactiveSeq<T> obs = anyM.unwrap();
         return obs.getFlowable();
