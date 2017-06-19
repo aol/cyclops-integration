@@ -3,6 +3,7 @@ package com.aol.cyclops.rx2.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.async.Future;
+import cyclops.companion.rx2.Maybes;
 import io.reactivex.*;
 import io.reactivex.annotations.*;
 import io.reactivex.disposables.Disposable;
@@ -71,7 +72,7 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
     
     public static <T> MaybeKind<T> widen(final Publisher<T> completableMaybe) {
         
-        return new MaybeKind<T>(Maybe.fromPublisher(
+        return new MaybeKind<T>(Maybes.fromPublisher(
                          completableMaybe));
     }
         
@@ -113,65 +114,101 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
         return Maybe.ambArray(sources);
     }
 
+    @BackpressureSupport(BackpressureKind.FULL)
     @CheckReturnValue
     @SchedulerSupport("none")
-    @BackpressureSupport(BackpressureKind.FULL)
     public static <T1> Flowable<T1> concat(Iterable<? extends MaybeSource<? extends T1>> maybeSources) {
         return Maybe.concat(maybeSources);
     }
 
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public static <T1> Observable<T1> concat(ObservableSource<? extends MaybeSource<? extends T1>> sources) {
-        return Maybe.concat(sources);
-    }
-
-    @CheckReturnValue
     @BackpressureSupport(BackpressureKind.FULL)
-    @SchedulerSupport("none")
-    public static <T1> Flowable<T1> concat(Publisher<? extends MaybeSource<? extends T1>> sources) {
-        return Maybe.concat(sources);
-    }
-
     @CheckReturnValue
-    @BackpressureSupport(BackpressureKind.FULL)
-    @SchedulerSupport("none")
-    public static <T1> Flowable<T1> concat(Publisher<? extends MaybeSource<? extends T1>> sources, int prefetch) {
-        return Maybe.concat(sources, prefetch);
-    }
-
-    @CheckReturnValue
-    @BackpressureSupport(BackpressureKind.FULL)
     @SchedulerSupport("none")
     public static <T1> Flowable<T1> concat(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2) {
         return Maybe.concat(source1, source2);
     }
 
-    @CheckReturnValue
     @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
     @SchedulerSupport("none")
     public static <T1> Flowable<T1> concat(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2, MaybeSource<? extends T1> source3) {
         return Maybe.concat(source1, source2, source3);
     }
 
-    @CheckReturnValue
     @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
     @SchedulerSupport("none")
     public static <T1> Flowable<T1> concat(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2, MaybeSource<? extends T1> source3, MaybeSource<? extends T1> source4) {
         return Maybe.concat(source1, source2, source3, source4);
     }
 
-    @CheckReturnValue
     @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> concat(Publisher<? extends MaybeSource<? extends T1>> sources) {
+        return Maybe.concat(sources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> concat(Publisher<? extends MaybeSource<? extends T1>> sources, int prefetch) {
+        return Maybe.concat(sources, prefetch);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
     @SchedulerSupport("none")
     public static <T1> Flowable<T1> concatArray(MaybeSource<? extends T1>[] sources) {
         return Maybe.concatArray(sources);
     }
 
+    @BackpressureSupport(BackpressureKind.FULL)
     @CheckReturnValue
     @SchedulerSupport("none")
-    public static <T1> Maybe<T1> create(MaybeOnSubscribe<T1> source) {
-        return Maybe.create(source);
+    public static <T1> Flowable<T1> concatArrayDelayError(MaybeSource<? extends T1>[] sources) {
+        return Maybe.concatArrayDelayError(sources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> concatArrayEager(MaybeSource<? extends T1>[] sources) {
+        return Maybe.concatArrayEager(sources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> concatDelayError(Iterable<? extends MaybeSource<? extends T1>> maybeSources) {
+        return Maybe.concatDelayError(maybeSources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> concatDelayError(Publisher<? extends MaybeSource<? extends T1>> sources) {
+        return Maybe.concatDelayError(sources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> concatEager(Iterable<? extends MaybeSource<? extends T1>> maybeSources) {
+        return Maybe.concatEager(maybeSources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> concatEager(Publisher<? extends MaybeSource<? extends T1>> sources) {
+        return Maybe.concatEager(sources);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Maybe<T1> create(MaybeOnSubscribe<T1> onSubscribe) {
+        return Maybe.create(onSubscribe);
     }
 
     @CheckReturnValue
@@ -182,14 +219,32 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public static <T1> Maybe<T1> error(Callable<? extends Throwable> errorSupplier) {
-        return Maybe.error(errorSupplier);
+    public static <T1> Maybe<T1> error(Throwable exception) {
+        return Maybe.error(exception);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public static <T1> Maybe<T1> error(Throwable exception) {
-        return Maybe.error(exception);
+    public static <T1> Maybe<T1> error(Callable<? extends Throwable> supplier) {
+        return Maybe.error(supplier);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Maybe<T1> fromAction(Action run) {
+        return Maybe.fromAction(run);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Maybe<T1> fromCompletable(CompletableSource completableSource) {
+        return Maybe.fromCompletable(completableSource);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Maybe<T1> fromSingle(SingleSource<T1> singleSource) {
+        return Maybe.fromSingle(singleSource);
     }
 
     @CheckReturnValue
@@ -211,42 +266,30 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
     }
 
     @CheckReturnValue
-    @SchedulerSupport("custom")
-    public static <T1> Maybe<T1> fromFuture(java.util.concurrent.Future<? extends T1> future, long timeout, TimeUnit unit, Scheduler scheduler) {
-        return Maybe.fromFuture(future, timeout, unit, scheduler);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("custom")
-    public static <T1> Maybe<T1> fromFuture(java.util.concurrent.Future<? extends T1> future, Scheduler scheduler) {
-        return Maybe.fromFuture(future, scheduler);
-    }
-
-    @BackpressureSupport(BackpressureKind.UNBOUNDED_IN)
-    @CheckReturnValue
     @SchedulerSupport("none")
-    public static <T1> Maybe<T1> fromPublisher(Publisher<? extends T1> publisher) {
-        return Maybe.fromPublisher(publisher);
+    public static <T1> Maybe<T1> fromRunnable(Runnable run) {
+        return Maybe.fromRunnable(run);
     }
 
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public static <T1> Maybe<T1> fromObservable(ObservableSource<? extends T1> observableSource) {
-        return Maybe.fromObservable(observableSource);
-    }
-
-    @CheckReturnValue
     @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
     @SchedulerSupport("none")
     public static <T1> Flowable<T1> merge(Iterable<? extends MaybeSource<? extends T1>> maybeSources) {
         return Maybe.merge(maybeSources);
     }
 
-    @CheckReturnValue
     @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
     @SchedulerSupport("none")
     public static <T1> Flowable<T1> merge(Publisher<? extends MaybeSource<? extends T1>> sources) {
         return Maybe.merge(sources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> merge(Publisher<? extends MaybeSource<? extends T1>> sources, int maxConcurrency) {
+        return Maybe.merge(sources, maxConcurrency);
     }
 
     @CheckReturnValue
@@ -255,31 +298,92 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
         return Maybe.merge(source);
     }
 
-    @CheckReturnValue
     @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
     @SchedulerSupport("none")
     public static <T1> Flowable<T1> merge(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2) {
         return Maybe.merge(source1, source2);
     }
 
-    @CheckReturnValue
     @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
     @SchedulerSupport("none")
     public static <T1> Flowable<T1> merge(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2, MaybeSource<? extends T1> source3) {
         return Maybe.merge(source1, source2, source3);
     }
 
-    @CheckReturnValue
     @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
     @SchedulerSupport("none")
     public static <T1> Flowable<T1> merge(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2, MaybeSource<? extends T1> source3, MaybeSource<? extends T1> source4) {
         return Maybe.merge(source1, source2, source3, source4);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> mergeArray(MaybeSource<? extends T1>[] sources) {
+        return Maybe.mergeArray(sources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> mergeArrayDelayError(MaybeSource<? extends T1>[] sources) {
+        return Maybe.mergeArrayDelayError(sources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> mergeDelayError(Iterable<? extends MaybeSource<? extends T1>> maybeSources) {
+        return Maybe.mergeDelayError(maybeSources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> mergeDelayError(Publisher<? extends MaybeSource<? extends T1>> sources) {
+        return Maybe.mergeDelayError(sources);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> mergeDelayError(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2) {
+        return Maybe.mergeDelayError(source1, source2);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> mergeDelayError(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2, MaybeSource<? extends T1> source3) {
+        return Maybe.mergeDelayError(source1, source2, source3);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Flowable<T1> mergeDelayError(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2, MaybeSource<? extends T1> source3, MaybeSource<? extends T1> source4) {
+        return Maybe.mergeDelayError(source1, source2, source3, source4);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
     public static <T1> Maybe<T1> never() {
         return Maybe.never();
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Single<Boolean> sequenceEqual(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2) {
+        return Maybe.sequenceEqual(source1, source2);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public static <T1> Single<Boolean> sequenceEqual(MaybeSource<? extends T1> source1, MaybeSource<? extends T1> source2, BiPredicate<? super T1, ? super T1> isEqual) {
+        return Maybe.sequenceEqual(source1, source2, isEqual);
     }
 
     @CheckReturnValue
@@ -296,26 +400,20 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public static <T1> Maybe<Boolean> equals(MaybeSource<? extends T1> first, MaybeSource<? extends T1> second) {
-        return Maybe.equals(first, second);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
     public static <T1> Maybe<T1> unsafeCreate(MaybeSource<T1> onSubscribe) {
         return Maybe.unsafeCreate(onSubscribe);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public static <T1, U> Maybe<T1> using(Callable<U> resourceSupplier, Function<? super U, ? extends MaybeSource<? extends T1>> maybeFunction, Consumer<? super U> disposer) {
-        return Maybe.using(resourceSupplier, maybeFunction, disposer);
+    public static <T1, D> Maybe<T1> using(Callable<? extends D> resourceSupplier, Function<? super D, ? extends MaybeSource<? extends T1>> sourceSupplier, Consumer<? super D> resourceDisposer) {
+        return Maybe.using(resourceSupplier, sourceSupplier, resourceDisposer);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public static <T1, U> Maybe<T1> using(Callable<U> resourceSupplier, Function<? super U, ? extends MaybeSource<? extends T1>> maybeFunction, Consumer<? super U> disposer, boolean eager) {
-        return Maybe.using(resourceSupplier, maybeFunction, disposer, eager);
+    public static <T1, D> Maybe<T1> using(Callable<? extends D> resourceSupplier, Function<? super D, ? extends MaybeSource<? extends T1>> sourceSupplier, Consumer<? super D> resourceDisposer, boolean eager) {
+        return Maybe.using(resourceSupplier, sourceSupplier, resourceDisposer, eager);
     }
 
     @CheckReturnValue
@@ -392,14 +490,14 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> hide() {
-        return boxed.hide();
+    public T blockingGet() {
+        return boxed.blockingGet();
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public <R> Maybe<R> compose(MaybeTransformer<? super T, ? extends R> transformer) {
-        return boxed.compose(transformer);
+    public T blockingGet(T defaultValue) {
+        return boxed.blockingGet(defaultValue);
     }
 
     @CheckReturnValue
@@ -414,6 +512,18 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
         return boxed.cast(clazz);
     }
 
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <R> Maybe<R> compose(MaybeTransformer<? super T, ? extends R> transformer) {
+        return boxed.compose(transformer);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <R> Maybe<R> concatMap(Function<? super T, ? extends MaybeSource<? extends R>> mapper) {
+        return boxed.concatMap(mapper);
+    }
+
     @BackpressureSupport(BackpressureKind.FULL)
     @CheckReturnValue
     @SchedulerSupport("none")
@@ -422,52 +532,59 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
     }
 
     @CheckReturnValue
-    @SchedulerSupport("io.reactivex:computation")
-    public Maybe<T> delay(long time, TimeUnit unit) {
-        return boxed.delay(time, unit);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("custom")
-    public Maybe<T> delay(long time, TimeUnit unit, Scheduler scheduler) {
-        return boxed.delay(time, unit, scheduler);
+    @SchedulerSupport("none")
+    public Single<Boolean> contains(Object item) {
+        return boxed.contains(item);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> delaySubscription(CompletableSource other) {
-        return boxed.delaySubscription(other);
+    public Single<Long> count() {
+        return boxed.count();
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public <U> Maybe<T> delaySubscription(MaybeSource<U> other) {
-        return boxed.delaySubscription(other);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public <U> Maybe<T> delaySubscription(ObservableSource<U> other) {
-        return boxed.delaySubscription(other);
-    }
-
-    @BackpressureSupport(BackpressureKind.FULL)
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public <U> Maybe<T> delaySubscription(Publisher<U> other) {
-        return boxed.delaySubscription(other);
+    public Maybe<T> defaultIfEmpty(T defaultItem) {
+        return boxed.defaultIfEmpty(defaultItem);
     }
 
     @CheckReturnValue
     @SchedulerSupport("io.reactivex:computation")
-    public <U> Maybe<T> delaySubscription(long time, TimeUnit unit) {
-        return boxed.delaySubscription(time, unit);
+    public Maybe<T> delay(long delay, TimeUnit unit) {
+        return boxed.delay(delay, unit);
     }
 
     @CheckReturnValue
     @SchedulerSupport("custom")
-    public <U> Maybe<T> delaySubscription(long time, TimeUnit unit, Scheduler scheduler) {
-        return boxed.delaySubscription(time, unit, scheduler);
+    public Maybe<T> delay(long delay, TimeUnit unit, Scheduler scheduler) {
+        return boxed.delay(delay, unit, scheduler);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    @BackpressureSupport(BackpressureKind.UNBOUNDED_IN)
+    public <U, V> Maybe<T> delay(Publisher<U> delayIndicator) {
+        return boxed.delay(delayIndicator);
+    }
+
+    @BackpressureSupport(BackpressureKind.UNBOUNDED_IN)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <U> Maybe<T> delaySubscription(Publisher<U> subscriptionIndicator) {
+        return boxed.delaySubscription(subscriptionIndicator);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("io.reactivex:computation")
+    public Maybe<T> delaySubscription(long delay, TimeUnit unit) {
+        return boxed.delaySubscription(delay, unit);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("custom")
+    public Maybe<T> delaySubscription(long delay, TimeUnit unit, Scheduler scheduler) {
+        return boxed.delaySubscription(delay, unit, scheduler);
     }
 
     @CheckReturnValue
@@ -490,20 +607,14 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> doOnSubscribe(Consumer<? super Disposable> onSubscribe) {
-        return boxed.doOnSubscribe(onSubscribe);
+    public Maybe<T> doOnDispose(Action onDispose) {
+        return boxed.doOnDispose(onDispose);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> doOnSuccess(Consumer<? super T> onSuccess) {
-        return boxed.doOnSuccess(onSuccess);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public Maybe<T> doOnEvent(BiConsumer<? super T, ? super Throwable> onEvent) {
-        return boxed.doOnEvent(onEvent);
+    public Maybe<T> doOnComplete(Action onComplete) {
+        return boxed.doOnComplete(onComplete);
     }
 
     @CheckReturnValue
@@ -514,8 +625,20 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> doOnDispose(Action onDispose) {
-        return boxed.doOnDispose(onDispose);
+    public Maybe<T> doOnEvent(BiConsumer<? super T, ? super Throwable> onEvent) {
+        return boxed.doOnEvent(onEvent);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> doOnSubscribe(Consumer<? super Disposable> onSubscribe) {
+        return boxed.doOnSubscribe(onSubscribe);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> doOnSuccess(Consumer<? super T> onSuccess) {
+        return boxed.doOnSuccess(onSuccess);
     }
 
     @CheckReturnValue
@@ -532,15 +655,14 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public <R> Maybe<R> flatMapMaybe(Function<? super T, ? extends MaybeSource<? extends R>> mapper) {
-        return boxed.flatMapMaybe(mapper);
+    public <R> Maybe<R> flatMap(Function<? super T, ? extends MaybeSource<? extends R>> onSuccessMapper, Function<? super Throwable, ? extends MaybeSource<? extends R>> onErrorMapper, Callable<? extends MaybeSource<? extends R>> onCompleteSupplier) {
+        return boxed.flatMap(onSuccessMapper, onErrorMapper, onCompleteSupplier);
     }
 
-    @BackpressureSupport(BackpressureKind.FULL)
     @CheckReturnValue
     @SchedulerSupport("none")
-    public <R> Flowable<R> flatMapPublisher(Function<? super T, ? extends Publisher<? extends R>> mapper) {
-        return boxed.flatMapPublisher(mapper);
+    public <U, R> Maybe<R> flatMap(Function<? super T, ? extends MaybeSource<? extends U>> mapper, BiFunction<? super T, ? super U, ? extends R> resultSelector) {
+        return boxed.flatMap(mapper, resultSelector);
     }
 
     @BackpressureSupport(BackpressureKind.FULL)
@@ -562,6 +684,25 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
         return boxed.flatMapObservable(mapper);
     }
 
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <R> Flowable<R> flatMapPublisher(Function<? super T, ? extends Publisher<? extends R>> mapper) {
+        return boxed.flatMapPublisher(mapper);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <R> Single<R> flatMapSingle(Function<? super T, ? extends SingleSource<? extends R>> mapper) {
+        return boxed.flatMapSingle(mapper);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <R> Maybe<R> flatMapSingleElement(Function<? super T, ? extends SingleSource<? extends R>> mapper) {
+        return boxed.flatMapSingleElement(mapper);
+    }
+
     @CheckReturnValue
     @SchedulerSupport("none")
     public Completable flatMapCompletable(Function<? super T, ? extends CompletableSource> mapper) {
@@ -570,8 +711,20 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public T blockingGet() {
-        return boxed.blockingGet();
+    public Maybe<T> hide() {
+        return boxed.hide();
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Completable ignoreElement() {
+        return boxed.ignoreElement();
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Single<Boolean> isEmpty() {
+        return boxed.isEmpty();
     }
 
     @CheckReturnValue
@@ -584,18 +737,6 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
     @SchedulerSupport("none")
     public <R> Maybe<R> map(Function<? super T, ? extends R> mapper) {
         return boxed.map(mapper);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public Maybe<Boolean> contains(Object value) {
-        return boxed.contains(value);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public Maybe<Boolean> contains(Object value, BiPredicate<Object, Object> comparer) {
-        return boxed.contains(value, comparer);
     }
 
     @BackpressureSupport(BackpressureKind.FULL)
@@ -613,26 +754,87 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> onErrorReturn(Function<Throwable, ? extends T> resumeFunction) {
-        return boxed.onErrorReturn(resumeFunction);
+    public <U> Maybe<U> ofType(Class<U> clazz) {
+        return boxed.ofType(clazz);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> onErrorReturnItem(T value) {
-        return boxed.onErrorReturnItem(value);
+    public <R> R to(Function<? super Maybe<T>, R> convert) {
+        return boxed.to(convert);
+    }
+
+    @BackpressureSupport(BackpressureKind.FULL)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Flowable<T> toFlowable() {
+        return boxed.toFlowable();
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> onErrorResumeNext(Maybe<? extends T> resumeMaybeInCaseOfError) {
-        return boxed.onErrorResumeNext(resumeMaybeInCaseOfError);
+    public Observable<T> toObservable() {
+        return boxed.toObservable();
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> onErrorResumeNext(Function<? super Throwable, ? extends MaybeSource<? extends T>> resumeFunctionInCaseOfError) {
-        return boxed.onErrorResumeNext(resumeFunctionInCaseOfError);
+    public Single<T> toSingle(T defaultValue) {
+        return boxed.toSingle(defaultValue);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Single<T> toSingle() {
+        return boxed.toSingle();
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> onErrorComplete() {
+        return boxed.onErrorComplete();
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> onErrorComplete(Predicate<? super Throwable> predicate) {
+        return boxed.onErrorComplete(predicate);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> onErrorResumeNext(MaybeSource<? extends T> next) {
+        return boxed.onErrorResumeNext(next);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> onErrorResumeNext(Function<? super Throwable, ? extends MaybeSource<? extends T>> resumeFunction) {
+        return boxed.onErrorResumeNext(resumeFunction);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> onErrorReturn(Function<? super Throwable, ? extends T> valueSupplier) {
+        return boxed.onErrorReturn(valueSupplier);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> onErrorReturnItem(T item) {
+        return boxed.onErrorReturnItem(item);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> onExceptionResumeNext(MaybeSource<? extends T> next) {
+        return boxed.onExceptionResumeNext(next);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> onTerminateDetach() {
+        return boxed.onTerminateDetach();
     }
 
     @BackpressureSupport(BackpressureKind.FULL)
@@ -652,15 +854,15 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
     @BackpressureSupport(BackpressureKind.FULL)
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Flowable<T> repeatWhen(Function<? super Flowable<Object>, ? extends Publisher<?>> handler) {
-        return boxed.repeatWhen(handler);
+    public Flowable<T> repeatUntil(BooleanSupplier stop) {
+        return boxed.repeatUntil(stop);
     }
 
     @BackpressureSupport(BackpressureKind.FULL)
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Flowable<T> repeatUntil(BooleanSupplier stop) {
-        return boxed.repeatUntil(stop);
+    public Flowable<T> repeatWhen(Function<? super Flowable<Object>, ? extends Publisher<?>> handler) {
+        return boxed.repeatWhen(handler);
     }
 
     @CheckReturnValue
@@ -671,20 +873,32 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> retry(long times) {
-        return boxed.retry(times);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
     public Maybe<T> retry(BiPredicate<? super Integer, ? super Throwable> predicate) {
         return boxed.retry(predicate);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
+    public Maybe<T> retry(long count) {
+        return boxed.retry(count);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> retry(long times, Predicate<? super Throwable> predicate) {
+        return boxed.retry(times, predicate);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
     public Maybe<T> retry(Predicate<? super Throwable> predicate) {
         return boxed.retry(predicate);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public Maybe<T> retryUntil(BooleanSupplier stop) {
+        return boxed.retryUntil(stop);
     }
 
     @CheckReturnValue
@@ -700,12 +914,6 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Disposable subscribe(BiConsumer<? super T, ? super Throwable> onCallback) {
-        return boxed.subscribe(onCallback);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
     public Disposable subscribe(Consumer<? super T> onSuccess) {
         return boxed.subscribe(onSuccess);
     }
@@ -716,15 +924,15 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
         return boxed.subscribe(onSuccess, onError);
     }
 
-    @SchedulerSupport("none")
-    public void subscribe(MaybeObserver<? super T> subscriber) {
-        boxed.subscribe(subscriber);
-    }
-
     @CheckReturnValue
     @SchedulerSupport("none")
-    public <E extends MaybeObserver<? super T>> E subscribeWith(E observer) {
-        return boxed.subscribeWith(observer);
+    public Disposable subscribe(Consumer<? super T> onSuccess, Consumer<? super Throwable> onError, Action onComplete) {
+        return boxed.subscribe(onSuccess, onError, onComplete);
+    }
+
+    @SchedulerSupport("none")
+    public void subscribe(MaybeObserver<? super T> observer) {
+        boxed.subscribe(observer);
     }
 
     @CheckReturnValue
@@ -735,88 +943,88 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public Maybe<T> takeUntil(CompletableSource other) {
-        return boxed.takeUntil(other);
-    }
-
-    @BackpressureSupport(BackpressureKind.FULL)
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public <E> Maybe<T> takeUntil(Publisher<E> other) {
-        return boxed.takeUntil(other);
+    public <E extends MaybeObserver<? super T>> E subscribeWith(E observer) {
+        return boxed.subscribeWith(observer);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public <E> Maybe<T> takeUntil(MaybeSource<? extends E> other) {
+    public Maybe<T> switchIfEmpty(MaybeSource<? extends T> other) {
+        return boxed.switchIfEmpty(other);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <U> Maybe<T> takeUntil(MaybeSource<U> other) {
+        return boxed.takeUntil(other);
+    }
+
+    @BackpressureSupport(BackpressureKind.UNBOUNDED_IN)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <U> Maybe<T> takeUntil(Publisher<U> other) {
         return boxed.takeUntil(other);
     }
 
     @CheckReturnValue
     @SchedulerSupport("io.reactivex:computation")
-    public Maybe<T> timeout(long timeout, TimeUnit unit) {
-        return boxed.timeout(timeout, unit);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("custom")
-    public Maybe<T> timeout(long timeout, TimeUnit unit, Scheduler scheduler) {
-        return boxed.timeout(timeout, unit, scheduler);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("custom")
-    public Maybe<T> timeout(long timeout, TimeUnit unit, Scheduler scheduler, MaybeSource<? extends T> other) {
-        return boxed.timeout(timeout, unit, scheduler, other);
+    public Maybe<T> timeout(long timeout, TimeUnit timeUnit) {
+        return boxed.timeout(timeout, timeUnit);
     }
 
     @CheckReturnValue
     @SchedulerSupport("io.reactivex:computation")
-    public Maybe<T> timeout(long timeout, TimeUnit unit, MaybeSource<? extends T> other) {
-        return boxed.timeout(timeout, unit, other);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public <R> R to(Function<? super Maybe<T>, R> convert) {
-        return boxed.to(convert);
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public Completable toCompletable() {
-        return boxed.toCompletable();
-    }
-
-    @BackpressureSupport(BackpressureKind.FULL)
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public Flowable<T> toFlowable() {
-        return boxed.toFlowable();
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public Maybe<T> toMaybe() {
-        return boxed.toMaybe();
-    }
-
-    @CheckReturnValue
-    @SchedulerSupport("none")
-    public Observable<T> toObservable() {
-        return boxed.toObservable();
+    public Maybe<T> timeout(long timeout, TimeUnit timeUnit, MaybeSource<? extends T> fallback) {
+        return boxed.timeout(timeout, timeUnit, fallback);
     }
 
     @CheckReturnValue
     @SchedulerSupport("custom")
-    @Experimental
+    public Maybe<T> timeout(long timeout, TimeUnit timeUnit, Scheduler scheduler, MaybeSource<? extends T> fallback) {
+        return boxed.timeout(timeout, timeUnit, scheduler, fallback);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("custom")
+    public Maybe<T> timeout(long timeout, TimeUnit timeUnit, Scheduler scheduler) {
+        return boxed.timeout(timeout, timeUnit, scheduler);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <U> Maybe<T> timeout(MaybeSource<U> timeoutIndicator) {
+        return boxed.timeout(timeoutIndicator);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <U> Maybe<T> timeout(MaybeSource<U> timeoutIndicator, MaybeSource<? extends T> fallback) {
+        return boxed.timeout(timeoutIndicator, fallback);
+    }
+
+    @BackpressureSupport(BackpressureKind.UNBOUNDED_IN)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <U> Maybe<T> timeout(Publisher<U> timeoutIndicator) {
+        return boxed.timeout(timeoutIndicator);
+    }
+
+    @BackpressureSupport(BackpressureKind.UNBOUNDED_IN)
+    @CheckReturnValue
+    @SchedulerSupport("none")
+    public <U> Maybe<T> timeout(Publisher<U> timeoutIndicator, MaybeSource<? extends T> fallback) {
+        return boxed.timeout(timeoutIndicator, fallback);
+    }
+
+    @CheckReturnValue
+    @SchedulerSupport("custom")
     public Maybe<T> unsubscribeOn(Scheduler scheduler) {
         return boxed.unsubscribeOn(scheduler);
     }
 
     @CheckReturnValue
     @SchedulerSupport("none")
-    public <U, R> Maybe<R> zipWith(MaybeSource<U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+    public <U, R> Maybe<R> zipWith(MaybeSource<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
         return boxed.zipWith(other, zipper);
     }
 

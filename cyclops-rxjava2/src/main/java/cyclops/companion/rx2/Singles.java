@@ -4,6 +4,7 @@ package cyclops.companion.rx2;
 import com.aol.cyclops.rx2.hkt.SingleKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.react.Status;
+import com.aol.cyclops2.types.MonadicValue;
 import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.async.Future;
@@ -53,6 +54,9 @@ public class Singles {
         return Rx2Witness.single(anyM);
     }
 
+    public static <T> Single<T> fromValue(MonadicValue<T> future){
+        return Single.fromPublisher(future);
+    }
 
     public static <W extends WitnessType<W>,T> SingleT<W,T> liftM(AnyM<W,Single<T>> nested){
         return SingleT.of(nested);

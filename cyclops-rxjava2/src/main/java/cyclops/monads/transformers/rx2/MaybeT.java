@@ -10,6 +10,7 @@ import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.async.Future;
 import cyclops.companion.rx2.Functions;
+import cyclops.companion.rx2.Maybes;
 import cyclops.control.Trampoline;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
@@ -146,12 +147,12 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
      */
 
     public <B> MaybeT<W,B> flatMapT(final Function<? super T, MaybeT<W,B>> f) {
-        MaybeT<W, B> r = of(run.map(future -> Maybe.fromPublisher(future.flatMap(a -> {
+        MaybeT<W, B> r = of(run.map(future -> future.flatMap(a -> {
             Maybe<B> m = f.apply(a).run.stream()
                     .toList()
                     .get(0);
             return m;
-        }))));
+        })));
         return r;
     }
 
@@ -162,7 +163,11 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
     @Override
     public <B> MaybeT<W,B> flatMap(final Function<? super T, ? extends MonadicValue<? extends B>> f) {
 
-        final AnyM<W,Maybe<? extends B>> mapped = run.map(o -> Maybe.fromPublisher(o.flatMap(f)));
+        final AnyM<W,Maybe<? extends B>> mapped = run.map(o -> o.flatMap(in->{
+            MonadicValue<? extends B> r = f.apply(in);
+            Maybe<B> r2 = Maybes.fromValue((MonadicValue<B>) r);
+            return r2;
+        }));
         return of(narrow(mapped));
 
     }

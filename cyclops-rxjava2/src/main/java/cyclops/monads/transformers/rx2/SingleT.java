@@ -10,12 +10,15 @@ import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.async.Future;
 import cyclops.companion.rx2.Functions;
+import cyclops.companion.rx2.Maybes;
+import cyclops.companion.rx2.Singles;
 import cyclops.control.Trampoline;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.stream.ReactiveSeq;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
@@ -147,12 +150,12 @@ public final class SingleT<W extends WitnessType<W>,T> extends ValueTransformer<
      */
 
     public <B> SingleT<W,B> flatMapT(final Function<? super T, SingleT<W,B>> f) {
-        SingleT<W, B> r = of(run.map(future -> Single.fromPublisher(future.flatMap(a -> {
+        SingleT<W, B> r = of(run.map(future -> future.flatMap(a -> {
             Single<B> m = f.apply(a).run.stream()
                     .toList()
                     .get(0);
             return m;
-        }))));
+        })));
         return r;
     }
 
@@ -163,7 +166,11 @@ public final class SingleT<W extends WitnessType<W>,T> extends ValueTransformer<
     @Override
     public <B> SingleT<W,B> flatMap(final Function<? super T, ? extends MonadicValue<? extends B>> f) {
 
-        final AnyM<W,Single<? extends B>> mapped = run.map(o -> Single.fromPublisher(o.flatMap(f)));
+        final AnyM<W,Single<? extends B>> mapped = run.map(o -> o.flatMap(in->{
+            MonadicValue<? extends B> r = f.apply(in);
+            Single<B> r2 = Singles.fromValue((MonadicValue<B>) r);
+            return r2;
+        }));
         return of(narrow(mapped));
 
     }

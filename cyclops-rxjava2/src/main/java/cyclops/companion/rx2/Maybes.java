@@ -4,6 +4,7 @@ package cyclops.companion.rx2;
 import com.aol.cyclops.rx2.hkt.MaybeKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.react.Status;
+import com.aol.cyclops2.types.MonadicValue;
 import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.async.Future;
@@ -26,6 +27,7 @@ import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import lombok.experimental.UtilityClass;
@@ -66,6 +68,17 @@ public class Maybes {
             array[i]=future(futures[i]);
         }
         return array;
+    }
+    public static <T> cyclops.control.Maybe<T> toMaybe(Maybe<T> future){
+        return cyclops.control.Maybe.fromPublisher(future.toFlowable());
+    }
+    public static <T> Maybe<T> fromMaybe(cyclops.control.Maybe<T> future){
+        return Single.fromPublisher(future).toMaybe();
+
+    }
+    public static <T> Maybe<T> fromValue(MonadicValue<T> future){
+        return Single.fromPublisher(future).toMaybe();
+
     }
     public static <T> Future<T> future(Maybe<T> future){
         return Future.fromPublisher(future.toFlowable());
