@@ -104,6 +104,10 @@ public class Flowables {
         return new FlowableReactiveSeq<>(flowable);
     }
 
+    public static <T> ReactiveSeq<T> reactiveSeq(Publisher<T> flowable){
+        return new FlowableReactiveSeq<>(Flowable.fromPublisher(flowable));
+    }
+
     public static ReactiveSeq<Integer> range(int start, int end){
        return reactiveSeq(Flowable.range(start,end));
     }

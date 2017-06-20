@@ -147,7 +147,7 @@ For ObservableReactiveSeq the visit method always executes the #3 function
 ReactiveSeq<Integer> seq = Observables.just(1,2,3);
 
 String type = seq.visit(sync->"synchronous",rs->"reactive-streams",async->"pure async");
-//"pure async"
+observables
 
 ```
 

@@ -100,6 +100,9 @@ public class Fluxs {
     public static <T> ReactiveSeq<T> reactiveSeq(Flux<T> flux){
         return new FluxReactiveSeq<>(flux);
     }
+    public static <T> ReactiveSeq<T> reactiveSeq(Publisher<T> flux){
+        return new FluxReactiveSeq<>(Flux.from(flux));
+    }
 
     public static ReactiveSeq<Integer> range(int start, int end){
        return reactiveSeq(Flux.range(start,end));

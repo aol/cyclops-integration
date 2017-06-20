@@ -1,4 +1,4 @@
-package cyclops.streams.syncflux;
+package cyclops.streams.observables;
 
 import cyclops.async.QueueFactories;
 import cyclops.async.adapters.Queue;
@@ -6,10 +6,10 @@ import cyclops.async.adapters.Topic;
 import cyclops.collections.mutable.ListX;
 import cyclops.collections.mutable.SetX;
 import cyclops.companion.Semigroups;
-import cyclops.companion.reactor.Fluxs;
 import cyclops.control.Maybe;
 import cyclops.control.lazy.Either;
 import cyclops.stream.ReactiveSeq;
+import cyclops.stream.Spouts;
 import org.hamcrest.Matchers;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Subscription;
-import reactor.core.publisher.Flux;
+
 
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
@@ -37,7 +37,7 @@ public class BaseSequentialTest {
     public static final int ITERATIONS = 1;
 
     protected <U> ReactiveSeq<U> of(U... array) {
-        return Fluxs.from(ReactiveSeq.of(array));
+        return ReactiveSeq.of(array);
     }
 
 
@@ -237,7 +237,7 @@ public class BaseSequentialTest {
     public void publishToAndMerge() {
         for (int k = 0; k < ITERATIONS; k++) {
             System.out.println("Publish toNested and product iteration " + k);
-            cyclops.async.adapters.Queue<Integer> queue = QueueFactories.<Integer>boundedNonBlockingQueue(10)
+            Queue<Integer> queue = QueueFactories.<Integer>boundedNonBlockingQueue(10)
                     .build();
 
             Thread t = new Thread(() -> {
@@ -472,7 +472,7 @@ public class BaseSequentialTest {
 
     @Test
     public void ambTest() {
-        assertThat(of(1, 2, 3).ambWith(Flux.just(10, 20, 30)).toListX(), isOneOf(ListX.of(10, 20, 30), ListX.of(1, 2, 3)));
+        assertThat(of(1, 2, 3).ambWith(Spouts.of(10, 20, 30)).toListX(), isOneOf(ListX.of(10, 20, 30), ListX.of(1, 2, 3)));
     }
 
     @Test
@@ -508,9 +508,9 @@ public class BaseSequentialTest {
     @Test
     public void flatMapStream() {
         for (int i = 0; i < ITERATIONS; i++) {
-            assertThat(of(1, 2, 3, null).flatMap(Stream::of)
+            assertThat(of(1, 2, 3).flatMap(Stream::of)
                             .collect(Collectors.toList()),
-                    Matchers.equalTo(Arrays.asList(1, 2, 3, null)));
+                    Matchers.equalTo(Arrays.asList(1, 2, 3)));
         }
     }
 

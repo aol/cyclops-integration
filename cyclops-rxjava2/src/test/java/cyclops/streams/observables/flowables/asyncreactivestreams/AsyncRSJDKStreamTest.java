@@ -1,14 +1,16 @@
-package cyclops.streams.reactivestreamspath;
+package cyclops.streams.observables.flowables.asyncreactivestreams;
 
-import cyclops.companion.reactor.Fluxs;
+
+import cyclops.companion.rx2.Flowables;
 import cyclops.stream.ReactiveSeq;
-import cyclops.stream.Spouts;
-import cyclops.stream.Streamable;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -16,11 +18,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
-public class ReactiveJDKStreamRSTest {
-	 public static <U> ReactiveSeq<U> of(U... array){
-		 return Fluxs.reactiveSeq(Spouts.of(array));
-	 }
+public class AsyncRSJDKStreamTest {
+	protected <U> ReactiveSeq<U> of(U... array){
+		return Flowables.reactiveSeq(Flux.just(array).subscribeOn(Schedulers.fromExecutor(ForkJoinPool.commonPool())));
 
+	}
 	@Test
 	public void testAnyMatch(){
 		assertThat(of(1,2,3,4,5).anyMatch(it-> it.equals(3)),equalTo(true));
@@ -45,9 +47,19 @@ public class ReactiveJDKStreamRSTest {
 	}
 	@Test
 	public void testFlatMap(){
-		assertThat(of( asList("1","10"), asList("2"),asList("3"),asList("4")).flatMapStream( list -> list.stream() ).to(Streamable::fromStream).collect(Collectors.toList()
+		System.out.println("Result = " + of( asList("1","10"), asList("2"),asList("3"),asList("4"))
+                .flatMapStream( list -> list.stream() ).collect(Collectors.toList()));
+		assertThat(of( asList("1","10"), asList("2"),asList("3"),asList("4")).flatMapStream( list -> list.stream() ).collect(Collectors.toList() 
 						),hasItem("10"));
 	}
+    @Test
+    public void testFlatMap2(){
+
+	     System.out.println(of( asList("1","10"), asList("2"),asList("3"),asList("4")).flatMap( list -> list.stream() ).collect(Collectors.toList()));
+
+        assertThat(of( asList("1","10"), asList("2"),asList("3"),asList("4")).flatMap( list -> list.stream() ).collect(Collectors.toList()
+        ),hasItem("10"));
+    }
 	
 	@Test
 	public void testMapReduce(){
@@ -75,26 +87,26 @@ public class ReactiveJDKStreamRSTest {
 	}
 	@Test
 	public void testDistinct(){
-		assertThat(of(1,1,1,2,1).distinct().to(Streamable::fromStream).collect(Collectors.toList()).size(),equalTo(2));
-		assertThat(of(1,1,1,2,1).distinct().to(Streamable::fromStream).collect(Collectors.toList()),hasItem(1));
-		assertThat(of(1,1,1,2,1).distinct().to(Streamable::fromStream).collect(Collectors.toList()),hasItem(2));
+		assertThat(of(1,1,1,2,1).distinct().collect(Collectors.toList()).size(),equalTo(2));
+		assertThat(of(1,1,1,2,1).distinct().collect(Collectors.toList()),hasItem(1));
+		assertThat(of(1,1,1,2,1).distinct().collect(Collectors.toList()),hasItem(2));
 	}
 	
 	@Test
 	public void testLimit(){
-		assertThat(of(1,2,3,4,5).limit(2).to(Streamable::fromStream).collect(Collectors.toList()).size(),equalTo(2));
+		assertThat(of(1,2,3,4,5).limit(2).collect(Collectors.toList()).size(),equalTo(2));
 	}
 	@Test
 	public void testSkip(){
-		assertThat(of(1,2,3,4,5).skip(2).to(Streamable::fromStream).collect(Collectors.toList()).size(),equalTo(3));
+		assertThat(of(1,2,3,4,5).skip(2).collect(Collectors.toList()).size(),equalTo(3));
 	}
 	@Test
     public void testTake(){
-        assertThat(of(1,2,3,4,5).take(2).to(Streamable::fromStream).collect(Collectors.toList()).size(),equalTo(2));
+        assertThat(of(1,2,3,4,5).take(2).collect(Collectors.toList()).size(),equalTo(2));
     }
     @Test
     public void testDrop(){
-        assertThat(of(1,2,3,4,5).drop(2).to(Streamable::fromStream).collect(Collectors.toList()).size(),equalTo(3));
+        assertThat(of(1,2,3,4,5).drop(2).collect(Collectors.toList()).size(),equalTo(3));
     }
 	@Test
 	public void testMax(){
@@ -150,16 +162,17 @@ public class ReactiveJDKStreamRSTest {
 
 	@Test
 	public void sorted() {
-		assertThat(of(1,5,3,4,2).sorted().to(Streamable::fromStream).collect(Collectors.toList()),equalTo(Arrays.asList(1,2,3,4,5)));
+		assertThat(of(1,5,3,4,2).sorted().collect(Collectors.toList()),equalTo(Arrays.asList(1,2,3,4,5)));
 	}
 	@Test
 	public void sortedComparator() {
-		assertThat(of(1,5,3,4,2).sorted((t1,t2) -> t2-t1).to(Streamable::fromStream).collect(Collectors.toList()),equalTo(Arrays.asList(5,4,3,2,1)));
+		assertThat(of(1,5,3,4,2).sorted((t1,t2) -> t2-t1).collect(Collectors.toList()),equalTo(Arrays.asList(5,4,3,2,1)));
 	}
 	@Test
-	public void forEach() {
+	public void forEach() throws InterruptedException {
 		List<Integer> list = new ArrayList<>();
 		of(1,5,3,4,2).forEach(it-> list.add(it));
+		Thread.sleep(500l);
 		assertThat(list,hasItem(1));
 		assertThat(list,hasItem(2));
 		assertThat(list,hasItem(3));
@@ -196,27 +209,27 @@ public class ReactiveJDKStreamRSTest {
 	@Test
 	public void collectSBB(){
 		
-		List<Integer> list = of(1,2,3,4,5).to(Streamable::fromStream).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+		List<Integer> list = of(1,2,3,4,5).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 		assertThat(list.size(),equalTo(5));
 	}
 	@Test
 	public void collect(){
-		assertThat(of(1,2,3,4,5).to(Streamable::fromStream).collect(Collectors.toList()).size(),equalTo(5));
-		assertThat(of(1,1,1,2).to(Streamable::fromStream).collect(Collectors.toSet()).size(),equalTo(2));
+		assertThat(of(1,2,3,4,5).collect(Collectors.toList()).size(),equalTo(5));
+		assertThat(of(1,1,1,2).collect(Collectors.toSet()).size(),equalTo(2));
 	}
 	@Test
 	public void testFilter(){
-		assertThat(of(1,1,1,2).filter(it -> it==1).to(Streamable::fromStream).collect(Collectors.toList()).size(),equalTo(3));
+		assertThat(of(1,1,1,2).filter(it -> it==1).collect(Collectors.toList()).size(),equalTo(3));
 	}
 	@Test
 	public void testMap(){
-		assertThat(of(1).map(it->it+100).to(Streamable::fromStream).collect(Collectors.toList()).get(0),equalTo(101));
+		assertThat(of(1).map(it->it+100).collect(Collectors.toList()).get(0),equalTo(101));
 	}
 	Object val;
 	@Test
 	public void testPeek(){
 		val = null;
-		of(1).map(it->it+100).peek(it -> val=it).to(Streamable::fromStream).collect(Collectors.toList());
+		of(1).map(it->it+100).peek(it -> val=it).collect(Collectors.toList());
 		assertThat(val,equalTo(101));
 	}
 		

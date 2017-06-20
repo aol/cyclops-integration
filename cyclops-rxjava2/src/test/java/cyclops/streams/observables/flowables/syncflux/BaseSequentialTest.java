@@ -1,4 +1,4 @@
-package cyclops.streams.syncflux;
+package cyclops.streams.observables.flowables.syncflux;
 
 import cyclops.async.QueueFactories;
 import cyclops.async.adapters.Queue;
@@ -6,7 +6,7 @@ import cyclops.async.adapters.Topic;
 import cyclops.collections.mutable.ListX;
 import cyclops.collections.mutable.SetX;
 import cyclops.companion.Semigroups;
-import cyclops.companion.reactor.Fluxs;
+import cyclops.companion.rx2.Flowables;
 import cyclops.control.Maybe;
 import cyclops.control.lazy.Either;
 import cyclops.stream.ReactiveSeq;
@@ -37,7 +37,7 @@ public class BaseSequentialTest {
     public static final int ITERATIONS = 1;
 
     protected <U> ReactiveSeq<U> of(U... array) {
-        return Fluxs.from(ReactiveSeq.of(array));
+        return Flowables.reactiveSeq(ReactiveSeq.of(array));
     }
 
 
@@ -237,7 +237,7 @@ public class BaseSequentialTest {
     public void publishToAndMerge() {
         for (int k = 0; k < ITERATIONS; k++) {
             System.out.println("Publish toNested and product iteration " + k);
-            cyclops.async.adapters.Queue<Integer> queue = QueueFactories.<Integer>boundedNonBlockingQueue(10)
+            Queue<Integer> queue = QueueFactories.<Integer>boundedNonBlockingQueue(10)
                     .build();
 
             Thread t = new Thread(() -> {
