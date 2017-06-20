@@ -125,7 +125,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
     }
 
 
-  
+
     @CheckReturnValue
     @SchedulerSupport("none")
     public Single<Boolean> all(Predicate<? super T> predicate) {
