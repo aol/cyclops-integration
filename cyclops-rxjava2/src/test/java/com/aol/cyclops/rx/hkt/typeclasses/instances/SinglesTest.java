@@ -10,15 +10,20 @@ import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 
 import cyclops.function.Monoid;
+import cyclops.stream.ReactiveSeq;
+import cyclops.stream.Spouts;
 import cyclops.typeclasses.monad.Applicative;
 import cyclops.typeclasses.monad.Traverse;
 import io.reactivex.Single;
 import org.junit.Test;
 
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static com.aol.cyclops.rx2.hkt.SingleKind.widen;
 import static cyclops.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -97,8 +102,12 @@ public class SinglesTest {
                                      .unit("hello")
                                      .apply(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(SingleKind::narrowK);
-        
-        assertTrue(opt.blockingGet()==null);
+
+        ReactiveSeq<String> f = Spouts.from(opt.narrow().toFlowable());
+
+        AtomicBoolean complete = new AtomicBoolean(false);
+        f.forEach(System.out::println,System.err::println,()->complete.set(true));
+        assertFalse(complete.get());
     }
     
     @Test
@@ -106,7 +115,8 @@ public class SinglesTest {
         SingleKind<Integer> opt = Instances.<Integer>monadPlus()
                                       .plus(widen(Single.never()), widen(Single.just(10)))
                                       .convert(SingleKind::narrowK);
-        assertTrue(opt.blockingGet()==null);
+
+        assertTrue(opt.blockingGet()==10);
     }
     @Test
     public void monadPlusNonEmpty(){
