@@ -486,21 +486,21 @@ public class BaseSequentialTest {
 
     @Test
     public void flatMapStreamFilter() {
-        assertThat(of(1, 2, 3, null).flatMap(i -> ReactiveSeq.of(i).filter(Objects::nonNull))
+        assertThat(of(1, 2, 3).flatMap(i -> ReactiveSeq.of(i).filter(Objects::nonNull))
                         .collect(Collectors.toList()),
                 Matchers.equalTo(Arrays.asList(1, 2, 3)));
     }
 
     @Test
     public void flatMapIStream() {
-        assertThat(of(1, 2, 3, null).flatMapI(i -> ReactiveSeq.of(i).filter(Objects::nonNull))
+        assertThat(of(1, 2, 3).flatMapI(i -> ReactiveSeq.of(i).filter(Objects::nonNull))
                         .collect(Collectors.toList()),
                 Matchers.equalTo(Arrays.asList(1, 2, 3)));
     }
 
     @Test
     public void flatMapIMaybe() {
-        assertThat(of(1, 2, 3, null).flatMapI(Maybe::ofNullable)
+        assertThat(of(1, 2, 3).flatMapI(Maybe::ofNullable)
                         .collect(Collectors.toList()),
                 Matchers.equalTo(Arrays.asList(1, 2, 3)));
     }
@@ -508,9 +508,9 @@ public class BaseSequentialTest {
     @Test
     public void flatMapStream() {
         for (int i = 0; i < ITERATIONS; i++) {
-            assertThat(of(1, 2, 3, null).flatMap(Stream::of)
+            assertThat(of(1, 2, 3).flatMap(Stream::of)
                             .collect(Collectors.toList()),
-                    Matchers.equalTo(Arrays.asList(1, 2, 3, null)));
+                    Matchers.equalTo(Arrays.asList(1, 2, 3)));
         }
     }
 
@@ -1137,7 +1137,7 @@ public class BaseSequentialTest {
     public void testLimitUntilWithNulls() {
 
 
-        assertThat(of(1, 2, null, 3, 4, 5).limitUntil(i -> false).toList(), equalTo(asList(1, 2, null, 3, 4, 5)));
+        assertThat(of(1, 2,  3, 4, 5).limitUntil(i -> false).toList(), equalTo(asList(1, 2, 3, 4, 5)));
     }
 
     @Test

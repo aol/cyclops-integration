@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -194,7 +195,7 @@ public class SingleTTest implements Printable {
 
 	@Test
 	public void testMkString() {
-		assertThat(just.mkString(),equalTo("SingleT[Optional[SingleJust]]"));
+		assertThat(just.mkString(),containsString("SingleT[Optional[io.reactivex.internal.operators.single.SingleJust"));
 		assertThat(none.mkString(),equalTo("SingleT[Optional.empty]"));
 	}
 

@@ -192,7 +192,7 @@ public class MaybeTTest implements Printable {
 
 	@Test
 	public void testMkString() {
-		assertThat(just.mkString(),equalTo("MaybeT[Optional[MaybeJust]]"));
+		assertThat(just.mkString(),equalTo("MaybeT[Optional[io.reactivex.internal.operators.maybe.MaybeJust@"));
 		assertThat(none.mkString(),equalTo("MaybeT[Optional.empty]"));
 	}
 
