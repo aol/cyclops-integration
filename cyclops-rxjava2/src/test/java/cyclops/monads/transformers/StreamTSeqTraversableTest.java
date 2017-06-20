@@ -5,8 +5,9 @@ import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Observables;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.list;
+import io.reactivex.Observable;
 import org.junit.Test;
-import rx.Observable;
+
 
 
 public class StreamTSeqTraversableTest extends AbstractTraversableTest {

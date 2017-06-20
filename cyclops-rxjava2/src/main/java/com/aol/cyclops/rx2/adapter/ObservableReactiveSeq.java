@@ -63,8 +63,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     @Override
     public <U> U foldRight(U identity, BiFunction<? super T, ? super U, ? extends U> accumulator) {
         return observable.reduce(identity,(a,b)->accumulator.apply(b,a))
-                         .toBlocking()
-                         .first();
+                         .blockingGet();
     }
 
     @Override
@@ -313,7 +312,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> limitUntilClosed(Predicate<? super T> p) {
-        return observable(observable.takeUntil(t->p.test(t)));
+        return observable(observable.takeUntil((T t)->p.test(t)));
     }
 
     @Override
@@ -443,7 +442,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <U> Traversable<U> unitIterator(Iterator<U> U) {
-        return new ObservableReactiveSeq<>(Observable.from(()->U));
+        return new ObservableReactiveSeq<>(Observable.fromIterable(()->U));
     }
 
     @Override
@@ -554,7 +553,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public ReactiveSeq<T> onClose(Runnable closeHandler) {
-        return observable(observable.doOnCompleted(()->closeHandler.run()));
+        return observable(observable.doOnComplete(()->closeHandler.run()));
     }
 
     @Override
@@ -619,7 +618,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public T firstValue() {
-        return observable.toBlocking().first();
+        return observable.blockingFirst();
     }
 
     @Override

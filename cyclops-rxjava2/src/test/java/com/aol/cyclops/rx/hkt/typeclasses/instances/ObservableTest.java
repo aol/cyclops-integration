@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 import com.aol.cyclops.rx2.hkt.ObservableKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -14,13 +15,13 @@ import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
 import cyclops.stream.ReactiveSeq;
+import io.reactivex.Observable;
 import org.junit.Test;
 
 
 import cyclops.companion.rx2.Observables;
 
 
-import rx.Observable;
 
 public class ObservableTest {
 
@@ -135,9 +136,11 @@ public class ObservableTest {
     }
     @Test
     public void traverse(){
-       Maybe<Higher<ObservableKind.µ, Integer>> res = Observables.Instances.traverse()
-                                                         .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), ObservableKind.just(1,2,3))
-                                                         .convert(Maybe::narrowK);
+
+
+        Maybe<Higher<ObservableKind.µ, Integer>> res = Observables.Instances.traverse()
+                                                                 .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), ObservableKind.just(1,2,3))
+                                                                .convert(Maybe::narrowK);
        
        
        assertThat(res.map(i->Observables.reactiveSeq(ObservableKind.narrow(i)).toList()),

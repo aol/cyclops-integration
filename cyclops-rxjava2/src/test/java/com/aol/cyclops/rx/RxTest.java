@@ -12,10 +12,11 @@ import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Observables;
 import cyclops.stream.ReactiveSeq;
 import cyclops.stream.Spouts;
+import io.reactivex.Observable;
 import org.junit.Test;
 
 
-import rx.Observable;
+
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,7 +25,9 @@ import java.util.stream.Stream;
 public class RxTest {
     @Test
     public void observableTest(){
-        Observable.just(1).single().toBlocking().first();
+        Observable.just(1)
+                  .singleOrError()
+                  .blockingGet();
     }
     @Test
     public void asyncList(){
@@ -33,7 +36,7 @@ public class RxTest {
 
 
         Observable<Integer> async =  Observables.fromStream(Spouts.async(Stream.of(100,200,300), Executors.newFixedThreadPool(1)))
-                                                .doOnCompleted(()->complete.set(true));
+                                                .doOnComplete(()->complete.set(true));
 
         ListX<Integer> asyncList = listX(reactiveSeq(async))
                                         .map(i->i+1);
@@ -93,8 +96,7 @@ public class RxTest {
                                                                    (a, b) -> a + b);
 
         assertThat(result.toList()
-                         .toBlocking()
-                         .single(),
+                         .blockingGet() ,
                    equalTo(ListX.of(30, 50)));
 
     }

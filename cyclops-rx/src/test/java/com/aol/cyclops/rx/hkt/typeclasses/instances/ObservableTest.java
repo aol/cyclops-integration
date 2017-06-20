@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 import com.aol.cyclops.rx.hkt.ObservableKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -135,6 +136,9 @@ public class ObservableTest {
     }
     @Test
     public void traverse(){
+        Function<Integer,Higher<Maybe.µ,Integer>> fn = (Integer a) -> Maybe.<Integer>just(a * 2);
+        Higher<Maybe.µ, Higher<ObservableKind.µ, Integer>> one = Observables.Instances.traverse()
+                .traverseA(Maybe.Instances.applicative(), fn, ObservableKind.just(1, 2, 3));
        Maybe<Higher<ObservableKind.µ, Integer>> res = Observables.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), ObservableKind.just(1,2,3))
                                                          .convert(Maybe::narrowK);
