@@ -623,7 +623,7 @@ public class Maybes {
         public static <T> MonadPlus<MaybeKind.µ> monadPlus(){
 
 
-            Monoid<MaybeKind<T>> m = Monoid.of(MaybeKind.<T>widen(Maybe.never()),
+            Monoid<MaybeKind<T>> m = Monoid.of(MaybeKind.<T>widen(Maybe.empty()),
                     (f,g)-> MaybeKind.widen(Maybe.ambArray(f.narrow(),g.narrow())));
 
             Monoid<Higher<MaybeKind.µ,T>> m2= (Monoid)m;

@@ -51,7 +51,7 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
         return widen(Maybe.just(value));
     }
     public static <T> MaybeKind<T> empty(){
-        return widen(Maybe.never());
+        return widen(Maybe.empty());
     }
 
     /**

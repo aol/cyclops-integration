@@ -100,7 +100,7 @@ public class MaybesTest {
     @Test
     public void monadPlus(){
         MaybeKind<Integer> opt = Instances.<Integer>monadPlus()
-                                      .plus(widen(Maybe.never()), widen(Maybe.just(10)))
+                                      .plus(widen(Maybe.empty()), widen(Maybe.just(10)))
                                       .convert(MaybeKind::narrowK);
         assertTrue(opt.blockingGet()==null);
     }
@@ -141,8 +141,9 @@ public class MaybesTest {
 
 
 
+
        assertThat(res.map(h->h.convert(MaybeKind::narrowK).blockingGet()),
-                  equalTo(Maybe.just(Maybe.just(2).blockingGet())));
+                  equalTo( cyclops.control.Maybe.just(Maybe.just(2).blockingGet())));
     }
     @Test
     public void sequence(){

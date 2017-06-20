@@ -51,7 +51,7 @@ public class MaybeAdapter extends AbstractFunctionalAdapter<maybe> {
 
     @Override
     public <T> AnyM<maybe, T> empty() {
-        return Maybes.anyM(Maybe.never());
+        return Maybes.anyM(Maybe.empty());
     }
 
 
