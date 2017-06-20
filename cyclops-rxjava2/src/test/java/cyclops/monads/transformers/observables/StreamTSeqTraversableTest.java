@@ -1,10 +1,12 @@
-package cyclops.monads.transformers;
+package cyclops.monads.transformers.observables;
 
 import com.aol.cyclops2.types.traversable.Traversable;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Observables;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.list;
+import cyclops.monads.transformers.AbstractTraversableTest;
+import cyclops.monads.transformers.StreamT;
 import io.reactivex.Observable;
 import org.junit.Test;
 

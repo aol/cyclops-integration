@@ -1,9 +1,10 @@
-package cyclops.monads.transformers;
+package cyclops.monads.transformers.observables;
 
 
 import com.aol.cyclops2.types.anyM.transformers.FoldableTransformerSeq;
 import cyclops.companion.rx2.Observables;
 import cyclops.monads.Witness;
+import cyclops.monads.transformers.AbstractNestedFoldableTest;
 
 
 public class StreamTSeqNestedFoldableTest extends AbstractNestedFoldableTest<Witness.list> {
