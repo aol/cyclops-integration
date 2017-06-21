@@ -134,7 +134,7 @@ List<Integer> backToVavr = VavrWitness.list(summedVavr);
 Or RxJava
 
 ```java
-import static cyclops.monads.RxWitness.observable;
+import static cyclops.monads.Rx2Witness.observable;
 import cyclops.companion.rx.Observables;
 
 AnyMSeq<observable,Integer> rxObservable = Observables.anyM(Observable.range(0, 10));

@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 
 public class Lazys {
     /**
-     * Lifts a vavr Lazy into a cyclops LazyT monad transformer (involves an async conversion to
+     * Lifts a vavr Lazy into a cyclops LazyT monad transformer (involves an observables conversion to
      * cyclops Lazy types)
      *
      */

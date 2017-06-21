@@ -4,7 +4,7 @@
 ## Get cyclops-rx
 
 
-* [![Maven Central : cyclops-reactor](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rx/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rx)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rx/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rx)
+* [![Maven Central : cyclops-rx](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rx/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rx)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rx/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rx)
 * [Javadoc for cyclops-rx](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-rx)
 
 
@@ -147,7 +147,7 @@ For ObservableReactiveSeq the visit method always executes the #3 function
 ReactiveSeq<Integer> seq = Observables.just(1,2,3);
 
 String type = seq.visit(sync->"synchronous",rs->"reactive-streams",async->"pure async");
-//"pure async"
+observables
 
 ```
 
@@ -157,7 +157,7 @@ String type = seq.visit(sync->"synchronous",rs->"reactive-streams",async->"pure 
 Use RxJava to extend cyclops-react's array of operations
 
 ```java
-import static cyclops.streams.RxOperators.observable;
+import static cyclops.streams.Rx2Operators.observable;
 
 ReactiveSeq<List<Integer>> seq = Observables.of(1,2,3)
                                             .map(i->i+1)
@@ -167,7 +167,7 @@ ReactiveSeq<List<Integer>> seq = Observables.of(1,2,3)
 Use custom Rx Operators
 
 ```java
-import static cyclops.streams.RxOperators.observable;
+import static cyclops.streams.Rx2Operators.observable;
 
 ReactiveSeq<List<Integer>> seq = Observables.of(1,2,3)
                                             .to(lift(new Observable.Operator<Integer,Integer>(){

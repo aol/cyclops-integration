@@ -40,7 +40,7 @@ public class ReactorOperators {
 
             return s-> Future.fromPublisher(Monos.narrow(fn.apply(Mono.from(s))));
     }
-    public static <T,R> Function<Mono<T>,Mono<R>> future(final Function<? super Future<? super T>,? extends ReactiveSeq<? extends R>> fn){
+    public static <T,R> Function<Mono<T>,Mono<R>> future(final Function<? super Future<? super T>,? extends Future<? extends R>> fn){
             return s-> Mono.from(fn.apply(Future.fromPublisher(s)));
     }
 

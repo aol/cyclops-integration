@@ -1,5 +1,6 @@
 package cyclops.streams.reactivestreamspath;
 
+import cyclops.companion.reactor.Fluxs;
 import cyclops.stream.ReactiveSeq;
 import cyclops.stream.Spouts;
 import cyclops.stream.Streamable;
@@ -17,7 +18,7 @@ import static org.junit.Assert.assertThat;
 
 public class ReactiveJDKStreamRSTest {
 	 public static <U> ReactiveSeq<U> of(U... array){
-		 return Spouts.of(array);
+		 return Fluxs.reactiveSeq(Spouts.of(array));
 	 }
 
 	@Test

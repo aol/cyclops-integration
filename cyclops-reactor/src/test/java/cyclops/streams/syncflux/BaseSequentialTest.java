@@ -6,6 +6,7 @@ import cyclops.async.adapters.Topic;
 import cyclops.collections.mutable.ListX;
 import cyclops.collections.mutable.SetX;
 import cyclops.companion.Semigroups;
+import cyclops.companion.reactor.Fluxs;
 import cyclops.control.Maybe;
 import cyclops.control.lazy.Either;
 import cyclops.stream.ReactiveSeq;
@@ -36,7 +37,7 @@ public class BaseSequentialTest {
     public static final int ITERATIONS = 1;
 
     protected <U> ReactiveSeq<U> of(U... array) {
-        return ReactiveSeq.of(array);
+        return Fluxs.from(ReactiveSeq.of(array));
     }
 
 

@@ -63,7 +63,7 @@ public class Futures {
     }
 
     /**
-     * Lifts a vavr Future into a cyclops FutureT monad transformer (involves an async conversion to
+     * Lifts a vavr Future into a cyclops FutureT monad transformer (involves an observables conversion to
      * cyclops Future types)
      *
      */

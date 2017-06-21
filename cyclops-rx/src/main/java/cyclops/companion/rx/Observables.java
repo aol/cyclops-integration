@@ -83,10 +83,10 @@ public class Observables {
 
     }
     public static  <T> Observable<T> fromStream(Stream<T> s){
-        //TODO check the type using the forthcoming visit method on ReactiveSeq here to convert
-        //appropriately
+
         if(s instanceof  ReactiveSeq) {
             ReactiveSeq<T> stream = (ReactiveSeq<T>)s;
+
             return stream.visit(sync -> Observable.from(stream),
                     rs -> observable(stream),
                     async -> Observable.create(new Observable.OnSubscribe<T>() {
