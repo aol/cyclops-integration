@@ -7,6 +7,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.FoldToList;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.foldable.Evaluation;
@@ -35,6 +36,10 @@ public class DexxListX<T> extends AbstractList<T>implements PStack<T>, Unwrapabl
     public static <T> LinkedListX<T> listX(ReactiveSeq<T> stream){
         return fromStream(stream);
     }
+    static final FoldToList gen = (it, i)-> DexxListX.from(from(it,i));
+    public static <T> LazyLinkedListX<T> from(List<T> q) {
+        return fromPStack(new DexxListX<>(q), toPStack());
+    }
     @Override
     public <R> R unwrap() {
         return (R)list;
@@ -60,7 +65,7 @@ public class DexxListX<T> extends AbstractList<T>implements PStack<T>, Unwrapabl
      */
     public static <T> LazyLinkedListX<T> fromStream(Stream<T> stream) {
         Reducer<PStack<T>> r = toPStack();
-        return new LazyLinkedListX<T>(null, ReactiveSeq.fromStream(stream),  r, Evaluation.LAZY);
+        return new LazyLinkedListX<T>(null, ReactiveSeq.fromStream(stream),  r, gen,Evaluation.LAZY);
     }
 
     /**
@@ -189,7 +194,7 @@ public class DexxListX<T> extends AbstractList<T>implements PStack<T>, Unwrapabl
                                       toPStack());
     }
     private static <T> LazyLinkedListX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
-        return new LazyLinkedListX<T>(s,null,pStackReducer, Evaluation.LAZY);
+        return new LazyLinkedListX<T>(s,null,pStackReducer,gen, Evaluation.LAZY);
     }
 
 
