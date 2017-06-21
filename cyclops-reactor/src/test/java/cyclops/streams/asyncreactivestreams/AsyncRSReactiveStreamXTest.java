@@ -303,7 +303,8 @@ public  class AsyncRSReactiveStreamXTest {
 				.toList();
 
 
-		assertThat(result,equalTo(Arrays.asList(1,2,3)));
+		assertThat(result,contains(1,2,3));
+		assertThat(result.size(),lessThan(5));
 	}
     @Test
 	public void skipUntil(){

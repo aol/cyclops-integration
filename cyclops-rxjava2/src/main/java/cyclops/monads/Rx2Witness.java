@@ -1,10 +1,7 @@
 package cyclops.monads;
 
-
-
 import com.aol.cyclops.rx2.adapter.*;
 import com.aol.cyclops2.types.extensability.FunctionalAdapter;
-import com.sun.tools.javac.comp.Flow;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
