@@ -4,7 +4,7 @@
 ## Get cyclops-rxjava2
 
 
-* [![Maven Central : cyclops-reactor](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rx/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rx)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rx/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rx)
+* [![Maven Central : cyclops-rxjava2](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rxjava2/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rxjava2)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rxjava2/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rxjava2)
 * [Javadoc for cyclops-rx](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-rx)
 
 

@@ -149,10 +149,11 @@ List<Integer> list =  zippingApplicative().ap(listFn,functor().map((String v)->v
 There are a number of integration modules for cyclops-react, they are
 
 * [cyclops-reactor](https://github.com/aol/cyclops/tree/master/cyclops-reactor)
+* [cyclops-rxjava2](https://github.com/aol/cyclops/tree/master/cyclops-rxjava2)
 * [cyclops-rx](https://github.com/aol/cyclops/tree/master/cyclops-rx)
 * [cyclops-guava](https://github.com/aol/cyclops/tree/master/cyclops-guava)
 * [cyclops-functionaljava](https://github.com/aol/cyclops/tree/master/cyclops-functionaljava)
-* [cyclops-javaslang](https://github.com/aol/cyclops/tree/master/cyclops-javaslang)
+* [cyclops-vavr](https://github.com/aol/cyclops/tree/master/cyclops-vavr)
 
 This screencast gives an overview of how cyclops can help integrate and provide abstractions across the datatypes in the above libraries. [Unifying the cambrian explosion with cyclops-react ] (https://www.youtube.com/watch?v=YgzvpMbxiRo)
 
