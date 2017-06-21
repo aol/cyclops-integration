@@ -39,7 +39,7 @@ import static cyclops.companion.rx2.Flowables.reactiveSeq;
 AtomicBoolean complete = new AtomicBoolean(false);
 
 
-Observable<Integer> async =  Flowables.fromStream(Spouts.reactive(Stream.of(100,200,300), Executors.newFixedThreadPool(1)))
+Observable<Integer> async =  Observables.fromStream(Spouts.async(Stream.of(100,200,300), Executors.newFixedThreadPool(1)))
                                                 .doOnComplete(()->complete.set(true));
 
 ListX<Integer> asyncList = listX(reactiveSeq(async))
