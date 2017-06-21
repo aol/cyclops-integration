@@ -2,6 +2,7 @@ package cyclops.streams;
 
 import cyclops.async.Future;
 import cyclops.companion.rx2.Flowables;
+import cyclops.companion.rx2.Maybes;
 import cyclops.companion.rx2.Observables;
 import cyclops.companion.rx2.Singles;
 import cyclops.stream.ReactiveSeq;
@@ -55,5 +56,12 @@ public class Rx2Operators {
     }
     public static <T,R> Function<Single<T>,Single<R>> future(final Function<? super Future<? super T>,? extends Future<? extends R>> fn){
         return s-> Single.fromPublisher(fn.apply(Future.fromPublisher(s.toFlowable())));
+    }
+    public static <T,R> Function<cyclops.control.Maybe<T>,cyclops.control.Maybe<R>> rxMaybe(final Function<? super Maybe<? super T>,? extends Maybe<? extends R>> fn){
+
+        return s-> cyclops.control.Maybe.<R>fromPublisher(Flowables.narrow(fn.apply(Single.fromPublisher(s).toMaybe()).toFlowable()));
+    }
+    public static <T,R> Function<Maybe<T>,Maybe<R>> maybe(final Function<? super cyclops.control.Maybe<? super T>,? extends cyclops.control.Maybe<? extends R>> fn){
+        return s-> Maybes.narrow(Flowable.fromPublisher(fn.apply(cyclops.control.Maybe.fromPublisher(s.toFlowable()))).firstElement());
     }
 }

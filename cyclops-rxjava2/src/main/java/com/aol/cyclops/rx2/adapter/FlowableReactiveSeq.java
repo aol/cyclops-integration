@@ -227,7 +227,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <C extends Collection<? super T>> ReactiveSeq<C> grouped(int size, Supplier<C> supplier) {
-        return flux(flowable.buffer(size,()->supplier.get()));
+        return flux(Spouts.from(flowable).grouped(size,()->supplier.get()));
     }
 
     @Override
