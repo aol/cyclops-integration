@@ -78,7 +78,7 @@ Use the Observables companion class to create Observable backed ReactiveSeqs
 Create an Observable-backed ReactiveSeq directly or from an Observable
 ```java
 ReactiveSeq<Integer> seq = Observables.just(1,2,3);
-ReactiveSeq<Integer> seq2 = Observables.reactiveSeq(Observables.just(1,2,3));
+ReactiveSeq<Integer> seq2 = Observables.reactiveSeq(Observable.just(1,2,3));
 ```
 
 With an Observable-back ReactiveSeq we can create Reactive Xtended Collections e.g. an extended j.u.List
