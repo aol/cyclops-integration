@@ -182,9 +182,10 @@ public class SyncRSExtensionOperatorsTest {
 										.peek(i->sleep(i*100))
 										.limit(1000,TimeUnit.MILLISECONDS)
 										.toList();
-		
-		
-		assertThat(result,equalTo(Arrays.asList(1,2,3)));
+
+
+		assertThat(result,contains(1,2,3));
+		assertThat(result.size(),lessThan(5));
 	}
 	@Test
 	public void limitTimeEmpty(){

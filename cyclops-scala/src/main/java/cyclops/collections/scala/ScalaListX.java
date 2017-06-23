@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops.scala.collections.HasScalaCollection;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.FoldToList;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.foldable.Evaluation;
@@ -39,6 +40,7 @@ import scala.collection.mutable.Builder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScalaCollection<T>, Unwrapable {
 
+    static final FoldToList gen = (it, i)-> ScalaListX.from(from(it,i));
     public static <T> LinkedListX<T> listX(ReactiveSeq<T> stream){
         return fromStream(stream);
     }
@@ -46,7 +48,9 @@ public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScala
     public <R> R unwrap() {
         return (R)list;
     }
-
+    public static <T> LazyLinkedListX<T> from(List<T> q) {
+        return fromPStack(new ScalaListX<>(q), toPStack());
+    }
     public LazyLinkedListX<T> plusLoop(int max, IntFunction<T> value) {
 
         List<T> toUse = list;
@@ -73,7 +77,7 @@ public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScala
      * @return LazyLinkedListX
      */
     public static <T> LazyLinkedListX<T> fromStream(Stream<T> stream) {
-        return new LazyLinkedListX<T>(null,ReactiveSeq.fromStream(stream), toPStack(), Evaluation.LAZY);
+        return new LazyLinkedListX<T>(null,ReactiveSeq.fromStream(stream), toPStack(), gen, Evaluation.LAZY);
     }
 
     /**
@@ -171,7 +175,7 @@ public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScala
     }
 
     private static <T> LazyLinkedListX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
-        return new LazyLinkedListX<T>(s,null, pStackReducer,Evaluation.LAZY);
+        return new LazyLinkedListX<T>(s,null, pStackReducer,gen, Evaluation.LAZY);
     }
 
 

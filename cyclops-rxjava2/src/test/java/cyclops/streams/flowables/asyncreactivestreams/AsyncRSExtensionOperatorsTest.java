@@ -187,11 +187,12 @@ public class AsyncRSExtensionOperatorsTest {
     public void limitTime(){
         List<Integer> result = of(1,2,3,4,5,6)
                 .peek(i->sleep(i*100))
-                .limit(1000,TimeUnit.MILLISECONDS)
+                .limit(1000, TimeUnit.MILLISECONDS)
                 .toList();
 
 
-        assertThat(result,equalTo(Arrays.asList(1,2,3)));
+        assertThat(result,contains(1,2,3));
+        assertThat(result.size(),lessThan(5));
     }
     @Test
     public void limitTimeEmpty(){
