@@ -1,5 +1,7 @@
 package cyclops.companion.vavr;
 
+import com.aol.cyclops.vavr.hkt.FutureKind;
+import cyclops.control.Maybe;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
@@ -19,12 +21,17 @@ import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.OptionalT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
@@ -577,7 +584,14 @@ public class Options {
     public static <T> Option<T> narrow(final Option<? extends T> optional) {
         return (Option<T>) optional;
     }
-
+    public static <T> Active<option,T> allTypeclasses(Option<T> option){
+        return Active.of(OptionKind.widen(option), Options.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<option,W2,R> mapM(Option<T> option, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Option<Higher<W2, R>> e = option.map(fn);
+        OptionKind<Higher<W2, R>> lk = OptionKind.widen(e);
+        return Nested.of(lk, Options.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Options
      * @author johnmcclean
@@ -586,7 +600,65 @@ public class Options {
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<option> definitions() {
+            return new InstanceDefinitions<option>() {
 
+                @Override
+                public <T, R> Functor<option> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<option> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<option> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<option> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<option>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<option>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<option>> monadPlus(Monoid<Higher<option, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<option>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<option>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<option>> comonad() {
+                    return Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<option>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        }
         /**
          *
          * Transform a option, mulitplying every element by 2
@@ -764,7 +836,11 @@ public class Options {
          * @param m Monoid to use for combining Options
          * @return Type class for combining Options
          */
-        public static <T> MonadPlus<option> monadPlus(Monoid<OptionKind<T>> m){
+        public static <T> MonadPlus<option> monadPlus(Monoid<Higher<option,T>> m){
+            Monoid<Higher<option,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<option> monadPlusK(Monoid<OptionKind<T>> m){
             Monoid<Higher<option,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }

@@ -1,18 +1,29 @@
 package com.aol.cyclops.vavr.hkt;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 
+import cyclops.companion.Optionals;
+import cyclops.companion.vavr.Futures;
+import cyclops.companion.vavr.Options;
 import cyclops.conversion.vavr.FromCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.companion.Optionals.OptionalKind;
 import cyclops.control.Eval;
 
+import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.optional;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.FutureT;
+import cyclops.monads.transformers.OptionalT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.vavr.collection.Iterator;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
@@ -29,13 +40,15 @@ import lombok.AllArgsConstructor;
  */
 
 public interface OptionKind<T> extends Higher<option, T>, Option<T> {
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+
+    default Active<option,T> allTypeclasses(){
+        return Active.of(this,Options.Instances.definitions());
+    }
+    default <W2,R> Nested<option,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Options.mapM(this,fn,defs);
+    }
+    default <W extends WitnessType<W>> OptionalT<W, T> liftM(W witness) {
+        return OptionalT.of(witness.adapter().unit(this.toJavaOptional()));
     }
     
     /**
