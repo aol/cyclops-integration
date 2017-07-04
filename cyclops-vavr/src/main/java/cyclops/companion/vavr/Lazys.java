@@ -1,6 +1,8 @@
 package cyclops.companion.vavr;
 
 
+import com.aol.cyclops.vavr.hkt.EitherKind;
+import cyclops.control.Maybe;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import com.aol.cyclops.vavr.hkt.LazyKind;
@@ -19,14 +21,20 @@ import cyclops.monads.VavrWitness.lazy;
 import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.EvalT;
+import cyclops.monads.transformers.XorT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import io.vavr.Lazy;
+import io.vavr.control.Either;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
@@ -427,10 +435,77 @@ public class Lazys {
     public static <T> Lazy<T> narrow(final Lazy<? extends T> futureal) {
         return (Lazy<T>) futureal;
     }
+    public static <T> Active<lazy,T> allTypeclasses(Lazy<T> lazy){
+        return Active.of(LazyKind.widen(lazy), Lazys.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<lazy,W2,R> mapM(Lazy<T> lazy, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Lazy<Higher<W2, R>> e = lazy.map(fn);
+        LazyKind<Higher<W2, R>> lk = LazyKind.widen(e);
+        return Nested.of(lk, Lazys.Instances.definitions(), defs);
+    }
+
     @UtilityClass
     public static class Instances {
 
+        public static  InstanceDefinitions<lazy> definitions() {
+            return new InstanceDefinitions<lazy>() {
 
+                @Override
+                public <T, R> Functor<lazy> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<lazy> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<lazy> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<lazy> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<lazy>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<lazy>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<lazy>> monadPlus(Monoid<Higher<lazy, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<lazy>> traverse() {
+                    return null;
+                }
+
+                @Override
+                public <T> Maybe<Foldable<lazy>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<lazy>> comonad() {
+                    return Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<lazy>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        };
         /**
          *
          * Transform a lazy, mulitplying every element by 2
@@ -608,7 +683,7 @@ public class Lazys {
          * @param m Monoid to use for combining Lazys
          * @return Type class for combining Lazys
          */
-        public static <T> MonadPlus<lazy> monadPlus(Monoid<LazyKind<T>> m){
+        public static <T> MonadPlus<lazy> monadPlus(Monoid<Higher<lazy,T>> m){
             Monoid<Higher<lazy,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }

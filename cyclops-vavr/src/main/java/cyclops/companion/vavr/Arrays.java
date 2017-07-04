@@ -1,7 +1,13 @@
 package cyclops.companion.vavr;
 
 
+import com.aol.cyclops.vavr.hkt.LazyKind;
+import cyclops.VavrConverters;
+import cyclops.control.Maybe;
 import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromJDK;
+import cyclops.conversion.vavr.FromJooqLambda;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.array;
 import com.aol.cyclops.vavr.hkt.ArrayKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -12,14 +18,23 @@ import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import io.vavr.Lazy;
 import io.vavr.collection.Array;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -301,15 +316,79 @@ public class Arrays {
                     .map(in2 -> yieldingFunction.apply(in,  in2));
         });
     }
+    public static <T> Active<array,T> allTypeclasses(Array<T> array){
+        return Active.of(ArrayKind.widen(array), Instances.definitions());
+    }
+    public static <T,W2,R> Nested<array,W2,R> mapM(Array<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Array<Higher<W2, R>> e = array.map(fn);
+        ArrayKind<Higher<W2, R>> lk = ArrayKind.widen(e);
+        return Nested.of(lk, Arrays.Instances.definitions(), defs);
+    }
     /**
-     * Companion class for creating Type Class instances for working with Arrays
-     * @author johnmcclean
-     *
+     * Companion class for creating Type Class instances for working with Arrays*
      */
     @UtilityClass
     public static class Instances {
+        public static InstanceDefinitions<array> definitions() {
+            return new InstanceDefinitions<array>() {
 
+                @Override
+                public <T, R> Functor<array> functor() {
+                    return Instances.functor();
+                }
 
+                @Override
+                public <T> Pure<array> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<array> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<array> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<array>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<array>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<array>> monadPlus(Monoid<Higher<array, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<array>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<array>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<array>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<array>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+
+        }
         /**
          *
          * Transform a list, mulitplying every element by 2
@@ -486,11 +565,19 @@ public class Arrays {
          * @param m Monoid to use for combining Arrays
          * @return Type class for combining Arrays
          */
-        public static <T> MonadPlus<array> monadPlus(Monoid<ArrayKind<T>> m){
+        public static <T> MonadPlus<array> monadPlus(Monoid<Higher<array, T>> m){
             Monoid<Higher<array,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static Unfoldable<array> unfoldable(){
+            return new Unfoldable<array>() {
+                @Override
+                public <R, T> Higher<array, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    return ArrayKind.widen(ReactiveSeq.unfold(b,fn).collect(Array.collector()));
 
+                }
+            };
+        }
         /**
          * @return Type class for traversables with traverse / sequence operations
          */

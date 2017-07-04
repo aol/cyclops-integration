@@ -7,6 +7,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
+import cyclops.companion.vavr.Eithers;
+import cyclops.companion.vavr.Lazys;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 
@@ -15,6 +17,11 @@ import cyclops.control.Eval;
 
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.lazy;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.EvalT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.vavr.Lazy;
 import io.vavr.collection.Iterator;
 import io.vavr.control.Option;
@@ -32,8 +39,18 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final  class LazyKind<T> implements Higher<lazy, T> {
-    
 
+    public  Active<lazy,T> allTypeclasses(){
+        return Active.of(this, Lazys.Instances.definitions());
+    }
+    public <W2,R> Nested<lazy,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Lazy<Higher<W2, R>> e = map(fn);
+        LazyKind<Higher<W2, R>> lk = LazyKind.widen(e);
+        return Nested.of(lk, Lazys.Instances.definitions(), defs);
+    }
+    public <T,W extends WitnessType<W>> EvalT<W, T> liftM(Lazy<T> lazy, W witness) {
+        return EvalT.of(witness.adapter().unit(ToCyclopsReact.eval(lazy)));
+    }
     /**
      * Convert the raw Higher Kinded Type for MaybeType types into the MaybeType type definition class
      * 

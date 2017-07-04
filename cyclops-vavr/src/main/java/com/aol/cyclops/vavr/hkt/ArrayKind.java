@@ -2,12 +2,20 @@ package com.aol.cyclops.vavr.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Unwrapable;
+import cyclops.companion.vavr.Arrays;
+import cyclops.companion.vavr.Lazys;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.array;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import io.vavr.Lazy;
 import io.vavr.collection.Array;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Delegate;
+
+import java.util.function.Function;
 
 /**
  * Simulates Higher Kinded Types for Array's
@@ -22,6 +30,14 @@ import lombok.experimental.Delegate;
 public  class ArrayKind<T> implements Higher<array, T>{
 
 
+    public Active<array,T> allTypeclasses(){
+        return Active.of(this, Arrays.Instances.definitions());
+    }
+    public <W2,R> Nested<array,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Array<Higher<W2, R>> e = map(fn);
+        ArrayKind<Higher<W2, R>> lk = ArrayKind.widen(e);
+        return Nested.of(lk, Arrays.Instances.definitions(), defs);
+    }
     public static <T> ArrayKind<T> of(T element) {
         return  widen(Array.of(element));
     }

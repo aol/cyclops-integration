@@ -1,7 +1,13 @@
 package cyclops.companion.functionaljava;
 
 
+import com.aol.cyclops.functionaljava.hkt.EitherKind;
+import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.hkt.Higher2;
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.Monoids;
+import cyclops.control.Maybe;
+import cyclops.control.Xor;
 import cyclops.monads.FJWitness;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
@@ -13,8 +19,22 @@ import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
+import cyclops.monads.FJWitness.either;
+import cyclops.monads.Witness;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.XorT;
 import cyclops.stream.ReactiveSeq;
 
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
+import cyclops.typeclasses.comonad.ComonadByPure;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.monad.*;
 import fj.data.Either;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
@@ -31,8 +51,13 @@ import java.util.stream.Stream;
  */
 @UtilityClass
 public class Eithers {
-   
-    public static <T> AnyMValue<FJWitness.either,T> anyM(Either<?,T> either) {
+
+    public static <L, R> Either<L, R> xor(Xor<L, R> value) {
+        Xor<L, R> xor = (Xor) value.toXor();
+        return xor.visit(l -> Either.left(l), r -> Either.right(r));
+    }
+
+    public static <T> AnyMValue<either,T> anyM(Either<?,T> either) {
         return AnyM.ofValue(either, FJWitness.either.INSTANCE);
     }
     /**
@@ -233,7 +258,7 @@ public class Eithers {
      * @return  Either with a List of values
      */
     public static <L,T> Either<L,ReactiveSeq<T>> sequence(final Stream<Either<L,T>> opts) {
-        return AnyM.sequence(opts.map(Eithers::anyM), FJWitness.either.INSTANCE)
+        return AnyM.sequence(opts.map(Eithers::anyM), either.INSTANCE)
                 .map(ReactiveSeq::fromStream)
                 .to(FJWitness::either);
 
@@ -420,6 +445,291 @@ public class Eithers {
         return (Either<L,T>) eitheral;
     }
 
+    public static <L,R> Active<Higher<either,L>,R> allTypeclasses(Either<L,R> either){
+        return Active.of(EitherKind.widen(either), Eithers.Instances.definitions());
+    }
+    public static <L,R,W2,R2> Nested<Higher<either,L>,W2,R2> mapM(Either<L,R> either,Function<? super R,? extends Higher<W2,R2>> fn, InstanceDefinitions<W2> defs){
+        Either<L, Higher<W2, R2>> e = either.bimap(i -> i, i -> fn.apply(i));
+        EitherKind<L, Higher<W2, R2>> ek = EitherKind.widen(e);
+        return Nested.of(ek, Eithers.Instances.definitions(), defs);
+    }
+    public <L,R,W extends WitnessType<W>> XorT<W, L, R> liftM(Either<L,R> either,W witness) {
+        return XorT.of(witness.adapter().unit(ToCyclopsReact.xor(either)));
+    }
+
+    public static class Instances {
+
+        public static <L> InstanceDefinitions<Higher<either, L>> definitions(){
+            return new InstanceDefinitions<Higher<either, L>>() {
+                @Override
+                public <T, R> Functor<Higher<either, L>> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<Higher<either, L>> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<Higher<either, L>> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<Higher<either, L>> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<Higher<either, L>>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<Higher<either, L>>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<Higher<either, L>>> monadPlus(Monoid<Higher<Higher<either, L>, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<Higher<either, L>>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<Higher<either, L>>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<Higher<either, L>>> comonad() {
+                    return Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<Higher<either, L>>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        }
+        public static <L> Functor<Higher<either, L>> functor() {
+            return new Functor<Higher<either, L>>() {
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return EitherKind.widen(either.bimap(i->i,r->fn.apply(r)));
+                }
+            };
+        }
+        public static <L> Pure<Higher<either, L>> unit() {
+            return new Pure<Higher<either, L>>() {
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return EitherKind.right(value);
+                }
+            };
+        }
+        public static <L> Applicative<Higher<either, L>> applicative() {
+            return new Applicative<Higher<either, L>>() {
+
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    Either<L,T>  either = EitherKind.narrowK(apply);
+                    Either<L, ? extends Function<T, R>> eitherFn = EitherKind.narrowK(fn);
+                    return EitherKind.widen(Eithers.xor(ToCyclopsReact.xor(eitherFn).combine(ToCyclopsReact.xor(either),(a,b)->a.apply(b))));
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> Monad<Higher<either, L>> monad() {
+            return new Monad<Higher<either, L>>() {
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> flatMap(Function<? super T, ? extends Higher<Higher<either, L>, R>> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return EitherKind.widen(either.right().bind(i->fn.andThen(EitherKind::narrowK).apply(i)));
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    return Instances.<L>applicative().ap(fn,apply);
+
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> Traverse<Higher<either, L>> traverse() {
+            return new Traverse<Higher<either, L>>() {
+
+                @Override
+                public <C2, T, R> Higher<C2, Higher<Higher<either, L>, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> maybe = EitherKind.narrowK(ds);
+                    return maybe.either(left->  applicative.unit(EitherKind.<L,R>left(left)),
+                            right->applicative.map(m->EitherKind.right(m), fn.apply(right)));
+                }
+
+                @Override
+                public <C2, T> Higher<C2, Higher<Higher<either, L>, T>> sequenceA(Applicative<C2> applicative, Higher<Higher<either, L>, Higher<C2, T>> ds) {
+                    return traverseA(applicative,Function.identity(),ds);
+                }
+
+
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    return Instances.<L>applicative().ap(fn,apply);
+
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> Foldable<Higher<either, L>> foldable() {
+            return new Foldable<Higher<either, L>>() {
+
+
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return ToCyclopsReact.xor(either).foldRight(monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return ToCyclopsReact.xor(either).foldLeft(monoid);
+                }
+            };
+        }
+        public static <L> MonadZero<Higher<either, L>> monadZero() {
+            return new MonadZero<Higher<either, L>>() {
+
+                @Override
+                public Higher<Higher<either, L>, ?> zero() {
+                    return EitherKind.left(null);
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> flatMap(Function<? super T, ? extends Higher<Higher<either, L>, R>> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return EitherKind.widen(either.right().bind(i->fn.andThen(EitherKind::narrowK).apply(i)));
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    return Instances.<L>applicative().ap(fn,apply);
+
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> MonadPlus<Higher<either, L>> monadPlus() {
+            Monoid m = Monoids.firstPrimaryXor((Either)EitherKind.narrowK(Instances.<L>monadZero().zero()));
+
+            return monadPlus(m);
+        }
+        public static <L,T> MonadPlus<Higher<either, L>> monadPlus(Monoid<Higher<Higher<either, L>, T>> m) {
+            return new MonadPlus<Higher<either, L>>() {
+
+                @Override
+                public Monoid<Higher<Higher<either, L>, ?>> monoid() {
+                    return (Monoid)m;
+                }
+
+                @Override
+                public Higher<Higher<either, L>, ?> zero() {
+                    return Instances.<L>monadZero().zero();
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> flatMap(Function<? super T, ? extends Higher<Higher<either, L>, R>> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return EitherKind.widen(either.right().bind(i->fn.andThen(EitherKind::narrowK).apply(i)));
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    return Instances.<L>applicative().ap(fn,apply);
+
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> Comonad<Higher<either, L>> comonad() {
+            return new ComonadByPure<Higher<either, L>>() {
+
+
+                @Override
+                public <T> T extract(Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return either.right().value();
+                }
+
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+    }
 
 
 }

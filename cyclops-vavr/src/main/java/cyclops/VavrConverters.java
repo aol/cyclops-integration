@@ -91,6 +91,8 @@ public interface VavrConverters {
                 });
     }
 
+
+
     public static <T> Vector<T> Vector(CollectionX<T> vec){
         return vec.unwrapNested(Vector.class,
                 ()-> {

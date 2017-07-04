@@ -1,6 +1,10 @@
 package cyclops.companion.vavr;
 
 
+import com.aol.cyclops.vavr.hkt.TryKind;
+import com.aol.cyclops2.hkt.Higher;
+import cyclops.companion.Monoids;
+import cyclops.control.Maybe;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
@@ -13,11 +17,23 @@ import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
+import cyclops.monads.VavrWitness.tryType;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.instances.General;
+import cyclops.typeclasses.monad.*;
 import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
+import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -31,7 +47,7 @@ import java.util.stream.Stream;
 @UtilityClass
 public class Trys {
 
-    public static <T> AnyMValue<VavrWitness.tryType,T> anyM(Try<T> tryType) {
+    public static <T> AnyMValue<tryType,T> anyM(Try<T> tryType) {
         return AnyM.ofValue(tryType, VavrWitness.tryType.INSTANCE);
     }
     /**
@@ -363,7 +379,7 @@ public class Trys {
      * @return  Try with a List of values
      */
     public static <T> Try<ReactiveSeq<T>> sequence(final Stream<Try<T>> opts) {
-        return AnyM.sequence(opts.map(Trys::anyM), VavrWitness.tryType.INSTANCE)
+        return AnyM.sequence(opts.map(Trys::anyM), tryType.INSTANCE)
                 .map(ReactiveSeq::fromStream)
                 .to(VavrWitness::tryType);
 
@@ -550,6 +566,321 @@ public class Trys {
         return (Try<T>) tryTypeal;
     }
 
-    
+    public static <T> Active<tryType,T> allTypeclasses(Try<T> tryType){
+        return Active.of(TryKind.widen(tryType), Trys.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<tryType,W2,R> mapM(Try<T> tryType, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Try<Higher<W2, R>> e = tryType.map(fn);
+        TryKind<Higher<W2, R>> lk = TryKind.widen(e);
+        return Nested.of(lk, Trys.Instances.definitions(), defs);
+    }
+
+    /**
+     * Companion class for creating Type Class instances for working with Trys
+     * @author johnmcclean
+     *
+     */
+    @UtilityClass
+    public static class Instances {
+
+        public static InstanceDefinitions<tryType> definitions() {
+            return new InstanceDefinitions<tryType>() {
+
+                @Override
+                public <T, R> Functor<tryType> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<tryType> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<tryType> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<tryType> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<tryType>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<tryType>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<tryType>> monadPlus(Monoid<Higher<tryType, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<tryType>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<tryType>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<tryType>> comonad() {
+                    return Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<tryType>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        }
+
+        /**
+         *
+         * Transform a Try, mulitplying every element by 2
+         *
+         * <pre>
+         * {@code
+         *  TryKind<Integer> tryType = Trys.functor().map(i->i*2, TryKind.widen(Try.successful(1));
+         *
+         *  //[2]
+         *
+         *
+         * }
+         * </pre>
+         *
+         * An example fluent api working with Trys
+         * <pre>
+         * {@code
+         *   TryKind<Integer> ft = Trys.unit()
+        .unit("hello")
+        .then(h->Trys.functor().map((String v) ->v.length(), h))
+        .convert(TryKind::narrowK);
+         *
+         * }
+         * </pre>
+         *
+         *
+         * @return A functor for Trys
+         */
+        public static <T,R>Functor<tryType> functor(){
+            BiFunction<TryKind<T>,Function<? super T, ? extends R>,TryKind<R>> map = Instances::map;
+            return General.functor(map);
+        }
+        /**
+         * <pre>
+         * {@code
+         * TryKind<String> ft = Trys.unit()
+        .unit("hello")
+        .convert(TryKind::narrowK);
+
+        //Arrays.asTry("hello"))
+         *
+         * }
+         * </pre>
+         *
+         *
+         * @return A factory for Trys
+         */
+        public static <T> Pure<tryType> unit(){
+            return General.<tryType,T>unit(Instances::of);
+        }
+        /**
+         *
+         * <pre>
+         * {@code
+         * import static com.aol.cyclops.hkt.jdk.TryKind.widen;
+         * import static com.aol.cyclops.util.function.Lambda.l1;
+         *
+        Trys.applicative()
+        .ap(widen(Try.successful(l1(this::multiplyByTwo))),widen(asTry(1,2,3)));
+         *
+         * //[2,4,6]
+         * }
+         * </pre>
+         *
+         *
+         * Example fluent API
+         * <pre>
+         * {@code
+         * TryKind<Function<Integer,Integer>> ftFn =Trys.unit()
+         *                                                  .unit(Lambda.l1((Integer i) ->i*2))
+         *                                                  .convert(TryKind::narrowK);
+
+        TryKind<Integer> ft = Trys.unit()
+        .unit("hello")
+        .then(h->Trys.functor().map((String v) ->v.length(), h))
+        .then(h->Trys.applicative().ap(ftFn, h))
+        .convert(TryKind::narrowK);
+
+        //Arrays.asTry("hello".length()*2))
+         *
+         * }
+         * </pre>
+         *
+         *
+         * @return A zipper for Trys
+         */
+        public static <T,R> Applicative<tryType> applicative(){
+            BiFunction<TryKind< Function<T, R>>,TryKind<T>,TryKind<R>> ap = Instances::ap;
+            return General.applicative(functor(), unit(), ap);
+        }
+        /**
+         *
+         * <pre>
+         * {@code
+         * import static com.aol.cyclops.hkt.jdk.TryKind.widen;
+         * TryKind<Integer> ft  = Trys.monad()
+        .flatMap(i->widen(Try.successful(i), widen(Try.successful(3))
+        .convert(TryKind::narrowK);
+         * }
+         * </pre>
+         *
+         * Example fluent API
+         * <pre>
+         * {@code
+         *    TryKind<Integer> ft = Trys.unit()
+        .unit("hello")
+        .then(h->Trys.monad().flatMap((String v) ->Trys.unit().unit(v.length()), h))
+        .convert(TryKind::narrowK);
+
+        //Arrays.asTry("hello".length())
+         *
+         * }
+         * </pre>
+         *
+         * @return Type class with monad functions for Trys
+         */
+        public static <T,R> Monad<tryType> monad(){
+
+            BiFunction<Higher<tryType,T>,Function<? super T, ? extends Higher<tryType,R>>,Higher<tryType,R>> flatMap = Instances::flatMap;
+            return General.monad(applicative(), flatMap);
+        }
+        /**
+         *
+         * <pre>
+         * {@code
+         *  TryKind<String> ft = Trys.unit()
+        .unit("hello")
+        .then(h->Trys.monadZero().filter((String t)->t.startsWith("he"), h))
+        .convert(TryKind::narrowK);
+
+        //Arrays.asTry("hello"));
+         *
+         * }
+         * </pre>
+         *
+         *
+         * @return A filterable monad (with default value)
+         */
+        public static <T,R> MonadZero<tryType> monadZero(){
+
+            return General.monadZero(monad(), TryKind.failed(new NoSuchElementException()));
+        }
+        /**
+         * <pre>
+         * {@code
+         *  TryKind<Integer> ft = Trys.<Integer>monadPlus()
+        .plus(TryKind.widen(Arrays.asTry()), TryKind.widen(Try.successful((10)))
+        .convert(TryKind::narrowK);
+        //Try(10)
+         *
+         * }
+         * </pre>
+         * @return Type class for combining Trys by concatenation
+         */
+        public static <T> MonadPlus<tryType> monadPlus(){
+            Monoid<cyclops.control.Try<T,Throwable>> mn = Monoids.firstTrySuccess(new NoSuchElementException());
+            Monoid<TryKind<T>> m = Monoid.of(TryKind.widen(mn.zero()), (f, g)-> TryKind.widen(
+                    mn.apply(ToCyclopsReact.toTry(f), ToCyclopsReact.toTry(g))));
+
+            Monoid<Higher<tryType,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        /**
+         *
+         * <pre>
+         * {@code
+         *  Monoid<TryKind<Integer>> m = Monoid.of(TryKind.widen(Try.failed(e), (a,b)->a.isEmpty() ? b : a);
+        TryKind<Integer> ft = Trys.<Integer>monadPlus(m)
+        .plus(TryKind.widen(Try.successful(5), TryKind.widen(Try.successful(10))
+        .convert(TryKind::narrowK);
+        //Try(5)
+         *
+         * }
+         * </pre>
+         *
+         * @param m Monoid to use for combining Trys
+         * @return Type class for combining Trys
+         */
+        public static <T> MonadPlus<tryType> monadPlus(Monoid<Higher<tryType, T>> m){
+            Monoid<Higher<tryType,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+
+        /**
+         * @return Type class for traversables with traverse / sequence operations
+         */
+        public static <C2,T> Traverse<tryType> traverse(){
+
+            return General.traverseByTraverse(applicative(), Instances::traverseA);
+        }
+
+        /**
+         *
+         * <pre>
+         * {@code
+         * int sum  = Trys.foldable()
+        .foldLeft(0, (a,b)->a+b, TryKind.widen(Try.successful(4));
+
+        //4
+         *
+         * }
+         * </pre>
+         *
+         *
+         * @return Type class for folding / reduction operations
+         */
+        public static <T> Foldable<tryType> foldable(){
+            BiFunction<Monoid<T>,Higher<tryType,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), TryKind.narrow(l).get());
+            BiFunction<Monoid<T>,Higher<tryType,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), TryKind.narrow(l).get());
+            return General.foldable(foldRightFn, foldLeftFn);
+        }
+        public static <T> Comonad<tryType> comonad(){
+            Function<? super Higher<tryType, T>, ? extends T> extractFn = maybe -> maybe.convert(TryKind::narrow).get();
+            return General.comonad(functor(), unit(), extractFn);
+        }
+
+        private <T> TryKind<T> of(T value){
+            return TryKind.widen(Try.success(value));
+        }
+        private static <T,R> TryKind<R> ap(TryKind<Function< T, R>> lt, TryKind<T> list){
+            return TryKind.widen(ToCyclopsReact.toTry(lt).combine(ToCyclopsReact.toTry(list), (a, b)->a.apply(b)));
+
+        }
+        private static <T,R> Higher<tryType,R> flatMap(Higher<tryType,T> lt, Function<? super T, ? extends  Higher<tryType,R>> fn){
+            return TryKind.widen(TryKind.narrow(lt).flatMap(fn.andThen(TryKind::narrowK)));
+        }
+        private static <T,R> TryKind<R> map(TryKind<T> lt, Function<? super T, ? extends R> fn){
+            return TryKind.widen(lt.map(fn));
+        }
+
+
+        private static <C2,T,R> Higher<C2, Higher<tryType, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                         Higher<tryType, T> ds){
+            Try<T> tryType = TryKind.narrow(ds);
+            return applicative.map(TryKind::successful, fn.apply(tryType.get()));
+        }
+
+    }
+
 
 }

@@ -1,10 +1,13 @@
 package cyclops.companion.vavr;
 
 
+import com.aol.cyclops.vavr.hkt.ArrayKind;
 import com.aol.cyclops2.react.Status;
 import com.aol.cyclops2.react.collectors.lazy.Blocker;
+import cyclops.control.Maybe;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.monads.Vavr;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.future;
 import com.aol.cyclops.vavr.hkt.FutureKind;
@@ -22,12 +25,17 @@ import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.FutureT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import io.vavr.collection.Array;
 import io.vavr.concurrent.Future;
 
 import lombok.experimental.UtilityClass;
@@ -694,6 +702,15 @@ public class Futures {
         return (Future<T>) futureal;
     }
 
+    public static <T> Active<future,T> allTypeclasses(Future<T> future){
+        return Active.of(FutureKind.widen(future), Futures.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<future,W2,R> mapM(Future<T> future, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Future<Higher<W2, R>> e = future.map(fn);
+        FutureKind<Higher<W2, R>> lk = FutureKind.widen(e);
+        return Nested.of(lk, Futures.Instances.definitions(), defs);
+    }
+
     /**
      * Companion class for creating Type Class instances for working with Futures
      * @author johnmcclean
@@ -702,6 +719,65 @@ public class Futures {
     @UtilityClass
     public static class Instances {
 
+        public static  InstanceDefinitions<future> definitions() {
+            return new InstanceDefinitions<future>() {
+
+                @Override
+                public <T, R> Functor<future> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<future> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<future> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<future> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<future>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<future>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<future>> monadPlus(Monoid<Higher<future, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<future>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<future>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<future>> comonad() {
+                    return Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<future>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        }
 
         /**
          *
@@ -881,7 +957,7 @@ public class Futures {
          * @param m Monoid to use for combining Futures
          * @return Type class for combining Futures
          */
-        public static <T> MonadPlus<future> monadPlus(Monoid<FutureKind<T>> m){
+        public static <T> MonadPlus<future> monadPlus(Monoid<Higher<future, T>> m){
             Monoid<Higher<future,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }

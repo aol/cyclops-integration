@@ -7,12 +7,21 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
+import cyclops.companion.vavr.Arrays;
+import cyclops.companion.vavr.Futures;
 import cyclops.conversion.vavr.FromCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 
+import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.future;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.FutureT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import io.vavr.collection.Array;
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
 import io.vavr.control.Option;
@@ -32,8 +41,15 @@ import lombok.AllArgsConstructor;
 
 public interface FutureKind<T> extends Higher<future, T>, Future<T> {
 
-
-    
+    default Active<future,T> allTypeclasses(){
+        return Active.of(this, Futures.Instances.definitions());
+    }
+    default <W2,R> Nested<future,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Futures.mapM(this,fn,defs);
+    }
+    default <W extends WitnessType<W>> FutureT<W, T> liftM(W witness) {
+        return FutureT.of(witness.adapter().unit(ToCyclopsReact.future(this)));
+    }
     public static <T> FutureKind<T> failed(Throwable exception){
         return widen(Future.failed(exception));
     }
