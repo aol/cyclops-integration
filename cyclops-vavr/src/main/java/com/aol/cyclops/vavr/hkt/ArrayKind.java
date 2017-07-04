@@ -33,6 +33,7 @@ public  class ArrayKind<T> implements Higher<array, T>{
     public Active<array,T> allTypeclasses(){
         return Active.of(this, Arrays.Instances.definitions());
     }
+
     public <W2,R> Nested<array,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
         Array<Higher<W2, R>> e = map(fn);
         ArrayKind<Higher<W2, R>> lk = ArrayKind.widen(e);

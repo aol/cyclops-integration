@@ -1,6 +1,9 @@
 package cyclops.companion.vavr;
 
+import com.aol.cyclops.vavr.hkt.ListKind;
+import cyclops.control.Maybe;
 import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.vector;
 import cyclops.collections.vavr.VavrVectorX;
 import com.aol.cyclops.vavr.hkt.VectorKind;
@@ -13,14 +16,22 @@ import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.ListT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import io.vavr.collection.List;
 import io.vavr.collection.Vector;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Optional;
 import java.util.function.*;
 
 
@@ -302,15 +313,80 @@ public class Vectors {
                     .map(in2 -> yieldingFunction.apply(in,  in2));
         });
     }
+    public static <T> Active<vector,T> allTypeclasses(Vector<T> array){
+        return Active.of(VectorKind.widen(array), Vectors.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<vector,W2,R> mapM(Vector<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Vector<Higher<W2, R>> e = array.map(fn);
+        VectorKind<Higher<W2, R>> lk = VectorKind.widen(e);
+        return Nested.of(lk, Vectors.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Vectors
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<vector> definitions() {
+            return new InstanceDefinitions<vector>() {
 
+                @Override
+                public <T, R> Functor<vector> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<vector> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<vector> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<vector> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<vector>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<vector>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<vector>> monadPlus(Monoid<Higher<vector, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<vector>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<vector>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<vector>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<vector>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+        }
         /**
          *
          * Transform a list, mulitplying every element by 2
@@ -487,7 +563,11 @@ public class Vectors {
          * @param m Monoid to use for combining Vectors
          * @return Type class for combining Vectors
          */
-        public static <T> MonadPlus<vector> monadPlus(Monoid<VectorKind<T>> m){
+        public static <T> MonadPlus<vector> monadPlus(Monoid<Higher<vector,T>> m){
+            Monoid<Higher<vector,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<vector> monadPlusK(Monoid<VectorKind<T>> m){
             Monoid<Higher<vector,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -553,6 +633,15 @@ public class Vectors {
         }
         private static <T,R> VectorKind<R> map(VectorKind<T> lt, Function<? super T, ? extends R> fn){
             return VectorKind.widen(VectorKind.narrow(lt).map(in->fn.apply(in)));
+        }
+        public static Unfoldable<vector> unfoldable(){
+            return new Unfoldable<vector>() {
+                @Override
+                public <R, T> Higher<vector, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    return VectorKind.widen(ReactiveSeq.unfold(b,fn).collect(Vector.collector()));
+
+                }
+            };
         }
     }
 

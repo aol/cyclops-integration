@@ -270,4 +270,12 @@ public interface VavrWitness {
         }
 
     }
-}
+    public static enum set implements WitnessType<set> {
+        INSTANCE;
+
+        @Override
+        public FunctionalAdapter<set> adapter() {
+            return null;
+        }
+
+    }}

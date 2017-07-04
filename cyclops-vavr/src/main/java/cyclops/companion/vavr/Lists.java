@@ -1,5 +1,8 @@
 package cyclops.companion.vavr;
 
+import com.aol.cyclops.vavr.hkt.ArrayKind;
+import cyclops.control.Maybe;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.list;
 import cyclops.collections.vavr.VavrListX;
 import com.aol.cyclops.vavr.hkt.ListKind;
@@ -12,14 +15,22 @@ import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.ListT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import io.vavr.collection.Array;
 import io.vavr.collection.List;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Optional;
 import java.util.function.*;
 
 
@@ -299,15 +310,81 @@ public class Lists {
                     .map(in2 -> yieldingFunction.apply(in,  in2));
         });
     }
+
+    public static <T> Active<list,T> allTypeclasses(List<T> array){
+        return Active.of(ListKind.widen(array), Lists.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<list,W2,R> mapM(List<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        List<Higher<W2, R>> e = array.map(fn);
+        ListKind<Higher<W2, R>> lk = ListKind.widen(e);
+        return Nested.of(lk, Lists.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Lists
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<list> definitions() {
+            return new InstanceDefinitions<list>() {
 
+                @Override
+                public <T, R> Functor<list> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<list> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<list> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<list> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<list>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<list>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<list>> monadPlus(Monoid<Higher<list, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<list>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<list>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<list>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<list>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+        }
         /**
          *
          * Transform a list, mulitplying every element by 2
@@ -484,7 +561,11 @@ public class Lists {
          * @param m Monoid to use for combining Lists
          * @return Type class for combining Lists
          */
-        public static <T> MonadPlus<list> monadPlus(Monoid<ListKind<T>> m){
+        public static <T> MonadPlus<list> monadPlus(Monoid<Higher<list,T>> m){
+            Monoid<Higher<list,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<list> monadPlusK(Monoid<ListKind<T>> m){
             Monoid<Higher<list,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -551,7 +632,17 @@ public class Lists {
         private static <T> ListKind<T> filter(Higher<list,T> lt, Predicate<? super T> fn){
             return ListKind.widen(ListKind.narrow(lt).filter(fn));
         }
+        public static Unfoldable<list> unfoldable(){
+            return new Unfoldable<list>() {
+                @Override
+                public <R, T> Higher<list, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    return ListKind.widen(ReactiveSeq.unfold(b,fn).collect(List.collector()));
+
+                }
+            };
+        }
     }
+
 
 
 }

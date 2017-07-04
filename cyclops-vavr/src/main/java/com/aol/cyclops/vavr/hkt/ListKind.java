@@ -1,10 +1,21 @@
 package com.aol.cyclops.vavr.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.collections.vavr.VavrListX;
+import cyclops.companion.vavr.Lists;
+import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.list;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.ListT;
+import cyclops.monads.transformers.XorT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.vavr.collection.List;
+import io.vavr.concurrent.Future;
+import io.vavr.control.Either;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -13,6 +24,8 @@ import org.reactivestreams.Subscriber;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+
+import java.util.function.Function;
 
 /**
  * Simulates Higher Kinded Types for Vavr List's
@@ -24,9 +37,22 @@ import lombok.AllArgsConstructor;
  * @param <T> Data type stored within the List
  */
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ListKind<T> implements Higher<list, T>, Publisher<T>, List<T> {
 
+public interface ListKind<T> extends Higher<list, T>, Publisher<T>, List<T> {
+
+    default Active<list,T> allTypeclasses(){
+        return Active.of(this, Lists.Instances.definitions());
+    }
+
+    default <W2,R> Nested<list,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Lists.mapM(this,fn,defs);
+    }
+    default <R> ListKind<R> fold(Function<? super List<? super T>,? extends List<R>> op){
+        return widen(op.apply(this));
+    }
+    default <W extends WitnessType<W>> ListT<W, T> liftM(W witness) {
+        return ListT.of(witness.adapter().unit(VavrListX.from(this)));
+    }
     /**
      * Construct a HKT encoded completed List
      * 
@@ -59,7 +85,7 @@ public final class ListKind<T> implements Higher<list, T>, Publisher<T>, List<T>
      */
     public static <T> ListKind<T> widen(final List<T> completableList) {
 
-        return new ListKind<>(
+        return new Box<>(
                                 completableList);
     }
 
@@ -78,7 +104,7 @@ public final class ListKind<T> implements Higher<list, T>, Publisher<T>, List<T>
 
     public static <T> ListKind<T> widen(final Publisher<T> completableList) {
 
-        return new ListKind<>(
+        return new Box<>(
                                 List.ofAll((Iterable<T>)ReactiveSeq.fromPublisher(completableList)));
     }
 
@@ -103,92 +129,92 @@ public final class ListKind<T> implements Higher<list, T>, Publisher<T>, List<T>
         return ((ListKind<T>) list).narrow();
 
     }
+    public List<T> narrow();
+    public ReactiveSeq<T> toReactiveSeq();
 
-    private final List<T> boxed;
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    static final class Box<T> implements ListKind<T> {
 
-    public ReactiveSeq<T> toReactiveSeq(){
-        return ReactiveSeq.fromIterable(boxed);
+        private final List<T> boxed;
+        public ReactiveSeq<T> toReactiveSeq(){
+            return ReactiveSeq.fromIterable(boxed);
+        }
+
+        /**
+         * @return wrapped List
+         */
+        public List<T> narrow() {
+            return boxed;
+        }
+
+        @Override
+        public void subscribe(Subscriber<? super T> s) {
+            ReactiveSeq.fromIterable(boxed)
+                    .subscribe(s);
+
+        }
+        /**
+         * @return
+         * @see io.vavr.collection.Traversable#head()
+         */
+        public T head() {
+            return boxed.head();
+        }
+
+
+        /**
+         * @param o
+         * @return
+         * @see io.vavr.Value#equals(java.lang.Object)
+         */
+        public boolean equals(Object o) {
+            return boxed.equals(o);
+        }
+
+
+
+        /**
+         * @return
+         * @see io.vavr.Value#hashCode()
+         */
+        public int hashCode() {
+            return boxed.hashCode();
+        }
+
+
+        /**
+         * @return
+         * @see io.vavr.Value#toString()
+         */
+        public String toString() {
+            return boxed.toString();
+        }
+
+
+
+
+        /**
+         * @return
+         * @see io.vavr.collection.List#tail()
+         */
+        public List<T> tail() {
+            return boxed.tail();
+        }
+
+        /**
+         * @return
+         * @see io.vavr.collection.Traversable#isEmpty()
+         */
+        public boolean isEmpty() {
+            return boxed.isEmpty();
+        }
+
+        /**
+         * @return
+         * @see io.vavr.collection.List#length()
+         */
+        public int length() {
+            return boxed.length();
+        }
     }
-    /**
-     * @return wrapped List
-     */
-    public List<T> narrow() {
-        return boxed;
-    }
-
-    @Override
-    public void subscribe(Subscriber<? super T> s) {
-        ReactiveSeq.fromIterable(boxed)
-                   .subscribe(s);
-
-    }
-
-   
-
-    /**
-     * @return
-     * @see io.vavr.collection.Traversable#head()
-     */
-    public T head() {
-        return boxed.head();
-    }
-    
-
-    /**
-     * @param o
-     * @return
-     * @see io.vavr.Value#equals(java.lang.Object)
-     */
-    public boolean equals(Object o) {
-        return boxed.equals(o);
-    }
-
-    
-
-    /**
-     * @return
-     * @see io.vavr.Value#hashCode()
-     */
-    public int hashCode() {
-        return boxed.hashCode();
-    }
-
-   
-    /**
-     * @return
-     * @see io.vavr.Value#toString()
-     */
-    public String toString() {
-        return boxed.toString();
-    }
-
-   
-    
-
-    /**
-     * @return
-     * @see io.vavr.collection.List#tail()
-     */
-    public List<T> tail() {
-        return boxed.tail();
-    }
-
-    /**
-     * @return
-     * @see io.vavr.collection.Traversable#isEmpty()
-     */
-    public boolean isEmpty() {
-        return boxed.isEmpty();
-    }
-
-    /**
-     * @return
-     * @see io.vavr.collection.List#length()
-     */
-    public int length() {
-        return boxed.length();
-    }
-
-    
-
 }

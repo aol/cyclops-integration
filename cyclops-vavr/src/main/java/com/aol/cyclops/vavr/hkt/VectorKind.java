@@ -19,8 +19,17 @@ import java.util.stream.Stream;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.collections.vavr.VavrListX;
+import cyclops.collections.vavr.VavrVectorX;
+import cyclops.companion.vavr.Lists;
+import cyclops.companion.vavr.Vectors;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.vector;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.ListT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.vavr.collection.Vector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -38,6 +47,19 @@ import lombok.experimental.Delegate;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public  class VectorKind<T> implements Higher<vector, T>{
 
+    public Active<vector,T> allTypeclasses(){
+        return Active.of(this, Vectors.Instances.definitions());
+    }
+
+    public <W2,R> Nested<vector,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Vectors.mapM(boxed,fn,defs);
+    }
+    public <R> VectorKind<R> fold(Function<? super Vector<? super T>,? extends Vector<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public <W extends WitnessType<W>> ListT<W, T> liftM(W witness) {
+        return ListT.of(witness.adapter().unit(VavrVectorX.from(boxed)));
+    }
     public static <T> VectorKind<T> of(T element) {
         return  widen(Vector.of(element));
     }

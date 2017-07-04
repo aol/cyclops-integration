@@ -9,12 +9,14 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPVectorX;
 import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.foldable.Evaluation;
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
+import io.vavr.collection.List;
 import org.jooq.lambda.tuple.Tuple2;
 import org.pcollections.PVector;
 
@@ -155,6 +157,9 @@ public class VavrVectorX<T> extends AbstractList<T> implements PVector<T>, Unwra
     }
     public static <T> LazyPVectorX<T> PVector(Vector<T> q) {
         return fromPVector(new VavrVectorX<T>(q), toPVector());
+    }
+    public static <T> LazyPVectorX<T> from(Vector<T> q) {
+        return PVector(q);
     }
     @SafeVarargs
     public static <T> LazyPVectorX<T> PVector(T... elements){
