@@ -615,7 +615,7 @@ public class Options {
          *
          * @return A functor for Options
          */
-        public static <T,R>Functor<OptionKind.µ> functor(){
+        public static <T,R>Functor<option> functor(){
             BiFunction<OptionKind<T>,Function<? super T, ? extends R>,OptionKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -634,8 +634,8 @@ public class Options {
          *
          * @return A factory for Options
          */
-        public static <T> Pure<OptionKind.µ> unit(){
-            return General.<OptionKind.µ,T>unit(Instances::of);
+        public static <T> Pure<option> unit(){
+            return General.<option,T>unit(Instances::of);
         }
         /**
          *
@@ -674,7 +674,7 @@ public class Options {
          *
          * @return A zipper for Options
          */
-        public static <T,R> Applicative<OptionKind.µ> applicative(){
+        public static <T,R> Applicative<option> applicative(){
             BiFunction<OptionKind< Function<T, R>>,OptionKind<T>,OptionKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -704,9 +704,9 @@ public class Options {
          *
          * @return Type class with monad functions for Options
          */
-        public static <T,R> Monad<OptionKind.µ> monad(){
+        public static <T,R> Monad<option> monad(){
 
-            BiFunction<Higher<OptionKind.µ,T>,Function<? super T, ? extends Higher<OptionKind.µ,R>>,Higher<OptionKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<option,T>,Function<? super T, ? extends Higher<option,R>>,Higher<option,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
         /**
@@ -726,7 +726,7 @@ public class Options {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<OptionKind.µ> monadZero(){
+        public static <T,R> MonadZero<option> monadZero(){
 
             return General.monadZero(monad(), OptionKind.none());
         }
@@ -742,10 +742,10 @@ public class Options {
          * </pre>
          * @return Type class for combining Options by concatenation
          */
-        public static <T> MonadPlus<OptionKind.µ> monadPlus(){
+        public static <T> MonadPlus<option> monadPlus(){
             Monoid<OptionKind<T>> m = Monoid.of( OptionKind.ofOptional(Monoids.<T>firstPresentOptional().zero()),
                     (a,b)-> OptionKind.ofOptional(Monoids.<T>firstPresentOptional().apply(a.toJavaOptional(),b.toJavaOptional())));
-            Monoid<Higher<OptionKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<option,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -764,15 +764,15 @@ public class Options {
          * @param m Monoid to use for combining Options
          * @return Type class for combining Options
          */
-        public static <T> MonadPlus<OptionKind.µ> monadPlus(Monoid<OptionKind<T>> m){
-            Monoid<Higher<OptionKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<option> monadPlus(Monoid<OptionKind<T>> m){
+            Monoid<Higher<option,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<OptionKind.µ> traverse(){
+        public static <C2,T> Traverse<option> traverse(){
 
             return General.traverseByTraverse(applicative(), Instances::traverseA);
         }
@@ -792,13 +792,13 @@ public class Options {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<OptionKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<OptionKind.µ,T>,T> foldRightFn =  (m, l)-> OptionKind.narrow(l).getOrElse(m.zero());
-            BiFunction<Monoid<T>,Higher<OptionKind.µ,T>,T> foldLeftFn = (m, l)-> OptionKind.narrow(l).getOrElse(m.zero());
+        public static <T> Foldable<option> foldable(){
+            BiFunction<Monoid<T>,Higher<option,T>,T> foldRightFn =  (m, l)-> OptionKind.narrow(l).getOrElse(m.zero());
+            BiFunction<Monoid<T>,Higher<option,T>,T> foldLeftFn = (m, l)-> OptionKind.narrow(l).getOrElse(m.zero());
             return General.foldable(foldRightFn, foldLeftFn);
         }
-        public static <T> Comonad<OptionKind.µ> comonad(){
-            Function<? super Higher<OptionKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionKind::narrow).get();
+        public static <T> Comonad<option> comonad(){
+            Function<? super Higher<option, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionKind::narrow).get();
             return General.comonad(functor(), unit(), extractFn);
         }
 
@@ -809,7 +809,7 @@ public class Options {
             return OptionKind.widen(FromCyclopsReact.option(ToCyclopsReact.maybe(lt).combine(ToCyclopsReact.maybe(option), (a, b)->a.apply(b))));
 
         }
-        private static <T,R> Higher<OptionKind.µ,R> flatMap(Higher<OptionKind.µ,T> lt, Function<? super T, ? extends  Higher<OptionKind.µ,R>> fn){
+        private static <T,R> Higher<option,R> flatMap(Higher<option,T> lt, Function<? super T, ? extends  Higher<option,R>> fn){
             return OptionKind.widen(OptionKind.narrow(lt).flatMap(fn.andThen(OptionKind::narrow)));
         }
         private static <T,R> OptionKind<R> map(OptionKind<T> lt, Function<? super T, ? extends R> fn){
@@ -817,8 +817,8 @@ public class Options {
         }
 
 
-        private static <C2,T,R> Higher<C2, Higher<OptionKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
-                                                                              Higher<OptionKind.µ, T> ds){
+        private static <C2,T,R> Higher<C2, Higher<option, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                              Higher<option, T> ds){
 
             Option<T> option = OptionKind.narrow(ds);
             Higher<C2, OptionKind<R>> res = ToCyclopsReact.maybe(option).visit(some-> applicative.map(m-> OptionKind.of(m), fn.apply(some)),

@@ -2,6 +2,8 @@ package com.aol.cyclops.vavr.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Unwrapable;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.array;
 import io.vavr.collection.Array;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,22 +12,15 @@ import lombok.experimental.Delegate;
 /**
  * Simulates Higher Kinded Types for Array's
  * 
- * ArrayKind is a Array and a Higher Kinded Type (ArrayKind.µ,T)
+ * ArrayKind is a Array and a Higher Kinded Type (array,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Array
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>{
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
+public  class ArrayKind<T> implements Higher<array, T>{
+
 
     public static <T> ArrayKind<T> of(T element) {
         return  widen(Array.of(element));
@@ -56,9 +51,9 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>{
      * @param list HTK encoded type containing  a Array to widen
      * @return HKT encoded type with a widened Array
      */
-    public static <C2,T> Higher<C2, Higher<ArrayKind.µ,T>> widen2(Higher<C2, ArrayKind<T>> list){
+    public static <C2,T> Higher<C2, Higher<array,T>> widen2(Higher<C2, ArrayKind<T>> list){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
-        //cast seems safer as Higher<ArrayKind.µ,T> must be a ArrayKind
+        //cast seems safer as Higher<array,T> must be a ArrayKind
         return (Higher)list;
     }
     /**
@@ -67,7 +62,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>{
      * @param list HKT encoded list into a ArrayKind
      * @return ArrayKind
      */
-    public static <T> ArrayKind<T> narrowK(final Higher<ArrayKind.µ, T> list) {
+    public static <T> ArrayKind<T> narrowK(final Higher<array, T> list) {
        return (ArrayKind<T>)list;
     }
     /**
@@ -76,7 +71,7 @@ public  class ArrayKind<T> implements Higher<ArrayKind.µ, T>{
      * @param list Type Constructor to convert back into narrowed type
      * @return ArrayX from Higher Kinded Type
      */
-    public static <T> Array<T> narrow(final Higher<ArrayKind.µ, T> list) {
+    public static <T> Array<T> narrow(final Higher<array, T> list) {
         return ((ArrayKind)list).narrow();
        
     }

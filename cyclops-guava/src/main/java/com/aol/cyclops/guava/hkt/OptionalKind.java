@@ -14,20 +14,23 @@ import com.google.common.base.Supplier;
 
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
+import cyclops.monads.GuavaWitness;
+import cyclops.monads.GuavaWitness.optional;
+import cyclops.monads.Witness;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for Optional's
  * 
- * OptionalKind is a Optional and a Higher Kinded Type (OptionalKind.µ,T)
+ * OptionalKind is a Optional and a Higher Kinded Type (optional,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Optional
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
+public class OptionalKind<T> implements Higher<optional, T> {
     /**
      * Witness type
      * 
@@ -82,7 +85,7 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      * @param optional Optional to construct Optional from
      * @return Optional created from Optional
      */
-    public static <T> OptionalKind<T> fromOptional(Higher<cyclops.companion.Optionals.OptionalKind.µ,T> optional){
+    public static <T> OptionalKind<T> fromOptional(Higher<Witness.optional,T> optional){
 
         return widen(FromCyclopsReact.optional(Maybe.fromOptional(optional)));
     }
@@ -110,12 +113,12 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      * @param future HKT encoded list into a OptionalKind
      * @return OptionalKind
      */
-    public static <T> OptionalKind<T> narrowK(final Higher<OptionalKind.µ, T> future) {
+    public static <T> OptionalKind<T> narrowK(final Higher<optional, T> future) {
        return (OptionalKind<T>)future;
     }
-    public static <C2,T> Higher<C2, Higher<OptionalKind.µ,T>> widen2(Higher<C2, OptionalKind<T>> nestedOptional){
+    public static <C2,T> Higher<C2, Higher<optional,T>> widen2(Higher<C2, OptionalKind<T>> nestedOptional){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
-        //cast seems safer as Higher<OptionalKind.µ,T> must be a StreamType
+        //cast seems safer as Higher<optional,T> must be a StreamType
         return (Higher)nestedOptional;
     }
     /**
@@ -124,7 +127,7 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      * @param optional Type Constructor to convert back into narrowed type
      * @return Optional from Higher Kinded Type
      */
-    public static <T> java.util.Optional<T> narrowOptional(final Higher<OptionalKind.µ, T> optional) {
+    public static <T> java.util.Optional<T> narrowOptional(final Higher<optional, T> optional) {
         
          return ToCyclopsReact.maybe(narrow(optional)).toOptional();
         
@@ -193,7 +196,7 @@ public class OptionalKind<T> implements Higher<OptionalKind.µ, T> {
      * @param maybe Type Constructor to convert back into narrowed type
      * @return OptionalX from Higher Kinded Type
      */
-    public static <T> Optional<T> narrow(final Higher<OptionalKind.µ, T> maybe) {
+    public static <T> Optional<T> narrow(final Higher<optional, T> maybe) {
         if (maybe instanceof Optional)
             return (Optional) maybe;
         //this code should be unreachable due to HKT type checker

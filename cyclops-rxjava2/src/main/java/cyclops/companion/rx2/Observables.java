@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops.rx2.adapter.ObservableReactiveSeq;
 import cyclops.monads.Rx2Witness;
-import cyclops.monads.Rx2Witness.obsvervable;
+import cyclops.monads.Rx2Witness.observable;
 import com.aol.cyclops.rx2.hkt.ObservableKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
@@ -30,8 +30,6 @@ import io.reactivex.*;
 import io.reactivex.schedulers.Schedulers;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
-
 
 
 /**
@@ -46,7 +44,7 @@ public class Observables {
     public static <T,W extends WitnessType<W>> AnyM<W,Observable<T>> fromStream(AnyM<W,Stream<T>> anyM){
         return anyM.map(s->fromStream(s));
     }
-    public static <T> Observable<T> raw(AnyM<obsvervable,T> anyM){
+    public static <T> Observable<T> raw(AnyM<observable,T> anyM){
         return Rx2Witness.observable(anyM);
     }
     public static <T> Observable<T> narrow(Observable<? extends T> observable) {
@@ -317,8 +315,8 @@ public class Observables {
      * @param obs Observable to wrap inside an AnyM
      * @return AnyMSeq wrapping an Observable
      */
-    public static <T> AnyMSeq<obsvervable,T> anyM(Observable<T> obs) {
-        return AnyM.ofSeq(reactiveSeq(obs), obsvervable.INSTANCE);
+    public static <T> AnyMSeq<observable,T> anyM(Observable<T> obs) {
+        return AnyM.ofSeq(reactiveSeq(obs), observable.INSTANCE);
     }
 
     /**
@@ -619,7 +617,7 @@ public class Observables {
          *
          * @return A functor for Observables
          */
-        public static <T,R>Functor<ObservableKind.µ> functor(){
+        public static <T,R>Functor<observable> functor(){
             BiFunction<ObservableKind<T>,Function<? super T, ? extends R>,ObservableKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -638,8 +636,8 @@ public class Observables {
          *
          * @return A factory for Observables
          */
-        public static <T> Pure<ObservableKind.µ> unit(){
-            return General.<ObservableKind.µ,T>unit(Instances::of);
+        public static <T> Pure<observable> unit(){
+            return General.<observable,T>unit(Instances::of);
         }
         /**
          *
@@ -677,7 +675,7 @@ public class Observables {
          *
          * @return A zipper for Observables
          */
-        public static <T,R> Applicative<ObservableKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<observable> zippingApplicative(){
             BiFunction<ObservableKind< Function<T, R>>,ObservableKind<T>,ObservableKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -707,9 +705,9 @@ public class Observables {
          *
          * @return Type class with monad functions for Observables
          */
-        public static <T,R> Monad<ObservableKind.µ> monad(){
+        public static <T,R> Monad<observable> monad(){
 
-            BiFunction<Higher<ObservableKind.µ,T>,Function<? super T, ? extends Higher<ObservableKind.µ,R>>,Higher<ObservableKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<observable,T>,Function<? super T, ? extends Higher<observable,R>>,Higher<observable,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -729,10 +727,10 @@ public class Observables {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<ObservableKind.µ> monadZero(){
-            BiFunction<Higher<ObservableKind.µ,T>,Predicate<? super T>,Higher<ObservableKind.µ,T>> filter = Instances::filter;
-            Supplier<Higher<ObservableKind.µ, T>> zero = ()-> ObservableKind.widen(Observable.empty());
-            return General.<ObservableKind.µ,T,R>monadZero(monad(), zero,filter);
+        public static <T,R> MonadZero<observable> monadZero(){
+            BiFunction<Higher<observable,T>,Predicate<? super T>,Higher<observable,T>> filter = Instances::filter;
+            Supplier<Higher<observable, T>> zero = ()-> ObservableKind.widen(Observable.empty());
+            return General.<observable,T,R>monadZero(monad(), zero,filter);
         }
         /**
          * <pre>
@@ -746,9 +744,9 @@ public class Observables {
          * </pre>
          * @return Type class for combining Observables by concatenation
          */
-        public static <T> MonadPlus<ObservableKind.µ> monadPlus(){
+        public static <T> MonadPlus<observable> monadPlus(){
             Monoid<ObservableKind<T>> m = Monoid.of(ObservableKind.widen(Observable.<T>empty()), Instances::concat);
-            Monoid<Higher<ObservableKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<observable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -767,15 +765,15 @@ public class Observables {
          * @param m Monoid to use for combining Observables
          * @return Type class for combining Observables
          */
-        public static <T> MonadPlus<ObservableKind.µ> monadPlus(Monoid<ObservableKind<T>> m){
-            Monoid<Higher<ObservableKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<observable> monadPlus(Monoid<ObservableKind<T>> m){
+            Monoid<Higher<observable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<ObservableKind.µ> traverse(){
+        public static <C2,T> Traverse<observable> traverse(){
             BiFunction<Applicative<C2>,ObservableKind<Higher<C2, T>>,Higher<C2, ObservableKind<T>>> sequenceFn = (ap, observable) -> {
 
                 Higher<C2,ObservableKind<T>> identity = ap.unit(ObservableKind.widen(Observable.empty()));
@@ -790,7 +788,7 @@ public class Observables {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<ObservableKind.µ,Higher<C2, T>>,Higher<C2, Higher<ObservableKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<observable,Higher<C2, T>>,Higher<C2, Higher<observable,T>>> sequenceNarrow  =
                     (a,b) -> ObservableKind.widen2(sequenceFn.apply(a, ObservableKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -810,9 +808,9 @@ public class Observables {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<ObservableKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<ObservableKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(ObservableKind.narrowK(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<ObservableKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(ObservableKind.narrowK(l)).reduce(m);
+        public static <T> Foldable<observable> foldable(){
+            BiFunction<Monoid<T>,Higher<observable,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(ObservableKind.narrowK(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<observable,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(ObservableKind.narrowK(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
@@ -825,7 +823,7 @@ public class Observables {
         private static <T,R> ObservableKind<R> ap(ObservableKind<Function< T, R>> lt, ObservableKind<T> observable){
             return ObservableKind.widen(lt.zipWith(observable.narrow(),(a, b)->a.apply(b)));
         }
-        private static <T,R> Higher<ObservableKind.µ,R> flatMap(Higher<ObservableKind.µ,T> lt, Function<? super T, ? extends  Higher<ObservableKind.µ,R>> fn){
+        private static <T,R> Higher<observable,R> flatMap(Higher<observable,T> lt, Function<? super T, ? extends  Higher<observable,R>> fn){
             io.reactivex.functions.Function<? super T, ? extends  Observable<R>> f = t->fn.andThen(ObservableKind::narrow).apply(t);
 
             return ObservableKind.widen(ObservableKind.narrowK(lt)
@@ -834,7 +832,7 @@ public class Observables {
         private static <T,R> ObservableKind<R> map(ObservableKind<T> lt, Function<? super T, ? extends R> fn){
             return ObservableKind.widen(lt.map(in->fn.apply(in)));
         }
-        private static <T> ObservableKind<T> filter(Higher<ObservableKind.µ,T> lt, Predicate<? super T> fn){
+        private static <T> ObservableKind<T> filter(Higher<observable,T> lt, Predicate<? super T> fn){
             return ObservableKind.widen(ObservableKind.narrow(lt).filter(in->fn.test(in)));
         }
     }

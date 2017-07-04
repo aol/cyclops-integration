@@ -14,6 +14,8 @@ import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
+import cyclops.monads.ReactorWitness;
+import cyclops.monads.ReactorWitness.flux;
 import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 
@@ -36,7 +38,7 @@ public class FluxTest {
         
         FluxKind<Integer> list = Fluxs.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Fluxs.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Fluxs.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length())));
@@ -58,8 +60,8 @@ public class FluxTest {
         
         FluxKind<Integer> list = Fluxs.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Fluxs.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> Fluxs.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h-> Fluxs.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Fluxs.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length()*2)));
@@ -75,7 +77,7 @@ public class FluxTest {
         
         FluxKind<Integer> list = Fluxs.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Fluxs.Instances.monad().flatMap((String v) -> Fluxs.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Fluxs.Instances.monad().flatMap((String v) -> Fluxs.Instances.unit().unit(v.length()), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello".length())));
@@ -85,7 +87,7 @@ public class FluxTest {
         
         FluxKind<String> list = Fluxs.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Fluxs.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Fluxs.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList("hello")));
@@ -95,7 +97,7 @@ public class FluxTest {
         
         FluxKind<String> list = Fluxs.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Fluxs.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Fluxs.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(FluxKind::narrowK);
         
         assertThat(list.collect(Collectors.toList()).block(),equalTo(Arrays.asList()));
@@ -136,7 +138,7 @@ public class FluxTest {
     @Test
     public void traverse(){
 
-       Maybe<Higher<FluxKind.µ, Integer>> res = Fluxs.Instances.traverse()
+       Maybe<Higher<flux, Integer>> res = Fluxs.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), FluxKind.just(1,2,3))
                                                          .convert(Maybe::narrowK);
        

@@ -2,9 +2,12 @@ package com.aol.cyclops.functionaljava.hkt;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.function.Function;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.monads.FJWitness;
+import cyclops.monads.FJWitness.list;
 import fj.Equal;
 import fj.F;
 import fj.F0;
@@ -33,21 +36,17 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for List's
  * 
- * ListKind is a List and a Higher Kinded Type (ListKind.µ,T)
+ * ListKind is a List and a Higher Kinded Type (list,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the List
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public  class ListKind<T> implements Higher<ListKind.µ, T> {
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+public  class ListKind<T> implements Higher<list, T> {
+
+    public <R> ListKind<R> fold(Function<? super List<?  super T>,? extends List<R>> op){
+        return widen(op.apply(boxed));
     }
     public static <T> ListKind<T> list(final T... values) {
         
@@ -73,9 +72,9 @@ public  class ListKind<T> implements Higher<ListKind.µ, T> {
      * @param list HTK encoded type containing  a List to widen
      * @return HKT encoded type with a widened List
      */
-    public static <C2,T> Higher<C2, Higher<ListKind.µ,T>> widen2(Higher<C2, ListKind<T>> list){
+    public static <C2,T> Higher<C2, Higher<list,T>> widen2(Higher<C2, ListKind<T>> list){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
-        //cast seems safer as Higher<ListKind.µ,T> must be a ListKind
+        //cast seems safer as Higher<list,T> must be a ListKind
         return (Higher)list;
     }
     /**
@@ -84,7 +83,7 @@ public  class ListKind<T> implements Higher<ListKind.µ, T> {
      * @param list HKT encoded list into a ListKind
      * @return ListKind
      */
-    public static <T> ListKind<T> narrowK(final Higher<ListKind.µ, T> list) {
+    public static <T> ListKind<T> narrowK(final Higher<list, T> list) {
        return (ListKind<T>)list;
     }
     /**
@@ -93,7 +92,7 @@ public  class ListKind<T> implements Higher<ListKind.µ, T> {
      * @param list Type Constructor to convert back into narrowed type
      * @return ListX from Higher Kinded Type
      */
-    public static <T> List<T> narrow(final Higher<ListKind.µ, T> list) {
+    public static <T> List<T> narrow(final Higher<list, T> list) {
         return ((ListKind)list).narrow();
        
     }

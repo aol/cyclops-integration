@@ -8,6 +8,8 @@ import static org.junit.Assert.assertThat;
 import cyclops.companion.guava.Optionals;
 import com.aol.cyclops.guava.hkt.OptionalKind;
 import cyclops.function.Monoid;
+import cyclops.monads.GuavaWitness;
+import cyclops.monads.GuavaWitness.optional;
 import org.junit.Test;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -33,7 +35,7 @@ public class OptionalsTest {
         
         OptionalKind<Integer> opt = Optionals.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Optionals.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Optionals.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(OptionalKind::narrowK);
         
         assertThat(opt,equalTo(Optional.of("hello".length())));
@@ -53,8 +55,8 @@ public class OptionalsTest {
         
         OptionalKind<Integer> opt = Optionals.Instances.unit()
                                              .unit("hello")
-                                             .apply(h-> Optionals.Instances.functor().map((String v) ->v.length(), h))
-                                             .apply(h-> Optionals.Instances.applicative().ap(optFn, h))
+                                             .applyHKT(h-> Optionals.Instances.functor().map((String v) ->v.length(), h))
+                                             .applyHKT(h-> Optionals.Instances.applicative().ap(optFn, h))
                                              .convert(OptionalKind::narrowK);
                 
         assertThat(opt,equalTo(Optional.of("hello".length()*2)));
@@ -70,7 +72,7 @@ public class OptionalsTest {
         
         OptionalKind<Integer> opt = Optionals.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Optionals.Instances.monad().flatMap((String v) -> Optionals.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Optionals.Instances.monad().flatMap((String v) -> Optionals.Instances.unit().unit(v.length()), h))
                                      .convert(OptionalKind::narrowK);
         
         assertThat(opt,equalTo(Optional.of("hello".length())));
@@ -80,7 +82,7 @@ public class OptionalsTest {
         
         OptionalKind<String> opt = Optionals.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Optionals.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Optionals.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(OptionalKind::narrowK);
         
         assertThat(opt,equalTo(Optional.of("hello")));
@@ -90,7 +92,7 @@ public class OptionalsTest {
         
         OptionalKind<String> opt = Optionals.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Optionals.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Optionals.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(OptionalKind::narrowK);
         
         assertThat(opt,equalTo(Optional.absent()));
@@ -128,7 +130,7 @@ public class OptionalsTest {
     }
     @Test
     public void traverse(){
-       Maybe<Higher<OptionalKind.µ, Integer>> res = Optionals.Instances.traverse()
+       Maybe<Higher<optional, Integer>> res = Optionals.Instances.traverse()
                                                                  .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), OptionalKind.of(1))
                                                                  .convert(Maybe::narrowK);
        

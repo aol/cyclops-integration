@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.queue;
 import io.vavr.collection.LinearSeq;
 import io.vavr.collection.Queue;
 import lombok.AccessLevel;
@@ -28,22 +30,15 @@ import lombok.experimental.Delegate;
 /**
  * Simulates Higher Kinded Types for Queue's
  * 
- * QueueKind is a Queue and a Higher Kinded Type (QueueKind.µ,T)
+ * QueueKind is a Queue and a Higher Kinded Type (queue,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Queue
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public  class QueueKind<T> implements Higher<QueueKind.µ, T> {
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
+public  class QueueKind<T> implements Higher<queue, T> {
+
 
     public static <T> QueueKind<T> of(T element) {
         return  widen(Queue.of(element));
@@ -74,9 +69,9 @@ public  class QueueKind<T> implements Higher<QueueKind.µ, T> {
      * @param list HTK encoded type containing  a Queue to widen
      * @return HKT encoded type with a widened Queue
      */
-    public static <C2,T> Higher<C2, Higher<QueueKind.µ,T>> widen2(Higher<C2, QueueKind<T>> list){
+    public static <C2,T> Higher<C2, Higher<queue,T>> widen2(Higher<C2, QueueKind<T>> list){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
-        //cast seems safer as Higher<QueueKind.µ,T> must be a QueueKind
+        //cast seems safer as Higher<queue,T> must be a QueueKind
         return (Higher)list;
     }
     /**
@@ -85,7 +80,7 @@ public  class QueueKind<T> implements Higher<QueueKind.µ, T> {
      * @param list HKT encoded list into a QueueKind
      * @return QueueKind
      */
-    public static <T> QueueKind<T> narrowK(final Higher<QueueKind.µ, T> list) {
+    public static <T> QueueKind<T> narrowK(final Higher<queue, T> list) {
        return (QueueKind<T>)list;
     }
     /**
@@ -94,7 +89,7 @@ public  class QueueKind<T> implements Higher<QueueKind.µ, T> {
      * @param list Type Constructor to convert back into narrowed type
      * @return QueueX from Higher Kinded Type
      */
-    public static <T> Queue<T> narrow(final Higher<QueueKind.µ, T> list) {
+    public static <T> Queue<T> narrow(final Higher<queue, T> list) {
         return ((QueueKind)list).narrow();
        
     }

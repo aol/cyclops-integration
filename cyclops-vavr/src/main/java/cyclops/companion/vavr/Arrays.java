@@ -338,7 +338,7 @@ public class Arrays {
          *
          * @return A functor for Arrays
          */
-        public static <T,R>Functor<ArrayKind.µ> functor(){
+        public static <T,R>Functor<array> functor(){
             BiFunction<ArrayKind<T>,Function<? super T, ? extends R>,ArrayKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -357,8 +357,8 @@ public class Arrays {
          *
          * @return A factory for Arrays
          */
-        public static <T> Pure<ArrayKind.µ> unit(){
-            return General.<ArrayKind.µ,T>unit(ArrayKind::of);
+        public static <T> Pure<array> unit(){
+            return General.<array,T>unit(ArrayKind::of);
         }
         /**
          *
@@ -397,7 +397,7 @@ public class Arrays {
          *
          * @return A zipper for Arrays
          */
-        public static <T,R> Applicative<ArrayKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<array> zippingApplicative(){
             BiFunction<ArrayKind< Function<T, R>>,ArrayKind<T>,ArrayKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -427,9 +427,9 @@ public class Arrays {
          *
          * @return Type class with monad functions for Arrays
          */
-        public static <T,R> Monad<ArrayKind.µ> monad(){
+        public static <T,R> Monad<array> monad(){
 
-            BiFunction<Higher<ArrayKind.µ,T>,Function<? super T, ? extends Higher<ArrayKind.µ,R>>,Higher<ArrayKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<array,T>,Function<? super T, ? extends Higher<array,R>>,Higher<array,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -449,7 +449,7 @@ public class Arrays {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<ArrayKind.µ> monadZero(){
+        public static <T,R> MonadZero<array> monadZero(){
 
             return General.monadZero(monad(), ArrayKind.widen(Array.empty()));
         }
@@ -465,9 +465,9 @@ public class Arrays {
          * </pre>
          * @return Type class for combining Arrays by concatenation
          */
-        public static <T> MonadPlus<ArrayKind.µ> monadPlus(){
+        public static <T> MonadPlus<array> monadPlus(){
             Monoid<ArrayKind<T>> m = Monoid.of(ArrayKind.widen(Array.empty()), Instances::concat);
-            Monoid<Higher<ArrayKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<array,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -486,15 +486,15 @@ public class Arrays {
          * @param m Monoid to use for combining Arrays
          * @return Type class for combining Arrays
          */
-        public static <T> MonadPlus<ArrayKind.µ> monadPlus(Monoid<ArrayKind<T>> m){
-            Monoid<Higher<ArrayKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<array> monadPlus(Monoid<ArrayKind<T>> m){
+            Monoid<Higher<array,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<ArrayKind.µ> traverse(){
+        public static <C2,T> Traverse<array> traverse(){
 
             BiFunction<Applicative<C2>,ArrayKind<Higher<C2, T>>,Higher<C2, ArrayKind<T>>> sequenceFn = (ap, list) -> {
 
@@ -512,7 +512,7 @@ public class Arrays {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<ArrayKind.µ,Higher<C2, T>>,Higher<C2, Higher<ArrayKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<array,Higher<C2, T>>,Higher<C2, Higher<array,T>>> sequenceNarrow  =
                     (a,b) -> ArrayKind.widen2(sequenceFn.apply(a, ArrayKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -532,9 +532,9 @@ public class Arrays {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<ArrayKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<ArrayKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(ArrayKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<ArrayKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(ArrayKind.narrow(l)).reduce(m);
+        public static <T> Foldable<array> foldable(){
+            BiFunction<Monoid<T>,Higher<array,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(ArrayKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<array,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(ArrayKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
@@ -547,7 +547,7 @@ public class Arrays {
         private static <T,R> ArrayKind<R> ap(ArrayKind<Function< T, R>> lt, ArrayKind<T> list){
             return ArrayKind.widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toArray());
         }
-        private static <T,R> Higher<ArrayKind.µ,R> flatMap(Higher<ArrayKind.µ,T> lt, Function<? super T, ? extends  Higher<ArrayKind.µ,R>> fn){
+        private static <T,R> Higher<array,R> flatMap(Higher<array,T> lt, Function<? super T, ? extends  Higher<array,R>> fn){
             return ArrayKind.widen(ArrayKind.narrow(lt).flatMap(fn.andThen(ArrayKind::narrow)));
         }
         private static <T,R> ArrayKind<R> map(ArrayKind<T> lt, Function<? super T, ? extends R> fn){

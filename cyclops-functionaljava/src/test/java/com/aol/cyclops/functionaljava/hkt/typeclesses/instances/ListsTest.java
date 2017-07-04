@@ -7,6 +7,8 @@ import static org.junit.Assert.assertThat;
 
 import cyclops.companion.functionaljava.Lists;
 import com.aol.cyclops.functionaljava.hkt.ListKind;
+import cyclops.monads.FJWitness;
+import cyclops.monads.FJWitness.list;
 import org.junit.Test;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -34,7 +36,7 @@ public class ListsTest {
         
         ListKind<Integer> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Lists.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list("hello".length())));
@@ -59,8 +61,8 @@ public class ListsTest {
 
         List<Integer> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> Lists.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h-> Lists.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Lists.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(ListKind::narrow);
         
         assertThat(list,equalTo(List.list("hello".length()*2)));
@@ -76,7 +78,7 @@ public class ListsTest {
         
         ListKind<Integer> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.monad().flatMap((String v) -> Lists.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Lists.Instances.monad().flatMap((String v) -> Lists.Instances.unit().unit(v.length()), h))
                                      .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list("hello".length())));
@@ -86,7 +88,7 @@ public class ListsTest {
         
         ListKind<String> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Lists.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list("hello")));
@@ -96,7 +98,7 @@ public class ListsTest {
         
         ListKind<String> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Lists.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(ListKind::narrowK);
         
         assertThat(list,equalTo(List.list()));
@@ -135,7 +137,7 @@ public class ListsTest {
     
     @Test
     public void traverse(){
-       Maybe<Higher<ListKind.µ, Integer>> res = Lists.Instances.traverse()
+       Maybe<Higher<list, Integer>> res = Lists.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), ListKind.list(1,2,3))
                                                          .convert(Maybe::narrowK);
             

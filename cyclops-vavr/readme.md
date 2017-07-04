@@ -201,8 +201,8 @@ e.g. using the Pure and Functor typeclasses for Vavr Streams
 
 ```java
 
-   Pure<StreamKind.µ> pure = Streams.Instances.unit();
-   Functor<StreamKind.µ> functor = Streams.Instances.functor();
+   Pure<stream> pure = Streams.Instances.unit();
+   Functor<stream> functor = Streams.Instances.functor();
         
    StreamKind<Integer> list = pure.unit("hello")
                                   .apply(h->functor.map((String v) ->v.length(), h))

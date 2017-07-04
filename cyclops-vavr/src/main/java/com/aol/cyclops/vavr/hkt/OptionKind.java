@@ -9,6 +9,10 @@ import com.aol.cyclops2.hkt.Higher;
 import cyclops.companion.Optionals.OptionalKind;
 import cyclops.control.Eval;
 
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.option;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.optional;
 import io.vavr.collection.Iterator;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
@@ -24,7 +28,7 @@ import lombok.AllArgsConstructor;
  * @param <T> Data type stored within the Option
  */
 
-public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
+public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     /**
      * Witness type
      * 
@@ -75,7 +79,7 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
      * @param optional Optional to construct Option from
      * @return Option created from Optional
      */
-    public static <T> OptionKind<T> ofOptional(Higher<OptionalKind.µ,T> optional){
+    public static <T> OptionKind<T> ofOptional(Higher<optional,T> optional){
         return widen(Option.ofOptional(OptionalKind.narrowK(optional)));
     }
     public static <T> OptionKind<T> ofOptional(Optional<T> optional){
@@ -95,9 +99,9 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
         
         return new Box<>(Option.ofOptional(optional));
     }
-    public static <C2,T> Higher<C2, Higher<OptionKind.µ,T>> widen2(Higher<C2, OptionKind<T>> nestedOption){
+    public static <C2,T> Higher<C2, Higher<option,T>> widen2(Higher<C2, OptionKind<T>> nestedOption){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
-        //cast seems safer as Higher<OptionKind.µ,T> must be a StreamKind
+        //cast seems safer as Higher<option,T> must be a StreamKind
         return (Higher)nestedOption;
     }
     /**
@@ -106,7 +110,7 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
      * @param Optional Type Constructor to convert back into narrowed type
      * @return Optional from Higher Kinded Type
      */
-    public static <T> Optional<T> narrowOptional(final Higher<OptionKind.µ, T> Optional) {
+    public static <T> Optional<T> narrowOptional(final Higher<option, T> Optional) {
         
          return ((Box<T>)Optional).narrow().toJavaOptional();
         
@@ -117,7 +121,7 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
      * @param future HKT encoded list into a OptionKind
      * @return OptionKind
      */
-    public static <T> OptionKind<T> narrowK(final Higher<OptionKind.µ, T> future) {
+    public static <T> OptionKind<T> narrowK(final Higher<option, T> future) {
        return (OptionKind<T>)future;
     }
     /**
@@ -181,7 +185,7 @@ public interface OptionKind<T> extends Higher<OptionKind.µ, T>, Option<T> {
      * @param maybe Type Constructor to convert back into narrowed type
      * @return OptionX from Higher Kinded Type
      */
-    public static <T> Option<T> narrow(final Higher<OptionKind.µ, T> maybe) {
+    public static <T> Option<T> narrow(final Higher<option, T> maybe) {
         if (maybe instanceof Option)
             return (Option) maybe;
         //this code should be unreachable due to HKT type checker

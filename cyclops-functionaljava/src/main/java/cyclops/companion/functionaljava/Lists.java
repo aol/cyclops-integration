@@ -333,7 +333,7 @@ public class Lists {
          *
          * @return A functor for Lists
          */
-        public static <T,R>Functor<ListKind.µ> functor(){
+        public static <T,R>Functor<list> functor(){
             BiFunction<ListKind<T>,Function<? super T, ? extends R>,ListKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -352,8 +352,8 @@ public class Lists {
          *
          * @return A factory for Lists
          */
-        public static <T> Pure<ListKind.µ> unit(){
-            return General.<ListKind.µ,T>unit(Instances::of);
+        public static <T> Pure<list> unit(){
+            return General.<list,T>unit(Instances::of);
         }
         /**
          *
@@ -392,7 +392,7 @@ public class Lists {
          *
          * @return A zipper for Lists
          */
-        public static <T,R> Applicative<ListKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<list> zippingApplicative(){
             BiFunction<ListKind< Function<T, R>>,ListKind<T>,ListKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -422,9 +422,9 @@ public class Lists {
          *
          * @return Type class with monad functions for Lists
          */
-        public static <T,R> Monad<ListKind.µ> monad(){
+        public static <T,R> Monad<list> monad(){
 
-            BiFunction<Higher<ListKind.µ,T>,Function<? super T, ? extends Higher<ListKind.µ,R>>,Higher<ListKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<list,T>,Function<? super T, ? extends Higher<list,R>>,Higher<list,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -444,7 +444,7 @@ public class Lists {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<ListKind.µ> monadZero(){
+        public static <T,R> MonadZero<list> monadZero(){
 
             return General.monadZero(monad(), ListKind.widen(List.list()));
         }
@@ -460,9 +460,9 @@ public class Lists {
          * </pre>
          * @return Type class for combining Lists by concatenation
          */
-        public static <T> MonadPlus<ListKind.µ> monadPlus(){
+        public static <T> MonadPlus<list> monadPlus(){
             Monoid<ListKind<T>> m = Monoid.of(ListKind.widen(List.list()), Instances::concat);
-            Monoid<Higher<ListKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<list,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -481,15 +481,15 @@ public class Lists {
          * @param m Monoid to use for combining Lists
          * @return Type class for combining Lists
          */
-        public static <T> MonadPlus<ListKind.µ> monadPlus(Monoid<ListKind<T>> m){
-            Monoid<Higher<ListKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<list> monadPlus(Monoid<ListKind<T>> m){
+            Monoid<Higher<list,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<ListKind.µ> traverse(){
+        public static <C2,T> Traverse<list> traverse(){
 
             BiFunction<Applicative<C2>,ListKind<Higher<C2, T>>,Higher<C2, ListKind<T>>> sequenceFn = (ap, list) -> {
 
@@ -507,7 +507,7 @@ public class Lists {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<ListKind.µ,Higher<C2, T>>,Higher<C2, Higher<ListKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<list,Higher<C2, T>>,Higher<C2, Higher<list,T>>> sequenceNarrow  =
                     (a,b) -> ListKind.widen2(sequenceFn.apply(a, ListKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -528,9 +528,9 @@ public class Lists {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<ListKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<ListKind.µ,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(ListKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<ListKind.µ,T>,T> foldLeftFn = (m, l)-> ListX.fromIterable(ListKind.narrow(l)).reduce(m);
+        public static <T> Foldable<list> foldable(){
+            BiFunction<Monoid<T>,Higher<list,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(ListKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<list,T>,T> foldLeftFn = (m, l)-> ListX.fromIterable(ListKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
@@ -545,7 +545,7 @@ public class Lists {
 
             return ListKind.widen(lt.zipWith(list.narrow(),(a, b)->a.apply(b)));
         }
-        private static <T,R> Higher<ListKind.µ,R> flatMap(Higher<ListKind.µ,T> lt, Function<? super T, ? extends  Higher<ListKind.µ,R>> fn){
+        private static <T,R> Higher<list,R> flatMap(Higher<list,T> lt, Function<? super T, ? extends  Higher<list,R>> fn){
             return ListKind.widen(ListKind.narrow(lt).bind(in->fn.andThen(ListKind::narrow).apply(in)));
         }
         private static <T,R> ListKind<R> map(ListKind<T> lt, Function<? super T, ? extends R> fn){

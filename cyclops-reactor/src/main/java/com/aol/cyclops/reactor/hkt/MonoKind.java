@@ -13,6 +13,8 @@ import java.util.logging.Level;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.async.Future;
+import cyclops.monads.ReactorWitness;
+import cyclops.monads.ReactorWitness.mono;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -34,7 +36,7 @@ import reactor.util.function.Tuple2;
 /**
  * Simulates Higher Kinded Types for Reactor Mono's
  * 
- * MonoKind is a Mono and a Higher Kinded Type (MonoKind.µ,T)
+ * MonoKind is a Mono and a Higher Kinded Type (mono,T)
  * 
  * @author johnmcclean
  *
@@ -42,19 +44,12 @@ import reactor.util.function.Tuple2;
  */
 
 
-public final class MonoKind<T> implements Higher<MonoKind.µ, T>, Publisher<T> {
+public final class MonoKind<T> implements Higher<mono, T>, Publisher<T> {
     private MonoKind(Mono<T> boxed) {
         this.boxed = boxed;
     }
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
+
     
     /**
      * Construct a HKT encoded completed Mono
@@ -99,7 +94,7 @@ public final class MonoKind<T> implements Higher<MonoKind.µ, T>, Publisher<T> {
      * @param future HKT encoded list into a MonoKind
      * @return MonoKind
      */
-    public static <T> MonoKind<T> narrowK(final Higher<MonoKind.µ, T> future) {
+    public static <T> MonoKind<T> narrowK(final Higher<mono, T> future) {
        return (MonoKind<T>)future;
     }
 
@@ -109,7 +104,7 @@ public final class MonoKind<T> implements Higher<MonoKind.µ, T>, Publisher<T> {
      * @param completableMono Type Constructor to convert back into narrowed type
      * @return Mono from Higher Kinded Type
      */
-    public static <T> Mono<T> narrow(final Higher<MonoKind.µ, T> completableMono) {
+    public static <T> Mono<T> narrow(final Higher<mono, T> completableMono) {
       
             return ((MonoKind<T>)completableMono).narrow();
            

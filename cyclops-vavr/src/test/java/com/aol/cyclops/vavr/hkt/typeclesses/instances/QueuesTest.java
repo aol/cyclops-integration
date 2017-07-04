@@ -8,6 +8,8 @@ import static org.junit.Assert.assertThat;
 
 import cyclops.companion.vavr.Queues;
 import com.aol.cyclops.vavr.hkt.QueueKind;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.queue;
 import org.junit.Test;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -34,7 +36,7 @@ public class QueuesTest {
         
         QueueKind<Integer> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Queues.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h->Queues.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.of("hello".length())));
@@ -54,8 +56,8 @@ public class QueuesTest {
         
         QueueKind<Integer> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Queues.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h->Queues.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h->Queues.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h->Queues.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.of("hello".length()*2)));
@@ -71,7 +73,7 @@ public class QueuesTest {
         
         QueueKind<Integer> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Queues.Instances.monad().flatMap((String v) ->Queues.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h->Queues.Instances.monad().flatMap((String v) ->Queues.Instances.unit().unit(v.length()), h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.of("hello".length())));
@@ -81,7 +83,7 @@ public class QueuesTest {
         
         QueueKind<String> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Queues.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h->Queues.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.of("hello")));
@@ -91,7 +93,7 @@ public class QueuesTest {
         
         QueueKind<String> list = Queues.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Queues.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h->Queues.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(QueueKind::narrowK);
         
         assertThat(list,equalTo(Queue.empty()));
@@ -130,7 +132,7 @@ public class QueuesTest {
     
     @Test
     public void traverse(){
-       Maybe<Higher<QueueKind.µ, Integer>> res = Queues.Instances.traverse()
+       Maybe<Higher<queue, Integer>> res = Queues.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), QueueKind.of(1,2,3))
                                                          .convert(Maybe::narrowK);
             

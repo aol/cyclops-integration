@@ -335,7 +335,7 @@ public class Streams {
          *
          * @return A functor for Streams
          */
-        public static <T,R>Functor<StreamKind.µ> functor(){
+        public static <T,R>Functor<stream> functor(){
             BiFunction<StreamKind<T>,Function<? super T, ? extends R>,StreamKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -354,8 +354,8 @@ public class Streams {
          *
          * @return A factory for Streams
          */
-        public static <T> Pure<StreamKind.µ> unit(){
-            return General.<StreamKind.µ,T>unit(Instances::of);
+        public static <T> Pure<stream> unit(){
+            return General.<stream,T>unit(Instances::of);
         }
         /**
          *
@@ -394,7 +394,7 @@ public class Streams {
          *
          * @return A zipper for Streams
          */
-        public static <T,R> Applicative<StreamKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<stream> zippingApplicative(){
             BiFunction<StreamKind< Function<T, R>>,StreamKind<T>,StreamKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -424,9 +424,9 @@ public class Streams {
          *
          * @return Type class with monad functions for Streams
          */
-        public static <T,R> Monad<StreamKind.µ> monad(){
+        public static <T,R> Monad<stream> monad(){
 
-            BiFunction<Higher<StreamKind.µ,T>,Function<? super T, ? extends Higher<StreamKind.µ,R>>,Higher<StreamKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<stream,T>,Function<? super T, ? extends Higher<stream,R>>,Higher<stream,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -446,7 +446,7 @@ public class Streams {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<StreamKind.µ> monadZero(){
+        public static <T,R> MonadZero<stream> monadZero(){
 
             return General.monadZero(monad(), StreamKind.widen(Stream.stream()));
         }
@@ -462,9 +462,9 @@ public class Streams {
          * </pre>
          * @return Type class for combining Streams by concatenation
          */
-        public static <T> MonadPlus<StreamKind.µ> monadPlus(){
+        public static <T> MonadPlus<stream> monadPlus(){
             Monoid<StreamKind<T>> m = Monoid.of(StreamKind.widen(Stream.stream()), Instances::concat);
-            Monoid<Higher<StreamKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<stream,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -483,15 +483,15 @@ public class Streams {
          * @param m Monoid to use for combining Streams
          * @return Type class for combining Streams
          */
-        public static <T> MonadPlus<StreamKind.µ> monadPlus(Monoid<StreamKind<T>> m){
-            Monoid<Higher<StreamKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<stream> monadPlus(Monoid<StreamKind<T>> m){
+            Monoid<Higher<stream,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<StreamKind.µ> traverse(){
+        public static <C2,T> Traverse<stream> traverse(){
 
             BiFunction<Applicative<C2>,StreamKind<Higher<C2, T>>,Higher<C2, StreamKind<T>>> sequenceFn = (ap, stream) -> {
 
@@ -509,7 +509,7 @@ public class Streams {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<StreamKind.µ,Higher<C2, T>>,Higher<C2, Higher<StreamKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<stream,Higher<C2, T>>,Higher<C2, Higher<stream,T>>> sequenceNarrow  =
                     (a,b) -> StreamKind.widen2(sequenceFn.apply(a, StreamKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -530,9 +530,9 @@ public class Streams {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<StreamKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<StreamKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<StreamKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).reduce(m);
+        public static <T> Foldable<stream> foldable(){
+            BiFunction<Monoid<T>,Higher<stream,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<stream,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
@@ -547,7 +547,7 @@ public class Streams {
 
             return StreamKind.widen(lt.zipWith(stream.narrow(),(a, b)->a.apply(b)));
         }
-        private static <T,R> Higher<StreamKind.µ,R> flatMap(Higher<StreamKind.µ,T> lt, Function<? super T, ? extends  Higher<StreamKind.µ,R>> fn){
+        private static <T,R> Higher<stream,R> flatMap(Higher<stream,T> lt, Function<? super T, ? extends  Higher<stream,R>> fn){
             return StreamKind.widen(StreamKind.narrow(lt).bind(in->fn.andThen(StreamKind::narrow).apply(in)));
         }
         private static <T,R> StreamKind<R> map(StreamKind<T> lt, Function<? super T, ? extends R> fn){

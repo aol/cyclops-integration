@@ -479,7 +479,7 @@ public class Singles {
          *
          * @return A functor for Singles
          */
-        public static <T,R>Functor<SingleKind.µ> functor(){
+        public static <T,R>Functor<single> functor(){
             BiFunction<SingleKind<T>,Function<? super T, ? extends R>,SingleKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -498,8 +498,8 @@ public class Singles {
          *
          * @return A factory for Singles
          */
-        public static <T> Pure<SingleKind.µ> unit(){
-            return General.<SingleKind.µ,T>unit(Instances::of);
+        public static <T> Pure<single> unit(){
+            return General.<single,T>unit(Instances::of);
         }
         /**
          *
@@ -538,7 +538,7 @@ public class Singles {
          *
          * @return A zipper for Singles
          */
-        public static <T,R> Applicative<SingleKind.µ> applicative(){
+        public static <T,R> Applicative<single> applicative(){
             BiFunction<SingleKind< Function<T, R>>,SingleKind<T>,SingleKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -568,9 +568,9 @@ public class Singles {
          *
          * @return Type class with monad functions for Singles
          */
-        public static <T,R> Monad<SingleKind.µ> monad(){
+        public static <T,R> Monad<single> monad(){
 
-            BiFunction<Higher<SingleKind.µ,T>,Function<? super T, ? extends Higher<SingleKind.µ,R>>,Higher<SingleKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<single,T>,Function<? super T, ? extends Higher<single,R>>,Higher<single,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
         /**
@@ -590,7 +590,7 @@ public class Singles {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<SingleKind.µ> monadZero(){
+        public static <T,R> MonadZero<single> monadZero(){
 
             return General.monadZero(monad(), SingleKind.empty());
         }
@@ -608,13 +608,13 @@ public class Singles {
          * </pre>
          * @return Type class for combining Singles by concatenation
          */
-        public static <T> MonadPlus<SingleKind.µ> monadPlus(){
+        public static <T> MonadPlus<single> monadPlus(){
 
 
             Monoid<SingleKind<T>> m = Monoid.of(SingleKind.<T>widen(Single.never()),
                     (f,g)-> SingleKind.widen(Single.ambArray(f.narrow(),g.narrow())));
 
-            Monoid<Higher<SingleKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<single,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -633,15 +633,15 @@ public class Singles {
          * @param m Monoid to use for combining Singles
          * @return Type class for combining Singles
          */
-        public static <T> MonadPlus<SingleKind.µ> monadPlus(Monoid<SingleKind<T>> m){
-            Monoid<Higher<SingleKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<single> monadPlus(Monoid<SingleKind<T>> m){
+            Monoid<Higher<single,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<SingleKind.µ> traverse(){
+        public static <C2,T> Traverse<single> traverse(){
 
             return General.traverseByTraverse(applicative(), Instances::traverseA);
         }
@@ -661,13 +661,13 @@ public class Singles {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<SingleKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<SingleKind.µ,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), SingleKind.narrow(l).blockingGet());
-            BiFunction<Monoid<T>,Higher<SingleKind.µ,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), SingleKind.narrow(l).blockingGet());
+        public static <T> Foldable<single> foldable(){
+            BiFunction<Monoid<T>,Higher<single,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), SingleKind.narrow(l).blockingGet());
+            BiFunction<Monoid<T>,Higher<single,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), SingleKind.narrow(l).blockingGet());
             return General.foldable(foldRightFn, foldLeftFn);
         }
-        public static <T> Comonad<SingleKind.µ> comonad(){
-            Function<? super Higher<SingleKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(SingleKind::narrow).blockingGet();
+        public static <T> Comonad<single> comonad(){
+            Function<? super Higher<single, T>, ? extends T> extractFn = maybe -> maybe.convert(SingleKind::narrow).blockingGet();
             return General.comonad(functor(), unit(), extractFn);
         }
 
@@ -680,7 +680,7 @@ public class Singles {
             return SingleKind.widen(Singles.combine(lt.narrow(),list.narrow(), (a, b)->a.apply(b)));
 
         }
-        private static <T,R> Higher<SingleKind.µ,R> flatMap(Higher<SingleKind.µ,T> lt, Function<? super T, ? extends  Higher<SingleKind.µ,R>> fn){
+        private static <T,R> Higher<single,R> flatMap(Higher<single,T> lt, Function<? super T, ? extends  Higher<single,R>> fn){
             return SingleKind.widen(SingleKind.narrow(lt).flatMap(Functions.rxFunction(fn.andThen(SingleKind::narrow))));
         }
         private static <T,R> SingleKind<R> map(SingleKind<T> lt, Function<? super T, ? extends R> fn){
@@ -688,8 +688,8 @@ public class Singles {
         }
 
 
-        private static <C2,T,R> Higher<C2, Higher<SingleKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
-                                                                            Higher<SingleKind.µ, T> ds){
+        private static <C2,T,R> Higher<C2, Higher<single, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                            Higher<single, T> ds){
             Single<T> future = SingleKind.narrow(ds);
             return applicative.map(SingleKind::just, fn.apply(future.blockingGet()));
         }

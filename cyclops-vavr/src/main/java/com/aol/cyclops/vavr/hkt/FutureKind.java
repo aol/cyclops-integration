@@ -11,6 +11,8 @@ import cyclops.conversion.vavr.FromCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.future;
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
 import io.vavr.control.Option;
@@ -21,23 +23,16 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for Vavr Future's
  * 
- * FutureKind is a Future and a Higher Kinded Type (FutureKind.µ,T)
+ * FutureKind is a Future and a Higher Kinded Type (future,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Future
  */
 
-public interface FutureKind<T> extends Higher<FutureKind.µ, T>, Future<T> {
+public interface FutureKind<T> extends Higher<future, T>, Future<T> {
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
+
     
     public static <T> FutureKind<T> failed(Throwable exception){
         return widen(Future.failed(exception));
@@ -82,7 +77,7 @@ public interface FutureKind<T> extends Higher<FutureKind.µ, T>, Future<T> {
      * @param future HKT encoded list into a FutureKind
      * @return FutureKind
      */
-    public static <T> FutureKind<T> narrowK(final Higher<FutureKind.µ, T> future) {
+    public static <T> FutureKind<T> narrowK(final Higher<future, T> future) {
        return (FutureKind<T>)future;
     }
 
@@ -92,7 +87,7 @@ public interface FutureKind<T> extends Higher<FutureKind.µ, T>, Future<T> {
      * @param completableFuture Type Constructor to convert back into narrowed type
      * @return Future from Higher Kinded Type
      */
-    public static <T> Future<T> narrow(final Higher<FutureKind.µ, T> completableFuture) {
+    public static <T> Future<T> narrow(final Higher<future, T> completableFuture) {
         if (completableFuture instanceof Future) {
             return (Future)completableFuture;
            

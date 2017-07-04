@@ -7,6 +7,9 @@ import cyclops.companion.rx2.Maybes.Instances;
 
 import cyclops.function.Fn1;
 import cyclops.function.Monoid;
+import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.maybe;
+import cyclops.monads.Witness;
 import cyclops.typeclasses.monad.Applicative;
 import cyclops.typeclasses.monad.Traverse;
 import io.reactivex.Maybe;
@@ -34,7 +37,7 @@ public class MaybesTest {
         
         MaybeKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(MaybeKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
@@ -54,8 +57,8 @@ public class MaybesTest {
         
         MaybeKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> Instances.applicative().ap(optFn, h))
+                                     .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Instances.applicative().ap(optFn, h))
                                      .convert(MaybeKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()*2).join()));
@@ -71,7 +74,7 @@ public class MaybesTest {
         
         MaybeKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(MaybeKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
@@ -81,7 +84,7 @@ public class MaybesTest {
         
         MaybeKind<String> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(MaybeKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
@@ -91,7 +94,7 @@ public class MaybesTest {
         
         MaybeKind<String> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(MaybeKind::narrowK);
         
         assertTrue(opt.blockingGet()==null);
@@ -129,14 +132,14 @@ public class MaybesTest {
     }
     @Test
     public void traverse(){
-        Traverse<MaybeKind.µ> traverse = Instances.traverse();
-        Applicative<cyclops.control.Maybe.µ> applicative = cyclops.control.Maybe.Instances.applicative();
+        Traverse<maybe> traverse = Instances.traverse();
+        Applicative<Witness.maybe> applicative = cyclops.control.Maybe.Instances.applicative();
 
         MaybeKind<Integer> mono = widen(Maybe.just(1));
 
-        Higher<cyclops.control.Maybe.µ, Higher<MaybeKind.µ, Integer>> t = traverse.traverseA(applicative, (Integer a) -> cyclops.control.Maybe.just(a * 2), mono);
+        Higher<Witness.maybe, Higher<maybe, Integer>> t = traverse.traverseA(applicative, (Integer a) -> cyclops.control.Maybe.just(a * 2), mono);
 
-        cyclops.control.Maybe<Higher<MaybeKind.µ, Integer>> res = traverse.traverseA(applicative, (Integer a)-> cyclops.control.Maybe.just(a*2),mono)
+        cyclops.control.Maybe<Higher<maybe, Integer>> res = traverse.traverseA(applicative, (Integer a)-> cyclops.control.Maybe.just(a*2),mono)
                                                         .convert(cyclops.control.Maybe::narrowK);
 
 
@@ -147,10 +150,10 @@ public class MaybesTest {
     }
     @Test
     public void sequence(){
-        Traverse<MaybeKind.µ> traverse = Instances.traverse();
-        Applicative<cyclops.control.Maybe.µ> applicative = cyclops.control.Maybe.Instances.applicative();
+        Traverse<maybe> traverse = Instances.traverse();
+        Applicative<Witness.maybe> applicative = cyclops.control.Maybe.Instances.applicative();
 
-        Higher<cyclops.control.Maybe.µ, Higher<MaybeKind.µ, Integer>> res = traverse.sequenceA(applicative, widen(cyclops.control.Maybe.just(cyclops.control.Maybe.just(1))));
+        Higher<Witness.maybe, Higher<maybe, Integer>> res = traverse.sequenceA(applicative, widen(cyclops.control.Maybe.just(cyclops.control.Maybe.just(1))));
         cyclops.control.Maybe<Maybe<Integer>> nk = res.convert(cyclops.control.Maybe::narrowK)
                                      .map(h -> h.convert(MaybeKind::narrow));
 

@@ -336,7 +336,7 @@ public class Queues {
          *
          * @return A functor for Queues
          */
-        public static <T,R>Functor<QueueKind.µ> functor(){
+        public static <T,R>Functor<queue> functor(){
             BiFunction<QueueKind<T>,Function<? super T, ? extends R>,QueueKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -355,8 +355,8 @@ public class Queues {
          *
          * @return A factory for Queues
          */
-        public static <T> Pure<QueueKind.µ> unit(){
-            return General.<QueueKind.µ,T>unit(QueueKind::of);
+        public static <T> Pure<queue> unit(){
+            return General.<queue,T>unit(QueueKind::of);
         }
         /**
          *
@@ -395,7 +395,7 @@ public class Queues {
          *
          * @return A zipper for Queues
          */
-        public static <T,R> Applicative<QueueKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<queue> zippingApplicative(){
             BiFunction<QueueKind< Function<T, R>>,QueueKind<T>,QueueKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -425,9 +425,9 @@ public class Queues {
          *
          * @return Type class with monad functions for Queues
          */
-        public static <T,R> Monad<QueueKind.µ> monad(){
+        public static <T,R> Monad<queue> monad(){
 
-            BiFunction<Higher<QueueKind.µ,T>,Function<? super T, ? extends Higher<QueueKind.µ,R>>,Higher<QueueKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<queue,T>,Function<? super T, ? extends Higher<queue,R>>,Higher<queue,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -447,7 +447,7 @@ public class Queues {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<QueueKind.µ> monadZero(){
+        public static <T,R> MonadZero<queue> monadZero(){
 
             return General.monadZero(monad(), QueueKind.widen(Queue.empty()));
         }
@@ -463,9 +463,9 @@ public class Queues {
          * </pre>
          * @return Type class for combining Queues by concatenation
          */
-        public static <T> MonadPlus<QueueKind.µ> monadPlus(){
+        public static <T> MonadPlus<queue> monadPlus(){
             Monoid<QueueKind<T>> m = Monoid.of(QueueKind.widen(Queue.empty()), Instances::concat);
-            Monoid<Higher<QueueKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<queue,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -484,15 +484,15 @@ public class Queues {
          * @param m Monoid to use for combining Queues
          * @return Type class for combining Queues
          */
-        public static <T> MonadPlus<QueueKind.µ> monadPlus(Monoid<QueueKind<T>> m){
-            Monoid<Higher<QueueKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<queue> monadPlus(Monoid<QueueKind<T>> m){
+            Monoid<Higher<queue,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<QueueKind.µ> traverse(){
+        public static <C2,T> Traverse<queue> traverse(){
 
             BiFunction<Applicative<C2>,QueueKind<Higher<C2, T>>,Higher<C2, QueueKind<T>>> sequenceFn = (ap, list) -> {
 
@@ -510,7 +510,7 @@ public class Queues {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<QueueKind.µ,Higher<C2, T>>,Higher<C2, Higher<QueueKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<queue,Higher<C2, T>>,Higher<C2, Higher<queue,T>>> sequenceNarrow  =
                     (a,b) -> QueueKind.widen2(sequenceFn.apply(a, QueueKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -530,9 +530,9 @@ public class Queues {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<QueueKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<QueueKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(QueueKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<QueueKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(QueueKind.narrow(l)).reduce(m);
+        public static <T> Foldable<queue> foldable(){
+            BiFunction<Monoid<T>,Higher<queue,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(QueueKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<queue,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(QueueKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
@@ -545,7 +545,7 @@ public class Queues {
         private static <T,R> QueueKind<R> ap(QueueKind<Function< T, R>> lt, QueueKind<T> list){
             return QueueKind.widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toQueue());
         }
-        private static <T,R> Higher<QueueKind.µ,R> flatMap(Higher<QueueKind.µ,T> lt, Function<? super T, ? extends  Higher<QueueKind.µ,R>> fn){
+        private static <T,R> Higher<queue,R> flatMap(Higher<queue,T> lt, Function<? super T, ? extends  Higher<queue,R>> fn){
             return QueueKind.widen(QueueKind.narrow(lt).flatMap(fn.andThen(QueueKind::narrow)));
         }
         private static <T,R> QueueKind<R> map(QueueKind<T> lt, Function<? super T, ? extends R> fn){

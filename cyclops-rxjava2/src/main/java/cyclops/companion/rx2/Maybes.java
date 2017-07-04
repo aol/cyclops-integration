@@ -491,7 +491,7 @@ public class Maybes {
          *
          * @return A functor for Maybes
          */
-        public static <T,R>Functor<MaybeKind.µ> functor(){
+        public static <T,R>Functor<maybe> functor(){
             BiFunction<MaybeKind<T>,Function<? super T, ? extends R>,MaybeKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -510,8 +510,8 @@ public class Maybes {
          *
          * @return A factory for Maybes
          */
-        public static <T> Pure<MaybeKind.µ> unit(){
-            return General.<MaybeKind.µ,T>unit(Instances::of);
+        public static <T> Pure<maybe> unit(){
+            return General.<maybe,T>unit(Instances::of);
         }
         /**
          *
@@ -550,7 +550,7 @@ public class Maybes {
          *
          * @return A zipper for Maybes
          */
-        public static <T,R> Applicative<MaybeKind.µ> applicative(){
+        public static <T,R> Applicative<maybe> applicative(){
             BiFunction<MaybeKind< Function<T, R>>,MaybeKind<T>,MaybeKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -580,9 +580,9 @@ public class Maybes {
          *
          * @return Type class with monad functions for Maybes
          */
-        public static <T,R> Monad<MaybeKind.µ> monad(){
+        public static <T,R> Monad<maybe> monad(){
 
-            BiFunction<Higher<MaybeKind.µ,T>,Function<? super T, ? extends Higher<MaybeKind.µ,R>>,Higher<MaybeKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<maybe,T>,Function<? super T, ? extends Higher<maybe,R>>,Higher<maybe,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
         /**
@@ -602,7 +602,7 @@ public class Maybes {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<MaybeKind.µ> monadZero(){
+        public static <T,R> MonadZero<maybe> monadZero(){
 
             return General.monadZero(monad(), MaybeKind.empty());
         }
@@ -620,13 +620,13 @@ public class Maybes {
          * </pre>
          * @return Type class for combining Maybes by concatenation
          */
-        public static <T> MonadPlus<MaybeKind.µ> monadPlus(){
+        public static <T> MonadPlus<maybe> monadPlus(){
 
 
             Monoid<MaybeKind<T>> m = Monoid.of(MaybeKind.<T>widen(Maybe.empty()),
                     (f,g)-> MaybeKind.widen(Maybe.ambArray(f.narrow(),g.narrow())));
 
-            Monoid<Higher<MaybeKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<maybe,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -645,15 +645,15 @@ public class Maybes {
          * @param m Monoid to use for combining Maybes
          * @return Type class for combining Maybes
          */
-        public static <T> MonadPlus<MaybeKind.µ> monadPlus(Monoid<MaybeKind<T>> m){
-            Monoid<Higher<MaybeKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<maybe> monadPlus(Monoid<MaybeKind<T>> m){
+            Monoid<Higher<maybe,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<MaybeKind.µ> traverse(){
+        public static <C2,T> Traverse<maybe> traverse(){
 
             return General.traverseByTraverse(applicative(), Instances::traverseA);
         }
@@ -673,13 +673,13 @@ public class Maybes {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<MaybeKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<MaybeKind.µ,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), MaybeKind.narrow(l).blockingGet());
-            BiFunction<Monoid<T>,Higher<MaybeKind.µ,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), MaybeKind.narrow(l).blockingGet());
+        public static <T> Foldable<maybe> foldable(){
+            BiFunction<Monoid<T>,Higher<maybe,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), MaybeKind.narrow(l).blockingGet());
+            BiFunction<Monoid<T>,Higher<maybe,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), MaybeKind.narrow(l).blockingGet());
             return General.foldable(foldRightFn, foldLeftFn);
         }
-        public static <T> Comonad<MaybeKind.µ> comonad(){
-            Function<? super Higher<MaybeKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(MaybeKind::narrow).blockingGet();
+        public static <T> Comonad<maybe> comonad(){
+            Function<? super Higher<maybe, T>, ? extends T> extractFn = maybe -> maybe.convert(MaybeKind::narrow).blockingGet();
             return General.comonad(functor(), unit(), extractFn);
         }
 
@@ -692,7 +692,7 @@ public class Maybes {
             return MaybeKind.widen(Maybes.combine(lt.narrow(),list.narrow(), (a, b)->a.apply(b)));
 
         }
-        private static <T,R> Higher<MaybeKind.µ,R> flatMap(Higher<MaybeKind.µ,T> lt, Function<? super T, ? extends  Higher<MaybeKind.µ,R>> fn){
+        private static <T,R> Higher<maybe,R> flatMap(Higher<maybe,T> lt, Function<? super T, ? extends  Higher<maybe,R>> fn){
             return MaybeKind.widen(MaybeKind.narrow(lt).flatMap(Functions.rxFunction(fn.andThen(MaybeKind::narrow))));
         }
         private static <T,R> MaybeKind<R> map(MaybeKind<T> lt, Function<? super T, ? extends R> fn){
@@ -700,8 +700,8 @@ public class Maybes {
         }
 
 
-        private static <C2,T,R> Higher<C2, Higher<MaybeKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
-                                                                            Higher<MaybeKind.µ, T> ds){
+        private static <C2,T,R> Higher<C2, Higher<maybe, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                            Higher<maybe, T> ds){
             Maybe<T> future = MaybeKind.narrow(ds);
             return applicative.map(MaybeKind::just, fn.apply(future.blockingGet()));
         }

@@ -8,6 +8,8 @@ import static org.junit.Assert.assertThat;
 
 import cyclops.companion.vavr.Futures;
 import com.aol.cyclops.vavr.hkt.FutureKind;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.future;
 import org.junit.Test;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -34,7 +36,7 @@ public class FuturesTest {
         
         FutureKind<Integer> opt = Futures.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Futures.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Futures.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(FutureKind::narrowK);
         
         assertThat(opt.get(),equalTo(Future.successful("hello".length()).get()));
@@ -57,8 +59,8 @@ public class FuturesTest {
         
         FutureKind<Integer> opt = Futures.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Futures.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> Futures.Instances.applicative().ap(optFn, h))
+                                     .applyHKT(h-> Futures.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Futures.Instances.applicative().ap(optFn, h))
                                      .convert(FutureKind::narrowK);
         
         assertThat(opt.get(),equalTo(Future.successful("hello".length()*2).get()));
@@ -74,7 +76,7 @@ public class FuturesTest {
         
         FutureKind<Integer> opt = Futures.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Futures.Instances.monad().flatMap((String v) -> Futures.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Futures.Instances.monad().flatMap((String v) -> Futures.Instances.unit().unit(v.length()), h))
                                      .convert(FutureKind::narrowK);
         
         assertThat(opt.get(),equalTo(Future.successful("hello".length()).get()));
@@ -84,7 +86,7 @@ public class FuturesTest {
         
         FutureKind<String> opt = Futures.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Futures.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Futures.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FutureKind::narrowK);
         
         assertThat(opt.get(),equalTo(Future.successful("hello").get()));
@@ -94,7 +96,7 @@ public class FuturesTest {
         
         FutureKind<String> opt = Futures.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Futures.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Futures.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(FutureKind::narrowK);
         
         assertFalse(opt.isCompleted());
@@ -132,7 +134,7 @@ public class FuturesTest {
     }
     @Test
     public void traverse(){
-       Maybe<Higher<FutureKind.µ, Integer>> res = Futures.Instances.traverse()
+       Maybe<Higher<future, Integer>> res = Futures.Instances.traverse()
                                                                  .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), FutureKind.successful(1))
                                                                  .convert(Maybe::narrowK);
        

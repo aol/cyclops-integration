@@ -475,8 +475,8 @@ e.g. using the Pure and Functor typeclasses for Vavr Streams
 
 ```java
 
-Pure<ObservableKind.µ> pure = Observables.Instances.unit();
-Functor<ObservableKind.µ> functor = Observables.Instances.functor();
+Pure<observable> pure = Observables.Instances.unit();
+Functor<observable> functor = Observables.Instances.functor();
         
 ObservableKind<Integer> list = pure.unit("hello")
                                    .apply(h->functor.map((String v) ->v.length(), h))
@@ -496,20 +496,20 @@ SingleKind<Integer> single = SingleKind.widen(Single.just(1));
 SingleKind implements the Higher interface which captures that our type is both a Single and takes a data type of Integer
 
 ```java
-Higher<SingleKind.µ, Integer> higher = single;
+Higher<single, Integer> higher = single;
 ```
 
 We can use the Traverse and Applicative typeclasses to sequence a Single with a (cyclops-react) Maybe into a Maybe with a Single.
 ```java
-Traverse<SingleKind.µ> traverse = Singles.Instances.traverse();
+Traverse<single> traverse = Singles.Instances.traverse();
 Applicative<Maybe.µ> applicative = Maybe.Instances.applicative();
 ```
 
 ```java
-Traverse<SingleKind.µ> traverse = Singles.Instances.traverse();        
+Traverse<single> traverse = Singles.Instances.traverse();        
 Applicative<Maybe.µ> applicative = Maybe.Instances.applicative();
         
-Higher<Maybe.µ, Higher<SingleKind.µ, Integer>> result = traverse.sequenceA(applicative, SingleKind.widen(Single.just(Maybe.just(1))));
+Higher<Maybe.µ, Higher<single, Integer>> result = traverse.sequenceA(applicative, SingleKind.widen(Single.just(Maybe.just(1))));
 ```
 Our result is a little ugly - we should convert it back into a more readable form.
 

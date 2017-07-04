@@ -16,6 +16,7 @@ import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
+import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
 
@@ -41,6 +42,7 @@ public class ClojureListX<T> extends AbstractList<T>implements PStack<T>, Unwrap
     public static <T> LazyLinkedListX<T> from(IPersistentList q) {
         return fromPStack(new ClojureListX<>(q), toPStack());
     }
+
     private static <E> IPersistentList from(final Iterator<E> i, int depth) {
 
         if(!i.hasNext())

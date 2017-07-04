@@ -10,7 +10,7 @@ import rx.Observable;
 
 public interface RxWitness {
 
-    public static <T> Observable<T> observable(AnyM<obsvervable,? extends T> anyM){
+    public static <T> Observable<T> observable(AnyM<observable,? extends T> anyM){
         ObservableReactiveSeq<T> obs = anyM.unwrap();
         return obs.getObservable();
     }
@@ -18,11 +18,11 @@ public interface RxWitness {
     static interface ObservableWitness<W extends RxWitness.ObservableWitness<W>>  extends WitnessType<W> {
 
     }
-    public static enum obsvervable implements ObservableWitness<obsvervable> {
+    public static enum observable implements ObservableWitness<observable> {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<obsvervable> adapter() {
+        public FunctionalAdapter<observable> adapter() {
             return new ObservableAdapter();
         }
 

@@ -1,6 +1,8 @@
 package com.aol.cyclops.vavr.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.list;
 import cyclops.stream.ReactiveSeq;
 import io.vavr.collection.List;
 import org.reactivestreams.Publisher;
@@ -23,16 +25,7 @@ import lombok.AllArgsConstructor;
  */
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ListKind<T> implements Higher<ListKind.µ, T>, Publisher<T>, List<T> {
-
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
+public final class ListKind<T> implements Higher<list, T>, Publisher<T>, List<T> {
 
     /**
      * Construct a HKT encoded completed List
@@ -76,10 +69,10 @@ public final class ListKind<T> implements Higher<ListKind.µ, T>, Publisher<T>, 
      * @param flux HTK encoded type containing  a List to widen
      * @return HKT encoded type with a widened List
      */
-    public static <C2, T> Higher<C2, Higher<ListKind.µ, T>> widen2(Higher<C2, ListKind<T>> flux) {
+    public static <C2, T> Higher<C2, Higher<list, T>> widen2(Higher<C2, ListKind<T>> flux) {
         // a functor could be used (if C2 is a functor / one exists for C2 type)
         // instead of casting
-        // cast seems safer as Higher<ListKind.µ,T> must be a ListKind
+        // cast seems safer as Higher<list,T> must be a ListKind
         return (Higher) flux;
     }
 
@@ -95,7 +88,7 @@ public final class ListKind<T> implements Higher<ListKind.µ, T>, Publisher<T>, 
      * @param future HKT encoded list into a ListKind
      * @return ListKind
      */
-    public static <T> ListKind<T> narrowK(final Higher<ListKind.µ, T> future) {
+    public static <T> ListKind<T> narrowK(final Higher<list, T> future) {
         return (ListKind<T>) future;
     }
 
@@ -105,7 +98,7 @@ public final class ListKind<T> implements Higher<ListKind.µ, T>, Publisher<T>, 
      * @param list Type Constructor to convert back into narrowed type
      * @return List from Higher Kinded Type
      */
-    public static <T> List<T> narrow(final Higher<ListKind.µ, T> list) {
+    public static <T> List<T> narrow(final Higher<list, T> list) {
 
         return ((ListKind<T>) list).narrow();
 

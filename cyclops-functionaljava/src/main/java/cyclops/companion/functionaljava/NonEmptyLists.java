@@ -197,7 +197,7 @@ public class NonEmptyLists {
          *
          * @return A functor for NonEmptyLists
          */
-        public static <T,R>Functor<NonEmptyListKind.µ> functor(){
+        public static <T,R>Functor<nonEmptyList> functor(){
             BiFunction<NonEmptyListKind<T>,Function<? super T, ? extends R>,NonEmptyListKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -216,8 +216,8 @@ public class NonEmptyLists {
          *
          * @return A factory for NonEmptyLists
          */
-        public static <T> Pure<NonEmptyListKind.µ> unit(){
-            return General.<NonEmptyListKind.µ,T>unit(Instances::of);
+        public static <T> Pure<nonEmptyList> unit(){
+            return General.<nonEmptyList,T>unit(Instances::of);
         }
         /**
          *
@@ -256,7 +256,7 @@ public class NonEmptyLists {
          *
          * @return A zipper for NonEmptyLists
          */
-        public static <T,R> Applicative<NonEmptyListKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<nonEmptyList> zippingApplicative(){
             BiFunction<NonEmptyListKind< Function<T, R>>,NonEmptyListKind<T>,NonEmptyListKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -286,9 +286,9 @@ public class NonEmptyLists {
          *
          * @return Type class with monad functions for NonEmptyLists
          */
-        public static <T,R> Monad<NonEmptyListKind.µ> monad(){
+        public static <T,R> Monad<nonEmptyList> monad(){
 
-            BiFunction<Higher<NonEmptyListKind.µ,T>,Function<? super T, ? extends Higher<NonEmptyListKind.µ,R>>,Higher<NonEmptyListKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<nonEmptyList,T>,Function<? super T, ? extends Higher<nonEmptyList,R>>,Higher<nonEmptyList,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
 
@@ -312,9 +312,9 @@ public class NonEmptyLists {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<NonEmptyListKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<NonEmptyListKind.µ,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(NonEmptyListKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<NonEmptyListKind.µ,T>,T> foldLeftFn = (m, l)-> ListX.fromIterable(NonEmptyListKind.narrow(l)).reduce(m);
+        public static <T> Foldable<nonEmptyList> foldable(){
+            BiFunction<Monoid<T>,Higher<nonEmptyList,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(NonEmptyListKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<nonEmptyList,T>,T> foldLeftFn = (m, l)-> ListX.fromIterable(NonEmptyListKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
@@ -326,7 +326,7 @@ public class NonEmptyLists {
 
             return NonEmptyListKind.widen(lt.zipWith(list.narrow().toList(),(a, b)->a.apply(b)));
         }
-        private static <T,R> Higher<NonEmptyListKind.µ,R> flatMap(Higher<NonEmptyListKind.µ,T> lt, Function<? super T, ? extends  Higher<NonEmptyListKind.µ,R>> fn){
+        private static <T,R> Higher<nonEmptyList,R> flatMap(Higher<nonEmptyList,T> lt, Function<? super T, ? extends  Higher<nonEmptyList,R>> fn){
             return NonEmptyListKind.widen(NonEmptyListKind.narrow(lt).bind(in->fn.andThen(NonEmptyListKind::narrow).apply(in)));
         }
         private static <T,R> NonEmptyListKind<R> map(NonEmptyListKind<T> lt, Function<? super T, ? extends R> fn){

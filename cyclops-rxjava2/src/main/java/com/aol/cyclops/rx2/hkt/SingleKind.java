@@ -3,6 +3,8 @@ package com.aol.cyclops.rx2.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.async.Future;
+import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.single;
 import io.reactivex.*;
 import io.reactivex.annotations.*;
 import io.reactivex.disposables.Disposable;
@@ -29,7 +31,7 @@ import java.util.logging.Level;
 /**
  * Simulates Higher Kinded Types for RxJava 2 Single's
  * 
- * SingleKind is a Single and a Higher Kinded Type (SingleKind.µ,T)
+ * SingleKind is a Single and a Higher Kinded Type (single,T)
  * 
  * @author johnmcclean
  *
@@ -37,7 +39,7 @@ import java.util.logging.Level;
  */
 
 
-public final class SingleKind<T> implements Higher<SingleKind.µ, T>, Publisher<T> {
+public final class SingleKind<T> implements Higher<single, T>, Publisher<T> {
     private SingleKind(Single<T> boxed) {
         this.boxed = boxed;
     }
@@ -94,7 +96,7 @@ public final class SingleKind<T> implements Higher<SingleKind.µ, T>, Publisher<
      * @param future HKT encoded list into a SingleKind
      * @return SingleKind
      */
-    public static <T> SingleKind<T> narrowK(final Higher<SingleKind.µ, T> future) {
+    public static <T> SingleKind<T> narrowK(final Higher<single, T> future) {
        return (SingleKind<T>)future;
     }
 
@@ -104,7 +106,7 @@ public final class SingleKind<T> implements Higher<SingleKind.µ, T>, Publisher<
      * @param completableSingle Type Constructor to convert back into narrowed type
      * @return Single from Higher Kinded Type
      */
-    public static <T> Single<T> narrow(final Higher<SingleKind.µ, T> completableSingle) {
+    public static <T> Single<T> narrow(final Higher<single, T> completableSingle) {
             return ((SingleKind<T>)completableSingle).narrow();
     }
 

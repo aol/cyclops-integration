@@ -4,6 +4,8 @@ package com.aol.cyclops.rx2.hkt;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.async.Future;
 import cyclops.companion.rx2.Maybes;
+import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.maybe;
 import io.reactivex.*;
 import io.reactivex.annotations.*;
 import io.reactivex.disposables.Disposable;
@@ -18,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Simulates Higher Kinded Types for RxJava 2 Maybe's
  * 
- * MaybeKind is a Maybe and a Higher Kinded Type (MaybeKind.µ,T)
+ * MaybeKind is a Maybe and a Higher Kinded Type (maybe,T)
  * 
  * @author johnmcclean
  *
@@ -26,19 +28,12 @@ import java.util.concurrent.TimeUnit;
  */
 
 
-public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T> {
+public final class MaybeKind<T> implements Higher<maybe, T>, Publisher<T> {
     private MaybeKind(Maybe<T> boxed) {
         this.boxed = boxed;
     }
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
+
     
     /**
      * Construct a HKT encoded completed Maybe
@@ -83,7 +78,7 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
      * @param future HKT encoded list into a MaybeKind
      * @return MaybeKind
      */
-    public static <T> MaybeKind<T> narrowK(final Higher<MaybeKind.µ, T> future) {
+    public static <T> MaybeKind<T> narrowK(final Higher<maybe, T> future) {
        return (MaybeKind<T>)future;
     }
 
@@ -93,7 +88,7 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
      * @param completableMaybe Type Constructor to convert back into narrowed type
      * @return Maybe from Higher Kinded Type
      */
-    public static <T> Maybe<T> narrow(final Higher<MaybeKind.µ, T> completableMaybe) {
+    public static <T> Maybe<T> narrow(final Higher<maybe, T> completableMaybe) {
       
             return ((MaybeKind<T>)completableMaybe).narrow();
            

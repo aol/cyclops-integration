@@ -630,7 +630,7 @@ public class Optionals {
          *
          * @return A functor for Optionals
          */
-        public static <T,R> Functor<OptionalKind.µ> functor(){
+        public static <T,R> Functor<optional> functor(){
             BiFunction<OptionalKind<T>,Function<? super T, ? extends R>,OptionalKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -649,8 +649,8 @@ public class Optionals {
          *
          * @return A factory for Optionals
          */
-        public static <T> Pure<OptionalKind.µ> unit(){
-            return General.<OptionalKind.µ,T>unit(Instances::of);
+        public static <T> Pure<optional> unit(){
+            return General.<optional,T>unit(Instances::of);
         }
         /**
          *
@@ -689,7 +689,7 @@ public class Optionals {
          *
          * @return A zipper for Optionals
          */
-        public static <T,R> Applicative<OptionalKind.µ> applicative(){
+        public static <T,R> Applicative<optional> applicative(){
             BiFunction<OptionalKind< Function<T, R>>,OptionalKind<T>,OptionalKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -719,9 +719,9 @@ public class Optionals {
          *
          * @return Type class with monad functions for Optionals
          */
-        public static <T,R> Monad<OptionalKind.µ> monad(){
+        public static <T,R> Monad<optional> monad(){
 
-            BiFunction<Higher<OptionalKind.µ,T>,Function<? super T, ? extends Higher<OptionalKind.µ,R>>,Higher<OptionalKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<optional,T>,Function<? super T, ? extends Higher<optional,R>>,Higher<optional,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
         /**
@@ -741,7 +741,7 @@ public class Optionals {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<OptionalKind.µ> monadZero(){
+        public static <T,R> MonadZero<optional> monadZero(){
 
             return General.monadZero(monad(), OptionalKind.absent());
         }
@@ -757,12 +757,12 @@ public class Optionals {
          * </pre>
          * @return Type class for combining Optionals by concatenation
          */
-        public static <T> MonadPlus<OptionalKind.µ> monadPlus(){
+        public static <T> MonadPlus<optional> monadPlus(){
             Monoid<Optional<T>> mn = Monoid.of(Optional.absent(), (a, b) -> a.isPresent() ? a : b);
             Monoid<OptionalKind<T>> m = Monoid.of(OptionalKind.widen(mn.zero()), (f, g)-> OptionalKind.widen(
                     mn.apply(OptionalKind.narrow(f), OptionalKind.narrow(g))));
 
-            Monoid<Higher<OptionalKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<optional,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -781,15 +781,15 @@ public class Optionals {
          * @param m Monoid to use for combining Optionals
          * @return Type class for combining Optionals
          */
-        public static <T> MonadPlus<OptionalKind.µ> monadPlus(Monoid<OptionalKind<T>> m){
-            Monoid<Higher<OptionalKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<optional> monadPlus(Monoid<OptionalKind<T>> m){
+            Monoid<Higher<optional,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<OptionalKind.µ> traverse(){
+        public static <C2,T> Traverse<optional> traverse(){
 
             return General.traverseByTraverse(applicative(), Instances::traverseA);
         }
@@ -809,13 +809,13 @@ public class Optionals {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<OptionalKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<OptionalKind.µ,T>,T> foldRightFn =  (m, l)-> OptionalKind.narrow(l).or(m.zero());
-            BiFunction<Monoid<T>,Higher<OptionalKind.µ,T>,T> foldLeftFn = (m, l)-> OptionalKind.narrow(l).or(m.zero());
+        public static <T> Foldable<optional> foldable(){
+            BiFunction<Monoid<T>,Higher<optional,T>,T> foldRightFn =  (m, l)-> OptionalKind.narrow(l).or(m.zero());
+            BiFunction<Monoid<T>,Higher<optional,T>,T> foldLeftFn = (m, l)-> OptionalKind.narrow(l).or(m.zero());
             return General.foldable(foldRightFn, foldLeftFn);
         }
-        public static <T> Comonad<OptionalKind.µ> comonad(){
-            Function<? super Higher<OptionalKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionalKind::narrow).get();
+        public static <T> Comonad<optional> comonad(){
+            Function<? super Higher<optional, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionalKind::narrow).get();
             return General.comonad(functor(), unit(), extractFn);
         }
 
@@ -828,7 +828,7 @@ public class Optionals {
             return OptionalKind.widen(mb);
 
         }
-        private static <T,R> Higher<OptionalKind.µ,R> flatMap(Higher<OptionalKind.µ,T> lt, Function<? super T, ? extends  Higher<OptionalKind.µ,R>> fn){
+        private static <T,R> Higher<optional,R> flatMap(Higher<optional,T> lt, Function<? super T, ? extends  Higher<optional,R>> fn){
             return OptionalKind.widen(OptionalKind.narrowOptional(lt).flatMap(in->fn.andThen(OptionalKind::narrowOptional).apply(in)));
         }
         private static <T,R> OptionalKind<R> map(OptionalKind<T> lt, Function<? super T, ? extends R> fn){
@@ -837,8 +837,8 @@ public class Optionals {
         }
 
 
-        private static <C2,T,R> Higher<C2, Higher<OptionalKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
-                                                                                Higher<OptionalKind.µ, T> ds){
+        private static <C2,T,R> Higher<C2, Higher<optional, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                                Higher<optional, T> ds){
             Optional<T> opt = OptionalKind.narrow(ds);
             return opt.isPresent()?   applicative.map(OptionalKind::just, fn.apply(opt.get())) :
                     applicative.unit(OptionalKind.absent());

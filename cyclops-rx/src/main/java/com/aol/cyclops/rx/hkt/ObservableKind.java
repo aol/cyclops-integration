@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.monads.RxWitness;
+import cyclops.monads.RxWitness.observable;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -40,7 +42,7 @@ import rx.schedulers.Timestamped;
 /**
  * Simulates Higher Kinded Types for Reactor Observable's
  * 
- * ObservableKind is a Observable and a Higher Kinded Type (ObservableKind.µ,T)
+ * ObservableKind is a Observable and a Higher Kinded Type (observable,T)
  * 
  * @author johnmcclean
  *
@@ -48,7 +50,7 @@ import rx.schedulers.Timestamped;
  */
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Publisher<T> {
+public final class ObservableKind<T> implements Higher<observable, T>, Publisher<T> {
 
     /**
      * Witness type
@@ -100,7 +102,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
      * @param flux HTK encoded type containing  a Observable to widen
      * @return HKT encoded type with a widened Observable
      */
-    public static <C2, T> Higher<C2, Higher<ObservableKind.µ, T>> widen2(Higher<C2, ObservableKind<T>> flux) {
+    public static <C2, T> Higher<C2, Higher<observable, T>> widen2(Higher<C2, ObservableKind<T>> flux) {
         // a functor could be used (if C2 is a functor / one exists for C2 type)
         // instead of casting
         // cast seems safer as Higher<StreamType.µ,T> must be a StreamType
@@ -119,7 +121,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
      * @param future HKT encoded list into a ObservableKind
      * @return ObservableKind
      */
-    public static <T> ObservableKind<T> narrowK(final Higher<ObservableKind.µ, T> future) {
+    public static <T> ObservableKind<T> narrowK(final Higher<observable, T> future) {
         return (ObservableKind<T>) future;
     }
 
@@ -129,7 +131,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
      * @param observable Type Constructor to convert back into narrowed type
      * @return Observable from Higher Kinded Type
      */
-    public static <T> Observable<T> narrow(final Higher<ObservableKind.µ, T> observable) {
+    public static <T> Observable<T> narrow(final Higher<observable, T> observable) {
 
         return ((ObservableKind<T>) observable).narrow();
 

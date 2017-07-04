@@ -14,6 +14,8 @@ import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.lazy;
 import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.EvalT;
@@ -457,7 +459,7 @@ public class Lazys {
          *
          * @return A functor for Lazys
          */
-        public static <T,R>Functor<LazyKind.µ> functor(){
+        public static <T,R>Functor<lazy> functor(){
             BiFunction<LazyKind<T>,Function<? super T, ? extends R>,LazyKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -476,8 +478,8 @@ public class Lazys {
          *
          * @return A factory for Lazys
          */
-        public static <T> Pure<LazyKind.µ> unit(){
-            return General.<LazyKind.µ,T>unit(Instances::of);
+        public static <T> Pure<lazy> unit(){
+            return General.<lazy,T>unit(Instances::of);
         }
         /**
          *
@@ -516,7 +518,7 @@ public class Lazys {
          *
          * @return A zipper for Lazys
          */
-        public static <T,R> Applicative<LazyKind.µ> applicative(){
+        public static <T,R> Applicative<lazy> applicative(){
             BiFunction<LazyKind< Function<T, R>>,LazyKind<T>,LazyKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -546,9 +548,9 @@ public class Lazys {
          *
          * @return Type class with monad functions for Lazys
          */
-        public static <T,R> Monad<LazyKind.µ> monad(){
+        public static <T,R> Monad<lazy> monad(){
 
-            BiFunction<Higher<LazyKind.µ,T>,Function<? super T, ? extends Higher<LazyKind.µ,R>>,Higher<LazyKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<lazy,T>,Function<? super T, ? extends Higher<lazy,R>>,Higher<lazy,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
         /**
@@ -568,7 +570,7 @@ public class Lazys {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<LazyKind.µ> monadZero(){
+        public static <T,R> MonadZero<lazy> monadZero(){
 
             return General.monadZero(monad(), LazyKind.of(()->null));
         }
@@ -584,10 +586,10 @@ public class Lazys {
          * </pre>
          * @return Type class for combining Lazys by concatenation
          */
-        public static <T> MonadPlus<LazyKind.µ> monadPlus(){
+        public static <T> MonadPlus<lazy> monadPlus(){
             Monoid<LazyKind<T>> m = Monoid.of( LazyKind.of(()->null),
                     (a,b)-> a.get()==null? b: a);
-            Monoid<Higher<LazyKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<lazy,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -606,15 +608,15 @@ public class Lazys {
          * @param m Monoid to use for combining Lazys
          * @return Type class for combining Lazys
          */
-        public static <T> MonadPlus<LazyKind.µ> monadPlus(Monoid<LazyKind<T>> m){
-            Monoid<Higher<LazyKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<lazy> monadPlus(Monoid<LazyKind<T>> m){
+            Monoid<Higher<lazy,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<LazyKind.µ> traverse(){
+        public static <C2,T> Traverse<lazy> traverse(){
 
             return General.traverseByTraverse(applicative(), Instances::traverseA);
         }
@@ -634,13 +636,13 @@ public class Lazys {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<LazyKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<LazyKind.µ,T>,T> foldRightFn =  (m, l)-> LazyKind.narrow(l).getOrElse(m.zero());
-            BiFunction<Monoid<T>,Higher<LazyKind.µ,T>,T> foldLeftFn = (m, l)-> LazyKind.narrow(l).getOrElse(m.zero());
+        public static <T> Foldable<lazy> foldable(){
+            BiFunction<Monoid<T>,Higher<lazy,T>,T> foldRightFn =  (m, l)-> LazyKind.narrow(l).getOrElse(m.zero());
+            BiFunction<Monoid<T>,Higher<lazy,T>,T> foldLeftFn = (m, l)-> LazyKind.narrow(l).getOrElse(m.zero());
             return General.foldable(foldRightFn, foldLeftFn);
         }
-        public static <T> Comonad<LazyKind.µ> comonad(){
-            Function<? super Higher<LazyKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(LazyKind::narrow).get();
+        public static <T> Comonad<lazy> comonad(){
+            Function<? super Higher<lazy, T>, ? extends T> extractFn = maybe -> maybe.convert(LazyKind::narrow).get();
             return General.comonad(functor(), unit(), extractFn);
         }
 
@@ -651,7 +653,7 @@ public class Lazys {
             return LazyKind.widen(FromCyclopsReact.lazy(ToCyclopsReact.eval(lt.narrow()).combine(ToCyclopsReact.eval(lazy.narrow()), (a, b)->a.apply(b))));
 
         }
-        private static <T,R> Higher<LazyKind.µ,R> flatMap(Higher<LazyKind.µ,T> lt, Function<? super T, ? extends  Higher<LazyKind.µ,R>> fn){
+        private static <T,R> Higher<lazy,R> flatMap(Higher<lazy,T> lt, Function<? super T, ? extends  Higher<lazy,R>> fn){
             return LazyKind.widen(LazyKind.narrowEval(lt).flatMap(fn.andThen(LazyKind::narrowEval)));
         }
         private static <T,R> LazyKind<R> map(LazyKind<T> lt, Function<? super T, ? extends R> fn){
@@ -659,8 +661,8 @@ public class Lazys {
         }
 
 
-        private static <C2,T,R> Higher<C2, Higher<LazyKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
-                                                                            Higher<LazyKind.µ, T> ds){
+        private static <C2,T,R> Higher<C2, Higher<lazy, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                            Higher<lazy, T> ds){
 
             Lazy<T> eval = LazyKind.narrow(ds);
             Higher<C2, R> ds2 = fn.apply(eval.get());

@@ -2,6 +2,8 @@ package com.aol.cyclops.rx2.hkt;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.flowable;
 import cyclops.stream.ReactiveSeq;
 import io.reactivex.*;
 import io.reactivex.Observable;
@@ -40,7 +42,7 @@ import java.util.stream.Stream;
 /**
  * Simulates Higher Kinded Types for Reactor Flowable's
  * 
- * FlowableKind is a Flowable and a Higher Kinded Type (FlowableKind.µ,T)
+ * FlowableKind is a Flowable and a Higher Kinded Type (flowable,T)
  * 
  * @author johnmcclean
  *
@@ -48,7 +50,7 @@ import java.util.stream.Stream;
  */
 
 
-public final class FlowableKind<T> implements Higher<FlowableKind.µ, T>, Publisher<T> {
+public final class FlowableKind<T> implements Higher<flowable, T>, Publisher<T> {
 
     private FlowableKind(Flowable<T> boxed) {
         this.boxed = boxed;
@@ -64,14 +66,7 @@ public final class FlowableKind<T> implements Higher<FlowableKind.µ, T>, Publis
         return boxed;
     }
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
+
     
     /**
      * Construct a HKT encoded completed Flowable
@@ -112,7 +107,7 @@ public final class FlowableKind<T> implements Higher<FlowableKind.µ, T>, Publis
      * @param flux HTK encoded type containing  a Flowable to widen
      * @return HKT encoded type with a widened Flowable
      */
-    public static <C2,T> Higher<C2, Higher<FlowableKind.µ,T>> widen2(Higher<C2, FlowableKind<T>> flux){
+    public static <C2,T> Higher<C2, Higher<flowable,T>> widen2(Higher<C2, FlowableKind<T>> flux){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
         //cast seems safer as Higher<StreamType.µ,T> must be a StreamType
         return (Higher)flux;
@@ -130,7 +125,7 @@ public final class FlowableKind<T> implements Higher<FlowableKind.µ, T>, Publis
      * @param future HKT encoded list into a FlowableKind
      * @return FlowableKind
      */
-    public static <T> FlowableKind<T> narrowK(final Higher<FlowableKind.µ, T> future) {
+    public static <T> FlowableKind<T> narrowK(final Higher<flowable, T> future) {
        return (FlowableKind<T>)future;
     }
 
@@ -140,7 +135,7 @@ public final class FlowableKind<T> implements Higher<FlowableKind.µ, T>, Publis
      * @param completableFlowable Type Constructor to convert back into narrowed type
      * @return Flowable from Higher Kinded Type
      */
-    public static <T> Flowable<T> narrow(final Higher<FlowableKind.µ, T> completableFlowable) {
+    public static <T> Flowable<T> narrow(final Higher<flowable, T> completableFlowable) {
       
             return ((FlowableKind<T>)completableFlowable).narrow();
            

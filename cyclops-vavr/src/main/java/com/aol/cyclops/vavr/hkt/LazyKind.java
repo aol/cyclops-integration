@@ -13,6 +13,8 @@ import cyclops.conversion.vavr.ToCyclopsReact;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Eval;
 
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.lazy;
 import io.vavr.Lazy;
 import io.vavr.collection.Iterator;
 import io.vavr.control.Option;
@@ -22,24 +24,15 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for Lazy's
  * 
- * LazyKind is a Lazy and a Higher Kinded Type (LazyKind.µ,T)
+ * LazyKind is a Lazy and a Higher Kinded Type (lazy,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Lazy
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final  class LazyKind<T> implements Higher<LazyKind.µ, T> {
+public final  class LazyKind<T> implements Higher<lazy, T> {
     
-
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
 
     /**
      * Convert the raw Higher Kinded Type for MaybeType types into the MaybeType type definition class
@@ -47,7 +40,7 @@ public final  class LazyKind<T> implements Higher<LazyKind.µ, T> {
      * @param future HKT encoded list into a OptionalType
      * @return MaybeType
      */
-    public static <T> LazyKind<T> narrowK(final Higher<LazyKind.µ, T> future) {
+    public static <T> LazyKind<T> narrowK(final Higher<lazy, T> future) {
        return (LazyKind<T>)future;
     }
     /**
@@ -95,12 +88,12 @@ public final  class LazyKind<T> implements Higher<LazyKind.µ, T> {
      * @param eval Type Constructor to convert back into narrowed type
      * @return LazyX from Higher Kinded Type
      */
-    public static <T> Lazy<T> narrow(final Higher<LazyKind.µ, T> eval) {
+    public static <T> Lazy<T> narrow(final Higher<lazy, T> eval) {
        
             return ((LazyKind) eval).boxed;
        
     }
-    public static <T> Eval<T> narrowEval(final Higher<LazyKind.µ, T> eval) {
+    public static <T> Eval<T> narrowEval(final Higher<lazy, T> eval) {
         
         return ToCyclopsReact.eval(((LazyKind) eval).boxed);
    

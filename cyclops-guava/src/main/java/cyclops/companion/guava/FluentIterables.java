@@ -349,7 +349,7 @@ public class FluentIterables {
          *
          * @return A functor for FluentIterables
          */
-        public static <T,R>Functor<FluentIterableKind.µ> functor(){
+        public static <T,R>Functor<fluentIterable> functor(){
             BiFunction<FluentIterableKind<T>,Function<? super T, ? extends R>,FluentIterableKind<R>> transform = Instances::transform;
             return General.functor(transform);
         }
@@ -368,8 +368,8 @@ public class FluentIterables {
          *
          * @return A factory for FluentIterables
          */
-        public static <T> Pure<FluentIterableKind.µ> unit(){
-            return General.<FluentIterableKind.µ,T>unit(Instances::of);
+        public static <T> Pure<fluentIterable> unit(){
+            return General.<fluentIterable,T>unit(Instances::of);
         }
         /**
          *
@@ -407,7 +407,7 @@ public class FluentIterables {
          *
          * @return A zipper for FluentIterables
          */
-        public static <T,R> Applicative<FluentIterableKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<fluentIterable> zippingApplicative(){
             BiFunction<FluentIterableKind< Function<T, R>>,FluentIterableKind<T>,FluentIterableKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -437,9 +437,9 @@ public class FluentIterables {
          *
          * @return Type class with monad functions for FluentIterables
          */
-        public static <T,R> Monad<FluentIterableKind.µ> monad(){
+        public static <T,R> Monad<fluentIterable> monad(){
 
-            BiFunction<Higher<FluentIterableKind.µ,T>,Function<? super T, ? extends Higher<FluentIterableKind.µ,R>>,Higher<FluentIterableKind.µ,R>> transformAndConcat = Instances::transformAndConcat;
+            BiFunction<Higher<fluentIterable,T>,Function<? super T, ? extends Higher<fluentIterable,R>>,Higher<fluentIterable,R>> transformAndConcat = Instances::transformAndConcat;
             return General.monad(zippingApplicative(), transformAndConcat);
         }
         /**
@@ -459,10 +459,10 @@ public class FluentIterables {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<FluentIterableKind.µ> monadZero(){
-            BiFunction<Higher<FluentIterableKind.µ,T>,Predicate<? super T>,Higher<FluentIterableKind.µ,T>> filter = Instances::filter;
-            Supplier<Higher<FluentIterableKind.µ, T>> zero = ()-> FluentIterableKind.widen(FluentIterable.of());
-            return General.<FluentIterableKind.µ,T,R>monadZero(monad(), zero,filter);
+        public static <T,R> MonadZero<fluentIterable> monadZero(){
+            BiFunction<Higher<fluentIterable,T>,Predicate<? super T>,Higher<fluentIterable,T>> filter = Instances::filter;
+            Supplier<Higher<fluentIterable, T>> zero = ()-> FluentIterableKind.widen(FluentIterable.of());
+            return General.<fluentIterable,T,R>monadZero(monad(), zero,filter);
         }
         /**
          * <pre>
@@ -476,9 +476,9 @@ public class FluentIterables {
          * </pre>
          * @return Type class for combining FluentIterables by concatenation
          */
-        public static <T> MonadPlus<FluentIterableKind.µ> monadPlus(){
+        public static <T> MonadPlus<fluentIterable> monadPlus(){
             Monoid<FluentIterableKind<T>> m = Monoid.of(FluentIterableKind.widen(FluentIterable.<T>of()), Instances::concat);
-            Monoid<Higher<FluentIterableKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<fluentIterable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -497,15 +497,15 @@ public class FluentIterables {
          * @param m Monoid to use for combining FluentIterables
          * @return Type class for combining FluentIterables
          */
-        public static <T> MonadPlus<FluentIterableKind.µ> monadPlus(Monoid<FluentIterableKind<T>> m){
-            Monoid<Higher<FluentIterableKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<fluentIterable> monadPlus(Monoid<FluentIterableKind<T>> m){
+            Monoid<Higher<fluentIterable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<FluentIterableKind.µ> traverse(){
+        public static <C2,T> Traverse<fluentIterable> traverse(){
             BiFunction<Applicative<C2>,FluentIterableKind<Higher<C2, T>>,Higher<C2, FluentIterableKind<T>>> sequenceFn = (ap, flux) -> {
 
                 Higher<C2,FluentIterableKind<T>> identity = ap.unit(FluentIterableKind.widen(FluentIterable.of()));
@@ -520,7 +520,7 @@ public class FluentIterables {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<FluentIterableKind.µ,Higher<C2, T>>,Higher<C2, Higher<FluentIterableKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<fluentIterable,Higher<C2, T>>,Higher<C2, Higher<fluentIterable,T>>> sequenceNarrow  =
                     (a,b) -> FluentIterableKind.widen2(sequenceFn.apply(a, FluentIterableKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -540,9 +540,9 @@ public class FluentIterables {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<FluentIterableKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<FluentIterableKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FluentIterableKind.narrowK(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<FluentIterableKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FluentIterableKind.narrowK(l)).reduce(m);
+        public static <T> Foldable<fluentIterable> foldable(){
+            BiFunction<Monoid<T>,Higher<fluentIterable,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FluentIterableKind.narrowK(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<fluentIterable,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FluentIterableKind.narrowK(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
@@ -555,13 +555,13 @@ public class FluentIterables {
         private static <T,R> FluentIterableKind<R> ap(FluentIterableKind<Function< T, R>> lt, FluentIterableKind<T> flux){
             return FluentIterableKind.widen(lt.toReactiveSeq().zip(flux,(a, b)->a.apply(b)));
         }
-        private static <T,R> Higher<FluentIterableKind.µ,R> transformAndConcat(Higher<FluentIterableKind.µ,T> lt, Function<? super T, ? extends  Higher<FluentIterableKind.µ,R>> fn){
+        private static <T,R> Higher<fluentIterable,R> transformAndConcat(Higher<fluentIterable,T> lt, Function<? super T, ? extends  Higher<fluentIterable,R>> fn){
             return FluentIterableKind.widen(FluentIterableKind.narrowK(lt).transformAndConcat(i->fn.andThen(FluentIterableKind::narrowK).apply(i)));
         }
         private static <T,R> FluentIterableKind<R> transform(FluentIterableKind<T> lt, Function<? super T, ? extends R> fn){
             return FluentIterableKind.widen(lt.transform(i->fn.apply(i)));
         }
-        private static <T> FluentIterableKind<T> filter(Higher<FluentIterableKind.µ,T> lt, Predicate<? super T> fn){
+        private static <T> FluentIterableKind<T> filter(Higher<fluentIterable,T> lt, Predicate<? super T> fn){
             return FluentIterableKind.widen(FluentIterableKind.narrow(lt).filter(i->fn.test(i)));
         }
     }

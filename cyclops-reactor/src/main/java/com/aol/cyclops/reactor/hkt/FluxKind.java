@@ -2,6 +2,8 @@ package com.aol.cyclops.reactor.hkt;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.monads.ReactorWitness;
+import cyclops.monads.ReactorWitness.flux;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -24,7 +26,7 @@ import java.util.stream.Stream;
 /**
  * Simulates Higher Kinded Types for Reactor Flux's
  * 
- * FluxKind is a Flux and a Higher Kinded Type (FluxKind.µ,T)
+ * FluxKind is a Flux and a Higher Kinded Type (flux,T)
  * 
  * @author johnmcclean
  *
@@ -32,20 +34,13 @@ import java.util.stream.Stream;
  */
 
 
-public final class FluxKind<T> implements Higher<FluxKind.µ, T>, Publisher<T> {
+public final class FluxKind<T> implements Higher<flux, T>, Publisher<T> {
 
     private FluxKind(Flux<T> boxed) {
         this.boxed = boxed;
     }
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
+
     
     /**
      * Construct a HKT encoded completed Flux
@@ -86,7 +81,7 @@ public final class FluxKind<T> implements Higher<FluxKind.µ, T>, Publisher<T> {
      * @param flux HTK encoded type containing  a Flux to widen
      * @return HKT encoded type with a widened Flux
      */
-    public static <C2,T> Higher<C2, Higher<FluxKind.µ,T>> widen2(Higher<C2, FluxKind<T>> flux){
+    public static <C2,T> Higher<C2, Higher<flux,T>> widen2(Higher<C2, FluxKind<T>> flux){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
         //cast seems safer as Higher<StreamType.µ,T> must be a StreamType
         return (Higher)flux;
@@ -104,7 +99,7 @@ public final class FluxKind<T> implements Higher<FluxKind.µ, T>, Publisher<T> {
      * @param future HKT encoded list into a FluxKind
      * @return FluxKind
      */
-    public static <T> FluxKind<T> narrowK(final Higher<FluxKind.µ, T> future) {
+    public static <T> FluxKind<T> narrowK(final Higher<flux, T> future) {
        return (FluxKind<T>)future;
     }
 
@@ -114,7 +109,7 @@ public final class FluxKind<T> implements Higher<FluxKind.µ, T>, Publisher<T> {
      * @param completableFlux Type Constructor to convert back into narrowed type
      * @return Flux from Higher Kinded Type
      */
-    public static <T> Flux<T> narrow(final Higher<FluxKind.µ, T> completableFlux) {
+    public static <T> Flux<T> narrow(final Higher<flux, T> completableFlux) {
       
             return ((FluxKind<T>)completableFlux).narrow();
            

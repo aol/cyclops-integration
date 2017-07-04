@@ -500,7 +500,7 @@ public class Flowables {
          *
          * @return A functor for Flowables
          */
-        public static <T,R>Functor<FlowableKind.µ> functor(){
+        public static <T,R>Functor<flowable> functor(){
             BiFunction<FlowableKind<T>,Function<? super T, ? extends R>,FlowableKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -519,9 +519,9 @@ public class Flowables {
          *
          * @return A factory for Flowables
          */
-        public static <T> Pure<FlowableKind.µ> unit(){
-            Function<T, Higher<FlowableKind.µ, T>> unitRef = Instances::of;
-            return General.<FlowableKind.µ,T>unit(unitRef);
+        public static <T> Pure<flowable> unit(){
+            Function<T, Higher<flowable, T>> unitRef = Instances::of;
+            return General.<flowable,T>unit(unitRef);
         }
         /**
          *
@@ -559,7 +559,7 @@ public class Flowables {
          *
          * @return A zipper for Flowables
          */
-        public static <T,R> Applicative<FlowableKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<flowable> zippingApplicative(){
             BiFunction<FlowableKind< Function<T, R>>,FlowableKind<T>,FlowableKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -589,9 +589,9 @@ public class Flowables {
          *
          * @return Type class with monad functions for Flowables
          */
-        public static <T,R> Monad<FlowableKind.µ> monad(){
+        public static <T,R> Monad<flowable> monad(){
 
-            BiFunction<Higher<FlowableKind.µ,T>,Function<? super T, ? extends Higher<FlowableKind.µ,R>>,Higher<FlowableKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<flowable,T>,Function<? super T, ? extends Higher<flowable,R>>,Higher<flowable,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -611,10 +611,10 @@ public class Flowables {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<FlowableKind.µ> monadZero(){
-            BiFunction<Higher<FlowableKind.µ,T>,Predicate<? super T>,Higher<FlowableKind.µ,T>> filter = Instances::filter;
-            Supplier<Higher<FlowableKind.µ, T>> zero = ()-> FlowableKind.widen(Flowable.empty());
-            return General.<FlowableKind.µ,T,R>monadZero(monad(), zero,filter);
+        public static <T,R> MonadZero<flowable> monadZero(){
+            BiFunction<Higher<flowable,T>,Predicate<? super T>,Higher<flowable,T>> filter = Instances::filter;
+            Supplier<Higher<flowable, T>> zero = ()-> FlowableKind.widen(Flowable.empty());
+            return General.<flowable,T,R>monadZero(monad(), zero,filter);
         }
         /**
          * <pre>
@@ -628,9 +628,9 @@ public class Flowables {
          * </pre>
          * @return Type class for combining Flowables by concatenation
          */
-        public static <T> MonadPlus<FlowableKind.µ> monadPlus(){
+        public static <T> MonadPlus<flowable> monadPlus(){
             Monoid<FlowableKind<T>> m = Monoid.of(FlowableKind.widen(Flowable.<T>empty()), Instances::concat);
-            Monoid<Higher<FlowableKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<flowable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -649,15 +649,15 @@ public class Flowables {
          * @param m Monoid to use for combining Flowables
          * @return Type class for combining Flowables
          */
-        public static <T> MonadPlus<FlowableKind.µ> monadPlus(Monoid<FlowableKind<T>> m){
-            Monoid<Higher<FlowableKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<flowable> monadPlus(Monoid<FlowableKind<T>> m){
+            Monoid<Higher<flowable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<FlowableKind.µ> traverse(){
+        public static <C2,T> Traverse<flowable> traverse(){
             BiFunction<Applicative<C2>,FlowableKind<Higher<C2, T>>,Higher<C2, FlowableKind<T>>> sequenceFn = (ap, flowable) -> {
 
                 Higher<C2,FlowableKind<T>> identity = ap.unit(FlowableKind.widen(Flowable.empty()));
@@ -672,7 +672,7 @@ public class Flowables {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<FlowableKind.µ,Higher<C2, T>>,Higher<C2, Higher<FlowableKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<flowable,Higher<C2, T>>,Higher<C2, Higher<flowable,T>>> sequenceNarrow  =
                     (a,b) -> FlowableKind.widen2(sequenceFn.apply(a, FlowableKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -692,9 +692,9 @@ public class Flowables {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<FlowableKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<FlowableKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FlowableKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<FlowableKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FlowableKind.narrow(l)).reduce(m);
+        public static <T> Foldable<flowable> foldable(){
+            BiFunction<Monoid<T>,Higher<flowable,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FlowableKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<flowable,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FlowableKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
@@ -707,13 +707,13 @@ public class Flowables {
         private static <T,R> FlowableKind<R> ap(FlowableKind<Function< T, R>> lt, FlowableKind<T> flowable){
             return FlowableKind.widen(lt.zipWith(flowable,(a, b)->a.apply(b)));
         }
-        private static <T,R> Higher<FlowableKind.µ,R> flatMap(Higher<FlowableKind.µ,T> lt, Function<? super T, ? extends  Higher<FlowableKind.µ,R>> fn){
+        private static <T,R> Higher<flowable,R> flatMap(Higher<flowable,T> lt, Function<? super T, ? extends  Higher<flowable,R>> fn){
             return FlowableKind.widen(FlowableKind.narrowK(lt).flatMap(Functions.rxFunction(fn.andThen(FlowableKind::narrowK))));
         }
         private static <T,R> FlowableKind<R> map(FlowableKind<T> lt, Function<? super T, ? extends R> fn){
             return FlowableKind.widen(lt.map(Functions.rxFunction(fn)));
         }
-        private static <T> FlowableKind<T> filter(Higher<FlowableKind.µ,T> lt, Predicate<? super T> fn){
+        private static <T> FlowableKind<T> filter(Higher<flowable,T> lt, Predicate<? super T> fn){
             return FlowableKind.widen(FlowableKind.narrow(lt).filter(Functions.rxPredicate(fn)));
         }
     }

@@ -1,6 +1,8 @@
 package com.aol.cyclops.vavr.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.stream;
 import cyclops.stream.ReactiveSeq;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
@@ -21,16 +23,7 @@ import lombok.AllArgsConstructor;
  */
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class StreamKind<T> implements Higher<StreamKind.µ, T>, Publisher<T>, Stream<T>{
-
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
-    }
+public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Stream<T>{
 
     /**
      * Construct a HKT encoded completed Stream
@@ -73,10 +66,10 @@ public final class StreamKind<T> implements Higher<StreamKind.µ, T>, Publisher<
      * @param flux HTK encoded type containing  a Stream to widen
      * @return HKT encoded type with a widened Stream
      */
-    public static <C2, T> Higher<C2, Higher<StreamKind.µ, T>> widen2(Higher<C2, StreamKind<T>> flux) {
+    public static <C2, T> Higher<C2, Higher<stream, T>> widen2(Higher<C2, StreamKind<T>> flux) {
         // a functor could be used (if C2 is a functor / one exists for C2 type)
         // instead of casting
-        // cast seems safer as Higher<StreamKind.µ,T> must be a StreamKind
+        // cast seems safer as Higher<stream,T> must be a StreamKind
         return (Higher) flux;
     }
 
@@ -92,7 +85,7 @@ public final class StreamKind<T> implements Higher<StreamKind.µ, T>, Publisher<
      * @param future HKT encoded list into a StreamKind
      * @return StreamKind
      */
-    public static <T> StreamKind<T> narrowK(final Higher<StreamKind.µ, T> future) {
+    public static <T> StreamKind<T> narrowK(final Higher<stream, T> future) {
         return (StreamKind<T>) future;
     }
 
@@ -102,7 +95,7 @@ public final class StreamKind<T> implements Higher<StreamKind.µ, T>, Publisher<
      * @param stream Type Constructor to convert back into narrowed type
      * @return Stream from Higher Kinded Type
      */
-    public static <T> Stream<T> narrow(final Higher<StreamKind.µ, T> stream) {
+    public static <T> Stream<T> narrow(final Higher<stream, T> stream) {
 
         return ((StreamKind<T>) stream).narrow();
 

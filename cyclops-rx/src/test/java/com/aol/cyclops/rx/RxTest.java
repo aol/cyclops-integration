@@ -5,19 +5,16 @@ import static cyclops.companion.rx.Observables.reactiveSeq;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.aol.cyclops.rx.adapter.ObservableReactiveSeq;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
-import cyclops.monads.RxWitness.obsvervable;
+import cyclops.monads.RxWitness.observable;
 
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx.Observables;
-import cyclops.monads.RxWitness;
 import cyclops.stream.ReactiveSeq;
 import cyclops.stream.Spouts;
 import org.junit.Test;
 
 
-import reactor.core.publisher.Flux;
 import rx.Observable;
 
 import java.util.concurrent.Executors;
@@ -61,7 +58,7 @@ public class RxTest {
 
         ReactiveSeq<Integer> asyncSeq = Spouts.async(Stream.of(1, 2, 3), Executors.newFixedThreadPool(1));
         Observable<Integer> observableAsync = Observables.observableFrom(asyncSeq);
-        AnyMSeq<obsvervable,Integer> monad = Observables.anyM(observableAsync);
+        AnyMSeq<observable,Integer> monad = Observables.anyM(observableAsync);
 
         monad.map(i->i*2)
                 .forEach(System.out::println,System.err::println,()->complete.set(true));

@@ -261,4 +261,13 @@ public interface VavrWitness {
         }
 
     }
+    public static enum lazy implements WitnessType<lazy> {
+        INSTANCE;
+
+        @Override
+        public FunctionalAdapter<lazy> adapter() {
+            return null;
+        }
+
+    }
 }

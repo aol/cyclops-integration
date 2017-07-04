@@ -6,6 +6,8 @@ import static org.junit.Assert.assertThat;
 
 import cyclops.companion.vavr.Options;
 import com.aol.cyclops.vavr.hkt.OptionKind;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.option;
 import org.junit.Test;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -32,7 +34,7 @@ public class OptionsTest {
         
         OptionKind<Integer> opt = Options.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Options.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Options.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(OptionKind::narrowK);
         
         assertThat(opt,equalTo(Option.of("hello".length())));
@@ -52,8 +54,8 @@ public class OptionsTest {
         
         OptionKind<Integer> opt = Options.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Options.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> Options.Instances.applicative().ap(optFn, h))
+                                     .applyHKT(h-> Options.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Options.Instances.applicative().ap(optFn, h))
                                      .convert(OptionKind::narrowK);
         
         assertThat(opt,equalTo(Option.of("hello".length()*2)));
@@ -69,7 +71,7 @@ public class OptionsTest {
         
         OptionKind<Integer> opt = Options.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Options.Instances.monad().flatMap((String v) -> Options.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Options.Instances.monad().flatMap((String v) -> Options.Instances.unit().unit(v.length()), h))
                                      .convert(OptionKind::narrowK);
         
         assertThat(opt,equalTo(Option.of("hello".length())));
@@ -79,7 +81,7 @@ public class OptionsTest {
         
         OptionKind<String> opt = Options.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Options.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Options.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(OptionKind::narrowK);
         
         assertThat(opt,equalTo(Option.of("hello")));
@@ -89,7 +91,7 @@ public class OptionsTest {
         
         OptionKind<String> opt = Options.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Options.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Options.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(OptionKind::narrowK);
         
         assertThat(opt,equalTo(Option.none()));
@@ -127,7 +129,7 @@ public class OptionsTest {
     }
     @Test
     public void traverse(){
-       Maybe<Higher<OptionKind.µ, Integer>> res = Options.Instances.traverse()
+       Maybe<Higher<option, Integer>> res = Options.Instances.traverse()
                                                                  .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), OptionKind.of(1))
                                                                  .convert(Maybe::narrowK);
        

@@ -476,7 +476,7 @@ public class Monos {
          *
          * @return A functor for Monos
          */
-        public static <T,R>Functor<MonoKind.µ> functor(){
+        public static <T,R>Functor<mono> functor(){
             BiFunction<MonoKind<T>,Function<? super T, ? extends R>,MonoKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -495,8 +495,8 @@ public class Monos {
          *
          * @return A factory for Monos
          */
-        public static <T> Pure<MonoKind.µ> unit(){
-            return General.<MonoKind.µ,T>unit(Instances::of);
+        public static <T> Pure<mono> unit(){
+            return General.<mono,T>unit(Instances::of);
         }
         /**
          *
@@ -535,7 +535,7 @@ public class Monos {
          *
          * @return A zipper for Monos
          */
-        public static <T,R> Applicative<MonoKind.µ> applicative(){
+        public static <T,R> Applicative<mono> applicative(){
             BiFunction<MonoKind< Function<T, R>>,MonoKind<T>,MonoKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -565,9 +565,9 @@ public class Monos {
          *
          * @return Type class with monad functions for Monos
          */
-        public static <T,R> Monad<MonoKind.µ> monad(){
+        public static <T,R> Monad<mono> monad(){
 
-            BiFunction<Higher<MonoKind.µ,T>,Function<? super T, ? extends Higher<MonoKind.µ,R>>,Higher<MonoKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<mono,T>,Function<? super T, ? extends Higher<mono,R>>,Higher<mono,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
         /**
@@ -587,7 +587,7 @@ public class Monos {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<MonoKind.µ> monadZero(){
+        public static <T,R> MonadZero<mono> monadZero(){
 
             return General.monadZero(monad(), MonoKind.empty());
         }
@@ -605,13 +605,13 @@ public class Monos {
          * </pre>
          * @return Type class for combining Monos by concatenation
          */
-        public static <T> MonadPlus<MonoKind.µ> monadPlus(){
+        public static <T> MonadPlus<mono> monadPlus(){
 
 
             Monoid<MonoKind<T>> m = Monoid.of(MonoKind.<T>widen(Mono.empty()),
                     (f,g)-> MonoKind.widen(Mono.first(f.narrow(),g.narrow())));
 
-            Monoid<Higher<MonoKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<mono,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -630,15 +630,15 @@ public class Monos {
          * @param m Monoid to use for combining Monos
          * @return Type class for combining Monos
          */
-        public static <T> MonadPlus<MonoKind.µ> monadPlus(Monoid<MonoKind<T>> m){
-            Monoid<Higher<MonoKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<mono> monadPlus(Monoid<MonoKind<T>> m){
+            Monoid<Higher<mono,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<MonoKind.µ> traverse(){
+        public static <C2,T> Traverse<mono> traverse(){
 
             return General.traverseByTraverse(applicative(), Instances::traverseA);
         }
@@ -658,13 +658,13 @@ public class Monos {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<MonoKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<MonoKind.µ,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), MonoKind.narrow(l).block());
-            BiFunction<Monoid<T>,Higher<MonoKind.µ,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), MonoKind.narrow(l).block());
+        public static <T> Foldable<mono> foldable(){
+            BiFunction<Monoid<T>,Higher<mono,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), MonoKind.narrow(l).block());
+            BiFunction<Monoid<T>,Higher<mono,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), MonoKind.narrow(l).block());
             return General.foldable(foldRightFn, foldLeftFn);
         }
-        public static <T> Comonad<MonoKind.µ> comonad(){
-            Function<? super Higher<MonoKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(MonoKind::narrow).block();
+        public static <T> Comonad<mono> comonad(){
+            Function<? super Higher<mono, T>, ? extends T> extractFn = maybe -> maybe.convert(MonoKind::narrow).block();
             return General.comonad(functor(), unit(), extractFn);
         }
 
@@ -677,7 +677,7 @@ public class Monos {
             return MonoKind.widen(Monos.combine(lt.narrow(),list.narrow(), (a, b)->a.apply(b)));
 
         }
-        private static <T,R> Higher<MonoKind.µ,R> flatMap(Higher<MonoKind.µ,T> lt, Function<? super T, ? extends  Higher<MonoKind.µ,R>> fn){
+        private static <T,R> Higher<mono,R> flatMap(Higher<mono,T> lt, Function<? super T, ? extends  Higher<mono,R>> fn){
             return MonoKind.widen(MonoKind.narrow(lt).flatMap(fn.andThen(MonoKind::narrow)));
         }
         private static <T,R> MonoKind<R> map(MonoKind<T> lt, Function<? super T, ? extends R> fn){
@@ -685,8 +685,8 @@ public class Monos {
         }
 
 
-        private static <C2,T,R> Higher<C2, Higher<MonoKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
-                                                                            Higher<MonoKind.µ, T> ds){
+        private static <C2,T,R> Higher<C2, Higher<mono, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                            Higher<mono, T> ds){
             Mono<T> future = MonoKind.narrow(ds);
             return applicative.map(MonoKind::just, fn.apply(future.block()));
         }

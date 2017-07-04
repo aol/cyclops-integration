@@ -540,7 +540,7 @@ public class Fluxs {
          *
          * @return A functor for Fluxs
          */
-        public static <T,R>Functor<FluxKind.µ> functor(){
+        public static <T,R>Functor<flux> functor(){
             BiFunction<FluxKind<T>,Function<? super T, ? extends R>,FluxKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -559,9 +559,9 @@ public class Fluxs {
          *
          * @return A factory for Fluxs
          */
-        public static <T> Pure<FluxKind.µ> unit(){
-            Function<T, Higher<FluxKind.µ, T>> unitRef = Instances::of;
-            return General.<FluxKind.µ,T>unit(unitRef);
+        public static <T> Pure<flux> unit(){
+            Function<T, Higher<flux, T>> unitRef = Instances::of;
+            return General.<flux,T>unit(unitRef);
         }
         /**
          *
@@ -599,7 +599,7 @@ public class Fluxs {
          *
          * @return A zipper for Fluxs
          */
-        public static <T,R> Applicative<FluxKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<flux> zippingApplicative(){
             BiFunction<FluxKind< Function<T, R>>,FluxKind<T>,FluxKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -629,9 +629,9 @@ public class Fluxs {
          *
          * @return Type class with monad functions for Fluxs
          */
-        public static <T,R> Monad<FluxKind.µ> monad(){
+        public static <T,R> Monad<flux> monad(){
 
-            BiFunction<Higher<FluxKind.µ,T>,Function<? super T, ? extends Higher<FluxKind.µ,R>>,Higher<FluxKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<flux,T>,Function<? super T, ? extends Higher<flux,R>>,Higher<flux,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -651,10 +651,10 @@ public class Fluxs {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<FluxKind.µ> monadZero(){
-            BiFunction<Higher<FluxKind.µ,T>,Predicate<? super T>,Higher<FluxKind.µ,T>> filter = Instances::filter;
-            Supplier<Higher<FluxKind.µ, T>> zero = ()-> FluxKind.widen(Flux.empty());
-            return General.<FluxKind.µ,T,R>monadZero(monad(), zero,filter);
+        public static <T,R> MonadZero<flux> monadZero(){
+            BiFunction<Higher<flux,T>,Predicate<? super T>,Higher<flux,T>> filter = Instances::filter;
+            Supplier<Higher<flux, T>> zero = ()-> FluxKind.widen(Flux.empty());
+            return General.<flux,T,R>monadZero(monad(), zero,filter);
         }
         /**
          * <pre>
@@ -668,9 +668,9 @@ public class Fluxs {
          * </pre>
          * @return Type class for combining Fluxs by concatenation
          */
-        public static <T> MonadPlus<FluxKind.µ> monadPlus(){
+        public static <T> MonadPlus<flux> monadPlus(){
             Monoid<FluxKind<T>> m = Monoid.of(FluxKind.widen(Flux.<T>empty()), Instances::concat);
-            Monoid<Higher<FluxKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<flux,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -689,15 +689,15 @@ public class Fluxs {
          * @param m Monoid to use for combining Fluxs
          * @return Type class for combining Fluxs
          */
-        public static <T> MonadPlus<FluxKind.µ> monadPlus(Monoid<FluxKind<T>> m){
-            Monoid<Higher<FluxKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<flux> monadPlus(Monoid<FluxKind<T>> m){
+            Monoid<Higher<flux,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<FluxKind.µ> traverse(){
+        public static <C2,T> Traverse<flux> traverse(){
             BiFunction<Applicative<C2>,FluxKind<Higher<C2, T>>,Higher<C2, FluxKind<T>>> sequenceFn = (ap, flux) -> {
 
                 Higher<C2,FluxKind<T>> identity = ap.unit(FluxKind.widen(Flux.empty()));
@@ -712,7 +712,7 @@ public class Fluxs {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<FluxKind.µ,Higher<C2, T>>,Higher<C2, Higher<FluxKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<flux,Higher<C2, T>>,Higher<C2, Higher<flux,T>>> sequenceNarrow  =
                     (a,b) -> FluxKind.widen2(sequenceFn.apply(a, FluxKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -732,9 +732,9 @@ public class Fluxs {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<FluxKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<FluxKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<FluxKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).reduce(m);
+        public static <T> Foldable<flux> foldable(){
+            BiFunction<Monoid<T>,Higher<flux,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<flux,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
@@ -747,13 +747,13 @@ public class Fluxs {
         private static <T,R> FluxKind<R> ap(FluxKind<Function< T, R>> lt, FluxKind<T> flux){
             return FluxKind.widen(lt.zipWith(flux,(a, b)->a.apply(b)));
         }
-        private static <T,R> Higher<FluxKind.µ,R> flatMap(Higher<FluxKind.µ,T> lt, Function<? super T, ? extends  Higher<FluxKind.µ,R>> fn){
+        private static <T,R> Higher<flux,R> flatMap(Higher<flux,T> lt, Function<? super T, ? extends  Higher<flux,R>> fn){
             return FluxKind.widen(FluxKind.narrowK(lt).flatMap(fn.andThen(FluxKind::narrowK)));
         }
         private static <T,R> FluxKind<R> map(FluxKind<T> lt, Function<? super T, ? extends R> fn){
             return FluxKind.widen(lt.map(fn));
         }
-        private static <T> FluxKind<T> filter(Higher<FluxKind.µ,T> lt, Predicate<? super T> fn){
+        private static <T> FluxKind<T> filter(Higher<flux,T> lt, Predicate<? super T> fn){
             return FluxKind.widen(FluxKind.narrow(lt).filter(fn));
         }
     }

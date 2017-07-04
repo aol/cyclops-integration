@@ -360,20 +360,20 @@ MonoKind<Integer> mono = MonoKind.widen(Mono.just(1));
 MonoKind implements the Higher interface which captures that our type is both a Mono and takes a data type of Integer
 
 ```java
-Higher<MonoKind.µ, Integer> higher = mono;
+Higher<mono, Integer> higher = mono;
 ```
 
 We can use the Traverse and Applicative typeclasses to sequence a Mono with a Maybe into a Maybe with a Mono.
 ```java
-Traverse<MonoKind.µ> traverse = Monos.Instances.traverse();
+Traverse<mono> traverse = Monos.Instances.traverse();
 Applicative<Maybe.µ> applicative = Maybe.Instances.applicative();
 ```
 
 ```java
-Traverse<MonoKind.µ> traverse = Monos.Instances.traverse();        
+Traverse<mono> traverse = Monos.Instances.traverse();        
 Applicative<Maybe.µ> applicative = Maybe.Instances.applicative();
         
-Higher<Maybe.µ, Higher<MonoKind.µ, Integer>> result = traverse.sequenceA(applicative, MonoKind.widen(Mono.just(Maybe.just(1))));
+Higher<Maybe.µ, Higher<mono, Integer>> result = traverse.sequenceA(applicative, MonoKind.widen(Mono.just(Maybe.just(1))));
 ```
 Our result is a little ugly - we should convert it back into a more readable form.
 

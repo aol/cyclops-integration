@@ -14,6 +14,8 @@ import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
+import cyclops.monads.GuavaWitness;
+import cyclops.monads.GuavaWitness.fluentIterable;
 import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 
@@ -35,7 +37,7 @@ public class FluentIterablesTest {
         
         FluentIterableKind<Integer> list = FluentIterables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> FluentIterables.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> FluentIterables.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(FluentIterableKind::narrowK);
         
         assertThat(list.toList(),equalTo(Arrays.asList("hello".length())));
@@ -55,8 +57,8 @@ public class FluentIterablesTest {
         
         FluentIterableKind<Integer> list = FluentIterables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> FluentIterables.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> FluentIterables.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h-> FluentIterables.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> FluentIterables.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(FluentIterableKind::narrowK);
         
         assertThat(list.toList(),equalTo(Arrays.asList("hello".length()*2)));
@@ -72,7 +74,7 @@ public class FluentIterablesTest {
         
         FluentIterableKind<Integer> list = FluentIterables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> FluentIterables.Instances.monad().flatMap((String v) -> FluentIterables.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> FluentIterables.Instances.monad().flatMap((String v) -> FluentIterables.Instances.unit().unit(v.length()), h))
                                      .convert(FluentIterableKind::narrowK);
         
         assertThat(list.toList(),equalTo(Arrays.asList("hello".length())));
@@ -82,7 +84,7 @@ public class FluentIterablesTest {
         
         FluentIterableKind<String> list = FluentIterables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> FluentIterables.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> FluentIterables.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FluentIterableKind::narrowK);
         
         assertThat(list.toList(),equalTo(Arrays.asList("hello")));
@@ -92,7 +94,7 @@ public class FluentIterablesTest {
         
         FluentIterableKind<String> list = FluentIterables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> FluentIterables.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> FluentIterables.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(FluentIterableKind::narrowK);
         
         assertThat(list.toList(),equalTo(Arrays.asList()));
@@ -105,17 +107,7 @@ public class FluentIterablesTest {
                                       .convert(FluentIterableKind::narrowK);
         assertThat(list.toList(),equalTo(Arrays.asList(10)));
     }
-/**
-    @Test
-    public void monadPlusNonEmpty(){
-        
-        Monoid<FluentIterableKind<Integer>> m = Monoid.of(FluentIterableKind.widen(FluentIterable.empty()), (a,b)->a.isEmpty() ? b : a);
-        FluentIterableKind<Integer> list = FluentIterables.Instances.<Integer>monadPlus(m)
-                                      .plus(FluentIterableKind.widen(FluentIterable.of(5)), FluentIterableKind.widen(FluentIterable.of(10)))
-                                      .convert(FluentIterableKind::narrowK);
-        assertThat(list,equalTo(Arrays.asList(5)));
-    }
-**/
+
     @Test
     public void  foldLeft(){
         int sum  = FluentIterables.Instances.foldable()
@@ -132,7 +124,7 @@ public class FluentIterablesTest {
     }
     @Test
     public void traverse(){
-       Maybe<Higher<FluentIterableKind.µ, Integer>> res = FluentIterables.Instances.traverse()
+       Maybe<Higher<fluentIterable, Integer>> res = FluentIterables.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), FluentIterableKind.just(1,2,3))
                                                          .convert(Maybe::narrowK);
        
