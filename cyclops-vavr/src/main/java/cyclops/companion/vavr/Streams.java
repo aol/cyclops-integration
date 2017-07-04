@@ -1,6 +1,9 @@
 package cyclops.companion.vavr;
 
+import com.aol.cyclops.vavr.hkt.ListKind;
+import cyclops.control.Maybe;
 import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.stream;
 import com.aol.cyclops.vavr.hkt.StreamKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -10,14 +13,22 @@ import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -299,6 +310,14 @@ public class Streams {
                     .map(in2 -> yieldingFunction.apply(in,  in2));
         });
     }
+    public static <T> Active<stream,T> allTypeclasses(Stream<T> array){
+        return Active.of(StreamKind.widen(array), Streams.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<stream,W2,R> mapM(Stream<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Stream<Higher<W2, R>> e = array.map(fn);
+        StreamKind<Higher<W2, R>> lk = StreamKind.widen(e);
+        return Nested.of(lk, Streams.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Streams
      * @author johnmcclean
@@ -307,7 +326,65 @@ public class Streams {
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<stream> definitions() {
+            return new InstanceDefinitions<stream>() {
 
+                @Override
+                public <T, R> Functor<stream> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<stream> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<stream> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<stream> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<stream>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<stream>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<stream>> monadPlus(Monoid<Higher<stream, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<stream>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<stream>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<stream>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<stream>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+        }
         /**
          *
          * Transform a list, mulitplying every element by 2
@@ -484,7 +561,11 @@ public class Streams {
          * @param m Monoid to use for combining Streams
          * @return Type class for combining Streams
          */
-        public static <T> MonadPlus<stream> monadPlus(Monoid<StreamKind<T>> m){
+        public static <T> MonadPlus<stream> monadPlus(Monoid<Higher<stream,T>> m){
+            Monoid<Higher<stream,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<stream> monadPlusK(Monoid<StreamKind<T>> m){
             Monoid<Higher<stream,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -550,6 +631,15 @@ public class Streams {
         }
         private static <T,R> StreamKind<R> map(StreamKind<T> lt, Function<? super T, ? extends R> fn){
             return StreamKind.widen(StreamKind.narrow(lt).map(in->fn.apply(in)));
+        }
+        public static Unfoldable<stream> unfoldable(){
+            return new Unfoldable<stream>() {
+                @Override
+                public <R, T> Higher<stream, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    return StreamKind.widen(ReactiveSeq.unfold(b,fn).collect(Stream.collector()));
+
+                }
+            };
         }
     }
 

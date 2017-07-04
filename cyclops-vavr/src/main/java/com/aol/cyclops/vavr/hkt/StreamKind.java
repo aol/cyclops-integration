@@ -1,9 +1,19 @@
 package com.aol.cyclops.vavr.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.collections.vavr.VavrVectorX;
+import cyclops.companion.vavr.Streams;
+import cyclops.companion.vavr.Vectors;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.stream;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.ListT;
+import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import io.vavr.collection.Vector;
 import io.vavr.concurrent.Future;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
@@ -28,6 +38,17 @@ import java.util.function.Function;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Stream<T>{
 
+    public Active<stream,T> allTypeclasses(){
+        return Active.of(this, Streams.Instances.definitions());
+    }
+
+    public <W2,R> Nested<stream,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Streams.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, T> liftM(W witness) {
+        return StreamT.of(witness.adapter().unit(ReactiveSeq.fromStream(boxed.toJavaStream())));
+    }
     public <R> StreamKind<R> fold(Function<? super Stream<? super T>,? extends Stream<R>> op){
         return widen(op.apply(boxed));
     }
