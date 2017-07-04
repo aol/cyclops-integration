@@ -688,6 +688,10 @@ public class Lazys {
             return General.monadPlus(monadZero(),m2);
         }
 
+        public static <T> MonadPlus<lazy> monadPlusK(Monoid<LazyKind<T>> m){
+            return monadPlus((Monoid)m);
+        }
+
         /**
          * @return Type class for traversables with traverse / sequence operations
          */

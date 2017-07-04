@@ -113,7 +113,7 @@ public class LazyInstancesTest {
     public void monadPlusNonEmpty(){
         
         Monoid<LazyKind<Integer>> m = Monoid.of(LazyKind.widen(Lazy.of(()->null)), (a, b)->a.get()==null ? b : a);
-        LazyKind<Integer> opt = Instances.<Integer>monadPlus(m)
+        LazyKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(LazyKind.widen(Lazy.of(()->5)), LazyKind.widen(Lazy.of(()->10)))
                                       .convert(LazyKind::narrowK);
         assertThat(opt,equalTo(Lazy.of(()->5)));

@@ -569,6 +569,10 @@ public class Arrays {
             Monoid<Higher<array,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static <T> MonadPlus<array> monadPlusK(Monoid<ArrayKind<T>> m){
+            Monoid<Higher<array,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
         public static Unfoldable<array> unfoldable(){
             return new Unfoldable<array>() {
                 @Override

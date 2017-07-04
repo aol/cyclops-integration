@@ -961,6 +961,10 @@ public class Futures {
             Monoid<Higher<future,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static <T> MonadPlus<future> monadPlusK(Monoid<FutureKind<T>> m){
+            Monoid<Higher<future,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
 
         /**
          * @return Type class for traversables with traverse / sequence operations

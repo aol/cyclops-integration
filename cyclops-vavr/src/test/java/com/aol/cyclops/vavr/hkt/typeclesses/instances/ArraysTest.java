@@ -108,7 +108,7 @@ public class ArraysTest {
     public void monadPlusNonEmpty(){
         
         Monoid<ArrayKind<Integer>> m = Monoid.of(ArrayKind.widen(Array.empty()), (a, b)->a.isEmpty() ? b : a);
-        ArrayKind<Integer> list = Arrays.Instances.<Integer>monadPlus(m)
+        ArrayKind<Integer> list = Arrays.Instances.<Integer>monadPlusK(m)
                                       .plus(ArrayKind.widen(Array.of(5)), ArrayKind.widen(Array.of(10)))
                                       .convert(ArrayKind::narrowK);
         assertThat(list,equalTo(Array.of(5)));
