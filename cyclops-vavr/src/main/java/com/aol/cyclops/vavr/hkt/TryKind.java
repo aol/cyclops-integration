@@ -47,6 +47,9 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
     default <W extends WitnessType<W>> XorT<W,Throwable, T> liftM(W witness) {
         return XorT.of(witness.adapter().unit(ToCyclopsReact.toTry(this).asXor()));
     }
+    default <R> TryKind<R> fold(Function<? super Try<? super T>,? extends Try<R>> op){
+        return widen(op.apply(this));
+    }
     
     public static <T> TryKind<T> failed(Throwable exception){
         return widen(Try.failure(exception));

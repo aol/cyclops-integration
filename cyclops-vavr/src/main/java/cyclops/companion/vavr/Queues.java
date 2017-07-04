@@ -1,6 +1,9 @@
 package cyclops.companion.vavr;
 
+import com.aol.cyclops.vavr.hkt.ListKind;
+import cyclops.control.Maybe;
 import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.queue;
 import com.aol.cyclops.vavr.hkt.QueueKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -10,14 +13,22 @@ import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import io.vavr.collection.List;
 import io.vavr.collection.Queue;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -299,14 +310,79 @@ public class Queues {
                     .map(in2 -> yieldingFunction.apply(in,  in2));
         });
     }
+    public static <T> Active<queue,T> allTypeclasses(Queue<T> array){
+        return Active.of(QueueKind.widen(array), Queues.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<queue,W2,R> mapM(Queue<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Queue<Higher<W2, R>> e = array.map(fn);
+        QueueKind<Higher<W2, R>> lk = QueueKind.widen(e);
+        return Nested.of(lk, Queues.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Queues
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
+        public static InstanceDefinitions<queue> definitions() {
+            return new InstanceDefinitions<queue>() {
 
+                @Override
+                public <T, R> Functor<queue> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<queue> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<queue> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<queue> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<queue>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<queue>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<queue>> monadPlus(Monoid<Higher<queue, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<queue>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<queue>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<queue>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<queue>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+        }
 
         /**
          *
@@ -550,6 +626,15 @@ public class Queues {
         }
         private static <T,R> QueueKind<R> map(QueueKind<T> lt, Function<? super T, ? extends R> fn){
             return QueueKind.widen(QueueKind.narrow(lt).map(in->fn.apply(in)));
+        }
+        public static Unfoldable<queue> unfoldable(){
+            return new Unfoldable<queue>() {
+                @Override
+                public <R, T> Higher<queue, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    return QueueKind.widen(ReactiveSeq.unfold(b,fn).collect(Queue.collector()));
+
+                }
+            };
         }
     }
 

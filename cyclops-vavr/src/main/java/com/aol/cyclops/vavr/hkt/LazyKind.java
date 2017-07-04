@@ -24,6 +24,7 @@ import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.Lazy;
 import io.vavr.collection.Iterator;
+import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -47,6 +48,9 @@ public final  class LazyKind<T> implements Higher<lazy, T> {
         Lazy<Higher<W2, R>> e = map(fn);
         LazyKind<Higher<W2, R>> lk = LazyKind.widen(e);
         return Nested.of(lk, Lazys.Instances.definitions(), defs);
+    }
+    public <R> LazyKind<R> fold(Function<? super Lazy<? super T>,? extends Lazy<R>> op){
+        return widen(op.apply(boxed));
     }
     public <T,W extends WitnessType<W>> EvalT<W, T> liftM(Lazy<T> lazy, W witness) {
         return EvalT.of(witness.adapter().unit(ToCyclopsReact.eval(lazy)));

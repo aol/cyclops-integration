@@ -4,6 +4,7 @@ import com.aol.cyclops2.hkt.Higher;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.stream;
 import cyclops.stream.ReactiveSeq;
+import io.vavr.concurrent.Future;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -11,6 +12,8 @@ import org.reactivestreams.Subscriber;
 import io.vavr.collection.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+
+import java.util.function.Function;
 
 /**
  * Simulates Higher Kinded Types for Vavr Stream's
@@ -25,6 +28,9 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Stream<T>{
 
+    public <R> StreamKind<R> fold(Function<? super Stream<? super T>,? extends Stream<R>> op){
+        return widen(op.apply(boxed));
+    }
     /**
      * Construct a HKT encoded completed Stream
      * 

@@ -22,6 +22,7 @@ import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.collection.Array;
+import io.vavr.collection.Queue;
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
 import io.vavr.control.Option;
@@ -49,6 +50,9 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
     }
     default <W extends WitnessType<W>> FutureT<W, T> liftM(W witness) {
         return FutureT.of(witness.adapter().unit(ToCyclopsReact.future(this)));
+    }
+    default <R> FutureKind<R> fold(Function<? super Future<? super T>,? extends Future<R>> op){
+        return widen(op.apply(this));
     }
     public static <T> FutureKind<T> failed(Throwable exception){
         return widen(Future.failed(exception));

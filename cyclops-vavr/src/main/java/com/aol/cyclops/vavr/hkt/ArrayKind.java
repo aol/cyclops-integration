@@ -11,6 +11,7 @@ import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.Lazy;
 import io.vavr.collection.Array;
+import io.vavr.collection.Queue;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Delegate;
@@ -38,6 +39,9 @@ public  class ArrayKind<T> implements Higher<array, T>{
         Array<Higher<W2, R>> e = map(fn);
         ArrayKind<Higher<W2, R>> lk = ArrayKind.widen(e);
         return Nested.of(lk, Arrays.Instances.definitions(), defs);
+    }
+    public <R> ArrayKind<R> fold(Function<? super Array<? super T>,? extends Array<R>> op){
+        return widen(op.apply(boxed));
     }
     public static <T> ArrayKind<T> of(T element) {
         return  widen(Array.of(element));

@@ -25,6 +25,7 @@ import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.collection.Iterator;
+import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -50,7 +51,9 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     default <W extends WitnessType<W>> OptionalT<W, T> liftM(W witness) {
         return OptionalT.of(witness.adapter().unit(this.toJavaOptional()));
     }
-    
+    default <R> OptionKind<R> fold(Function<? super Option<? super T>,? extends Option<R>> op){
+        return widen(op.apply(this));
+    }
     /**
      * @return Get the empty Option (single instance)
      */

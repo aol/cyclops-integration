@@ -19,8 +19,13 @@ import java.util.stream.Stream;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.companion.vavr.Lists;
+import cyclops.companion.vavr.Queues;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.queue;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.vavr.collection.LinearSeq;
 import io.vavr.collection.Queue;
 import lombok.AccessLevel;
@@ -38,7 +43,16 @@ import lombok.experimental.Delegate;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public  class QueueKind<T> implements Higher<queue, T> {
+    public Active<queue,T> allTypeclasses(){
+        return Active.of(this, Queues.Instances.definitions());
+    }
 
+    public <W2,R> Nested<queue,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Queues.mapM(boxed,fn,defs);
+    }
+    public <R> QueueKind<R> fold(Function<? super Queue<? super T>,? extends Queue<R>> op){
+        return widen(op.apply(boxed));
+    }
 
     public static <T> QueueKind<T> of(T element) {
         return  widen(Queue.of(element));
