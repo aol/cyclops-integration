@@ -1054,7 +1054,7 @@ public class Futures {
 
     }
 
-    public static interface Nesteds{
+    public static interface FutureNested{
 
 
         public static <T> Nested<future,option,T> option(Future<Option<T>> type){
@@ -1143,61 +1143,62 @@ public class Futures {
             return Nested.of(y,Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
         }
 
-        public static interface Reversed{
-            public static <T> Nested<reactiveSeq,future,T> reactiveSeq(ReactiveSeq<Future<T>> nested){
-                ReactiveSeq<Higher<future,T>> x = nested.map(FutureKind::widenK);
-                return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
-            }
 
-            public static <T> Nested<maybe,future,T> maybe(Maybe<Future<T>> nested){
-                Maybe<Higher<future,T>> x = nested.map(FutureKind::widenK);
 
-                return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
-            }
-            public static <T> Nested<eval,future,T> eval(Eval<Future<T>> nested){
-                Eval<Higher<future,T>> x = nested.map(FutureKind::widenK);
 
-                return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
-            }
-            public static <T> Nested<Witness.future,future,T> cyclopsFuture(cyclops.async.Future<Future<T>> nested){
-                cyclops.async.Future<Higher<future,T>> x = nested.map(FutureKind::widenK);
-
-                return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
-            }
-            public static <S, P> Nested<Higher<xor,S>,future, P> xor(Xor<S, Future<P>> nested){
-                Xor<S, Higher<future,P>> x = nested.map(FutureKind::widenK);
-
-                return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
-            }
-            public static <S,T> Nested<Higher<reader,S>,future, T> reader(Reader<S, Future<T>> nested){
-
-                Reader<S, Higher<future, T>>  x = nested.map(FutureKind::widenK);
-
-                return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
-            }
-            public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,future, P> cyclopsTry(cyclops.control.Try<Future<P>, S> nested){
-                cyclops.control.Try<Higher<future,P>, S> x = nested.map(FutureKind::widenK);
-
-                return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
-            }
-            public static <T> Nested<optional,future,T> optional(Optional<Future<T>> nested){
-                Optional<Higher<future,T>> x = nested.map(FutureKind::widenK);
-
-                return  Nested.of(Optionals.OptionalKind.widen(x), Optionals.Instances.definitions(), Instances.definitions());
-            }
-            public static <T> Nested<completableFuture,future,T> completableFuture(CompletableFuture<Future<T>> nested){
-                CompletableFuture<Higher<future,T>> x = nested.thenApply(FutureKind::widenK);
-
-                return Nested.of(CompletableFutures.CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
-            }
-            public static <T> Nested<Witness.stream,future,T> javaStream(java.util.stream.Stream<Future<T>> nested){
-                java.util.stream.Stream<Higher<future,T>> x = nested.map(FutureKind::widenK);
-
-                return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
-            }
+    }
+    public static interface NestedFuture{
+        public static <T> Nested<reactiveSeq,future,T> reactiveSeq(ReactiveSeq<Future<T>> nested){
+            ReactiveSeq<Higher<future,T>> x = nested.map(FutureKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
         }
 
+        public static <T> Nested<maybe,future,T> maybe(Maybe<Future<T>> nested){
+            Maybe<Higher<future,T>> x = nested.map(FutureKind::widenK);
 
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,future,T> eval(Eval<Future<T>> nested){
+            Eval<Higher<future,T>> x = nested.map(FutureKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,future,T> cyclopsFuture(cyclops.async.Future<Future<T>> nested){
+            cyclops.async.Future<Higher<future,T>> x = nested.map(FutureKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,future, P> xor(Xor<S, Future<P>> nested){
+            Xor<S, Higher<future,P>> x = nested.map(FutureKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,future, T> reader(Reader<S, Future<T>> nested){
+
+            Reader<S, Higher<future, T>>  x = nested.map(FutureKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,future, P> cyclopsTry(cyclops.control.Try<Future<P>, S> nested){
+            cyclops.control.Try<Higher<future,P>, S> x = nested.map(FutureKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,future,T> optional(Optional<Future<T>> nested){
+            Optional<Higher<future,T>> x = nested.map(FutureKind::widenK);
+
+            return  Nested.of(Optionals.OptionalKind.widen(x), Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,future,T> completableFuture(CompletableFuture<Future<T>> nested){
+            CompletableFuture<Higher<future,T>> x = nested.thenApply(FutureKind::widenK);
+
+            return Nested.of(CompletableFutures.CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,future,T> javaStream(java.util.stream.Stream<Future<T>> nested){
+            java.util.stream.Stream<Higher<future,T>> x = nested.map(FutureKind::widenK);
+
+            return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
     }
 
 

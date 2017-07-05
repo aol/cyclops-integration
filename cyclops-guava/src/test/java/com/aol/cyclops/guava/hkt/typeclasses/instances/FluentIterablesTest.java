@@ -6,15 +6,18 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.Monoids;
 import cyclops.companion.guava.FluentIterables;
 import com.aol.cyclops.guava.hkt.FluentIterableKind;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
-import cyclops.monads.GuavaWitness;
 import cyclops.monads.GuavaWitness.fluentIterable;
 import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
@@ -22,6 +25,37 @@ import org.junit.Test;
 import com.google.common.collect.FluentIterable;
 
 public class FluentIterablesTest {
+    
+    @Test
+    public void nestedOptionalJava(){
+        Higher<fluentIterable, Integer> res = FluentIterables.FluentIterableNested
+                                                            .javaOptional(FluentIterable.of(Optional.of(1)))
+                                                            .map(i -> i * 20)
+                                                            .foldsUnsafe()
+                                                            .foldLeft(Monoids.intMax);
+        FluentIterable<Integer> fi = FluentIterableKind.narrow(res);
+        assertThat(fi.get(0),equalTo(20));
+    }
+    @Test
+    public void nestedStream(){
+        Higher<fluentIterable, Integer> res = FluentIterables.FluentIterableNested
+                .javaStream(FluentIterable.of(Stream.of(1)))
+                .map(i -> i * 20)
+                .foldsUnsafe()
+                .foldLeft(Monoids.intMax);
+        FluentIterable<Integer> fi = FluentIterableKind.narrow(res);
+        assertThat(fi.get(0),equalTo(20));
+    }
+    @Test
+    public void nestedCompletableFuture(){
+        Higher<fluentIterable, Integer> res = FluentIterables.FluentIterableNested
+                .javaCompletableFuture(FluentIterable.of(CompletableFuture.completedFuture(1)))
+                .map(i -> i * 20)
+                .foldsUnsafe()
+                .foldLeft(Monoids.intMax);
+        FluentIterable<Integer> fi = FluentIterableKind.narrow(res);
+        assertThat(fi.get(0),equalTo(20));
+    }
 
     @Test
     public void unit(){

@@ -673,7 +673,7 @@ public class FluentIterables {
         }
     }
 
-    public static interface Nesteds{
+    public static interface FluentIterableNested {
         public static <T> Nested<fluentIterable,GuavaWitness.optional,T> optional(FluentIterable<com.google.common.base.Optional<T>> nested){
             FluentIterableKind<com.google.common.base.Optional<T>> x = widen(nested);
             FluentIterableKind<Higher<GuavaWitness.optional,T>> y = (FluentIterableKind)x;
@@ -725,7 +725,7 @@ public class FluentIterables {
             FluentIterableKind<Higher<Witness.optional,T>> y = (FluentIterableKind)x;
             return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
         }
-        public static <T> Nested<fluentIterable,completableFuture,T> completableOptional(FluentIterable<CompletableFuture<T>> nested){
+        public static <T> Nested<fluentIterable,completableFuture,T> javaCompletableFuture(FluentIterable<CompletableFuture<T>> nested){
             FluentIterable<CompletableFutureKind<T>> f = nested.transform(o -> CompletableFutureKind.widen(o));
             FluentIterableKind<CompletableFutureKind<T>> x = FluentIterableKind.widen(f);
             FluentIterableKind<Higher<completableFuture,T>> y = (FluentIterableKind)x;
@@ -739,62 +739,63 @@ public class FluentIterables {
         }
 
 
-        public static interface Reversed{
-            public static <T> Nested<reactiveSeq,fluentIterable,T> reactiveSeq(ReactiveSeq<FluentIterable<T>> nested){
-                ReactiveSeq<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
-                return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
-            }
 
-            public static <T> Nested<maybe,fluentIterable,T> maybe(Maybe<FluentIterable<T>> nested){
-                Maybe<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
-
-                return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
-            }
-            public static <T> Nested<eval,fluentIterable,T> eval(Eval<FluentIterable<T>> nested){
-                Eval<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
-
-                return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
-            }
-            public static <T> Nested<Witness.future,fluentIterable,T> future(cyclops.async.Future<FluentIterable<T>> nested){
-                cyclops.async.Future<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
-
-                return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
-            }
-            public static <S, P> Nested<Higher<xor,S>,fluentIterable, P> xor(Xor<S, FluentIterable<P>> nested){
-                Xor<S, Higher<fluentIterable,P>> x = nested.map(FluentIterableKind::widenK);
-
-                return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
-            }
-            public static <S,T> Nested<Higher<reader,S>,fluentIterable, T> reader(Reader<S, FluentIterable<T>> nested){
-
-                Reader<S, Higher<fluentIterable, T>>  x = nested.map(FluentIterableKind::widenK);
-
-                return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
-            }
-            public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,fluentIterable, P> cyclopsTry(cyclops.control.Try<FluentIterable<P>, S> nested){
-                cyclops.control.Try<Higher<fluentIterable,P>, S> x = nested.map(FluentIterableKind::widenK);
-
-                return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
-            }
-            public static <T> Nested<optional,fluentIterable,T> javaOptional(Optional<FluentIterable<T>> nested){
-                Optional<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
-
-                return  Nested.of(cyclops.companion.Optionals.OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
-            }
-            public static <T> Nested<completableFuture,fluentIterable,T> completableFluentIterable(CompletableFuture<FluentIterable<T>> nested){
-                CompletableFuture<Higher<fluentIterable,T>> x = nested.thenApply(FluentIterableKind::widenK);
-
-                return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
-            }
-            public static <T> Nested<Witness.stream,fluentIterable,T> javaStream(java.util.stream.Stream<FluentIterable<T>> nested){
-                java.util.stream.Stream<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
-
-                return Nested.of(StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
-            }
-        }
 
 
     }
 
+    public static interface NestedFluentIterable{
+        public static <T> Nested<reactiveSeq,fluentIterable,T> reactiveSeq(ReactiveSeq<FluentIterable<T>> nested){
+            ReactiveSeq<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,fluentIterable,T> maybe(Maybe<FluentIterable<T>> nested){
+            Maybe<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,fluentIterable,T> eval(Eval<FluentIterable<T>> nested){
+            Eval<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,fluentIterable,T> future(cyclops.async.Future<FluentIterable<T>> nested){
+            cyclops.async.Future<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,fluentIterable, P> xor(Xor<S, FluentIterable<P>> nested){
+            Xor<S, Higher<fluentIterable,P>> x = nested.map(FluentIterableKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,fluentIterable, T> reader(Reader<S, FluentIterable<T>> nested){
+
+            Reader<S, Higher<fluentIterable, T>>  x = nested.map(FluentIterableKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,fluentIterable, P> cyclopsTry(cyclops.control.Try<FluentIterable<P>, S> nested){
+            cyclops.control.Try<Higher<fluentIterable,P>, S> x = nested.map(FluentIterableKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,fluentIterable,T> javaOptional(Optional<FluentIterable<T>> nested){
+            Optional<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
+
+            return  Nested.of(cyclops.companion.Optionals.OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,fluentIterable,T> javaCompletableFuture(CompletableFuture<FluentIterable<T>> nested){
+            CompletableFuture<Higher<fluentIterable,T>> x = nested.thenApply(FluentIterableKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,fluentIterable,T> javaStream(java.util.stream.Stream<FluentIterable<T>> nested){
+            java.util.stream.Stream<Higher<fluentIterable,T>> x = nested.map(FluentIterableKind::widenK);
+
+            return Nested.of(StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
+    }
 
 }

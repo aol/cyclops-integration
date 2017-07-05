@@ -109,7 +109,7 @@ public class OptionalsTest {
     public void monadPlusNonEmpty(){
         
         Monoid<OptionalKind<Integer>> m = Monoid.of(OptionalKind.widen(Optional.absent()), (a, b)->a.isPresent() ? b : a);
-        OptionalKind<Integer> opt = Optionals.Instances.<Integer>monadPlus(m)
+        OptionalKind<Integer> opt = Optionals.Instances.<Integer>monadPlusK(m)
                                       .plus(OptionalKind.widen(Optional.of(5)), OptionalKind.widen(Optional.of(10)))
                                       .convert(OptionalKind::narrowK);
         assertThat(opt,equalTo(Optional.of(10)));
