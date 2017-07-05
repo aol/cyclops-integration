@@ -7,14 +7,25 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
+import cyclops.companion.vavr.Eithers;
+import cyclops.companion.vavr.Lazys;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Eval;
 
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.lazy;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.EvalT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.vavr.Lazy;
+import io.vavr.collection.Array;
 import io.vavr.collection.Iterator;
+import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,32 +33,41 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for Lazy's
  * 
- * LazyKind is a Lazy and a Higher Kinded Type (LazyKind.µ,T)
+ * LazyKind is a Lazy and a Higher Kinded Type (lazy,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Lazy
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final  class LazyKind<T> implements Higher<LazyKind.µ, T> {
-    
+public final  class LazyKind<T> implements Higher<lazy, T> {
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+    public static <T> Higher<lazy,T> widenK(final Lazy<T> completableList) {
+
+        return new LazyKind<>(
+                completableList);
     }
-
+    public  Active<lazy,T> allTypeclasses(){
+        return Active.of(this, Lazys.Instances.definitions());
+    }
+    public <W2,R> Nested<lazy,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Lazy<Higher<W2, R>> e = map(fn);
+        LazyKind<Higher<W2, R>> lk = LazyKind.widen(e);
+        return Nested.of(lk, Lazys.Instances.definitions(), defs);
+    }
+    public <R> LazyKind<R> fold(Function<? super Lazy<? super T>,? extends Lazy<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public <T,W extends WitnessType<W>> EvalT<W, T> liftM(Lazy<T> lazy, W witness) {
+        return EvalT.of(witness.adapter().unit(ToCyclopsReact.eval(lazy)));
+    }
     /**
      * Convert the raw Higher Kinded Type for MaybeType types into the MaybeType type definition class
      * 
      * @param future HKT encoded list into a OptionalType
      * @return MaybeType
      */
-    public static <T> LazyKind<T> narrowK(final Higher<LazyKind.µ, T> future) {
+    public static <T> LazyKind<T> narrowK(final Higher<lazy, T> future) {
        return (LazyKind<T>)future;
     }
     /**
@@ -95,12 +115,12 @@ public final  class LazyKind<T> implements Higher<LazyKind.µ, T> {
      * @param eval Type Constructor to convert back into narrowed type
      * @return LazyX from Higher Kinded Type
      */
-    public static <T> Lazy<T> narrow(final Higher<LazyKind.µ, T> eval) {
+    public static <T> Lazy<T> narrow(final Higher<lazy, T> eval) {
        
             return ((LazyKind) eval).boxed;
        
     }
-    public static <T> Eval<T> narrowEval(final Higher<LazyKind.µ, T> eval) {
+    public static <T> Eval<T> narrowEval(final Higher<lazy, T> eval) {
         
         return ToCyclopsReact.eval(((LazyKind) eval).boxed);
    

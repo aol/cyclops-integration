@@ -8,6 +8,8 @@ import static org.junit.Assert.assertThat;
 
 import cyclops.companion.vavr.Vectors;
 import com.aol.cyclops.vavr.hkt.VectorKind;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.vector;
 import org.junit.Test;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -34,7 +36,7 @@ public class VectorsTest {
         
         VectorKind<Integer> list = Vectors.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Vectors.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Vectors.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(VectorKind::narrowK);
         
         assertThat(list,equalTo(Vector.of("hello".length())));
@@ -54,8 +56,8 @@ public class VectorsTest {
         
         VectorKind<Integer> list = Vectors.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Vectors.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> Vectors.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h-> Vectors.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Vectors.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(VectorKind::narrowK);
         
         assertThat(list,equalTo(Vector.of("hello".length()*2)));
@@ -71,7 +73,7 @@ public class VectorsTest {
         
         VectorKind<Integer> list = Vectors.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Vectors.Instances.monad().flatMap((String v) -> Vectors.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Vectors.Instances.monad().flatMap((String v) -> Vectors.Instances.unit().unit(v.length()), h))
                                      .convert(VectorKind::narrowK);
         
         assertThat(list,equalTo(Vector.of("hello".length())));
@@ -81,7 +83,7 @@ public class VectorsTest {
         
         VectorKind<String> list = Vectors.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Vectors.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Vectors.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(VectorKind::narrowK);
         
         assertThat(list,equalTo(Vector.of("hello")));
@@ -91,7 +93,7 @@ public class VectorsTest {
         
         VectorKind<String> list = Vectors.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Vectors.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Vectors.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(VectorKind::narrowK);
         
         assertThat(list,equalTo(Vector.empty()));
@@ -108,7 +110,7 @@ public class VectorsTest {
     public void monadPlusNonEmpty(){
         
         Monoid<VectorKind<Integer>> m = Monoid.of(VectorKind.widen(Vector.empty()), (a, b)->a.isEmpty() ? b : a);
-        VectorKind<Integer> list = Vectors.Instances.<Integer>monadPlus(m)
+        VectorKind<Integer> list = Vectors.Instances.<Integer>monadPlusK(m)
                                       .plus(VectorKind.widen(Vector.of(5)), VectorKind.widen(Vector.of(10)))
                                       .convert(VectorKind::narrowK);
         assertThat(list,equalTo(Vector.of(5)));
@@ -130,7 +132,7 @@ public class VectorsTest {
     
     @Test
     public void traverse(){
-       Maybe<Higher<VectorKind.µ, Integer>> res = Vectors.Instances.traverse()
+       Maybe<Higher<vector, Integer>> res = Vectors.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), VectorKind.of(1,2,3))
                                                          .convert(Maybe::narrowK);
             

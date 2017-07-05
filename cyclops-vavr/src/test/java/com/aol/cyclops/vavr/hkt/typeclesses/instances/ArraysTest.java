@@ -8,6 +8,8 @@ import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
 import cyclops.function.Monoid;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.array;
 import io.vavr.collection.Array;
 import org.junit.Test;
 
@@ -32,7 +34,7 @@ public class ArraysTest {
         
         ArrayKind<Integer> list = Arrays.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Arrays.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h->Arrays.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(ArrayKind::narrowK);
         
         assertThat(list,equalTo(Array.of("hello".length())));
@@ -52,8 +54,8 @@ public class ArraysTest {
         
         ArrayKind<Integer> list = Arrays.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Arrays.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h->Arrays.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h->Arrays.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h->Arrays.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(ArrayKind::narrowK);
         
         assertThat(list,equalTo(Array.of("hello".length()*2)));
@@ -69,7 +71,7 @@ public class ArraysTest {
         
         ArrayKind<Integer> list = Arrays.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Arrays.Instances.monad().flatMap((String v) ->Arrays.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h->Arrays.Instances.monad().flatMap((String v) ->Arrays.Instances.unit().unit(v.length()), h))
                                      .convert(ArrayKind::narrowK);
         
         assertThat(list,equalTo(Array.of("hello".length())));
@@ -79,7 +81,7 @@ public class ArraysTest {
         
         ArrayKind<String> list = Arrays.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Arrays.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h->Arrays.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(ArrayKind::narrowK);
         
         assertThat(list,equalTo(Array.of("hello")));
@@ -89,7 +91,7 @@ public class ArraysTest {
         
         ArrayKind<String> list = Arrays.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Arrays.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h->Arrays.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(ArrayKind::narrowK);
         
         assertThat(list,equalTo(Array.empty()));
@@ -106,7 +108,7 @@ public class ArraysTest {
     public void monadPlusNonEmpty(){
         
         Monoid<ArrayKind<Integer>> m = Monoid.of(ArrayKind.widen(Array.empty()), (a, b)->a.isEmpty() ? b : a);
-        ArrayKind<Integer> list = Arrays.Instances.<Integer>monadPlus(m)
+        ArrayKind<Integer> list = Arrays.Instances.<Integer>monadPlusK(m)
                                       .plus(ArrayKind.widen(Array.of(5)), ArrayKind.widen(Array.of(10)))
                                       .convert(ArrayKind::narrowK);
         assertThat(list,equalTo(Array.of(5)));
@@ -128,7 +130,7 @@ public class ArraysTest {
     
     @Test
     public void traverse(){
-       Maybe<Higher<ArrayKind.µ, Integer>> res = Arrays.Instances.traverse()
+       Maybe<Higher<array, Integer>> res = Arrays.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), ArrayKind.of(1,2,3))
                                                          .convert(Maybe::narrowK);
             

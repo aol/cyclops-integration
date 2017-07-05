@@ -1,7 +1,17 @@
 package cyclops.companion.reactor;
 
 import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
+import com.aol.cyclops.reactor.hkt.MonoKind;
 import com.aol.cyclops2.internal.stream.ReactiveStreamX;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.CompletableFutures.CompletableFutureKind;
+import cyclops.companion.Optionals.OptionalKind;
+import cyclops.companion.Streams;
+import cyclops.companion.Streams.StreamKind;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
@@ -11,22 +21,35 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.ReactorWitness.mono;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.*;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.*;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 import java.util.stream.Stream;
+
+import static com.aol.cyclops.reactor.hkt.FluxKind.widen;
 
 /**
  * Companion class for working with Reactor Flux types
@@ -91,7 +114,9 @@ public class Fluxs {
             return Flux.fromStream(s);
         });
     }
-
+    public static <T,W extends WitnessType<W>> StreamT<W, T> liftM(Flux<T> opt, W witness) {
+        return StreamT.of(witness.adapter().unit(Fluxs.reactiveSeq(opt)));
+    }
     public static <W extends WitnessType<W>,T> StreamT<W,T> liftM(AnyM<W,Flux<T>> nested){
         AnyM<W, ReactiveSeq<T>> monad = nested.map(s -> new FluxReactiveSeq<T>(s));
         return StreamT.of(monad);
@@ -502,16 +527,80 @@ public class Fluxs {
 
     }
 
-
+    public static <T> Active<flux,T> allTypeclasses(Flux<T> type){
+        return Active.of(widen(type), Fluxs.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<flux,W2,R> mapM(Flux<T> type, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Flux<Higher<W2, R>> e = type.map(fn);
+        FluxKind<Higher<W2, R>> lk = FluxKind.widen(e);
+        return Nested.of(lk, Fluxs.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Fluxs
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<flux> definitions() {
+            return new InstanceDefinitions<flux>() {
 
+                @Override
+                public <T, R> Functor<flux> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<flux> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<flux> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<flux> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<flux>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<flux>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<flux>> monadPlus(Monoid<Higher<flux, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<flux>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<flux>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<flux>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<flux>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+        }
         /**
          *
          * Transform a flux, mulitplying every element by 2
@@ -540,7 +629,7 @@ public class Fluxs {
          *
          * @return A functor for Fluxs
          */
-        public static <T,R>Functor<FluxKind.µ> functor(){
+        public static <T,R>Functor<flux> functor(){
             BiFunction<FluxKind<T>,Function<? super T, ? extends R>,FluxKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -559,9 +648,9 @@ public class Fluxs {
          *
          * @return A factory for Fluxs
          */
-        public static <T> Pure<FluxKind.µ> unit(){
-            Function<T, Higher<FluxKind.µ, T>> unitRef = Instances::of;
-            return General.<FluxKind.µ,T>unit(unitRef);
+        public static <T> Pure<flux> unit(){
+            Function<T, Higher<flux, T>> unitRef = Instances::of;
+            return General.<flux,T>unit(unitRef);
         }
         /**
          *
@@ -599,7 +688,7 @@ public class Fluxs {
          *
          * @return A zipper for Fluxs
          */
-        public static <T,R> Applicative<FluxKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<flux> zippingApplicative(){
             BiFunction<FluxKind< Function<T, R>>,FluxKind<T>,FluxKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -629,9 +718,9 @@ public class Fluxs {
          *
          * @return Type class with monad functions for Fluxs
          */
-        public static <T,R> Monad<FluxKind.µ> monad(){
+        public static <T,R> Monad<flux> monad(){
 
-            BiFunction<Higher<FluxKind.µ,T>,Function<? super T, ? extends Higher<FluxKind.µ,R>>,Higher<FluxKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<flux,T>,Function<? super T, ? extends Higher<flux,R>>,Higher<flux,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -651,10 +740,10 @@ public class Fluxs {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<FluxKind.µ> monadZero(){
-            BiFunction<Higher<FluxKind.µ,T>,Predicate<? super T>,Higher<FluxKind.µ,T>> filter = Instances::filter;
-            Supplier<Higher<FluxKind.µ, T>> zero = ()-> FluxKind.widen(Flux.empty());
-            return General.<FluxKind.µ,T,R>monadZero(monad(), zero,filter);
+        public static <T,R> MonadZero<flux> monadZero(){
+            BiFunction<Higher<flux,T>,Predicate<? super T>,Higher<flux,T>> filter = Instances::filter;
+            Supplier<Higher<flux, T>> zero = ()-> widen(Flux.empty());
+            return General.<flux,T,R>monadZero(monad(), zero,filter);
         }
         /**
          * <pre>
@@ -668,9 +757,9 @@ public class Fluxs {
          * </pre>
          * @return Type class for combining Fluxs by concatenation
          */
-        public static <T> MonadPlus<FluxKind.µ> monadPlus(){
-            Monoid<FluxKind<T>> m = Monoid.of(FluxKind.widen(Flux.<T>empty()), Instances::concat);
-            Monoid<Higher<FluxKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<flux> monadPlus(){
+            Monoid<FluxKind<T>> m = Monoid.of(widen(Flux.<T>empty()), Instances::concat);
+            Monoid<Higher<flux,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -689,22 +778,26 @@ public class Fluxs {
          * @param m Monoid to use for combining Fluxs
          * @return Type class for combining Fluxs
          */
-        public static <T> MonadPlus<FluxKind.µ> monadPlus(Monoid<FluxKind<T>> m){
-            Monoid<Higher<FluxKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<flux> monadPlus(Monoid<Higher<flux,T>> m){
+            Monoid<Higher<flux,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<flux> monadPlusK(Monoid<FluxKind<T>> m){
+            Monoid<Higher<flux,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<FluxKind.µ> traverse(){
+        public static <C2,T> Traverse<flux> traverse(){
             BiFunction<Applicative<C2>,FluxKind<Higher<C2, T>>,Higher<C2, FluxKind<T>>> sequenceFn = (ap, flux) -> {
 
-                Higher<C2,FluxKind<T>> identity = ap.unit(FluxKind.widen(Flux.empty()));
+                Higher<C2,FluxKind<T>> identity = ap.unit(widen(Flux.empty()));
 
-                BiFunction<Higher<C2,FluxKind<T>>,Higher<C2,T>,Higher<C2,FluxKind<T>>> combineToFlux =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> FluxKind.widen(Flux.concat(a,Flux.just(b)))),acc,next);
+                BiFunction<Higher<C2,FluxKind<T>>,Higher<C2,T>,Higher<C2,FluxKind<T>>> combineToFlux =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> widen(Flux.concat(a,Flux.just(b)))),acc,next);
 
-                BinaryOperator<Higher<C2,FluxKind<T>>> combineFluxs = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> { return FluxKind.widen(Flux.concat(l1.narrow(),l2.narrow()));}),a,b); ;
+                BinaryOperator<Higher<C2,FluxKind<T>>> combineFluxs = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> { return widen(Flux.concat(l1.narrow(),l2.narrow()));}),a,b); ;
 
                 return ReactiveSeq.fromPublisher(flux).reduce(identity,
                         combineToFlux,
@@ -712,7 +805,7 @@ public class Fluxs {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<FluxKind.µ,Higher<C2, T>>,Higher<C2, Higher<FluxKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<flux,Higher<C2, T>>,Higher<C2, Higher<flux,T>>> sequenceNarrow  =
                     (a,b) -> FluxKind.widen2(sequenceFn.apply(a, FluxKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -732,31 +825,167 @@ public class Fluxs {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<FluxKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<FluxKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<FluxKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).reduce(m);
+        public static <T> Foldable<flux> foldable(){
+            BiFunction<Monoid<T>,Higher<flux,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<flux,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
         private static  <T> FluxKind<T> concat(FluxKind<T> l1, FluxKind<T> l2){
-            return FluxKind.widen(Flux.concat(l1,l2));
+            return widen(Flux.concat(l1,l2));
         }
         private static <T> FluxKind<T> of(T value){
-            return FluxKind.widen(Flux.just(value));
+            return widen(Flux.just(value));
         }
         private static <T,R> FluxKind<R> ap(FluxKind<Function< T, R>> lt, FluxKind<T> flux){
-            return FluxKind.widen(lt.zipWith(flux,(a, b)->a.apply(b)));
+            return widen(lt.zipWith(flux,(a, b)->a.apply(b)));
         }
-        private static <T,R> Higher<FluxKind.µ,R> flatMap(Higher<FluxKind.µ,T> lt, Function<? super T, ? extends  Higher<FluxKind.µ,R>> fn){
-            return FluxKind.widen(FluxKind.narrowK(lt).flatMap(fn.andThen(FluxKind::narrowK)));
+        private static <T,R> Higher<flux,R> flatMap(Higher<flux,T> lt, Function<? super T, ? extends  Higher<flux,R>> fn){
+            return widen(FluxKind.narrowK(lt).flatMap(fn.andThen(FluxKind::narrowK)));
         }
         private static <T,R> FluxKind<R> map(FluxKind<T> lt, Function<? super T, ? extends R> fn){
-            return FluxKind.widen(lt.map(fn));
+            return widen(lt.map(fn));
         }
-        private static <T> FluxKind<T> filter(Higher<FluxKind.µ,T> lt, Predicate<? super T> fn){
-            return FluxKind.widen(FluxKind.narrow(lt).filter(fn));
+        private static <T> FluxKind<T> filter(Higher<flux,T> lt, Predicate<? super T> fn){
+            return widen(FluxKind.narrow(lt).filter(fn));
+        }
+        public static Unfoldable<flux> unfoldable(){
+            return new Unfoldable<flux>() {
+                @Override
+                public <R, T> Higher<flux, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    return widen(Flux.from(ReactiveSeq.unfold(b,fn)));
+
+                }
+            };
         }
     }
+
+    public static interface FluxNested {
+        public static <T> Nested<flux,mono,T> mono(Flux<Mono<T>> nested){
+            Flux<MonoKind<T>> f = nested.map(MonoKind::widen);
+            FluxKind<MonoKind<T>> x = widen(f);
+            FluxKind<Higher<mono,T>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(), Monos.Instances.definitions());
+        }
+        public static <T> Nested<flux,flux,T> flux(Flux<Flux<T>> nested){
+            Flux<FluxKind<T>> f = nested.map(FluxKind::widen);
+            FluxKind<FluxKind<T>> x = widen(f);
+            FluxKind<Higher<flux,T>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(), Fluxs.Instances.definitions());
+        }
+
+        public static <T> Nested<flux,reactiveSeq,T> reactiveSeq(Flux<ReactiveSeq<T>> nested){
+            FluxKind<ReactiveSeq<T>> x = widen(nested);
+            FluxKind<Higher<reactiveSeq,T>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<flux,Witness.maybe,T> maybe(Flux<Maybe<T>> nested){
+            FluxKind<Maybe<T>> x = widen(nested);
+            FluxKind<Higher<Witness.maybe,T>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<flux,Witness.eval,T> eval(Flux<Eval<T>> nested){
+            FluxKind<Eval<T>> x = widen(nested);
+            FluxKind<Higher<Witness.eval,T>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<flux,Witness.future,T> future(Flux<cyclops.async.Future<T>> nested){
+            FluxKind<cyclops.async.Future<T>> x = widen(nested);
+            FluxKind<Higher<Witness.future,T>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<flux,Higher<xor,S>, P> xor(Flux<Xor<S, P>> nested){
+            FluxKind<Xor<S, P>> x = widen(nested);
+            FluxKind<Higher<Higher<xor,S>, P>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<flux,Higher<reader,S>, T> reader(Flux<Reader<S, T>> nested){
+            FluxKind<Reader<S, T>> x = widen(nested);
+            FluxKind<Higher<Higher<reader,S>, T>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<flux,Higher<Witness.tryType,S>, P> cyclopsTry(Flux<cyclops.control.Try<P, S>> nested){
+            FluxKind<cyclops.control.Try<P, S>> x = widen(nested);
+            FluxKind<Higher<Higher<Witness.tryType,S>, P>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<flux,optional,T> javaOptional(Flux<Optional<T>> nested){
+            Flux<OptionalKind<T>> f = nested.map(o -> OptionalKind.widen(o));
+            FluxKind<OptionalKind<T>> x = FluxKind.widen(f);
+
+            FluxKind<Higher<optional,T>> y = (FluxKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <T> Nested<flux,completableFuture,T> javaCompletableFuture(Flux<CompletableFuture<T>> nested){
+            Flux<CompletableFutureKind<T>> f = nested.map(o -> CompletableFutureKind.widen(o));
+            FluxKind<CompletableFutureKind<T>> x = FluxKind.widen(f);
+            FluxKind<Higher<completableFuture,T>> y = (FluxKind)x;
+            return Nested.of(y, Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<flux,Witness.stream,T> javaStream(Flux<java.util.stream.Stream<T>> nested){
+            Flux<StreamKind<T>> f = nested.map(o -> StreamKind.widen(o));
+            FluxKind<StreamKind<T>> x = FluxKind.widen(f);
+            FluxKind<Higher<Witness.stream,T>> y = (FluxKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+    }
+
+    public static interface NestedFlux{
+        public static <T> Nested<reactiveSeq,flux,T> reactiveSeq(ReactiveSeq<Flux<T>> nested){
+            ReactiveSeq<Higher<flux,T>> x = nested.map(FluxKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,flux,T> maybe(Maybe<Flux<T>> nested){
+            Maybe<Higher<flux,T>> x = nested.map(FluxKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,flux,T> eval(Eval<Flux<T>> nested){
+            Eval<Higher<flux,T>> x = nested.map(FluxKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,flux,T> future(cyclops.async.Future<Flux<T>> nested){
+            cyclops.async.Future<Higher<flux,T>> x = nested.map(FluxKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,flux, P> xor(Xor<S, Flux<P>> nested){
+            Xor<S, Higher<flux,P>> x = nested.map(FluxKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,flux, T> reader(Reader<S, Flux<T>> nested){
+
+            Reader<S, Higher<flux, T>>  x = nested.map(FluxKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,flux, P> cyclopsTry(cyclops.control.Try<Flux<P>, S> nested){
+            cyclops.control.Try<Higher<flux,P>, S> x = nested.map(FluxKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,flux,T> javaOptional(Optional<Flux<T>> nested){
+            Optional<Higher<flux,T>> x = nested.map(FluxKind::widenK);
+
+            return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,flux,T> javaCompletableFuture(CompletableFuture<Flux<T>> nested){
+            CompletableFuture<Higher<flux,T>> x = nested.thenApply(FluxKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,flux,T> javaStream(java.util.stream.Stream<Flux<T>> nested){
+            java.util.stream.Stream<Higher<flux,T>> x = nested.map(FluxKind::widenK);
+
+            return Nested.of(StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
+    }
+
 
 
 }

@@ -10,6 +10,8 @@ import cyclops.collections.mutable.ListX;
 import cyclops.companion.vavr.Streams;
 import com.aol.cyclops.vavr.hkt.StreamKind;
 
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.stream;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.functor.Functor;
@@ -35,10 +37,10 @@ public class StreamTest {
     }
     @Test
     public void functor(){
-        Pure<StreamKind.µ> unit = Streams.Instances.unit();
+        Pure<stream> unit = Streams.Instances.unit();
         StreamKind<Integer> list = Streams.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Streams.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h->Streams.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(StreamKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
@@ -46,11 +48,11 @@ public class StreamTest {
     @Test
     public void functor2(){
 
-        Pure<StreamKind.µ> pure = Streams.Instances.unit();
-        Functor<StreamKind.µ> functor = Streams.Instances.functor();
+        Pure<stream> pure = Streams.Instances.unit();
+        Functor<stream> functor = Streams.Instances.functor();
 
         StreamKind<Integer> list = pure.unit("hello")
-                                       .apply(h->functor.map((String v) ->v.length(), h))
+                                       .applyHKT(h->functor.map((String v) ->v.length(), h))
                                        .convert(StreamKind::narrowK);
 
 
@@ -71,8 +73,8 @@ public class StreamTest {
         
         StreamKind<Integer> list = Streams.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Streams.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h->Streams.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h->Streams.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h->Streams.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(StreamKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length()*2)));
@@ -88,7 +90,7 @@ public class StreamTest {
         
         StreamKind<Integer> list = Streams.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Streams.Instances.monad().flatMap((String v) ->Streams.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h->Streams.Instances.monad().flatMap((String v) ->Streams.Instances.unit().unit(v.length()), h))
                                      .convert(StreamKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
@@ -98,7 +100,7 @@ public class StreamTest {
         
         StreamKind<String> list = Streams.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Streams.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h->Streams.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(StreamKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello")));
@@ -108,7 +110,7 @@ public class StreamTest {
         
         StreamKind<String> list = Streams.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Streams.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h->Streams.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(StreamKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList()));
@@ -121,17 +123,7 @@ public class StreamTest {
                                       .convert(StreamKind::narrowK);
         assertThat(list.toJavaList(),equalTo(Arrays.asList(10)));
     }
-/**
-    @Test
-    public void monadPlusNonEmpty(){
-        
-        Monoid<StreamKind<Integer>> m = Monoid.of(StreamKind.widen(Stream.empty()), (a,b)->a.isEmpty() ? b : a);
-        StreamKind<Integer> list = Streams.Instances.<Integer>monadPlus(m)
-                                      .plus(StreamKind.widen(Stream.of(5)), StreamKind.widen(Stream.of(10)))
-                                      .convert(StreamKind::narrowK);
-        assertThat(list,equalTo(Arrays.asList(5)));
-    }
-**/
+
     @Test
     public void  foldLeft(){
         int sum  = Streams.Instances.foldable()
@@ -148,7 +140,7 @@ public class StreamTest {
     }
     @Test
     public void traverse(){
-       Maybe<Higher<StreamKind.µ, Integer>> res = Streams.Instances.traverse()
+       Maybe<Higher<stream, Integer>> res = Streams.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), StreamKind.just(1,2,3))
                                                          .convert(Maybe::narrowK);
        

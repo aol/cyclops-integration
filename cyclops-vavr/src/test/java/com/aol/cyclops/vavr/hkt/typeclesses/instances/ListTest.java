@@ -11,6 +11,8 @@ import cyclops.companion.vavr.Lists;
 import com.aol.cyclops.vavr.hkt.ListKind;
 
 
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.list;
 import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 
@@ -36,7 +38,7 @@ public class ListTest {
         
         ListKind<Integer> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Lists.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(ListKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
@@ -56,8 +58,8 @@ public class ListTest {
         
         ListKind<Integer> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> Lists.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h-> Lists.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Lists.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(ListKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length()*2)));
@@ -73,7 +75,7 @@ public class ListTest {
         
         ListKind<Integer> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.monad().flatMap((String v) -> Lists.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Lists.Instances.monad().flatMap((String v) -> Lists.Instances.unit().unit(v.length()), h))
                                      .convert(ListKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
@@ -83,7 +85,7 @@ public class ListTest {
         
         ListKind<String> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Lists.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(ListKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello")));
@@ -93,7 +95,7 @@ public class ListTest {
         
         ListKind<String> list = Lists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Lists.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Lists.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(ListKind::narrowK);
         
         assertThat(list.toJavaList(),equalTo(Arrays.asList()));
@@ -106,17 +108,7 @@ public class ListTest {
                                       .convert(ListKind::narrowK);
         assertThat(list.toJavaList(),equalTo(Arrays.asList(10)));
     }
-/**
-    @Test
-    public void monadPlusNonEmpty(){
-        
-        Monoid<ListKind<Integer>> m = Monoid.of(ListKind.widen(List.empty()), (a,b)->a.isEmpty() ? b : a);
-        ListKind<Integer> list = Lists.Instances.<Integer>monadPlus(m)
-                                      .plus(ListKind.widen(List.of(5)), ListKind.widen(List.of(10)))
-                                      .convert(ListKind::narrowK);
-        assertThat(list,equalTo(Arrays.asList(5)));
-    }
-**/
+
     @Test
     public void  foldLeft(){
         int sum  = Lists.Instances.foldable()
@@ -133,7 +125,7 @@ public class ListTest {
     }
     @Test
     public void traverse(){
-       Maybe<Higher<ListKind.µ, Integer>> res = Lists.Instances.traverse()
+       Maybe<Higher<list, Integer>> res = Lists.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), ListKind.just(1,2,3))
                                                          .convert(Maybe::narrowK);
        

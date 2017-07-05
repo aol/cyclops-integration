@@ -4,6 +4,7 @@ package com.aol.cyclops.vavr.adapter;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.either;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
@@ -69,6 +70,8 @@ public class EitherAdapter<L> extends AbstractFunctionalAdapter<either> {
         return Vavr.either(Either.right(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<either, R> map(AnyM<either, T> t, Function<? super T, ? extends R> fn) {
+        return Vavr.either(either(t).map(fn));
+    }
 }

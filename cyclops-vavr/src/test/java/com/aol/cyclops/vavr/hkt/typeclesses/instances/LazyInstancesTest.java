@@ -8,9 +8,12 @@ import static org.junit.Assert.assertThat;
 import cyclops.companion.vavr.Lazys;
 import com.aol.cyclops.vavr.hkt.LazyKind;
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.companion.vavr.Lazys.Instances;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Monoid;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.lazy;
 import org.junit.Test;
 
 
@@ -22,7 +25,7 @@ public class LazyInstancesTest {
     @Test
     public void unit(){
         
-        LazyKind<String> opt = Lazys.Instances.unit()
+        LazyKind<String> opt = Instances.unit()
                                             .unit("hello")
                                             .convert(LazyKind::narrowK);
         
@@ -30,17 +33,18 @@ public class LazyInstancesTest {
     }
     @Test
     public void functor(){
-        
-        LazyKind<Integer> opt = Lazys.Instances.unit()
+        Higher<lazy,Integer> res =null;
+        LazyKind<Integer> x = LazyKind.narrowK(res);
+        LazyKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Lazys.Instances.functor().map((String v) ->v.length(), h))
-                                     .convert(LazyKind::narrowK);
+                                     .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .convert(r-> LazyKind.narrowK(r));
         
         assertThat(opt,equalTo(Lazy.of(()->"hello".length())));
     }
     @Test
     public void apSimple(){
-        Lazys.Instances.applicative()
+        Instances.applicative()
             .ap(widen(Lazy.of(()-> l1(this::multiplyByTwo))),widen(Lazy.of(()->1)));
     }
     private int multiplyByTwo(int x){
@@ -49,30 +53,30 @@ public class LazyInstancesTest {
     @Test
     public void applicative(){
         
-        LazyKind<Fn1<Integer,Integer>> optFn =Lazys.Instances.unit()
+        LazyKind<Fn1<Integer,Integer>> optFn = Instances.unit()
                                                                   .unit(l1((Integer i) ->i*2))
                                                                   .convert(LazyKind::narrowK);
         
-        LazyKind<Integer> opt = Lazys.Instances.unit()
+        LazyKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Lazys.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h->Lazys.Instances.applicative().ap(optFn, h))
+                                     .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Instances.applicative().ap(optFn, h))
                                      .convert(LazyKind::narrowK);
         
         assertThat(opt,equalTo(Lazy.of(()->"hello".length()*2)));
     }
     @Test
     public void monadSimple(){
-       LazyKind<Integer> opt  = Lazys.Instances.monad()
+       LazyKind<Integer> opt  = Instances.monad()
                                             .<Integer,Integer>flatMap(i->widen(Lazy.of(()->i*2)), widen(Lazy.of(()->3)))
                                             .convert(LazyKind::narrowK);
     }
     @Test
     public void monad(){
         
-        LazyKind<Integer> opt = Lazys.Instances.unit()
+        LazyKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Lazys.Instances.monad().flatMap((String v) ->Lazys.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(LazyKind::narrowK);
         
         assertThat(opt,equalTo(Lazy.of(()->"hello".length())));
@@ -80,9 +84,9 @@ public class LazyInstancesTest {
     @Test
     public void monadZeroFilter(){
         
-        LazyKind<String> opt = Lazys.Instances.unit()
+        LazyKind<String> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Lazys.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(LazyKind::narrowK);
         
         assertThat(opt,equalTo(Lazy.of(()->"hello")));
@@ -90,9 +94,9 @@ public class LazyInstancesTest {
     @Test
     public void monadZeroFilterOut(){
         
-        LazyKind<String> opt = Lazys.Instances.unit()
+        LazyKind<String> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Lazys.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(LazyKind::narrowK);
         
         assertThat(opt,equalTo(Lazy.of(()->null)));
@@ -100,7 +104,7 @@ public class LazyInstancesTest {
     
     @Test
     public void monadPlus(){
-        LazyKind<Integer> opt = Lazys.Instances.<Integer>monadPlus()
+        LazyKind<Integer> opt = Instances.<Integer>monadPlus()
                                       .plus(LazyKind.widen(Lazy.of(()->null)), LazyKind.widen(Lazy.of(()->10)))
                                       .convert(LazyKind::narrowK);
         assertThat(opt,equalTo(Lazy.of(()->10)));
@@ -109,28 +113,28 @@ public class LazyInstancesTest {
     public void monadPlusNonEmpty(){
         
         Monoid<LazyKind<Integer>> m = Monoid.of(LazyKind.widen(Lazy.of(()->null)), (a, b)->a.get()==null ? b : a);
-        LazyKind<Integer> opt = Lazys.Instances.<Integer>monadPlus(m)
+        LazyKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(LazyKind.widen(Lazy.of(()->5)), LazyKind.widen(Lazy.of(()->10)))
                                       .convert(LazyKind::narrowK);
         assertThat(opt,equalTo(Lazy.of(()->5)));
     }
     @Test
     public void  foldLeft(){
-        int sum  = Lazys.Instances.foldable()
+        int sum  = Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, LazyKind.widen(Lazy.of(()->4)));
         
         assertThat(sum,equalTo(4));
     }
     @Test
     public void  foldRight(){
-        int sum  = Lazys.Instances.foldable()
+        int sum  = Instances.foldable()
                         .foldRight(0, (a,b)->a+b, LazyKind.widen(Lazy.of(()->1)));
         
         assertThat(sum,equalTo(1));
     }
     @Test
     public void traverse(){
-       Maybe<Higher<LazyKind.µ, Integer>> res = Lazys.Instances.traverse()
+       Maybe<Higher<lazy, Integer>> res = Instances.traverse()
                                                                    .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), LazyKind.of(()->1))
                                                                  .convert(Maybe::narrowK);
        

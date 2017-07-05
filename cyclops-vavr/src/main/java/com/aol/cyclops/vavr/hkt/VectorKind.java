@@ -19,6 +19,18 @@ import java.util.stream.Stream;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.collections.vavr.VavrListX;
+import cyclops.collections.vavr.VavrVectorX;
+import cyclops.companion.vavr.Lists;
+import cyclops.companion.vavr.Vectors;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.vector;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.ListT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import io.vavr.collection.Array;
 import io.vavr.collection.Vector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,23 +39,33 @@ import lombok.experimental.Delegate;
 /**
  * Simulates Higher Kinded Types for Vector's
  * 
- * VectorKind is a Vector and a Higher Kinded Type (VectorKind.µ,T)
+ * VectorKind is a Vector and a Higher Kinded Type (vector,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Vector
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public  class VectorKind<T> implements Higher<VectorKind.µ, T>{
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+public  class VectorKind<T> implements Higher<vector, T>{
+
+    public static <T> Higher<vector,T> widenK(final Vector<T> completableList) {
+
+        return new VectorKind<>(
+                completableList);
+    }
+    public Active<vector,T> allTypeclasses(){
+        return Active.of(this, Vectors.Instances.definitions());
     }
 
+    public <W2,R> Nested<vector,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Vectors.mapM(boxed,fn,defs);
+    }
+    public <R> VectorKind<R> fold(Function<? super Vector<? super T>,? extends Vector<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public <W extends WitnessType<W>> ListT<W, T> liftM(W witness) {
+        return ListT.of(witness.adapter().unit(VavrVectorX.from(boxed)));
+    }
     public static <T> VectorKind<T> of(T element) {
         return  widen(Vector.of(element));
     }
@@ -73,9 +95,9 @@ public  class VectorKind<T> implements Higher<VectorKind.µ, T>{
      * @param list HTK encoded type containing  a Vector to widen
      * @return HKT encoded type with a widened Vector
      */
-    public static <C2,T> Higher<C2, Higher<VectorKind.µ,T>> widen2(Higher<C2, VectorKind<T>> list){
+    public static <C2,T> Higher<C2, Higher<vector,T>> widen2(Higher<C2, VectorKind<T>> list){
         //a functor could be used (if C2 is a functor / one exists for C2 type) instead of casting
-        //cast seems safer as Higher<VectorKind.µ,T> must be a VectorKind
+        //cast seems safer as Higher<vector,T> must be a VectorKind
         return (Higher)list;
     }
     /**
@@ -84,7 +106,7 @@ public  class VectorKind<T> implements Higher<VectorKind.µ, T>{
      * @param list HKT encoded list into a VectorKind
      * @return VectorKind
      */
-    public static <T> VectorKind<T> narrowK(final Higher<VectorKind.µ, T> list) {
+    public static <T> VectorKind<T> narrowK(final Higher<vector, T> list) {
        return (VectorKind<T>)list;
     }
     /**
@@ -93,7 +115,7 @@ public  class VectorKind<T> implements Higher<VectorKind.µ, T>{
      * @param list Type Constructor to convert back into narrowed type
      * @return VectorX from Higher Kinded Type
      */
-    public static <T> Vector<T> narrow(final Higher<VectorKind.µ, T> list) {
+    public static <T> Vector<T> narrow(final Higher<vector, T> list) {
         return ((VectorKind)list).narrow();
        
     }

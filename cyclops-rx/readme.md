@@ -303,8 +303,8 @@ e.g. using the Pure and Functor typeclasses for Vavr Streams
 
 ```java
 
-Pure<ObservableKind.µ> pure = Observables.Instances.unit();
-Functor<ObservableKind.µ> functor = Observables.Instances.functor();
+Pure<observable> pure = Observables.Instances.unit();
+Functor<observable> functor = Observables.Instances.functor();
         
 ObservableKind<Integer> list = pure.unit("hello")
                                    .apply(h->functor.map((String v) ->v.length(), h))

@@ -14,6 +14,10 @@ import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
+import cyclops.monads.RxWitness;
+import cyclops.monads.RxWitness.observable;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.maybe;
 import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 
@@ -39,7 +43,7 @@ public class ObservableTest {
         
         ObservableKind<Integer> list = Observables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Observables.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h->Observables.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(ObservableKind::narrowK);
         
         assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello".length())));
@@ -59,8 +63,8 @@ public class ObservableTest {
         
         ObservableKind<Integer> list = Observables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Observables.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h->Observables.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h->Observables.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h->Observables.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(ObservableKind::narrowK);
         
         assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello".length()*2)));
@@ -76,7 +80,7 @@ public class ObservableTest {
         
         ObservableKind<Integer> list = Observables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Observables.Instances.monad().flatMap((String v) ->Observables.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h->Observables.Instances.monad().flatMap((String v) ->Observables.Instances.unit().unit(v.length()), h))
                                      .convert(ObservableKind::narrowK);
         
         assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello".length())));
@@ -86,7 +90,7 @@ public class ObservableTest {
         
         ObservableKind<String> list = Observables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Observables.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h->Observables.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(ObservableKind::narrowK);
         
         assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello")));
@@ -96,7 +100,7 @@ public class ObservableTest {
         
         ObservableKind<String> list = Observables.Instances.unit()
                                      .unit("hello")
-                                     .apply(h->Observables.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h->Observables.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(ObservableKind::narrowK);
         
         assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList()));
@@ -109,17 +113,7 @@ public class ObservableTest {
                                       .convert(ObservableKind::narrowK);
         assertThat(Observables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList(10)));
     }
-/**
-    @Test
-    public void monadPlusNonEmpty(){
-        
-        Monoid<ObservableKind<Integer>> m = Monoid.of(ObservableKind.widen(Observable.empty()), (a,b)->a.isEmpty() ? b : a);
-        ObservableKind<Integer> list = ObservableInstances.<Integer>monadPlus(m)
-                                      .plus(ObservableKind.widen(Observable.of(5)), ObservableKind.widen(Observable.of(10)))
-                                      .convert(ObservableKind::narrowK);
-        assertThat(list,equalTo(Arrays.asList(5)));
-    }
-**/
+
     @Test
     public void  foldLeft(){
         int sum  = Observables.Instances.foldable()
@@ -136,10 +130,10 @@ public class ObservableTest {
     }
     @Test
     public void traverse(){
-        Function<Integer,Higher<Maybe.µ,Integer>> fn = (Integer a) -> Maybe.<Integer>just(a * 2);
-        Higher<Maybe.µ, Higher<ObservableKind.µ, Integer>> one = Observables.Instances.traverse()
+        Function<Integer,Higher<maybe,Integer>> fn = (Integer a) -> Maybe.<Integer>just(a * 2);
+        Higher<maybe, Higher<observable, Integer>> one = Observables.Instances.traverse()
                 .traverseA(Maybe.Instances.applicative(), fn, ObservableKind.just(1, 2, 3));
-       Maybe<Higher<ObservableKind.µ, Integer>> res = Observables.Instances.traverse()
+       Maybe<Higher<observable, Integer>> res = Observables.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), ObservableKind.just(1,2,3))
                                                          .convert(Maybe::narrowK);
        

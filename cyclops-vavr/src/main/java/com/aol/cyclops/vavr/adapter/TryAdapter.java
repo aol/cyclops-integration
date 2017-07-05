@@ -4,6 +4,7 @@ package com.aol.cyclops.vavr.adapter;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.tryType;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
@@ -67,6 +68,8 @@ public class TryAdapter extends AbstractFunctionalAdapter<tryType> {
         return Vavr.tryM(Try.success(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<tryType, R> map(AnyM<tryType, T> t, Function<? super T, ? extends R> fn) {
+        return Vavr.tryM(tryType(t).map(fn));
+    }
 }

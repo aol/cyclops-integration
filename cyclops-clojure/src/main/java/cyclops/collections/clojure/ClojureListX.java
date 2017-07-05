@@ -7,6 +7,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.FoldToList;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.foldable.Evaluation;
@@ -15,6 +16,7 @@ import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple2;
+import org.pcollections.ConsPStack;
 import org.pcollections.PStack;
 
 
@@ -28,6 +30,8 @@ import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClojureListX<T> extends AbstractList<T>implements PStack<T>, Unwrapable {
 
+    static final FoldToList gen = (it, i)-> ClojureListX.from(from(it,i));
+
     public static <T> LinkedListX<T> listX(ReactiveSeq<T> stream){
         return fromStream(stream);
     }
@@ -35,6 +39,10 @@ public class ClojureListX<T> extends AbstractList<T>implements PStack<T>, Unwrap
         return fromPStack(new ClojureListX<T>(from(vec.iterator(),0)),toPStack());
 
     }
+    public static <T> LazyLinkedListX<T> from(IPersistentList q) {
+        return fromPStack(new ClojureListX<>(q), toPStack());
+    }
+
     private static <E> IPersistentList from(final Iterator<E> i, int depth) {
 
         if(!i.hasNext())
@@ -55,7 +63,7 @@ public class ClojureListX<T> extends AbstractList<T>implements PStack<T>, Unwrap
     public static <T> LazyLinkedListX<T> fromStream(Stream<T> stream) {
         Reducer<PStack<T>> s = toPStack();
         return new LazyLinkedListX<T>(null,
-                                  ReactiveSeq.fromStream(stream), s, Evaluation.LAZY);
+                                  ReactiveSeq.fromStream(stream), s,gen, Evaluation.LAZY);
     }
 
     /**
@@ -177,7 +185,7 @@ public class ClojureListX<T> extends AbstractList<T>implements PStack<T>, Unwrap
     }
 
     private static <T> LazyLinkedListX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
-        return new LazyLinkedListX<T>(s,null, pStackReducer, Evaluation.LAZY);
+        return new LazyLinkedListX<T>(s,null, pStackReducer, gen,Evaluation.LAZY);
     }
 
     @SafeVarargs

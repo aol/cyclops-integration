@@ -5,7 +5,17 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.companion.guava.FluentIterables;
+import cyclops.monads.GuavaWitness;
+import cyclops.monads.GuavaWitness.fluentIterable;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import fj.data.List;
+import io.vavr.collection.Stream;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -31,7 +41,7 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for ToCyclopsReact FluentIterable's
  * 
- * FluentIterableKind is a FluentIterable and a Higher Kinded Type (FluentIterableKind.µ,T)
+ * FluentIterableKind is a FluentIterable and a Higher Kinded Type (fluentIterable,T)
  * 
  * @author johnmcclean
  *
@@ -39,17 +49,28 @@ import lombok.AllArgsConstructor;
  */
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FluentIterableKind<E> implements Higher<FluentIterableKind.µ, E>, Publisher<E>, Iterable<E> {
+public final class FluentIterableKind<E> implements Higher<fluentIterable, E>, Publisher<E>, Iterable<E> {
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+
+    public <R> FluentIterableKind<R> fold(java.util.function.Function<? super FluentIterable<?  super E>,? extends FluentIterable<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public Active<fluentIterable,E> allTypeclasses(){
+        return Active.of(this, FluentIterables.Instances.definitions());
     }
 
+    public static <T> Higher<fluentIterable,T> widenK(final FluentIterable<T> completableList) {
+
+        return new FluentIterableKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<fluentIterable,W2,R> mapM(java.util.function.Function<? super E,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return FluentIterables.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, E> liftM(W witness) {
+        return FluentIterables.liftM(boxed,witness);
+    }
     /**
      * Construct a HKT encoded completed FluentIterable
      * 
@@ -92,7 +113,7 @@ public final class FluentIterableKind<E> implements Higher<FluentIterableKind.µ
      * @param flux HTK encoded type containing  a FluentIterable to widen
      * @return HKT encoded type with a widened FluentIterable
      */
-    public static <C2, T> Higher<C2, Higher<FluentIterableKind.µ, T>> widen2(Higher<C2, FluentIterableKind<T>> flux) {
+    public static <C2, T> Higher<C2, Higher<fluentIterable, T>> widen2(Higher<C2, FluentIterableKind<T>> flux) {
         // a functor could be used (if C2 is a functor / one exists for C2 type)
         // instead of casting
         // cast seems safer as Higher<StreamType.µ,T> must be a StreamType
@@ -111,7 +132,7 @@ public final class FluentIterableKind<E> implements Higher<FluentIterableKind.µ
      * @param future HKT encoded list into a FluentIterableKind
      * @return FluentIterableKind
      */
-    public static <T> FluentIterableKind<T> narrowK(final Higher<FluentIterableKind.µ, T> future) {
+    public static <T> FluentIterableKind<T> narrowK(final Higher<fluentIterable, T> future) {
         return (FluentIterableKind<T>) future;
     }
 
@@ -121,7 +142,7 @@ public final class FluentIterableKind<E> implements Higher<FluentIterableKind.µ
      * @param fluentIterable Type Constructor to convert back into narrowed type
      * @return FluentIterable from Higher Kinded Type
      */
-    public static <T> FluentIterable<T> narrow(final Higher<FluentIterableKind.µ, T> fluentIterable) {
+    public static <T> FluentIterable<T> narrow(final Higher<fluentIterable, T> fluentIterable) {
 
         return ((FluentIterableKind<T>) fluentIterable).narrow();
 

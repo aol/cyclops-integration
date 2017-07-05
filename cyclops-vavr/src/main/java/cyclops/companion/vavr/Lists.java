@@ -1,32 +1,61 @@
 package cyclops.companion.vavr;
 
-import cyclops.monads.VavrWitness.list;
+import com.aol.cyclops.vavr.hkt.*;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.Optionals;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
+import cyclops.monads.*;
+import cyclops.monads.VavrWitness.*;
 import cyclops.collections.vavr.VavrListX;
-import com.aol.cyclops.vavr.hkt.ListKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
-import cyclops.monads.WitnessType;
+import cyclops.monads.VavrWitness.either;
+import cyclops.monads.VavrWitness.future;
+import cyclops.monads.VavrWitness.list;
+import cyclops.monads.VavrWitness.tryType;
+import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.ListT;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
-import io.vavr.collection.List;
+import io.vavr.Lazy;
+import io.vavr.collection.*;
+import io.vavr.concurrent.Future;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
+
+import static com.aol.cyclops.vavr.hkt.ListKind.widen;
 
 
 public class Lists {
     public static <T,W extends WitnessType<W>> ListT<W, T> liftM(List<T> opt, W witness) {
         return ListT.ofList(witness.adapter().unit(VavrListX.ofAll(opt)));
     }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,list,T> xorM(List<T> type){
+        return XorM.right(anyM(type));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,list,T> xorM(T... values){
+        return xorM(List.of(values));
+    }
+
     public static <T> AnyMSeq<list,T> anyM(List<T> option) {
         return AnyM.ofSeq(option, list.INSTANCE);
     }
@@ -299,15 +328,81 @@ public class Lists {
                     .map(in2 -> yieldingFunction.apply(in,  in2));
         });
     }
+
+    public static <T> Active<list,T> allTypeclasses(List<T> array){
+        return Active.of(widen(array), Lists.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<list,W2,R> mapM(List<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        List<Higher<W2, R>> e = array.map(fn);
+        ListKind<Higher<W2, R>> lk = widen(e);
+        return Nested.of(lk, Lists.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Lists
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<list> definitions() {
+            return new InstanceDefinitions<list>() {
 
+                @Override
+                public <T, R> Functor<list> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<list> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<list> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<list> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<list>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<list>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<list>> monadPlus(Monoid<Higher<list, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<list>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<list>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<list>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<list>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+        }
         /**
          *
          * Transform a list, mulitplying every element by 2
@@ -336,7 +431,7 @@ public class Lists {
          *
          * @return A functor for Lists
          */
-        public static <T,R>Functor<ListKind.µ> functor(){
+        public static <T,R>Functor<list> functor(){
             BiFunction<ListKind<T>,Function<? super T, ? extends R>,ListKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -355,8 +450,8 @@ public class Lists {
          *
          * @return A factory for Lists
          */
-        public static <T> Pure<ListKind.µ> unit(){
-            return General.<ListKind.µ,T>unit(Instances::of);
+        public static <T> Pure<list> unit(){
+            return General.<list,T>unit(Instances::of);
         }
         /**
          *
@@ -394,7 +489,7 @@ public class Lists {
          *
          * @return A zipper for Lists
          */
-        public static <T,R> Applicative<ListKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<list> zippingApplicative(){
             BiFunction<ListKind< Function<T, R>>,ListKind<T>,ListKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -424,9 +519,9 @@ public class Lists {
          *
          * @return Type class with monad functions for Lists
          */
-        public static <T,R> Monad<ListKind.µ> monad(){
+        public static <T,R> Monad<list> monad(){
 
-            BiFunction<Higher<ListKind.µ,T>,Function<? super T, ? extends Higher<ListKind.µ,R>>,Higher<ListKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<list,T>,Function<? super T, ? extends Higher<list,R>>,Higher<list,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -446,10 +541,10 @@ public class Lists {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<ListKind.µ> monadZero(){
-            BiFunction<Higher<ListKind.µ,T>,Predicate<? super T>,Higher<ListKind.µ,T>> filter = Instances::filter;
-            Supplier<Higher<ListKind.µ, T>> zero = ()-> ListKind.widen(List.empty());
-            return General.<ListKind.µ,T,R>monadZero(monad(), zero,filter);
+        public static <T,R> MonadZero<list> monadZero(){
+            BiFunction<Higher<list,T>,Predicate<? super T>,Higher<list,T>> filter = Instances::filter;
+            Supplier<Higher<list, T>> zero = ()-> widen(List.empty());
+            return General.<list,T,R>monadZero(monad(), zero,filter);
         }
         /**
          * <pre>
@@ -463,9 +558,9 @@ public class Lists {
          * </pre>
          * @return Type class for combining Lists by concatenation
          */
-        public static <T> MonadPlus<ListKind.µ> monadPlus(){
-            Monoid<ListKind<T>> m = Monoid.of(ListKind.widen(List.<T>empty()), Instances::concat);
-            Monoid<Higher<ListKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<list> monadPlus(){
+            Monoid<ListKind<T>> m = Monoid.of(widen(List.<T>empty()), Instances::concat);
+            Monoid<Higher<list,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -484,18 +579,22 @@ public class Lists {
          * @param m Monoid to use for combining Lists
          * @return Type class for combining Lists
          */
-        public static <T> MonadPlus<ListKind.µ> monadPlus(Monoid<ListKind<T>> m){
-            Monoid<Higher<ListKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<list> monadPlus(Monoid<Higher<list,T>> m){
+            Monoid<Higher<list,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<list> monadPlusK(Monoid<ListKind<T>> m){
+            Monoid<Higher<list,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<ListKind.µ> traverse(){
+        public static <C2,T> Traverse<list> traverse(){
             BiFunction<Applicative<C2>,ListKind<Higher<C2, T>>,Higher<C2, ListKind<T>>> sequenceFn = (ap, list) -> {
 
-                Higher<C2,ListKind<T>> identity = ap.unit(ListKind.widen(List.empty()));
+                Higher<C2,ListKind<T>> identity = ap.unit(widen(List.empty()));
 
                 BiFunction<Higher<C2,ListKind<T>>,Higher<C2,T>,Higher<C2,ListKind<T>>> combineToList =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> concat(a, ListKind.just(b))),acc,next);
 
@@ -507,7 +606,7 @@ public class Lists {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<ListKind.µ,Higher<C2, T>>,Higher<C2, Higher<ListKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<list,Higher<C2, T>>,Higher<C2, Higher<list,T>>> sequenceNarrow  =
                     (a,b) -> ListKind.widen2(sequenceFn.apply(a, ListKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -527,29 +626,192 @@ public class Lists {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<ListKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<ListKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(ListKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<ListKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(ListKind.narrow(l)).reduce(m);
+        public static <T> Foldable<list> foldable(){
+            BiFunction<Monoid<T>,Higher<list,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(ListKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<list,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(ListKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
         private static  <T> ListKind<T> concat(ListKind<T> l1, ListKind<T> l2){
-            return ListKind.widen(l1.appendAll(l2));
+            return widen(l1.appendAll(l2));
         }
         private <T> ListKind<T> of(T value){
-            return ListKind.widen(List.of(value));
+            return widen(List.of(value));
         }
         private static <T,R> ListKind<R> ap(ListKind<Function< T, R>> lt, ListKind<T> list){
-            return ListKind.widen(lt.toReactiveSeq().zip(list,(a, b)->a.apply(b)));
+            return widen(lt.toReactiveSeq().zip(list,(a, b)->a.apply(b)));
         }
-        private static <T,R> Higher<ListKind.µ,R> flatMap(Higher<ListKind.µ,T> lt, Function<? super T, ? extends  Higher<ListKind.µ,R>> fn){
-            return ListKind.widen(ListKind.narrowK(lt).flatMap(fn.andThen(ListKind::narrowK)));
+        private static <T,R> Higher<list,R> flatMap(Higher<list,T> lt, Function<? super T, ? extends  Higher<list,R>> fn){
+            return widen(ListKind.narrowK(lt).flatMap(fn.andThen(ListKind::narrowK)));
         }
         private static <T,R> ListKind<R> map(ListKind<T> lt, Function<? super T, ? extends R> fn){
-            return ListKind.widen(lt.map(fn));
+            return widen(lt.map(fn));
         }
-        private static <T> ListKind<T> filter(Higher<ListKind.µ,T> lt, Predicate<? super T> fn){
-            return ListKind.widen(ListKind.narrow(lt).filter(fn));
+        private static <T> ListKind<T> filter(Higher<list,T> lt, Predicate<? super T> fn){
+            return widen(ListKind.narrow(lt).filter(fn));
+        }
+        public static Unfoldable<list> unfoldable(){
+            return new Unfoldable<list>() {
+                @Override
+                public <R, T> Higher<list, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    return widen(ReactiveSeq.unfold(b,fn).collect(List.collector()));
+
+                }
+            };
+        }
+    }
+
+    public static  <W1,T> Coproduct<W1,list,T> coproduct(List<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(ListKind.widen(list)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,list,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return Coproduct.of(Xor.primary(ListKind.just(values)),def1, Instances.definitions());
+    }
+
+    public static interface ListNested{
+
+
+        public static <T> Nested<list,option,T> option(List<Option<T>> type){
+            return Nested.of(widen(type.map(OptionKind::widen)),Instances.definitions(),Options.Instances.definitions());
+        }
+        public static <T> Nested<list,tryType,T> listTry(List<Try<T>> type){
+            return Nested.of(widen(type.map(TryKind::widen)),Instances.definitions(),Trys.Instances.definitions());
+        }
+        public static <T> Nested<list,future,T> future(List<Future<T>> type){
+            return Nested.of(widen(type.map(FutureKind::widen)),Instances.definitions(),Futures.Instances.definitions());
+        }
+        public static <T> Nested<list,lazy,T> lazy(List<Lazy<T>> nested){
+            return Nested.of(widen(nested.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
+        }
+        public static <L, R> Nested<list,Higher<either,L>, R> either(List<Either<L, R>> nested){
+            return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
+        }
+        public static <T> Nested<list,VavrWitness.stream,T> stream(List<Stream<T>> nested){
+            return Nested.of(widen(nested.map(StreamKind::widen)),Instances.definitions(),Streams.Instances.definitions());
+        }
+        public static <T> Nested<list,VavrWitness.queue,T> queue(List<Queue<T>> nested){
+            return Nested.of(widen(nested.map(QueueKind::widen)),Instances.definitions(),Queues.Instances.definitions());
+        }
+        public static <T> Nested<list,list,T> list(List<List<T>> nested){
+            return Nested.of(widen(nested.map(ListKind::widen)),Instances.definitions(),Lists.Instances.definitions());
+        }
+        public static <T> Nested<list,array,T> array(List<Array<T>> nested){
+            return Nested.of(widen(nested.map(ArrayKind::widen)),Instances.definitions(),Arrays.Instances.definitions());
+        }
+        public static <T> Nested<list,vector,T> vector(List<Vector<T>> nested){
+            return Nested.of(widen(nested.map(VectorKind::widen)),Instances.definitions(),Vectors.Instances.definitions());
+        }
+        public static <T> Nested<list,hashSet,T> set(List<HashSet<T>> nested){
+            return Nested.of(widen(nested.map(HashSetKind::widen)),Instances.definitions(), HashSets.Instances.definitions());
+        }
+
+        public static <T> Nested<list,reactiveSeq,T> reactiveSeq(List<ReactiveSeq<T>> nested){
+            ListKind<ReactiveSeq<T>> x = widen(nested);
+            ListKind<Higher<reactiveSeq,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<list,maybe,T> maybe(List<Maybe<T>> nested){
+            ListKind<Maybe<T>> x = widen(nested);
+            ListKind<Higher<maybe,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<list,eval,T> eval(List<Eval<T>> nested){
+            ListKind<Eval<T>> x = widen(nested);
+            ListKind<Higher<eval,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<list,Witness.future,T> cyclopsFuture(List<cyclops.async.Future<T>> nested){
+            ListKind<cyclops.async.Future<T>> x = widen(nested);
+            ListKind<Higher<Witness.future,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<list,Higher<xor,S>, P> xor(List<Xor<S, P>> nested){
+            ListKind<Xor<S, P>> x = widen(nested);
+            ListKind<Higher<Higher<xor,S>, P>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<list,Higher<reader,S>, T> reader(List<Reader<S, T>> nested){
+            ListKind<Reader<S, T>> x = widen(nested);
+            ListKind<Higher<Higher<reader,S>, T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<list,Higher<Witness.tryType,S>, P> cyclopsTry(List<cyclops.control.Try<P, S>> nested){
+            ListKind<cyclops.control.Try<P, S>> x = widen(nested);
+            ListKind<Higher<Higher<Witness.tryType,S>, P>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<list,optional,T> optional(List<Optional<T>> nested){
+            ListKind<Optional<T>> x = widen(nested);
+            ListKind<Higher<optional,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(), Optionals.Instances.definitions());
+        }
+        public static <T> Nested<list,completableFuture,T> completableFuture(List<CompletableFuture<T>> nested){
+            ListKind<CompletableFuture<T>> x = widen(nested);
+            ListKind<Higher<completableFuture,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<list,Witness.stream,T> javaStream(List<java.util.stream.Stream<T>> nested){
+            ListKind<java.util.stream.Stream<T>> x = widen(nested);
+            ListKind<Higher<Witness.stream,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+
+
+    }
+
+    public static interface NestedList{
+        public static <T> Nested<reactiveSeq,list,T> reactiveSeq(ReactiveSeq<List<T>> nested){
+            ReactiveSeq<Higher<list,T>> x = nested.map(ListKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,list,T> maybe(Maybe<List<T>> nested){
+            Maybe<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,list,T> eval(Eval<List<T>> nested){
+            Eval<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,list,T> cyclopsFuture(cyclops.async.Future<List<T>> nested){
+            cyclops.async.Future<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,list, P> xor(Xor<S, List<P>> nested){
+            Xor<S, Higher<list,P>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,list, T> reader(Reader<S, List<T>> nested){
+
+            Reader<S, Higher<list, T>>  x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,list, P> cyclopsTry(cyclops.control.Try<List<P>, S> nested){
+            cyclops.control.Try<Higher<list,P>, S> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,list,T> optional(Optional<List<T>> nested){
+            Optional<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return  Nested.of(Optionals.OptionalKind.widen(x), Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,list,T> completableFuture(CompletableFuture<List<T>> nested){
+            CompletableFuture<Higher<list,T>> x = nested.thenApply(ListKind::widenK);
+
+            return Nested.of(CompletableFutures.CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,list,T> javaStream(java.util.stream.Stream<List<T>> nested){
+            java.util.stream.Stream<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
         }
     }
 

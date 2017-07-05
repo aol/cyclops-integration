@@ -3,6 +3,16 @@ package com.aol.cyclops.rx2.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.async.Future;
+import cyclops.companion.rx2.Maybes;
+import cyclops.companion.rx2.Singles;
+import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.single;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.rx2.MaybeT;
+import cyclops.monads.transformers.rx2.SingleT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.reactivex.*;
 import io.reactivex.annotations.*;
 import io.reactivex.disposables.Disposable;
@@ -29,7 +39,7 @@ import java.util.logging.Level;
 /**
  * Simulates Higher Kinded Types for RxJava 2 Single's
  * 
- * SingleKind is a Single and a Higher Kinded Type (SingleKind.µ,T)
+ * SingleKind is a Single and a Higher Kinded Type (single,T)
  * 
  * @author johnmcclean
  *
@@ -37,20 +47,30 @@ import java.util.logging.Level;
  */
 
 
-public final class SingleKind<T> implements Higher<SingleKind.µ, T>, Publisher<T> {
+public final class SingleKind<T> implements Higher<single, T>, Publisher<T> {
     private SingleKind(Single<T> boxed) {
         this.boxed = boxed;
     }
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+    public <R> SingleKind<R> fold(java.util.function.Function<? super Single<?  super T>,? extends Single<R>> op){
+        return widen(op.apply(boxed));
     }
-    
+    public Active<single,T> allTypeclasses(){
+        return Active.of(this, Singles.Instances.definitions());
+    }
+
+    public static <T> Higher<single,T> widenK(final Single<T> completableList) {
+
+        return new SingleKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<single,W2,R> mapM(java.util.function.Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Singles.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> SingleT<W, T> liftM(W witness) {
+        return SingleT.of(witness.adapter().unit(boxed));
+    }
     /**
      * Construct a HKT encoded completed Single
      * 
@@ -94,7 +114,7 @@ public final class SingleKind<T> implements Higher<SingleKind.µ, T>, Publisher<
      * @param future HKT encoded list into a SingleKind
      * @return SingleKind
      */
-    public static <T> SingleKind<T> narrowK(final Higher<SingleKind.µ, T> future) {
+    public static <T> SingleKind<T> narrowK(final Higher<single, T> future) {
        return (SingleKind<T>)future;
     }
 
@@ -104,7 +124,7 @@ public final class SingleKind<T> implements Higher<SingleKind.µ, T>, Publisher<
      * @param completableSingle Type Constructor to convert back into narrowed type
      * @return Single from Higher Kinded Type
      */
-    public static <T> Single<T> narrow(final Higher<SingleKind.µ, T> completableSingle) {
+    public static <T> Single<T> narrow(final Higher<single, T> completableSingle) {
             return ((SingleKind<T>)completableSingle).narrow();
     }
 

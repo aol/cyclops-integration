@@ -232,7 +232,7 @@ public class ScalaQueueX<T> extends AbstractQueue<T> implements PQueue<T>, HasSc
            
             Queue<T> toUse = ((ScalaQueueX)l).queue;
            
-            vec = (Queue<T>)vec.$plus$plus(toUse, (CanBuildFrom) builder);
+            vec = (Queue<T>)vec.$plus$plus(toUse, builder2);
         }
         else {
   

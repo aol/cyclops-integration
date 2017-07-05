@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -58,7 +59,13 @@ public class AsyncSequentialTest extends BaseSequentialTest {
     public void testCycle() {
 
     }
+    @Test
+    public void limitReplay() {
+        final ReactiveSeq<Integer> t = of(1).map(i -> i).flatMap(i -> Stream.of(i));
+        assertThat(t.limit(1).toList(), equalTo(ListX.of(1)));
+        t.limit(1).toList();
 
+    }
     @Test
     public void subscribe3ErrorOnComplete() throws InterruptedException {
         List<Integer> result = new ArrayList<>();

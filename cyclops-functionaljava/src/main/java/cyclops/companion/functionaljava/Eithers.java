@@ -1,8 +1,21 @@
 package cyclops.companion.functionaljava;
 
 
+import com.aol.cyclops.functionaljava.hkt.*;
+import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.hkt.Higher2;
 import cyclops.collections.mutable.ListX;
-import cyclops.monads.FJWitness;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.CompletableFutures.CompletableFutureKind;
+import cyclops.companion.Monoids;
+import cyclops.companion.Optionals;
+import cyclops.companion.Optionals.OptionalKind;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Try;
+import cyclops.control.Xor;
+import cyclops.monads.*;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
@@ -12,16 +25,35 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
-import cyclops.monads.AnyM;
+import cyclops.monads.FJWitness.either;
+import cyclops.monads.FJWitness.list;
+import cyclops.monads.FJWitness.nonEmptyList;
+import cyclops.monads.FJWitness.option;
+import cyclops.monads.Witness.*;
+import cyclops.monads.transformers.XorT;
 import cyclops.stream.ReactiveSeq;
 
+import cyclops.typeclasses.*;
+import cyclops.typeclasses.comonad.Comonad;
+import cyclops.typeclasses.comonad.ComonadByPure;
+import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
+import cyclops.typeclasses.functor.Functor;
+import cyclops.typeclasses.monad.*;
 import fj.data.Either;
+import fj.data.List;
+import fj.data.NonEmptyList;
+import fj.data.Option;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static com.aol.cyclops.functionaljava.hkt.EitherKind.widen;
 
 /**
  * Utility class for working with Eithers
@@ -31,8 +63,30 @@ import java.util.stream.Stream;
  */
 @UtilityClass
 public class Eithers {
-   
-    public static <T> AnyMValue<FJWitness.either,T> anyM(Either<?,T> either) {
+    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproduct(Either<L,T> either, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(widen(either)),def1,Instances.definitions());
+    }
+    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproductRight(T right, InstanceDefinitions<W1> def1){
+        return coproduct(Either.right(right),def1);
+    }
+    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproductLeft(L left, InstanceDefinitions<W1> def1){
+        return coproduct(Either.left(left),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorM(Either<L,T> type){
+        return XorM.right(anyM(type));
+    }
+    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorMRight(T right){
+        return XorM.right(anyM(Either.right(right)));
+    }
+    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorMLeft(L left){
+        return XorM.right(anyM(Either.left(left)));
+    }
+    public static <L, R> Either<L, R> xor(Xor<L, R> value) {
+        Xor<L, R> xor = (Xor) value.toXor();
+        return xor.visit(l -> Either.left(l), r -> Either.right(r));
+    }
+
+    public static <T> AnyMValue<either,T> anyM(Either<?,T> either) {
         return AnyM.ofValue(either, FJWitness.either.INSTANCE);
     }
     /**
@@ -233,7 +287,7 @@ public class Eithers {
      * @return  Either with a List of values
      */
     public static <L,T> Either<L,ReactiveSeq<T>> sequence(final Stream<Either<L,T>> opts) {
-        return AnyM.sequence(opts.map(Eithers::anyM), FJWitness.either.INSTANCE)
+        return AnyM.sequence(opts.map(Eithers::anyM), either.INSTANCE)
                 .map(ReactiveSeq::fromStream)
                 .to(FJWitness::either);
 
@@ -418,6 +472,437 @@ public class Eithers {
      */
     public static <L,T> Either<L,T> narrow(final Either<L,? extends T> eitheral) {
         return (Either<L,T>) eitheral;
+    }
+
+    public static <L,R> Active<Higher<either,L>,R> allTypeclasses(Either<L,R> either){
+        return Active.of(widen(either), Eithers.Instances.definitions());
+    }
+    public static <L,R,W2,R2> Nested<Higher<either,L>,W2,R2> mapM(Either<L,R> either,Function<? super R,? extends Higher<W2,R2>> fn, InstanceDefinitions<W2> defs){
+        Either<L, Higher<W2, R2>> e = either.bimap(i -> i, i -> fn.apply(i));
+        EitherKind<L, Higher<W2, R2>> ek = widen(e);
+        return Nested.of(ek, Eithers.Instances.definitions(), defs);
+    }
+    public <L,R,W extends WitnessType<W>> XorT<W, L, R> liftM(Either<L,R> either,W witness) {
+        return XorT.of(witness.adapter().unit(ToCyclopsReact.xor(either)));
+    }
+
+    public static class Instances {
+
+        public static <L> InstanceDefinitions<Higher<either, L>> definitions(){
+            return new InstanceDefinitions<Higher<either, L>>() {
+                @Override
+                public <T, R> Functor<Higher<either, L>> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<Higher<either, L>> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<Higher<either, L>> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<Higher<either, L>> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<Higher<either, L>>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<Higher<either, L>>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<Higher<either, L>>> monadPlus(Monoid<Higher<Higher<either, L>, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<Higher<either, L>>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<Higher<either, L>>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<Higher<either, L>>> comonad() {
+                    return Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<Higher<either, L>>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        }
+        public static <L> Functor<Higher<either, L>> functor() {
+            return new Functor<Higher<either, L>>() {
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return widen(either.bimap(i->i,r->fn.apply(r)));
+                }
+            };
+        }
+        public static <L> Pure<Higher<either, L>> unit() {
+            return new Pure<Higher<either, L>>() {
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return EitherKind.right(value);
+                }
+            };
+        }
+        public static <L> Applicative<Higher<either, L>> applicative() {
+            return new Applicative<Higher<either, L>>() {
+
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    Either<L,T>  either = EitherKind.narrowK(apply);
+                    Either<L, ? extends Function<T, R>> eitherFn = EitherKind.narrowK(fn);
+                    return widen(Eithers.xor(ToCyclopsReact.xor(eitherFn).combine(ToCyclopsReact.xor(either),(a,b)->a.apply(b))));
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> Monad<Higher<either, L>> monad() {
+            return new Monad<Higher<either, L>>() {
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> flatMap(Function<? super T, ? extends Higher<Higher<either, L>, R>> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return widen(either.right().bind(i->fn.andThen(EitherKind::narrowK).apply(i)));
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    return Instances.<L>applicative().ap(fn,apply);
+
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> Traverse<Higher<either, L>> traverse() {
+            return new Traverse<Higher<either, L>>() {
+
+                @Override
+                public <C2, T, R> Higher<C2, Higher<Higher<either, L>, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> maybe = EitherKind.narrowK(ds);
+                    return maybe.either(left->  applicative.unit(EitherKind.<L,R>left(left)),
+                            right->applicative.map(m->EitherKind.right(m), fn.apply(right)));
+                }
+
+                @Override
+                public <C2, T> Higher<C2, Higher<Higher<either, L>, T>> sequenceA(Applicative<C2> applicative, Higher<Higher<either, L>, Higher<C2, T>> ds) {
+                    return traverseA(applicative,Function.identity(),ds);
+                }
+
+
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    return Instances.<L>applicative().ap(fn,apply);
+
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> Foldable<Higher<either, L>> foldable() {
+            return new Foldable<Higher<either, L>>() {
+
+
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return ToCyclopsReact.xor(either).foldRight(monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return ToCyclopsReact.xor(either).foldLeft(monoid);
+                }
+            };
+        }
+        public static <L> MonadZero<Higher<either, L>> monadZero() {
+            return new MonadZero<Higher<either, L>>() {
+
+                @Override
+                public Higher<Higher<either, L>, ?> zero() {
+                    return EitherKind.left(null);
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> flatMap(Function<? super T, ? extends Higher<Higher<either, L>, R>> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return widen(either.right().bind(i->fn.andThen(EitherKind::narrowK).apply(i)));
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    return Instances.<L>applicative().ap(fn,apply);
+
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> MonadPlus<Higher<either, L>> monadPlus() {
+            Monoid m = Monoids.firstPrimaryXor((Either)EitherKind.narrowK(Instances.<L>monadZero().zero()));
+
+            return monadPlus(m);
+        }
+        public static <L,T> MonadPlus<Higher<either, L>> monadPlus(Monoid<Higher<Higher<either, L>, T>> m) {
+            return new MonadPlus<Higher<either, L>>() {
+
+                @Override
+                public Monoid<Higher<Higher<either, L>, ?>> monoid() {
+                    return (Monoid)m;
+                }
+
+                @Override
+                public Higher<Higher<either, L>, ?> zero() {
+                    return Instances.<L>monadZero().zero();
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> flatMap(Function<? super T, ? extends Higher<Higher<either, L>, R>> fn, Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return widen(either.right().bind(i->fn.andThen(EitherKind::narrowK).apply(i)));
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
+                    return Instances.<L>applicative().ap(fn,apply);
+
+                }
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> Comonad<Higher<either, L>> comonad() {
+            return new ComonadByPure<Higher<either, L>>() {
+
+
+                @Override
+                public <T> T extract(Higher<Higher<either, L>, T> ds) {
+                    Either<L,T> either = EitherKind.narrowK(ds);
+                    return either.right().value();
+                }
+
+
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
+                    return Instances.<L>functor().map(fn,ds);
+                }
+
+                @Override
+                public <T> Higher<Higher<either, L>, T> unit(T value) {
+                    return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+    }
+
+    public static interface EitherNested {
+        public static <L1,L2,T> Nested<Higher<either,L1>,Higher<either,L2>,T> either(Either<L1,Either<L2,T>> nested){
+            Either<L1,EitherKind<L2,T>> f = nested.bimap(i->i,EitherKind::widen);
+            EitherKind<L1,EitherKind<L2,T>> x = widen(f);
+            EitherKind<L1,Higher<Higher<either,L2>,T>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(), Eithers.Instances.definitions());
+        }
+        public static <L,T> Nested<Higher<either,L>,nonEmptyList,T> nonEmptyList(Either<L,NonEmptyList<T>> nested){
+            Either<L,NonEmptyListKind<T>> f = nested.bimap(i->i,NonEmptyListKind::widen);
+            EitherKind<L,NonEmptyListKind<T>> x = widen(f);
+            EitherKind<L,Higher<nonEmptyList,T>> y = (EitherKind)x;
+
+            return Nested.of(y,Instances.definitions(), NonEmptyLists.Instances.definitions());
+        }
+        public static <L,T> Nested<Higher<either,L>,option,T> option(Either<L,Option<T>> nested){
+            Either<L,OptionKind<T>> f = nested.bimap(i->i,OptionKind::widen);
+            EitherKind<L,OptionKind<T>> x = widen(f);
+            EitherKind<L,Higher<option,T>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),Options.Instances.definitions());
+        }
+        public static <L,T> Nested<Higher<either,L>,FJWitness.stream,T> stream(Either<L,fj.data.Stream<T>> nested){
+            Either<L,StreamKind<T>> f = nested.bimap(i->i,StreamKind::widen);
+            EitherKind<L,StreamKind<T>> x = widen(f);
+            EitherKind<L,Higher<FJWitness.stream,T>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.companion.functionaljava.Streams.Instances.definitions());
+        }
+        public static <L,T> Nested<Higher<either,L>,list,T> list(Either<L,List<T>> nested){
+            Either<L,ListKind<T>> f = nested.bimap(i->i,ListKind::widen);
+            EitherKind<L,ListKind<T>> x = widen(f);
+            EitherKind<L,Higher<list,T>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),Lists.Instances.definitions());
+        }
+
+        public static <L,T> Nested<Higher<either,L>,reactiveSeq,T> reactiveSeq(Either<L,ReactiveSeq<T>> nested){
+            EitherKind<L,ReactiveSeq<T>> x = widen(nested);
+            EitherKind<L,Higher<reactiveSeq,T>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <L,T> Nested<Higher<either,L>,Witness.maybe,T> maybe(Either<L,Maybe<T>> nested){
+            EitherKind<L,Maybe<T>> x = widen(nested);
+            EitherKind<L,Higher<Witness.maybe,T>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <L,T> Nested<Higher<either,L>,Witness.eval,T> eval(Either<L,Eval<T>> nested){
+            EitherKind<L,Eval<T>> x = widen(nested);
+            EitherKind<L,Higher<Witness.eval,T>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <L,T> Nested<Higher<either,L>,Witness.future,T> future(Either<L,cyclops.async.Future<T>> nested){
+            EitherKind<L,cyclops.async.Future<T>> x = widen(nested);
+            EitherKind<L,Higher<Witness.future,T>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <L,S, P> Nested<Higher<either,L>,Higher<xor,S>, P> xor(Either<L,Xor<S, P>> nested){
+            EitherKind<L,Xor<S, P>> x = widen(nested);
+            EitherKind<L,Higher<Higher<xor,S>, P>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <L,S,T> Nested<Higher<either,L>,Higher<reader,S>, T> reader(Either<L,Reader<S, T>> nested){
+            EitherKind<L,Reader<S, T>> x = widen(nested);
+            EitherKind<L,Higher<Higher<reader,S>, T>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <L,S extends Throwable, P> Nested<Higher<either,L>,Higher<tryType,S>, P> cyclopsTry(Either<L,Try<P, S>> nested){
+            EitherKind<L,Try<P, S>> x = widen(nested);
+            EitherKind<L,Higher<Higher<tryType,S>, P>> y = (EitherKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <L,T> Nested<Higher<either,L>,optional,T> javaOptional(Either<L,Optional<T>> nested){
+            Either<L,OptionalKind<T>> f = nested.bimap(i->i,o -> OptionalKind.widen(o));
+            EitherKind<L,OptionalKind<T>> x = widen(f);
+
+            EitherKind<L,Higher<optional,T>> y = (EitherKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <L,T> Nested<Higher<either,L>,completableFuture,T> javaCompletableFuture(Either<L,CompletableFuture<T>> nested){
+            Either<L,CompletableFutureKind<T>> f = nested.bimap(i->i,o -> CompletableFutureKind.widen(o));
+            EitherKind<L,CompletableFutureKind<T>> x = widen(f);
+            EitherKind<L,Higher<completableFuture,T>> y = (EitherKind)x;
+            return Nested.of(y, Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <L,T> Nested<Higher<either,L>,Witness.stream,T> javaStream(Either<L,java.util.stream.Stream<T>> nested){
+            Either<L,cyclops.companion.Streams.StreamKind<T>> f = nested.bimap(i->i,o -> cyclops.companion.Streams.StreamKind.widen(o));
+            EitherKind<L,cyclops.companion.Streams.StreamKind<T>> x = widen(f);
+            EitherKind<L,Higher<Witness.stream,T>> y = (EitherKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+    }
+
+    public static interface NestedEither{
+        public static <L,T> Nested<reactiveSeq,Higher<either,L>,T> reactiveSeq(ReactiveSeq<Either<L,T>> nested){
+            ReactiveSeq<Higher<Higher<either,L>,T>> x = nested.map(EitherKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <L,T> Nested<maybe,Higher<either,L>,T> maybe(Maybe<Either<L,T>> nested){
+            Maybe<Higher<Higher<either,L>,T>> x = nested.map(EitherKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <L,T> Nested<eval,Higher<either,L>,T> eval(Eval<Either<L,T>> nested){
+            Eval<Higher<Higher<either,L>,T>> x = nested.map(EitherKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <L,T> Nested<Witness.future,Higher<either,L>,T> future(cyclops.async.Future<Either<L,T>> nested){
+            cyclops.async.Future<Higher<Higher<either,L>,T>> x = nested.map(EitherKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <L,S, P> Nested<Higher<xor,S>,Higher<either,L>, P> xor(Xor<S, Either<L,P>> nested){
+            Xor<S, Higher<Higher<either,L>,P>> x = nested.map(EitherKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <L,S,T> Nested<Higher<reader,S>,Higher<either,L>, T> reader(Reader<S, Either<L,T>> nested){
+
+            Reader<S, Higher<Higher<either,L>, T>>  x = nested.map(EitherKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <L,S extends Throwable, P> Nested<Higher<tryType,S>,Higher<either,L>, P> cyclopsTry(Try<Either<L,P>, S> nested){
+            cyclops.control.Try<Higher<Higher<either,L>,P>, S> x = nested.map(EitherKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <L,T> Nested<optional,Higher<either,L>,T> javaEitheral(Optional<Either<L,T>> nested){
+            Optional<Higher<Higher<either,L>,T>> x = nested.map(EitherKind::widenK);
+
+            return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <L,T> Nested<completableFuture,Higher<either,L>,T> javaCompletableFuture(CompletableFuture<Either<L,T>> nested){
+            CompletableFuture<Higher<Higher<either,L>,T>> x = nested.thenApply(EitherKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <L,T> Nested<Witness.stream,Higher<either,L>,T> javaStream(java.util.stream.Stream<Either<L,T>> nested){
+            java.util.stream.Stream<Higher<Higher<either,L>,T>> x = nested.map(EitherKind::widenK);
+
+            return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
     }
 
 

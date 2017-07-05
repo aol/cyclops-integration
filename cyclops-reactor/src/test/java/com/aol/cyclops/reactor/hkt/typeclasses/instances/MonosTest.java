@@ -15,6 +15,10 @@ import cyclops.companion.reactor.Monos.Instances;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Monoid;
+import cyclops.monads.ReactorWitness;
+import cyclops.monads.ReactorWitness.mono;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.maybe;
 import cyclops.typeclasses.monad.Applicative;
 import cyclops.typeclasses.monad.Traverse;
 import org.junit.Test;
@@ -38,7 +42,7 @@ public class MonosTest {
         
         MonoKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(MonoKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
@@ -58,8 +62,8 @@ public class MonosTest {
         
         MonoKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> Instances.applicative().ap(optFn, h))
+                                     .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Instances.applicative().ap(optFn, h))
                                      .convert(MonoKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()*2).join()));
@@ -75,7 +79,7 @@ public class MonosTest {
         
         MonoKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(MonoKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
@@ -85,7 +89,7 @@ public class MonosTest {
         
         MonoKind<String> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(MonoKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
@@ -95,7 +99,7 @@ public class MonosTest {
         
         MonoKind<String> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(MonoKind::narrowK);
         
         assertTrue(opt.block()==null);
@@ -112,7 +116,7 @@ public class MonosTest {
     public void monadPlusNonEmpty(){
         
         Monoid<MonoKind<Integer>> m = Monoid.of(MonoKind.widen(Mono.empty()), (a, b)->a.toFuture().isDone() ? b : a);
-        MonoKind<Integer> opt = Instances.<Integer>monadPlus(m)
+        MonoKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(MonoKind.widen(Mono.just(5)), MonoKind.widen(Mono.just(10)))
                                       .convert(MonoKind::narrowK);
         assertThat(opt.block(),equalTo(10));
@@ -133,14 +137,14 @@ public class MonosTest {
     }
     @Test
     public void traverse(){
-        Traverse<MonoKind.µ> traverse = Monos.Instances.traverse();
-        Applicative<Maybe.µ> applicative = Maybe.Instances.applicative();
+        Traverse<mono> traverse = Monos.Instances.traverse();
+        Applicative<maybe> applicative = Maybe.Instances.applicative();
 
         MonoKind<Integer> mono = MonoKind.widen(Mono.just(1));
 
-        Higher<Maybe.µ, Higher<MonoKind.µ, Integer>> t = traverse.traverseA(applicative, (Integer a) -> Maybe.just(a * 2), mono);
+        Higher<maybe, Higher<mono, Integer>> t = traverse.traverseA(applicative, (Integer a) -> Maybe.just(a * 2), mono);
 
-        Maybe<Higher<MonoKind.µ, Integer>> res = traverse.traverseA(applicative, (Integer a)-> Maybe.just(a*2),mono)
+        Maybe<Higher<mono, Integer>> res = traverse.traverseA(applicative, (Integer a)-> Maybe.just(a*2),mono)
                                                         .convert(Maybe::narrowK);
 
 
@@ -150,10 +154,10 @@ public class MonosTest {
     }
     @Test
     public void sequence(){
-        Traverse<MonoKind.µ> traverse = Monos.Instances.traverse();
-        Applicative<Maybe.µ> applicative = Maybe.Instances.applicative();
+        Traverse<mono> traverse = Monos.Instances.traverse();
+        Applicative<maybe> applicative = Maybe.Instances.applicative();
 
-        Higher<Maybe.µ, Higher<MonoKind.µ, Integer>> res = traverse.sequenceA(applicative, MonoKind.widen(Mono.just(Maybe.just(1))));
+        Higher<maybe, Higher<mono, Integer>> res = traverse.sequenceA(applicative, MonoKind.widen(Mono.just(Maybe.just(1))));
         Maybe<Mono<Integer>> nk = res.convert(Maybe::narrowK)
                                      .map(h -> h.convert(MonoKind::narrow));
 

@@ -7,10 +7,23 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
+import cyclops.companion.vavr.Arrays;
+import cyclops.companion.vavr.Futures;
 import cyclops.conversion.vavr.FromCyclopsReact;
 
 import com.aol.cyclops2.hkt.Higher;
 
+import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.future;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.FutureT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import io.vavr.collection.Array;
+import io.vavr.collection.List;
+import io.vavr.collection.Queue;
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
 import io.vavr.control.Option;
@@ -21,24 +34,32 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for Vavr Future's
  * 
- * FutureKind is a Future and a Higher Kinded Type (FutureKind.µ,T)
+ * FutureKind is a Future and a Higher Kinded Type (future,T)
  * 
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Future
  */
 
-public interface FutureKind<T> extends Higher<FutureKind.µ, T>, Future<T> {
+public interface FutureKind<T> extends Higher<future, T>, Future<T> {
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+    public static <T> Higher<future,T> widenK(final Future<T> completableList) {
+
+        return new FutureKind.Box<>(
+                completableList);
     }
-    
+    default Active<future,T> allTypeclasses(){
+        return Active.of(this, Futures.Instances.definitions());
+    }
+    default <W2,R> Nested<future,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Futures.mapM(this,fn,defs);
+    }
+    default <W extends WitnessType<W>> FutureT<W, T> liftM(W witness) {
+        return FutureT.of(witness.adapter().unit(ToCyclopsReact.future(this)));
+    }
+    default <R> FutureKind<R> fold(Function<? super Future<? super T>,? extends Future<R>> op){
+        return widen(op.apply(this));
+    }
     public static <T> FutureKind<T> failed(Throwable exception){
         return widen(Future.failed(exception));
     }
@@ -82,7 +103,7 @@ public interface FutureKind<T> extends Higher<FutureKind.µ, T>, Future<T> {
      * @param future HKT encoded list into a FutureKind
      * @return FutureKind
      */
-    public static <T> FutureKind<T> narrowK(final Higher<FutureKind.µ, T> future) {
+    public static <T> FutureKind<T> narrowK(final Higher<future, T> future) {
        return (FutureKind<T>)future;
     }
 
@@ -92,7 +113,7 @@ public interface FutureKind<T> extends Higher<FutureKind.µ, T>, Future<T> {
      * @param completableFuture Type Constructor to convert back into narrowed type
      * @return Future from Higher Kinded Type
      */
-    public static <T> Future<T> narrow(final Higher<FutureKind.µ, T> completableFuture) {
+    public static <T> Future<T> narrow(final Higher<future, T> completableFuture) {
         if (completableFuture instanceof Future) {
             return (Future)completableFuture;
            

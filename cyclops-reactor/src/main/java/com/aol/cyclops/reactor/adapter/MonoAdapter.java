@@ -76,4 +76,8 @@ public class MonoAdapter extends AbstractFunctionalAdapter<mono> {
         return ReactiveSeq.fromPublisher(mono(t));
     }
 
+    @Override
+    public <T, R> AnyM<mono, R> map(AnyM<mono, T> t, Function<? super T, ? extends R> fn) {
+        return Monos.anyM(future(t).map(fn));
+    }
 }

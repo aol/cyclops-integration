@@ -1,6 +1,6 @@
 # Functional Java Integration
 
-v8.0.0 of cyclops-functionaljava and above is built using v4.5 of FunctionalJava.
+
 
 ## Get cyclops-functionaljava
 

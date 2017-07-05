@@ -1,33 +1,64 @@
 package cyclops.companion.vavr;
 
 
+import com.aol.cyclops.vavr.hkt.*;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.Optionals;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.monads.VavrWitness.array;
-import com.aol.cyclops.vavr.hkt.ArrayKind;
+import cyclops.monads.*;
+import cyclops.monads.VavrWitness.*;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
 
+import cyclops.monads.VavrWitness.either;
+import cyclops.monads.VavrWitness.future;
+import cyclops.monads.VavrWitness.list;
+import cyclops.monads.VavrWitness.tryType;
+import cyclops.monads.Witness.*;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
-import io.vavr.collection.Array;
+import io.vavr.Lazy;
+import io.vavr.collection.*;
+import io.vavr.concurrent.Future;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+import static com.aol.cyclops.vavr.hkt.ArrayKind.widen;
+
 
 public class Arrays {
 
-
+    public static  <W1,T> Coproduct<W1,array,T> coproduct(Array<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(widen(list)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,array,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return coproduct(Array.of(values),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,array,T> xorM(Array<T> type){
+        return XorM.right(anyM(type));
+    }
    
     public static <T> AnyMSeq<array,T> anyM(Array<T> option) {
         return AnyM.ofSeq(option, array.INSTANCE);
@@ -301,15 +332,79 @@ public class Arrays {
                     .map(in2 -> yieldingFunction.apply(in,  in2));
         });
     }
+    public static <T> Active<array,T> allTypeclasses(Array<T> array){
+        return Active.of(widen(array), Instances.definitions());
+    }
+    public static <T,W2,R> Nested<array,W2,R> mapM(Array<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Array<Higher<W2, R>> e = array.map(fn);
+        ArrayKind<Higher<W2, R>> lk = widen(e);
+        return Nested.of(lk, Arrays.Instances.definitions(), defs);
+    }
     /**
-     * Companion class for creating Type Class instances for working with Arrays
-     * @author johnmcclean
-     *
+     * Companion class for creating Type Class instances for working with Arrays*
      */
     @UtilityClass
     public static class Instances {
+        public static InstanceDefinitions<array> definitions() {
+            return new InstanceDefinitions<array>() {
 
+                @Override
+                public <T, R> Functor<array> functor() {
+                    return Instances.functor();
+                }
 
+                @Override
+                public <T> Pure<array> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<array> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<array> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<array>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<array>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<array>> monadPlus(Monoid<Higher<array, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<array>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<array>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<array>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<array>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+
+        }
         /**
          *
          * Transform a list, mulitplying every element by 2
@@ -338,7 +433,7 @@ public class Arrays {
          *
          * @return A functor for Arrays
          */
-        public static <T,R>Functor<ArrayKind.µ> functor(){
+        public static <T,R>Functor<array> functor(){
             BiFunction<ArrayKind<T>,Function<? super T, ? extends R>,ArrayKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -357,8 +452,8 @@ public class Arrays {
          *
          * @return A factory for Arrays
          */
-        public static <T> Pure<ArrayKind.µ> unit(){
-            return General.<ArrayKind.µ,T>unit(ArrayKind::of);
+        public static <T> Pure<array> unit(){
+            return General.<array,T>unit(ArrayKind::of);
         }
         /**
          *
@@ -397,7 +492,7 @@ public class Arrays {
          *
          * @return A zipper for Arrays
          */
-        public static <T,R> Applicative<ArrayKind.µ> zippingApplicative(){
+        public static <T,R> Applicative<array> zippingApplicative(){
             BiFunction<ArrayKind< Function<T, R>>,ArrayKind<T>,ArrayKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -427,9 +522,9 @@ public class Arrays {
          *
          * @return Type class with monad functions for Arrays
          */
-        public static <T,R> Monad<ArrayKind.µ> monad(){
+        public static <T,R> Monad<array> monad(){
 
-            BiFunction<Higher<ArrayKind.µ,T>,Function<? super T, ? extends Higher<ArrayKind.µ,R>>,Higher<ArrayKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<array,T>,Function<? super T, ? extends Higher<array,R>>,Higher<array,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
         /**
@@ -449,9 +544,9 @@ public class Arrays {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<ArrayKind.µ> monadZero(){
+        public static <T,R> MonadZero<array> monadZero(){
 
-            return General.monadZero(monad(), ArrayKind.widen(Array.empty()));
+            return General.monadZero(monad(), widen(Array.empty()));
         }
         /**
          * <pre>
@@ -465,9 +560,9 @@ public class Arrays {
          * </pre>
          * @return Type class for combining Arrays by concatenation
          */
-        public static <T> MonadPlus<ArrayKind.µ> monadPlus(){
-            Monoid<ArrayKind<T>> m = Monoid.of(ArrayKind.widen(Array.empty()), Instances::concat);
-            Monoid<Higher<ArrayKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<array> monadPlus(){
+            Monoid<ArrayKind<T>> m = Monoid.of(widen(Array.empty()), Instances::concat);
+            Monoid<Higher<array,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -486,24 +581,36 @@ public class Arrays {
          * @param m Monoid to use for combining Arrays
          * @return Type class for combining Arrays
          */
-        public static <T> MonadPlus<ArrayKind.µ> monadPlus(Monoid<ArrayKind<T>> m){
-            Monoid<Higher<ArrayKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<array> monadPlus(Monoid<Higher<array, T>> m){
+            Monoid<Higher<array,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static <T> MonadPlus<array> monadPlusK(Monoid<ArrayKind<T>> m){
+            Monoid<Higher<array,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static Unfoldable<array> unfoldable(){
+            return new Unfoldable<array>() {
+                @Override
+                public <R, T> Higher<array, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    return widen(ReactiveSeq.unfold(b,fn).collect(Array.collector()));
 
+                }
+            };
+        }
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<ArrayKind.µ> traverse(){
+        public static <C2,T> Traverse<array> traverse(){
 
             BiFunction<Applicative<C2>,ArrayKind<Higher<C2, T>>,Higher<C2, ArrayKind<T>>> sequenceFn = (ap, list) -> {
 
-                Higher<C2,ArrayKind<T>> identity = ap.unit(ArrayKind.widen(Array.empty()));
+                Higher<C2,ArrayKind<T>> identity = ap.unit(widen(Array.empty()));
 
-                BiFunction<Higher<C2,ArrayKind<T>>,Higher<C2,T>,Higher<C2,ArrayKind<T>>> combineToArray =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> ArrayKind.widen(ArrayKind.narrow(a).append(b))),
+                BiFunction<Higher<C2,ArrayKind<T>>,Higher<C2,T>,Higher<C2,ArrayKind<T>>> combineToArray =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> widen(ArrayKind.narrow(a).append(b))),
                         acc,next);
 
-                BinaryOperator<Higher<C2,ArrayKind<T>>> combineArrays = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> ArrayKind.widen(ArrayKind.narrow(l1).appendAll(l2.narrow()))),a,b); ;
+                BinaryOperator<Higher<C2,ArrayKind<T>>> combineArrays = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> widen(ArrayKind.narrow(l1).appendAll(l2.narrow()))),a,b); ;
 
                 return ReactiveSeq.fromIterable(ArrayKind.narrow(list))
                         .reduce(identity,
@@ -512,7 +619,7 @@ public class Arrays {
 
 
             };
-            BiFunction<Applicative<C2>,Higher<ArrayKind.µ,Higher<C2, T>>,Higher<C2, Higher<ArrayKind.µ,T>>> sequenceNarrow  =
+            BiFunction<Applicative<C2>,Higher<array,Higher<C2, T>>,Higher<C2, Higher<array,T>>> sequenceNarrow  =
                     (a,b) -> ArrayKind.widen2(sequenceFn.apply(a, ArrayKind.narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
@@ -532,26 +639,172 @@ public class Arrays {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<ArrayKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<ArrayKind.µ,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(ArrayKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<ArrayKind.µ,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(ArrayKind.narrow(l)).reduce(m);
+        public static <T> Foldable<array> foldable(){
+            BiFunction<Monoid<T>,Higher<array,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(ArrayKind.narrow(l)).foldRight(m);
+            BiFunction<Monoid<T>,Higher<array,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(ArrayKind.narrow(l)).reduce(m);
             return General.foldable(foldRightFn, foldLeftFn);
         }
 
         private static  <T> ArrayKind<T> concat(ArrayKind<T> l1, ArrayKind<T> l2){
 
-            return ArrayKind.widen(l1.appendAll(ArrayKind.narrow(l2)));
+            return widen(l1.appendAll(ArrayKind.narrow(l2)));
 
         }
 
         private static <T,R> ArrayKind<R> ap(ArrayKind<Function< T, R>> lt, ArrayKind<T> list){
-            return ArrayKind.widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toArray());
+            return widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toArray());
         }
-        private static <T,R> Higher<ArrayKind.µ,R> flatMap(Higher<ArrayKind.µ,T> lt, Function<? super T, ? extends  Higher<ArrayKind.µ,R>> fn){
-            return ArrayKind.widen(ArrayKind.narrow(lt).flatMap(fn.andThen(ArrayKind::narrow)));
+        private static <T,R> Higher<array,R> flatMap(Higher<array,T> lt, Function<? super T, ? extends  Higher<array,R>> fn){
+            return widen(ArrayKind.narrow(lt).flatMap(fn.andThen(ArrayKind::narrow)));
         }
         private static <T,R> ArrayKind<R> map(ArrayKind<T> lt, Function<? super T, ? extends R> fn){
-            return ArrayKind.widen(ArrayKind.narrow(lt).map(in->fn.apply(in)));
+            return widen(ArrayKind.narrow(lt).map(in->fn.apply(in)));
+        }
+    }
+
+    public static interface ArrayNested{
+
+
+        public static <T> Nested<array,option,T> option(Array<Option<T>> type){
+            return Nested.of(widen(type.map(OptionKind::widen)),Instances.definitions(),Options.Instances.definitions());
+        }
+        public static <T> Nested<array,tryType,T> arrayTry(Array<Try<T>> type){
+            return Nested.of(widen(type.map(TryKind::widen)),Instances.definitions(),Trys.Instances.definitions());
+        }
+        public static <T> Nested<array,future,T> future(Array<Future<T>> type){
+            return Nested.of(widen(type.map(FutureKind::widen)),Instances.definitions(),Futures.Instances.definitions());
+        }
+        public static <T> Nested<array,lazy,T> lazy(Array<Lazy<T>> nested){
+            return Nested.of(widen(nested.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
+        }
+        public static <L, R> Nested<array,Higher<either,L>, R> either(Array<Either<L, R>> nested){
+            return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
+        }
+        public static <T> Nested<array,VavrWitness.queue,T> queue(Array<Queue<T>> nested){
+            return Nested.of(widen(nested.map(QueueKind::widen)), Instances.definitions(),Queues.Instances.definitions());
+        }
+        public static <T> Nested<array,VavrWitness.stream,T> stream(Array<Stream<T>> nested){
+            return Nested.of(widen(nested.map(StreamKind::widen)),Instances.definitions(),Streams.Instances.definitions());
+        }
+        public static <T> Nested<array,list,T> list(Array<List<T>> nested){
+            return Nested.of(widen(nested.map(ListKind::widen)), Instances.definitions(),Lists.Instances.definitions());
+        }
+        public static <T> Nested<array,array,T> array(Array<Array<T>> nested){
+            return Nested.of(widen(nested.map(ArrayKind::widen)),Instances.definitions(),Arrays.Instances.definitions());
+        }
+        public static <T> Nested<array,vector,T> vector(Array<Vector<T>> nested){
+            return Nested.of(widen(nested.map(VectorKind::widen)),Instances.definitions(),Vectors.Instances.definitions());
+        }
+        public static <T> Nested<array,hashSet,T> set(Array<HashSet<T>> nested){
+            return Nested.of(widen(nested.map(HashSetKind::widen)),Instances.definitions(), HashSets.Instances.definitions());
+        }
+
+        public static <T> Nested<array,reactiveSeq,T> reactiveSeq(Array<ReactiveSeq<T>> nested){
+            ArrayKind<ReactiveSeq<T>> x = widen(nested);
+            ArrayKind<Higher<reactiveSeq,T>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<array,maybe,T> maybe(Array<Maybe<T>> nested){
+            ArrayKind<Maybe<T>> x = widen(nested);
+            ArrayKind<Higher<maybe,T>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<array,eval,T> eval(Array<Eval<T>> nested){
+            ArrayKind<Eval<T>> x = widen(nested);
+            ArrayKind<Higher<eval,T>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<array,Witness.future,T> cyclopsFuture(Array<cyclops.async.Future<T>> nested){
+            ArrayKind<cyclops.async.Future<T>> x = widen(nested);
+            ArrayKind<Higher<Witness.future,T>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<array,Higher<xor,S>, P> xor(Array<Xor<S, P>> nested){
+            ArrayKind<Xor<S, P>> x = widen(nested);
+            ArrayKind<Higher<Higher<xor,S>, P>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<array,Higher<reader,S>, T> reader(Array<Reader<S, T>> nested){
+            ArrayKind<Reader<S, T>> x = widen(nested);
+            ArrayKind<Higher<Higher<reader,S>, T>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<array,Higher<Witness.tryType,S>, P> cyclopsTry(Array<cyclops.control.Try<P, S>> nested){
+            ArrayKind<cyclops.control.Try<P, S>> x = widen(nested);
+            ArrayKind<Higher<Higher<Witness.tryType,S>, P>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<array,optional,T> optional(Array<Optional<T>> nested){
+            ArrayKind<Optional<T>> x = widen(nested);
+            ArrayKind<Higher<optional,T>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(), Optionals.Instances.definitions());
+        }
+        public static <T> Nested<array,completableFuture,T> completableFuture(Array<CompletableFuture<T>> nested){
+            ArrayKind<CompletableFuture<T>> x = widen(nested);
+            ArrayKind<Higher<completableFuture,T>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<array,Witness.stream,T> javaStream(Array<java.util.stream.Stream<T>> nested){
+            ArrayKind<java.util.stream.Stream<T>> x = widen(nested);
+            ArrayKind<Higher<Witness.stream,T>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+
+
+    }
+    public static interface NestedArray{
+        public static <T> Nested<reactiveSeq,array,T> reactiveSeq(ReactiveSeq<Array<T>> nested){
+            ReactiveSeq<Higher<array,T>> x = nested.map(ArrayKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,array,T> maybe(Maybe<Array<T>> nested){
+            Maybe<Higher<array,T>> x = nested.map(ArrayKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,array,T> eval(Eval<Array<T>> nested){
+            Eval<Higher<array,T>> x = nested.map(ArrayKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,array,T> cyclopsFuture(cyclops.async.Future<Array<T>> nested){
+            cyclops.async.Future<Higher<array,T>> x = nested.map(ArrayKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,array, P> xor(Xor<S, Array<P>> nested){
+            Xor<S, Higher<array,P>> x = nested.map(ArrayKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,array, T> reader(Reader<S, Array<T>> nested){
+
+            Reader<S, Higher<array, T>>  x = nested.map(ArrayKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,array, P> cyclopsTry(cyclops.control.Try<Array<P>, S> nested){
+            cyclops.control.Try<Higher<array,P>, S> x = nested.map(ArrayKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,array,T> optional(Optional<Array<T>> nested){
+            Optional<Higher<array,T>> x = nested.map(ArrayKind::widenK);
+
+            return  Nested.of(Optionals.OptionalKind.widen(x), Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,array,T> completableFuture(CompletableFuture<Array<T>> nested){
+            CompletableFuture<Higher<array,T>> x = nested.thenApply(ArrayKind::widenK);
+
+            return Nested.of(CompletableFutures.CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,array,T> javaStream(java.util.stream.Stream<Array<T>> nested){
+            java.util.stream.Stream<Higher<array,T>> x = nested.map(ArrayKind::widenK);
+
+            return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
         }
     }
 

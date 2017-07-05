@@ -3,7 +3,16 @@ package com.aol.cyclops.rx2.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.async.Future;
+import cyclops.companion.rx2.Flowables;
 import cyclops.companion.rx2.Maybes;
+import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.maybe;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
+import cyclops.monads.transformers.rx2.MaybeT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.reactivex.*;
 import io.reactivex.annotations.*;
 import io.reactivex.disposables.Disposable;
@@ -18,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Simulates Higher Kinded Types for RxJava 2 Maybe's
  * 
- * MaybeKind is a Maybe and a Higher Kinded Type (MaybeKind.µ,T)
+ * MaybeKind is a Maybe and a Higher Kinded Type (maybe,T)
  * 
  * @author johnmcclean
  *
@@ -26,18 +35,29 @@ import java.util.concurrent.TimeUnit;
  */
 
 
-public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T> {
+public final class MaybeKind<T> implements Higher<maybe, T>, Publisher<T> {
     private MaybeKind(Maybe<T> boxed) {
         this.boxed = boxed;
     }
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+    public <R> MaybeKind<R> fold(java.util.function.Function<? super Maybe<?  super T>,? extends Maybe<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public Active<maybe,T> allTypeclasses(){
+        return Active.of(this, Maybes.Instances.definitions());
+    }
+
+    public static <T> Higher<maybe,T> widenK(final Maybe<T> completableList) {
+
+        return new MaybeKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<maybe,W2,R> mapM(java.util.function.Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Maybes.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> MaybeT<W, T> liftM(W witness) {
+        return MaybeT.of(witness.adapter().unit(boxed));
     }
     
     /**
@@ -83,7 +103,7 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
      * @param future HKT encoded list into a MaybeKind
      * @return MaybeKind
      */
-    public static <T> MaybeKind<T> narrowK(final Higher<MaybeKind.µ, T> future) {
+    public static <T> MaybeKind<T> narrowK(final Higher<maybe, T> future) {
        return (MaybeKind<T>)future;
     }
 
@@ -93,7 +113,7 @@ public final class MaybeKind<T> implements Higher<MaybeKind.µ, T>, Publisher<T>
      * @param completableMaybe Type Constructor to convert back into narrowed type
      * @return Maybe from Higher Kinded Type
      */
-    public static <T> Maybe<T> narrow(final Higher<MaybeKind.µ, T> completableMaybe) {
+    public static <T> Maybe<T> narrow(final Higher<maybe, T> completableMaybe) {
       
             return ((MaybeKind<T>)completableMaybe).narrow();
            

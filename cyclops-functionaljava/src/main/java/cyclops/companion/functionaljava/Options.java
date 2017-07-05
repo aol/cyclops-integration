@@ -1,13 +1,21 @@
 package cyclops.companion.functionaljava;
 
 
+import com.aol.cyclops.functionaljava.hkt.*;
 import cyclops.collections.mutable.ListX;
-import cyclops.monads.FJ;
-import cyclops.monads.FJWitness;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.CompletableFutures.CompletableFutureKind;
+import cyclops.companion.Optionals;
+import cyclops.companion.Optionals.OptionalKind;
+import cyclops.control.Eval;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
+import cyclops.monads.*;
+import cyclops.monads.FJWitness.list;
+import cyclops.monads.FJWitness.nonEmptyList;
 import cyclops.monads.FJWitness.option;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
-import com.aol.cyclops.functionaljava.hkt.OptionKind;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Value;
@@ -17,16 +25,19 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
-import cyclops.monads.AnyM;
-import cyclops.monads.WitnessType;
+import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.OptionalT;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import fj.data.Either;
+import fj.data.List;
+import fj.data.NonEmptyList;
 import fj.data.Option;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
@@ -35,9 +46,12 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static com.aol.cyclops.functionaljava.hkt.OptionKind.widen;
 
 /**
  * Utility class for working with JDK Optionals
@@ -47,6 +61,22 @@ import java.util.stream.Stream;
  */
 @UtilityClass
 public class Options {
+    public static  <W1,T> Coproduct<W1,option,T> coproduct(Option<T> type, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,option,T> coproduct(T value, InstanceDefinitions<W1> def1){
+        return coproduct(Option.some(value),def1);
+    }
+    public static  <W1,T> Coproduct<W1,option,T> coproductNone(InstanceDefinitions<W1> def1){
+        return coproduct(Option.none(),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,option,T> xorM(Option<T> type){
+        return XorM.right(anyM(type));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,option,T> xorMNone(){
+        return xorM(Option.none());
+    }
+
     public static <T,W extends WitnessType<W>> OptionalT<W, T> liftM(Option<T> opt, W witness) {
         return OptionalT.of(witness.adapter().unit(opt.isSome()? Optional.of(opt.some()) : Optional.empty()));
     }
@@ -581,15 +611,81 @@ public class Options {
         return (Option<T>) optional;
     }
 
+    public static <T> Active<option,T> allTypeclasses(Option<T> array){
+        return Active.of(widen(array), Instances.definitions());
+    }
+    public static <T,W2,R> Nested<option,W2,R> mapM(Option<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Option<Higher<W2, R>> e = array.map(i->fn.apply(i));
+        OptionKind<Higher<W2, R>> lk = widen(e);
+        return Nested.of(lk, Instances.definitions(), defs);
+    }
+
     /**
      * Companion class for creating Type Class instances for working with Options
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<option> definitions() {
+            return new InstanceDefinitions<option>() {
 
+                @Override
+                public <T, R> Functor<option> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<option> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<option> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<option> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<option>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<option>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<option>> monadPlus(Monoid<Higher<option, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<option>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<option>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<option>> comonad() {
+                    return Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<option>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        }
         /**
          *
          * Transform a option, mulitplying every element by 2
@@ -619,7 +715,7 @@ public class Options {
          *
          * @return A functor for Options
          */
-        public static <T,R>Functor<OptionKind.µ> functor(){
+        public static <T,R>Functor<option> functor(){
             BiFunction<OptionKind<T>,Function<? super T, ? extends R>,OptionKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -638,8 +734,8 @@ public class Options {
          *
          * @return A factory for Options
          */
-        public static <T> Pure<OptionKind.µ> unit(){
-            return General.<OptionKind.µ,T>unit(Instances::of);
+        public static <T> Pure<option> unit(){
+            return General.<option,T>unit(Instances::of);
         }
         /**
          *
@@ -678,7 +774,7 @@ public class Options {
          *
          * @return A zipper for Options
          */
-        public static <T,R> Applicative<OptionKind.µ> applicative(){
+        public static <T,R> Applicative<option> applicative(){
             BiFunction<OptionKind< Function<T, R>>,OptionKind<T>,OptionKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -708,9 +804,9 @@ public class Options {
          *
          * @return Type class with monad functions for Options
          */
-        public static <T,R> Monad<OptionKind.µ> monad(){
+        public static <T,R> Monad<option> monad(){
 
-            BiFunction<Higher<OptionKind.µ,T>,Function<? super T, ? extends Higher<OptionKind.µ,R>>,Higher<OptionKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<option,T>,Function<? super T, ? extends Higher<option,R>>,Higher<option,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
         /**
@@ -730,7 +826,7 @@ public class Options {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<OptionKind.µ> monadZero(){
+        public static <T,R> MonadZero<option> monadZero(){
 
             return General.monadZero(monad(), OptionKind.empty());
         }
@@ -746,12 +842,12 @@ public class Options {
          * </pre>
          * @return Type class for combining Options by concatenation
          */
-        public static <T> MonadPlus<OptionKind.µ> monadPlus(){
+        public static <T> MonadPlus<option> monadPlus(){
             Monoid<Option<T>> mn = Monoid.of(Option.none(), (a, b) -> a.isSome() ? a : b);
-            Monoid<OptionKind<T>> m = Monoid.of(OptionKind.widen(mn.zero()), (f, g)-> OptionKind.widen(
+            Monoid<OptionKind<T>> m = Monoid.of(widen(mn.zero()), (f, g)-> widen(
                     mn.apply(OptionKind.narrow(f), OptionKind.narrow(g))));
 
-            Monoid<Higher<OptionKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<option,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -770,15 +866,19 @@ public class Options {
          * @param m Monoid to use for combining Options
          * @return Type class for combining Options
          */
-        public static <T> MonadPlus<OptionKind.µ> monadPlus(Monoid<OptionKind<T>> m){
-            Monoid<Higher<OptionKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<option> monadPlusK(Monoid<OptionKind<T>> m){
+            Monoid<Higher<option,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<option> monadPlus(Monoid<Higher<option,T>> m){
+            Monoid<Higher<option,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<OptionKind.µ> traverse(){
+        public static <C2,T> Traverse<option> traverse(){
 
             return General.traverseByTraverse(applicative(), Instances::traverseA);
         }
@@ -798,42 +898,186 @@ public class Options {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<OptionKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<OptionKind.µ,T>,T> foldRightFn =  (m, l)-> OptionKind.narrow(l).orSome(m.zero());
-            BiFunction<Monoid<T>,Higher<OptionKind.µ,T>,T> foldLeftFn = (m, l)-> OptionKind.narrow(l).orSome(m.zero());
+        public static <T> Foldable<option> foldable(){
+            BiFunction<Monoid<T>,Higher<option,T>,T> foldRightFn =  (m, l)-> OptionKind.narrow(l).orSome(m.zero());
+            BiFunction<Monoid<T>,Higher<option,T>,T> foldLeftFn = (m, l)-> OptionKind.narrow(l).orSome(m.zero());
             return General.foldable(foldRightFn, foldLeftFn);
         }
-        public static <T> Comonad<OptionKind.µ> comonad(){
-            Function<? super Higher<OptionKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionKind::narrow).some();
+        public static <T> Comonad<option> comonad(){
+            Function<? super Higher<option, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionKind::narrow).some();
             return General.comonad(functor(), unit(), extractFn);
         }
 
         private <T> OptionKind<T> of(T value){
-            return OptionKind.widen(Option.some(value));
+            return widen(Option.some(value));
         }
         private static <T,R> OptionKind<R> ap(OptionKind<Function< T, R>> lt, OptionKind<T> option){
 
             Maybe<R> mb = FJ.maybe(lt.narrow()).combine(FJ.maybe(option.narrow()),
                     (a,b)->a.apply(b));
-            return OptionKind.widen(mb);
+            return widen(mb);
 
         }
-        private static <T,R> Higher<OptionKind.µ,R> flatMap(Higher<OptionKind.µ,T> lt, Function<? super T, ? extends  Higher<OptionKind.µ,R>> fn){
-            return OptionKind.widen(OptionKind.narrow(lt).bind(in->fn.andThen(OptionKind::narrow).apply(in)));
+        private static <T,R> Higher<option,R> flatMap(Higher<option,T> lt, Function<? super T, ? extends  Higher<option,R>> fn){
+            return widen(OptionKind.narrow(lt).bind(in->fn.andThen(OptionKind::narrow).apply(in)));
         }
         private static <T,R> OptionKind<R> map(OptionKind<T> lt, Function<? super T, ? extends R> fn){
 
-            return OptionKind.widen(OptionKind.narrow(lt).map(t->fn.apply(t)));
+            return widen(OptionKind.narrow(lt).map(t->fn.apply(t)));
         }
 
 
-        private static <C2,T,R> Higher<C2, Higher<OptionKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
-                                                                              Higher<OptionKind.µ, T> ds){
+        private static <C2,T,R> Higher<C2, Higher<option, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                              Higher<option, T> ds){
             Option<T> opt = OptionKind.narrow(ds);
             return opt.isSome()?   applicative.map(OptionKind::of, fn.apply(opt.some())) :
                     applicative.unit(OptionKind.empty());
         }
 
+    }
+    public static interface OptionNested {
+        public static <T> Nested<option,option,T> option(Option<Option<T>> nested){
+            Option<OptionKind<T>> f = nested.map(OptionKind::widen);
+            OptionKind<OptionKind<T>> x = widen(f);
+            OptionKind<Higher<option,T>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(), Options.Instances.definitions());
+        }
+        public static <L,T> Nested<option,Higher<FJWitness.either,L>,T> either(Option<Either<L,T>> nested){
+            Option<EitherKind<L,T>> f = nested.map(EitherKind::widen);
+            OptionKind<EitherKind<L,T>> x = widen(f);
+            OptionKind<Higher<Higher<FJWitness.either,L>,T>> y = (OptionKind)x;
+
+            return Nested.of(y,Instances.definitions(), Eithers.Instances.definitions());
+        }
+        public static <T> Nested<option,nonEmptyList,T> nonEmptyList(Option<NonEmptyList<T>> nested){
+            Option<NonEmptyListKind<T>> f = nested.map(NonEmptyListKind::widen);
+            OptionKind<NonEmptyListKind<T>> x = widen(f);
+            OptionKind<Higher<nonEmptyList,T>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),NonEmptyLists.Instances.definitions());
+        }
+        public static <T> Nested<option,FJWitness.stream,T> stream(Option<fj.data.Stream<T>> nested){
+            Option<StreamKind<T>> f = nested.map(StreamKind::widen);
+            OptionKind<StreamKind<T>> x = widen(f);
+            OptionKind<Higher<FJWitness.stream,T>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.companion.functionaljava.Streams.Instances.definitions());
+        }
+        public static <T> Nested<option,list,T> list(Option<List<T>> nested){
+            Option<ListKind<T>> f = nested.map(ListKind::widen);
+            OptionKind<ListKind<T>> x = widen(f);
+            OptionKind<Higher<list,T>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),Lists.Instances.definitions());
+        }
+
+        public static <T> Nested<option,reactiveSeq,T> reactiveSeq(Option<ReactiveSeq<T>> nested){
+            OptionKind<ReactiveSeq<T>> x = widen(nested);
+            OptionKind<Higher<reactiveSeq,T>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<option,Witness.maybe,T> maybe(Option<Maybe<T>> nested){
+            OptionKind<Maybe<T>> x = widen(nested);
+            OptionKind<Higher<Witness.maybe,T>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<option,Witness.eval,T> eval(Option<Eval<T>> nested){
+            OptionKind<Eval<T>> x = widen(nested);
+            OptionKind<Higher<Witness.eval,T>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<option,Witness.future,T> future(Option<cyclops.async.Future<T>> nested){
+            OptionKind<cyclops.async.Future<T>> x = widen(nested);
+            OptionKind<Higher<Witness.future,T>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<option,Higher<xor,S>, P> xor(Option<Xor<S, P>> nested){
+            OptionKind<Xor<S, P>> x = widen(nested);
+            OptionKind<Higher<Higher<xor,S>, P>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<option,Higher<reader,S>, T> reader(Option<Reader<S, T>> nested){
+            OptionKind<Reader<S, T>> x = widen(nested);
+            OptionKind<Higher<Higher<reader,S>, T>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<option,Higher<Witness.tryType,S>, P> cyclopsTry(Option<cyclops.control.Try<P, S>> nested){
+            OptionKind<cyclops.control.Try<P, S>> x = widen(nested);
+            OptionKind<Higher<Higher<Witness.tryType,S>, P>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<option,optional,T> javaOptional(Option<Optional<T>> nested){
+            Option<OptionalKind<T>> f = nested.map(o -> OptionalKind.widen(o));
+            OptionKind<OptionalKind<T>> x = OptionKind.widen(f);
+
+            OptionKind<Higher<optional,T>> y = (OptionKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <T> Nested<option,completableFuture,T> javaCompletableFuture(Option<CompletableFuture<T>> nested){
+            Option<CompletableFutureKind<T>> f = nested.map(o -> CompletableFutureKind.widen(o));
+            OptionKind<CompletableFutureKind<T>> x = OptionKind.widen(f);
+            OptionKind<Higher<completableFuture,T>> y = (OptionKind)x;
+            return Nested.of(y, Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<option,Witness.stream,T> javaStream(Option<java.util.stream.Stream<T>> nested){
+            Option<cyclops.companion.Streams.StreamKind<T>> f = nested.map(o -> cyclops.companion.Streams.StreamKind.widen(o));
+            OptionKind<cyclops.companion.Streams.StreamKind<T>> x = OptionKind.widen(f);
+            OptionKind<Higher<Witness.stream,T>> y = (OptionKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+    }
+
+    public static interface NestedOption{
+        public static <T> Nested<reactiveSeq,option,T> reactiveSeq(ReactiveSeq<Option<T>> nested){
+            ReactiveSeq<Higher<option,T>> x = nested.map(OptionKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,option,T> maybe(Maybe<Option<T>> nested){
+            Maybe<Higher<option,T>> x = nested.map(OptionKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,option,T> eval(Eval<Option<T>> nested){
+            Eval<Higher<option,T>> x = nested.map(OptionKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,option,T> future(cyclops.async.Future<Option<T>> nested){
+            cyclops.async.Future<Higher<option,T>> x = nested.map(OptionKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,option, P> xor(Xor<S, Option<P>> nested){
+            Xor<S, Higher<option,P>> x = nested.map(OptionKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,option, T> reader(Reader<S, Option<T>> nested){
+
+            Reader<S, Higher<option, T>>  x = nested.map(OptionKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,option, P> cyclopsTry(cyclops.control.Try<Option<P>, S> nested){
+            cyclops.control.Try<Higher<option,P>, S> x = nested.map(OptionKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,option,T> javaOptional(Optional<Option<T>> nested){
+            Optional<Higher<option,T>> x = nested.map(OptionKind::widenK);
+
+            return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,option,T> javaCompletableFuture(CompletableFuture<Option<T>> nested){
+            CompletableFuture<Higher<option,T>> x = nested.thenApply(OptionKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,option,T> javaStream(java.util.stream.Stream<Option<T>> nested){
+            java.util.stream.Stream<Higher<option,T>> x = nested.map(OptionKind::widenK);
+
+            return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
     }
 
 

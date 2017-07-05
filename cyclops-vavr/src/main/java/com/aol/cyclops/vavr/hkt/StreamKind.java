@@ -1,7 +1,21 @@
 package com.aol.cyclops.vavr.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.collections.vavr.VavrVectorX;
+import cyclops.companion.vavr.Streams;
+import cyclops.companion.vavr.Vectors;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.stream;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.ListT;
+import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import io.vavr.collection.Array;
+import io.vavr.collection.Vector;
+import io.vavr.concurrent.Future;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -9,6 +23,8 @@ import org.reactivestreams.Subscriber;
 import io.vavr.collection.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+
+import java.util.function.Function;
 
 /**
  * Simulates Higher Kinded Types for Vavr Stream's
@@ -21,17 +37,27 @@ import lombok.AllArgsConstructor;
  */
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class StreamKind<T> implements Higher<StreamKind.µ, T>, Publisher<T>, Stream<T>{
+public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Stream<T>{
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+    public Active<stream,T> allTypeclasses(){
+        return Active.of(this, Streams.Instances.definitions());
     }
 
+    public static <T> Higher<stream,T> widenK(final Stream<T> completableList) {
+
+        return new StreamKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<stream,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Streams.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, T> liftM(W witness) {
+        return StreamT.of(witness.adapter().unit(ReactiveSeq.fromStream(boxed.toJavaStream())));
+    }
+    public <R> StreamKind<R> fold(Function<? super Stream<? super T>,? extends Stream<R>> op){
+        return widen(op.apply(boxed));
+    }
     /**
      * Construct a HKT encoded completed Stream
      * 
@@ -73,10 +99,10 @@ public final class StreamKind<T> implements Higher<StreamKind.µ, T>, Publisher<
      * @param flux HTK encoded type containing  a Stream to widen
      * @return HKT encoded type with a widened Stream
      */
-    public static <C2, T> Higher<C2, Higher<StreamKind.µ, T>> widen2(Higher<C2, StreamKind<T>> flux) {
+    public static <C2, T> Higher<C2, Higher<stream, T>> widen2(Higher<C2, StreamKind<T>> flux) {
         // a functor could be used (if C2 is a functor / one exists for C2 type)
         // instead of casting
-        // cast seems safer as Higher<StreamKind.µ,T> must be a StreamKind
+        // cast seems safer as Higher<stream,T> must be a StreamKind
         return (Higher) flux;
     }
 
@@ -92,7 +118,7 @@ public final class StreamKind<T> implements Higher<StreamKind.µ, T>, Publisher<
      * @param future HKT encoded list into a StreamKind
      * @return StreamKind
      */
-    public static <T> StreamKind<T> narrowK(final Higher<StreamKind.µ, T> future) {
+    public static <T> StreamKind<T> narrowK(final Higher<stream, T> future) {
         return (StreamKind<T>) future;
     }
 
@@ -102,7 +128,7 @@ public final class StreamKind<T> implements Higher<StreamKind.µ, T>, Publisher<
      * @param stream Type Constructor to convert back into narrowed type
      * @return Stream from Higher Kinded Type
      */
-    public static <T> Stream<T> narrow(final Higher<StreamKind.µ, T> stream) {
+    public static <T> Stream<T> narrow(final Higher<stream, T> stream) {
 
         return ((StreamKind<T>) stream).narrow();
 

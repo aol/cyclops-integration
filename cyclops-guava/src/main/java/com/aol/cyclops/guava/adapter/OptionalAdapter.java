@@ -71,6 +71,8 @@ public class OptionalAdapter extends AbstractFunctionalAdapter<optional> {
         return Optionals.anyM(Optional.of(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<optional, R> map(AnyM<optional, T> t, Function<? super T, ? extends R> fn) {
+        return Optionals.anyM(future(t).transform(x->fn.apply(x)));
+    }
 }

@@ -10,6 +10,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
+import com.aol.cyclops2.data.collections.extensions.lazy.immutable.FoldToList;
 import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import com.aol.cyclops2.types.Unwrapable;
 import com.aol.cyclops2.types.foldable.Evaluation;
@@ -36,12 +37,14 @@ public class VavrListX<T> extends AbstractList<T> implements PStack<T>, Unwrapab
         return (R)list;
     }
 
+    static final FoldToList gen = (it,i)-> VavrListX.from(from(it,i));
 
     public static <T> LinkedListX<T> copyFromCollection(CollectionX<T> vec) {
         List<T> list = from(vec.iterator(),0);
         return from(list);
 
     }
+
     private static <E> List<E> from(final Iterator<E> i, int depth) {
 
         if(!i.hasNext())
@@ -57,7 +60,7 @@ public class VavrListX<T> extends AbstractList<T> implements PStack<T>, Unwrapab
      */
     public static <T> LazyLinkedListX<T> fromStream(Stream<T> stream) {
         Reducer<PStack<T>> p = toPStack();
-        return new LazyLinkedListX<T>(null, ReactiveSeq.fromStream(stream),p, Evaluation.LAZY);
+        return new LazyLinkedListX<T>(null, ReactiveSeq.fromStream(stream),p, gen,Evaluation.LAZY);
     }
 
     /**
@@ -152,7 +155,7 @@ public class VavrListX<T> extends AbstractList<T> implements PStack<T>, Unwrapab
         return fromPStack(new VavrListX<T>(List.empty()), toPStack());
     }
     private static <T> LazyLinkedListX<T> fromPStack(PStack<T> s, Reducer<PStack<T>> pStackReducer) {
-        return new LazyLinkedListX<T>(s,null, pStackReducer, Evaluation.LAZY);
+        return new LazyLinkedListX<T>(s,null, pStackReducer, gen, Evaluation.LAZY);
     }
     public static <T> LazyLinkedListX<T> singleton(T t){
         return fromPStack(new VavrListX<T>(List.of(t)), toPStack());

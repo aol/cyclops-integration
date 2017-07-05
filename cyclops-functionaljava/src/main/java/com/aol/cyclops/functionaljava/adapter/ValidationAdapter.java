@@ -2,6 +2,7 @@ package com.aol.cyclops.functionaljava.adapter;
 
 
 import cyclops.monads.FJ;
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.validation;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
@@ -69,6 +70,8 @@ public class ValidationAdapter<L> extends AbstractFunctionalAdapter<validation> 
         return FJ.validation(Validation.success(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<validation, R> map(AnyM<validation, T> t, Function<? super T, ? extends R> fn) {
+        return FJ.validation(validation(t).map(x->fn.apply(x)));
+    }
 }

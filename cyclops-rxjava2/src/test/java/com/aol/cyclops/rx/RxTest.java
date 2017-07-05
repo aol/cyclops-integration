@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.aol.cyclops2.types.anyM.AnyMSeq;
-import cyclops.monads.Rx2Witness.obsvervable;
+import cyclops.monads.Rx2Witness.observable;
 
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Observables;
@@ -61,7 +61,7 @@ public class RxTest {
 
         ReactiveSeq<Integer> asyncSeq = Spouts.async(Stream.of(1, 2, 3), Executors.newFixedThreadPool(1));
         Observable<Integer> observableAsync = Observables.observableFrom(asyncSeq);
-        AnyMSeq<obsvervable,Integer> monad = Observables.anyM(observableAsync);
+        AnyMSeq<observable,Integer> monad = Observables.anyM(observableAsync);
 
         monad.map(i->i*2)
                 .forEach(System.out::println,System.err::println,()->complete.set(true));

@@ -4,6 +4,7 @@ package com.aol.cyclops.vavr.adapter;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
@@ -68,5 +69,8 @@ public class OptionAdapter extends AbstractFunctionalAdapter<option> {
     }
 
 
-
+    @Override
+    public <T, R> AnyM<option, R> map(AnyM<option, T> t, Function<? super T, ? extends R> fn) {
+        return Vavr.option(option(t).map(fn));
+    }
 }

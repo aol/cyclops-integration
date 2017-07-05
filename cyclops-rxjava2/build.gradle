@@ -32,7 +32,7 @@ configurations {
 dependencies {
 
 
-	compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.0'
+	compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.1'
 	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
 	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
 
@@ -66,7 +66,7 @@ modifyPom {
 		inceptionYear '2017'
 
 		groupId 'com.aol.cyclops'
-		artifactId 'cyclops-rx'
+		artifactId 'cyclops-rxjava2'
 		version "$version"
 		
 		scm {

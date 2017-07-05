@@ -29,7 +29,7 @@ public class NonEmptyListsTest {
         
         NonEmptyListKind<Integer> list = NonEmptyLists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> NonEmptyLists.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> NonEmptyLists.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(NonEmptyListKind::narrowK);
         
         assertThat(list,equalTo(NonEmptyList.fromList(List.list("hello".length())).some()));
@@ -49,8 +49,8 @@ public class NonEmptyListsTest {
         
         NonEmptyListKind<Integer> list = NonEmptyLists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> NonEmptyLists.Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> NonEmptyLists.Instances.zippingApplicative().ap(listFn, h))
+                                     .applyHKT(h-> NonEmptyLists.Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> NonEmptyLists.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(NonEmptyListKind::narrowK);
         
         assertThat(list,equalTo(list("hello".length()*2)));
@@ -73,7 +73,7 @@ public class NonEmptyListsTest {
         
         NonEmptyListKind<Integer> list = NonEmptyLists.Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> NonEmptyLists.Instances.monad().flatMap((String v) -> NonEmptyLists.Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> NonEmptyLists.Instances.monad().flatMap((String v) -> NonEmptyLists.Instances.unit().unit(v.length()), h))
                                      .convert(NonEmptyListKind::narrowK);
         
         assertThat(list,equalTo(list("hello".length())));

@@ -1,5 +1,7 @@
 package com.aol.cyclops.functionaljava.adapter;
 
+import cyclops.companion.functionaljava.Streams;
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.stream;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
@@ -65,6 +67,8 @@ public class StreamAdapter extends AbstractFunctionalAdapter<stream> {
         return anyM(Stream.stream(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<stream, R> map(AnyM<stream, T> t, Function<? super T, ? extends R> fn) {
+        return Streams.anyM(stream(t).map(x-> fn.apply(x)));
+    }
 }

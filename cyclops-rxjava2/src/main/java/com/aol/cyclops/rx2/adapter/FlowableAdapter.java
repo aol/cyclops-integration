@@ -73,4 +73,9 @@ public class FlowableAdapter extends AbstractFunctionalAdapter<flowable> {
     public <T> ReactiveSeq<T> toStream(AnyM<flowable, T> t) {
         return ReactiveSeq.fromPublisher(Rx2Witness.flowable(t));
     }
+
+    @Override
+    public <T, R> AnyM<flowable, R> map(AnyM<flowable, T> t, Function<? super T, ? extends R> fn) {
+        return Flowables.anyM(stream(t).map(i->fn.apply(i)));
+    }
 }

@@ -9,6 +9,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.observable;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.reactivex.*;
 import io.reactivex.annotations.*;
 import io.reactivex.disposables.Disposable;
@@ -29,7 +36,7 @@ import lombok.AllArgsConstructor;
 /**
  * Simulates Higher Kinded Types for Reactor Observable's
  * 
- * ObservableKind is a Observable and a Higher Kinded Type (ObservableKind.µ,T)
+ * ObservableKind is a Observable and a Higher Kinded Type (observable,T)
  * 
  * @author johnmcclean
  *
@@ -37,15 +44,26 @@ import lombok.AllArgsConstructor;
  */
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Publisher<T> {
+public final class ObservableKind<T> implements Higher<observable, T>, Publisher<T> {
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+    public <R> ObservableKind<R> fold(java.util.function.Function<? super Observable<?  super T>,? extends Observable<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public Active<observable,T> allTypeclasses(){
+        return Active.of(this, Observables.Instances.definitions());
+    }
+
+    public static <T> Higher<observable,T> widenK(final Observable<T> completableList) {
+
+        return new ObservableKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<observable,W2,R> mapM(java.util.function.Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Observables.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, T> liftM(W witness) {
+        return Observables.reactiveSeq(boxed).liftM(witness);
     }
 
     /**
@@ -89,7 +107,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
      * @param flux HTK encoded type containing  a Observable to widen
      * @return HKT encoded type with a widened Observable
      */
-    public static <C2, T> Higher<C2, Higher<µ, T>> widen2(Higher<C2, ObservableKind<T>> flux) {
+    public static <C2, T> Higher<C2, Higher<observable, T>> widen2(Higher<C2, ObservableKind<T>> flux) {
         // a functor could be used (if C2 is a functor / one exists for C2 type)
         // instead of casting
         // cast seems safer as Higher<StreamType.µ,T> must be a StreamType
@@ -108,7 +126,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
      * @param future HKT encoded list into a ObservableKind
      * @return ObservableKind
      */
-    public static <T> ObservableKind<T> narrowK(final Higher<µ, T> future) {
+    public static <T> ObservableKind<T> narrowK(final Higher<observable, T> future) {
         return (ObservableKind<T>) future;
     }
 
@@ -118,7 +136,7 @@ public final class ObservableKind<T> implements Higher<ObservableKind.µ, T>, Pu
      * @param observable Type Constructor to convert back into narrowed type
      * @return Observable from Higher Kinded Type
      */
-    public static <T> Observable<T> narrow(final Higher<µ, T> observable) {
+    public static <T> Observable<T> narrow(final Higher<observable, T> observable) {
 
         return ((ObservableKind<T>) observable).narrow();
 

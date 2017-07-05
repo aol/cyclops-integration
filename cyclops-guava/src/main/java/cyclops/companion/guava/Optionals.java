@@ -1,10 +1,21 @@
 package cyclops.companion.guava;
 
+import com.aol.cyclops.guava.hkt.FluentIterableKind;
+import com.google.common.collect.FluentIterable;
+import cyclops.async.Future;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.CompletableFutures.CompletableFutureKind;
+import cyclops.companion.Streams;
+import cyclops.companion.Streams.StreamKind;
+import cyclops.control.Eval;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
 import cyclops.conversion.guava.FromCyclopsReact;
 import cyclops.conversion.guava.FromJDK;
 import cyclops.conversion.guava.ToCyclopsReact;
 import cyclops.conversion.guava.ToJDK;
-import cyclops.monads.GuavaWitness;
+import cyclops.monads.*;
+import cyclops.monads.GuavaWitness.fluentIterable;
 import cyclops.monads.GuavaWitness.optional;
 import com.aol.cyclops.guava.hkt.OptionalKind;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
@@ -18,30 +29,49 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
-import cyclops.monads.AnyM;
-import cyclops.monads.WitnessType;
+import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.OptionalT;
+import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-/**
- * Created by johnmcclean on 26/04/2017.
- */
+import static com.aol.cyclops.guava.hkt.FluentIterableKind.widen;
+import static com.aol.cyclops.guava.hkt.OptionalKind.widen;
+import static cyclops.companion.Streams.StreamKind.*;
+
+
 public class Optionals {
+
+    public static  <W1,T> Coproduct<W1,optional,T> coproduct(T value, InstanceDefinitions<W1> def1){
+        return coproduct(Optional.of(value),def1);
+    }
+    public static  <W1,T> Coproduct<W1,optional,T> coproductAbsent(InstanceDefinitions<W1> def1){
+        return coproduct(Optional.absent(),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,optional,T> xorM(T present){
+        return XorM.right(anyM(Optional.of(present)));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,optional,T> xorMAbsent(){
+        return XorM.right(anyM(Optional.absent()));
+    }
+
     /**
      * <pre>
      * {@code
@@ -592,6 +622,21 @@ public class Optionals {
         return (Optional<T>) optional;
     }
 
+    public static <T> Active<optional,T> allTypeclasses(Optional<T> type){
+        return Active.of(widen(type), Optionals.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<optional,W2,R> mapM(Optional<T> type, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Optional<Higher<W2, R>> e = type.transform(x->fn.apply(x));
+        Higher<optional, Higher<W2, R>> lk = widen(e);
+        return Nested.of(lk, Optionals.Instances.definitions(), defs);
+    }
+    public static  <W1,T> Coproduct<W1,optional,T> coproduct(Optional<T> type, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,optional,T> xorM(Optional<T> type){
+        return XorM.right(anyM(type));
+    }
+
     /**
      * Companion class for creating Type Class instances for working with Optionals
      * @author johnmcclean
@@ -599,6 +644,65 @@ public class Optionals {
      */
     @UtilityClass
     public class Instances {
+        public static InstanceDefinitions<optional> definitions() {
+            return new InstanceDefinitions<optional>() {
+
+                @Override
+                public <T, R> Functor<optional> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<optional> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<optional> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<optional> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<optional>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<optional>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<optional>> monadPlus(Monoid<Higher<optional, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<optional>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<optional>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<optional>> comonad() {
+                    return Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<optional>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        }
 
 
         /**
@@ -630,7 +734,7 @@ public class Optionals {
          *
          * @return A functor for Optionals
          */
-        public static <T,R> Functor<OptionalKind.µ> functor(){
+        public static <T,R> Functor<optional> functor(){
             BiFunction<OptionalKind<T>,Function<? super T, ? extends R>,OptionalKind<R>> map = Instances::map;
             return General.functor(map);
         }
@@ -649,8 +753,8 @@ public class Optionals {
          *
          * @return A factory for Optionals
          */
-        public static <T> Pure<OptionalKind.µ> unit(){
-            return General.<OptionalKind.µ,T>unit(Instances::of);
+        public static <T> Pure<optional> unit(){
+            return General.<optional,T>unit(Instances::of);
         }
         /**
          *
@@ -689,7 +793,7 @@ public class Optionals {
          *
          * @return A zipper for Optionals
          */
-        public static <T,R> Applicative<OptionalKind.µ> applicative(){
+        public static <T,R> Applicative<optional> applicative(){
             BiFunction<OptionalKind< Function<T, R>>,OptionalKind<T>,OptionalKind<R>> ap = Instances::ap;
             return General.applicative(functor(), unit(), ap);
         }
@@ -719,9 +823,9 @@ public class Optionals {
          *
          * @return Type class with monad functions for Optionals
          */
-        public static <T,R> Monad<OptionalKind.µ> monad(){
+        public static <T,R> Monad<optional> monad(){
 
-            BiFunction<Higher<OptionalKind.µ,T>,Function<? super T, ? extends Higher<OptionalKind.µ,R>>,Higher<OptionalKind.µ,R>> flatMap = Instances::flatMap;
+            BiFunction<Higher<optional,T>,Function<? super T, ? extends Higher<optional,R>>,Higher<optional,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
         /**
@@ -741,7 +845,7 @@ public class Optionals {
          *
          * @return A filterable monad (with default value)
          */
-        public static <T,R> MonadZero<OptionalKind.µ> monadZero(){
+        public static <T,R> MonadZero<optional> monadZero(){
 
             return General.monadZero(monad(), OptionalKind.absent());
         }
@@ -757,12 +861,12 @@ public class Optionals {
          * </pre>
          * @return Type class for combining Optionals by concatenation
          */
-        public static <T> MonadPlus<OptionalKind.µ> monadPlus(){
+        public static <T> MonadPlus<optional> monadPlus(){
             Monoid<Optional<T>> mn = Monoid.of(Optional.absent(), (a, b) -> a.isPresent() ? a : b);
-            Monoid<OptionalKind<T>> m = Monoid.of(OptionalKind.widen(mn.zero()), (f, g)-> OptionalKind.widen(
+            Monoid<OptionalKind<T>> m = Monoid.of(widen(mn.zero()), (f, g)-> widen(
                     mn.apply(OptionalKind.narrow(f), OptionalKind.narrow(g))));
 
-            Monoid<Higher<OptionalKind.µ,T>> m2= (Monoid)m;
+            Monoid<Higher<optional,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
         /**
@@ -781,15 +885,19 @@ public class Optionals {
          * @param m Monoid to use for combining Optionals
          * @return Type class for combining Optionals
          */
-        public static <T> MonadPlus<OptionalKind.µ> monadPlus(Monoid<OptionalKind<T>> m){
-            Monoid<Higher<OptionalKind.µ,T>> m2= (Monoid)m;
+        public static <T> MonadPlus<optional> monadPlus(Monoid<Higher<optional,T>> m){
+            Monoid<Higher<optional,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<optional> monadPlusK(Monoid<OptionalKind<T>> m){
+            Monoid<Higher<optional,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
-        public static <C2,T> Traverse<OptionalKind.µ> traverse(){
+        public static <C2,T> Traverse<optional> traverse(){
 
             return General.traverseByTraverse(applicative(), Instances::traverseA);
         }
@@ -809,41 +917,169 @@ public class Optionals {
          *
          * @return Type class for folding / reduction operations
          */
-        public static <T> Foldable<OptionalKind.µ> foldable(){
-            BiFunction<Monoid<T>,Higher<OptionalKind.µ,T>,T> foldRightFn =  (m, l)-> OptionalKind.narrow(l).or(m.zero());
-            BiFunction<Monoid<T>,Higher<OptionalKind.µ,T>,T> foldLeftFn = (m, l)-> OptionalKind.narrow(l).or(m.zero());
+        public static <T> Foldable<optional> foldable(){
+            BiFunction<Monoid<T>,Higher<optional,T>,T> foldRightFn =  (m, l)-> OptionalKind.narrow(l).or(m.zero());
+            BiFunction<Monoid<T>,Higher<optional,T>,T> foldLeftFn = (m, l)-> OptionalKind.narrow(l).or(m.zero());
             return General.foldable(foldRightFn, foldLeftFn);
         }
-        public static <T> Comonad<OptionalKind.µ> comonad(){
-            Function<? super Higher<OptionalKind.µ, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionalKind::narrow).get();
+        public static <T> Comonad<optional> comonad(){
+            Function<? super Higher<optional, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionalKind::narrow).get();
             return General.comonad(functor(), unit(), extractFn);
         }
 
         private <T> OptionalKind<T> of(T value){
-            return OptionalKind.widen(Optional.of(value));
+            return widen(Optional.of(value));
         }
         private static <T,R> OptionalKind<R> ap(OptionalKind<Function< T, R>> lt, OptionalKind<T> option){
             Maybe<R> mb = ToCyclopsReact.maybe(lt.narrow()).combine(ToCyclopsReact.maybe(option.narrow()),
                     (a,b)->a.apply(b));
-            return OptionalKind.widen(mb);
+            return widen(mb);
 
         }
-        private static <T,R> Higher<OptionalKind.µ,R> flatMap(Higher<OptionalKind.µ,T> lt, Function<? super T, ? extends  Higher<OptionalKind.µ,R>> fn){
-            return OptionalKind.widen(OptionalKind.narrowOptional(lt).flatMap(in->fn.andThen(OptionalKind::narrowOptional).apply(in)));
+        private static <T,R> Higher<optional,R> flatMap(Higher<optional,T> lt, Function<? super T, ? extends  Higher<optional,R>> fn){
+            return widen(OptionalKind.narrowOptional(lt).flatMap(in->fn.andThen(OptionalKind::narrowOptional).apply(in)));
         }
         private static <T,R> OptionalKind<R> map(OptionalKind<T> lt, Function<? super T, ? extends R> fn){
 
-            return OptionalKind.widen(OptionalKind.narrow(lt).transform(t->fn.apply(t)));
+            return widen(OptionalKind.narrow(lt).transform(t->fn.apply(t)));
         }
 
 
-        private static <C2,T,R> Higher<C2, Higher<OptionalKind.µ, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
-                                                                                Higher<OptionalKind.µ, T> ds){
+        private static <C2,T,R> Higher<C2, Higher<optional, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
+                                                                                Higher<optional, T> ds){
             Optional<T> opt = OptionalKind.narrow(ds);
             return opt.isPresent()?   applicative.map(OptionalKind::just, fn.apply(opt.get())) :
                     applicative.unit(OptionalKind.absent());
         }
 
+    }
+    public static interface OptionalNested{
+        public static <T> Nested<optional,fluentIterable,T> fluentIterable(Optional<FluentIterable<T>> nested){
+
+            Optional<FluentIterableKind<T>> f = nested.transform(o -> FluentIterableKind.widen(o));
+            OptionalKind<FluentIterableKind<T>> x = widen(f);
+            OptionalKind<Higher<fluentIterable,T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(), FluentIterables.Instances.definitions());
+        }
+        public static <T> Nested<optional,optional,T> optional(Optional<Optional<T>> nested){
+
+            Optional<OptionalKind<T>> f = nested.transform(o -> OptionalKind.widen(o));
+            OptionalKind<OptionalKind<T>> x = widen(f);
+            OptionalKind<Higher<optional,T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(), Instances.definitions());
+        }
+
+
+
+        public static <T> Nested<optional,reactiveSeq,T> reactiveSeq(Optional<ReactiveSeq<T>> nested){
+            OptionalKind<ReactiveSeq<T>> x = widen(nested);
+            OptionalKind<Higher<reactiveSeq,T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<optional,maybe,T> maybe(Optional<Maybe<T>> nested){
+            OptionalKind<Maybe<T>> x = widen(nested);
+            OptionalKind<Higher<maybe,T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<optional,eval,T> eval(Optional<Eval<T>> nested){
+            OptionalKind<Eval<T>> x = widen(nested);
+            OptionalKind<Higher<eval,T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<optional,Witness.future,T> future(Optional<Future<T>> nested){
+            OptionalKind<Future<T>> x = widen(nested);
+            OptionalKind<Higher<Witness.future,T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<optional,Higher<xor,S>, P> xor(Optional<Xor<S, P>> nested){
+            OptionalKind<Xor<S, P>> x = widen(nested);
+            OptionalKind<Higher<Higher<xor,S>, P>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<optional,Higher<reader,S>, T> reader(Optional<Reader<S, T>> nested){
+            OptionalKind<Reader<S, T>> x = widen(nested);
+            OptionalKind<Higher<Higher<reader,S>, T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<optional,Higher<Witness.tryType,S>, P> cyclopsTry(Optional<cyclops.control.Try<P, S>> nested){
+            OptionalKind<cyclops.control.Try<P, S>> x = widen(nested);
+            OptionalKind<Higher<Higher<Witness.tryType,S>, P>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<optional,Witness.optional,T> javaOptional(Optional<java.util.Optional<T>> nested){
+            Optional<cyclops.companion.Optionals.OptionalKind<T>> f = nested.transform(o -> cyclops.companion.Optionals.OptionalKind.widen(o));
+            OptionalKind<cyclops.companion.Optionals.OptionalKind<T>> x = widen(f);
+
+            OptionalKind<Higher<Witness.optional,T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <T> Nested<optional,completableFuture,T> javaCompletableFuture(Optional<CompletableFuture<T>> nested){
+            Optional<CompletableFutureKind<T>> f = nested.transform(o -> CompletableFutureKind.widen(o));
+            OptionalKind<CompletableFutureKind<T>> x = widen(f);
+            OptionalKind<Higher<completableFuture,T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<optional,Witness.stream,T> javaStream(Optional<java.util.stream.Stream<T>> nested){
+            Optional<StreamKind<T>> f = nested.transform(o -> StreamKind.widen(o));
+            OptionalKind<StreamKind<T>> x = widen(f);
+            OptionalKind<Higher<Witness.stream,T>> y = (OptionalKind)x;
+            return Nested.of(y,Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+    }
+    public static interface NestedOptional{
+        public static <T> Nested<reactiveSeq,optional,T> reactiveSeq(ReactiveSeq<Optional<T>> nested){
+            ReactiveSeq<Higher<optional,T>> x = nested.map(OptionalKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,optional,T> maybe(Maybe<Optional<T>> nested){
+            Maybe<Higher<optional,T>> x = nested.map(OptionalKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,optional,T> eval(Eval<Optional<T>> nested){
+            Eval<Higher<optional,T>> x = nested.map(OptionalKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,optional,T> future(cyclops.async.Future<Optional<T>> nested){
+            cyclops.async.Future<Higher<optional,T>> x = nested.map(OptionalKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,optional, P> xor(Xor<S, Optional<P>> nested){
+            Xor<S, Higher<optional,P>> x = nested.map(OptionalKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,optional, T> reader(Reader<S, Optional<T>> nested){
+
+            Reader<S, Higher<optional, T>>  x = nested.map(OptionalKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,optional, P> cyclopsTry(cyclops.control.Try<Optional<P>, S> nested){
+            cyclops.control.Try<Higher<optional,P>, S> x = nested.map(OptionalKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.optional,optional,T> javaOptional(java.util.Optional<Optional<T>> nested){
+            java.util.Optional<Higher<optional, T>> x = nested.map(OptionalKind::widenK);
+
+            return  Nested.of(cyclops.companion.Optionals.OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,optional,T> javaCompletableFuture(CompletableFuture<Optional<T>> nested){
+            CompletableFuture<Higher<optional,T>> x = nested.thenApply(OptionalKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,optional,T> javaStream(java.util.stream.Stream<Optional<T>> nested){
+            java.util.stream.Stream<Higher<optional,T>> x = nested.map(OptionalKind::widenK);
+
+            return Nested.of(StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
     }
 
 }

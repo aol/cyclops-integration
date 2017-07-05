@@ -10,6 +10,10 @@ import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 
 import cyclops.function.Monoid;
+import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.single;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.maybe;
 import cyclops.stream.ReactiveSeq;
 import cyclops.stream.Spouts;
 import cyclops.typeclasses.monad.Applicative;
@@ -43,7 +47,7 @@ public class SinglesTest {
         
         SingleKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(SingleKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
@@ -63,8 +67,8 @@ public class SinglesTest {
         
         SingleKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.functor().map((String v) ->v.length(), h))
-                                     .apply(h-> Instances.applicative().ap(optFn, h))
+                                     .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
+                                     .applyHKT(h-> Instances.applicative().ap(optFn, h))
                                      .convert(SingleKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()*2).join()));
@@ -80,7 +84,7 @@ public class SinglesTest {
         
         SingleKind<Integer> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
+                                     .applyHKT(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(SingleKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
@@ -90,7 +94,7 @@ public class SinglesTest {
         
         SingleKind<String> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
+                                     .applyHKT(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(SingleKind::narrowK);
         
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
@@ -100,7 +104,7 @@ public class SinglesTest {
         
         SingleKind<String> opt = Instances.unit()
                                      .unit("hello")
-                                     .apply(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
+                                     .applyHKT(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(SingleKind::narrowK);
 
         ReactiveSeq<String> f = Spouts.from(opt.narrow().toFlowable());
@@ -122,7 +126,7 @@ public class SinglesTest {
     public void monadPlusNonEmpty(){
         
         Monoid<SingleKind<Integer>> m = Monoid.of(widen(Single.never()), (a, b)->a.toFuture().isDone() ? b : a);
-        SingleKind<Integer> opt = Instances.<Integer>monadPlus(m)
+        SingleKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(widen(Single.just(5)), widen(Single.just(10)))
                                       .convert(SingleKind::narrowK);
         assertThat(opt.blockingGet(),equalTo(10));
@@ -143,14 +147,14 @@ public class SinglesTest {
     }
     @Test
     public void traverse(){
-        Traverse<SingleKind.µ> traverse = Instances.traverse();
-        Applicative<Maybe.µ> applicative = Maybe.Instances.applicative();
+        Traverse<single> traverse = Instances.traverse();
+        Applicative<maybe> applicative = Maybe.Instances.applicative();
 
         SingleKind<Integer> mono = widen(Single.just(1));
 
-        Higher<Maybe.µ, Higher<SingleKind.µ, Integer>> t = traverse.traverseA(applicative, (Integer a) -> Maybe.just(a * 2), mono);
+        Higher<maybe, Higher<single, Integer>> t = traverse.traverseA(applicative, (Integer a) -> Maybe.just(a * 2), mono);
 
-        Maybe<Higher<SingleKind.µ, Integer>> res = traverse.traverseA(applicative, (Integer a)-> Maybe.just(a*2),mono)
+        Maybe<Higher<single, Integer>> res = traverse.traverseA(applicative, (Integer a)-> Maybe.just(a*2),mono)
                                                         .convert(Maybe::narrowK);
 
 
@@ -160,10 +164,10 @@ public class SinglesTest {
     }
     @Test
     public void sequence(){
-        Traverse<SingleKind.µ> traverse = Instances.traverse();
-        Applicative<Maybe.µ> applicative = Maybe.Instances.applicative();
+        Traverse<single> traverse = Instances.traverse();
+        Applicative<maybe> applicative = Maybe.Instances.applicative();
 
-        Higher<Maybe.µ, Higher<SingleKind.µ, Integer>> res = traverse.sequenceA(applicative, widen(Single.just(Maybe.just(1))));
+        Higher<maybe, Higher<single, Integer>> res = traverse.sequenceA(applicative, widen(Single.just(Maybe.just(1))));
         Maybe<Single<Integer>> nk = res.convert(Maybe::narrowK)
                                      .map(h -> h.convert(SingleKind::narrow));
 
