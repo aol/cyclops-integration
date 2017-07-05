@@ -2,7 +2,6 @@ package cyclops.companion.vavr;
 
 
 import com.aol.cyclops.vavr.hkt.*;
-import cyclops.VavrConverters;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -10,8 +9,6 @@ import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.FromJDK;
-import cyclops.conversion.vavr.FromJooqLambda;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.aol.cyclops2.hkt.Higher;
@@ -20,8 +17,6 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 
-import cyclops.monads.VavrWitness.*;
-import cyclops.monads.VavrWitness.*;
 import cyclops.monads.VavrWitness.either;
 import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.list;
@@ -42,7 +37,6 @@ import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
@@ -698,8 +692,8 @@ public class Arrays {
         public static <T> Nested<array,vector,T> vector(Array<Vector<T>> nested){
             return Nested.of(widen(nested.map(VectorKind::widen)),Instances.definitions(),Vectors.Instances.definitions());
         }
-        public static <T> Nested<array,VavrWitness.set,T> set(Array<HashSet<T>> nested){
-            return Nested.of(widen(nested.map(SetKind::widen)),Instances.definitions(),Sets.Instances.definitions());
+        public static <T> Nested<array,hashSet,T> set(Array<HashSet<T>> nested){
+            return Nested.of(widen(nested.map(HashSetKind::widen)),Instances.definitions(), HashSets.Instances.definitions());
         }
 
         public static <T> Nested<array,reactiveSeq,T> reactiveSeq(Array<ReactiveSeq<T>> nested){

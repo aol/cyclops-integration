@@ -1,15 +1,13 @@
 package com.aol.cyclops.vavr.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
-import cyclops.companion.vavr.Sets;
+import cyclops.companion.vavr.HashSets;
 import cyclops.monads.VavrWitness;
-import cyclops.monads.VavrWitness.set;
-import cyclops.monads.WitnessType;
+import cyclops.monads.VavrWitness.hashSet;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
-import io.vavr.collection.Array;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
 import lombok.AccessLevel;
@@ -23,7 +21,7 @@ import java.util.function.Function;
 /**
  * Simulates Higher Kinded Types for Vavr Set's
  * 
- * SetKind is a Set and a Higher Kinded Type (SetKind.µ,T)
+ * HashSetKind is a Set and a Higher Kinded Type (HashSetKind.µ,T)
  * 
  * @author johnmcclean
  *
@@ -31,21 +29,21 @@ import java.util.function.Function;
  */
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class SetKind<T> implements Higher<set, T>, Publisher<T>, Set<T> {
+public class HashSetKind<T> implements Higher<hashSet, T>, Publisher<T>, Set<T> {
 
-    public static <T> Higher<set,T> widenK(final HashSet<T> completableList) {
+    public static <T> Higher<VavrWitness.hashSet,T> widenK(final HashSet<T> completableList) {
 
-        return new SetKind<>(
+        return new HashSetKind<>(
                 completableList);
     }
-    public Active<set,T> allTypeclasses(){
-        return Active.of(this, Sets.Instances.definitions());
+    public Active<hashSet,T> allTypeclasses(){
+        return Active.of(this, HashSets.Instances.definitions());
     }
 
-    public <W2,R> Nested<set,W2,R> mapM(Function<? super T, ? extends Higher<W2, R>> fn, InstanceDefinitions<W2> defs){
-        return Sets.mapM(boxed,fn,defs);
+    public <W2,R> Nested<VavrWitness.hashSet,W2,R> mapM(Function<? super T, ? extends Higher<W2, R>> fn, InstanceDefinitions<W2> defs){
+        return HashSets.mapM(boxed,fn,defs);
     }
-    public <R> SetKind<R> fold(Function<? super Set<? super T>, ? extends HashSet<R>> op){
+    public <R> HashSetKind<R> fold(Function<? super Set<? super T>, ? extends HashSet<R>> op){
         return widen(op.apply(this));
     }
 
@@ -55,63 +53,63 @@ public class SetKind<T> implements Higher<set, T>, Publisher<T>, Set<T> {
      * @param value To encode inside a HKT encoded Set
      * @return Completed HKT encoded FSet
      */
-    public static <T> SetKind<T> just(T value) {
+    public static <T> HashSetKind<T> just(T value) {
 
         return widen(HashSet.of(value));
     }
 
-    public static <T> SetKind<T> just(T... values) {
+    public static <T> HashSetKind<T> just(T... values) {
 
         return widen(HashSet.of(values));
     }
 
-    public static <T> SetKind<T> empty() {
+    public static <T> HashSetKind<T> empty() {
         return widen(HashSet.empty());
     }
 
     /**
      * Convert a Set to a simulated HigherKindedType that captures Set nature
-     * and Set element data type separately. Recover via @see SetKind#narrow
+     * and Set element data type separately. Recover via @see HashSetKind#narrow
      * 
-     * If the supplied Set implements SetKind it is returned already, otherwise it
-     * is wrapped into a Set implementation that does implement SetKind
+     * If the supplied Set implements HashSetKind it is returned already, otherwise it
+     * is wrapped into a Set implementation that does implement HashSetKind
      * 
-     * @param completableSet Set to widen to a SetKind
-     * @return SetKind encoding HKT info about Sets
+     * @param completableSet Set to widen to a HashSetKind
+     * @return HashSetKind encoding HKT info about HashSets
      */
-    public static <T> SetKind<T> widen(final HashSet<T> completableSet) {
+    public static <T> HashSetKind<T> widen(final HashSet<T> completableSet) {
 
-        return new SetKind<>(
+        return new HashSetKind<>(
                                 completableSet);
     }
 
     /**
-     * Widen a SetKind nested inside another HKT encoded type
+     * Widen a HashSetKind nested inside another HKT encoded type
      * 
      * @param flux HTK encoded type containing  a Set to widen
      * @return HKT encoded type with a widened Set
      */
-    public static <C2, T> Higher<C2, Higher<set, T>> widen2(Higher<C2, SetKind<T>> flux) {
+    public static <C2, T> Higher<C2, Higher<VavrWitness.hashSet, T>> widen2(Higher<C2, HashSetKind<T>> flux) {
         // a functor could be used (if C2 is a functor / one exists for C2 type)
         // instead of casting
-        // cast seems safer as Higher<set,T> must be a SetKind
+        // cast seems safer as Higher<hashSet,T> must be a HashSetKind
         return (Higher) flux;
     }
 
-    public static <T> SetKind<T> widen(final Publisher<T> completableSet) {
+    public static <T> HashSetKind<T> widen(final Publisher<T> completableSet) {
 
-        return new SetKind<>(
+        return new HashSetKind<>(
                                 HashSet.ofAll((Iterable<T>)ReactiveSeq.fromPublisher(completableSet)));
     }
 
     /**
-     * Convert the raw Higher Kinded Type for SetKind types into the SetKind type definition class
+     * Convert the raw Higher Kinded Type for HashSetKind types into the HashSetKind type definition class
      * 
-     * @param future HKT encoded set into a SetKind
-     * @return SetKind
+     * @param future HKT encoded hashSet into a HashSetKind
+     * @return HashSetKind
      */
-    public static <T> SetKind<T> narrowK(final Higher<set, T> future) {
-        return (SetKind<T>) future;
+    public static <T> HashSetKind<T> narrowK(final Higher<hashSet, T> future) {
+        return (HashSetKind<T>) future;
     }
 
     /**
@@ -120,9 +118,9 @@ public class SetKind<T> implements Higher<set, T>, Publisher<T>, Set<T> {
      * @param set Type Constructor to convert back into narrowed type
      * @return Set from Higher Kinded Type
      */
-    public static <T> HashSet<T> narrow(final Higher<set, T> set) {
+    public static <T> HashSet<T> narrow(final Higher<VavrWitness.hashSet, T> set) {
 
-        return ((SetKind<T>) set).narrow();
+        return ((HashSetKind<T>) set).narrow();
 
     }
 

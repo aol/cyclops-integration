@@ -5,7 +5,6 @@ import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.control.*;
 import com.aol.cyclops.vavr.hkt.*;
-import cyclops.VavrConverters;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -13,12 +12,9 @@ import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.FromJDK;
-import cyclops.conversion.vavr.FromJooqLambda;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
@@ -26,29 +22,20 @@ import cyclops.monads.Witness.*;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.FutureKind;
-import cyclops.control.Maybe;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
 import com.aol.cyclops.vavr.hkt.OptionKind;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Monoids;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
-import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.XorM;
 import cyclops.monads.transformers.OptionalT;
-import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -971,8 +958,8 @@ public class Options {
         public static <T> Nested<option,vector,T> vector(Option<Vector<T>> nested){
             return Nested.of(widen(nested.map(VectorKind::widen)),Instances.definitions(),Vectors.Instances.definitions());
         }
-        public static <T> Nested<option,VavrWitness.set,T> set(Option<HashSet<T>> nested){
-            return Nested.of(widen(nested.map(SetKind::widen)),Instances.definitions(),Sets.Instances.definitions());
+        public static <T> Nested<option,hashSet,T> set(Option<HashSet<T>> nested){
+            return Nested.of(widen(nested.map(HashSetKind::widen)),Instances.definitions(), HashSets.Instances.definitions());
         }
 
         public static <T> Nested<option,reactiveSeq,T> reactiveSeq(Option<ReactiveSeq<T>> nested){

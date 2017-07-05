@@ -1,6 +1,9 @@
 package cyclops.companion.functionaljava;
 
 import cyclops.collections.mutable.ListX;
+import cyclops.control.Maybe;
+import cyclops.conversion.functionaljava.FromJDK;
+import cyclops.conversion.functionaljava.FromJooqLambda;
 import cyclops.monads.FJWitness.list;
 import com.aol.cyclops.functionaljava.hkt.ListKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -10,16 +13,28 @@ import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 
+import fj.F;
+import fj.P2;
 import fj.data.List;
+import fj.data.Option;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Optional;
 import java.util.function.*;
+
+import static com.aol.cyclops.functionaljava.hkt.ListKind.widen;
 
 
 public class Lists {
@@ -296,15 +311,81 @@ public class Lists {
                     .map(in2 -> yieldingFunction.apply(in,  in2));
         });
     }
+
+    public static <T> Active<list,T> allTypeclasses(List<T> array){
+        return Active.of(widen(array), Lists.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<list,W2,R> mapM(List<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        List<Higher<W2, R>> e = array.map(i->fn.apply(i));
+        ListKind<Higher<W2, R>> lk = widen(e);
+        return Nested.of(lk, Lists.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Lists
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<list> definitions() {
+            return new InstanceDefinitions<list>() {
 
+                @Override
+                public <T, R> Functor<list> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<list> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<list> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<list> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<list>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<list>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<list>> monadPlus(Monoid<Higher<list, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<list>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<list>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<list>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<list>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+        }
         /**
          *
          * Transform a list, mulitplying every element by 2
@@ -446,7 +527,7 @@ public class Lists {
          */
         public static <T,R> MonadZero<list> monadZero(){
 
-            return General.monadZero(monad(), ListKind.widen(List.list()));
+            return General.monadZero(monad(), widen(List.list()));
         }
         /**
          * <pre>
@@ -461,7 +542,7 @@ public class Lists {
          * @return Type class for combining Lists by concatenation
          */
         public static <T> MonadPlus<list> monadPlus(){
-            Monoid<ListKind<T>> m = Monoid.of(ListKind.widen(List.list()), Instances::concat);
+            Monoid<ListKind<T>> m = Monoid.of(widen(List.list()), Instances::concat);
             Monoid<Higher<list,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -481,7 +562,11 @@ public class Lists {
          * @param m Monoid to use for combining Lists
          * @return Type class for combining Lists
          */
-        public static <T> MonadPlus<list> monadPlus(Monoid<ListKind<T>> m){
+        public static <T> MonadPlus<list> monadPlus(Monoid<Higher<list,T>> m){
+            Monoid<Higher<list,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<list> monadPlusK(Monoid<ListKind<T>> m){
             Monoid<Higher<list,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -493,12 +578,12 @@ public class Lists {
 
             BiFunction<Applicative<C2>,ListKind<Higher<C2, T>>,Higher<C2, ListKind<T>>> sequenceFn = (ap, list) -> {
 
-                Higher<C2,ListKind<T>> identity = ap.unit(ListKind.widen(List.list()));
+                Higher<C2,ListKind<T>> identity = ap.unit(widen(List.list()));
 
                 BiFunction<Higher<C2,ListKind<T>>,Higher<C2,T>,Higher<C2,ListKind<T>>> combineToList =
-                        (acc,next) -> ap.apBiFn(ap.unit((a,b) -> ListKind.widen(ListKind.narrow(a).cons(b))), acc,next);
+                        (acc,next) -> ap.apBiFn(ap.unit((a,b) -> widen(ListKind.narrow(a).cons(b))), acc,next);
 
-                BinaryOperator<Higher<C2,ListKind<T>>> combineLists = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> ListKind.widen(ListKind.narrow(l1).append(ListKind.narrow(l2)))),a,b); ;
+                BinaryOperator<Higher<C2,ListKind<T>>> combineLists = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> widen(ListKind.narrow(l1).append(ListKind.narrow(l2)))),a,b); ;
 
                 return ReactiveSeq.fromIterable(ListKind.narrow(list))
                         .reduce(identity,
@@ -535,21 +620,31 @@ public class Lists {
         }
 
         private static  <T> ListKind<T> concat(ListKind<T> l1, ListKind<T> l2){
-            return ListKind.widen(l1.append(ListKind.narrow(l2)));
+            return widen(l1.append(ListKind.narrow(l2)));
 
         }
         private <T> ListKind<T> of(T value){
-            return ListKind.widen(List.list(value));
+            return widen(List.list(value));
         }
         private static <T,R> ListKind<R> ap(ListKind<Function< T, R>> lt, ListKind<T> list){
 
-            return ListKind.widen(lt.zipWith(list.narrow(),(a, b)->a.apply(b)));
+            return widen(lt.zipWith(list.narrow(),(a, b)->a.apply(b)));
         }
         private static <T,R> Higher<list,R> flatMap(Higher<list,T> lt, Function<? super T, ? extends  Higher<list,R>> fn){
-            return ListKind.widen(ListKind.narrow(lt).bind(in->fn.andThen(ListKind::narrow).apply(in)));
+            return widen(ListKind.narrow(lt).bind(in->fn.andThen(ListKind::narrow).apply(in)));
         }
         private static <T,R> ListKind<R> map(ListKind<T> lt, Function<? super T, ? extends R> fn){
-            return ListKind.widen(ListKind.narrow(lt).map(in->fn.apply(in)));
+            return widen(ListKind.narrow(lt).map(in->fn.apply(in)));
+        }
+        public static Unfoldable<list> unfoldable(){
+            return new Unfoldable<list>() {
+                @Override
+                public <R, T> Higher<list, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    F<? super T, Option<P2<R, T>>> f = FromJDK.f1(fn.andThen(FromJDK::option).andThen(o ->o.map(FromJooqLambda::tuple)));
+                    return widen(List.unfold((F<T,Option<P2<R,T>>>)f,b));
+
+                }
+            };
         }
     }
 

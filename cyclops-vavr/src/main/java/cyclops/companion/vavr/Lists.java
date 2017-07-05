@@ -1,7 +1,6 @@
 package cyclops.companion.vavr;
 
 import com.aol.cyclops.vavr.hkt.*;
-import cyclops.collections.immutable.VectorX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -696,8 +695,8 @@ public class Lists {
         public static <T> Nested<list,vector,T> vector(List<Vector<T>> nested){
             return Nested.of(widen(nested.map(VectorKind::widen)),Instances.definitions(),Vectors.Instances.definitions());
         }
-        public static <T> Nested<list,VavrWitness.set,T> set(List<HashSet<T>> nested){
-            return Nested.of(widen(nested.map(SetKind::widen)),Instances.definitions(),Sets.Instances.definitions());
+        public static <T> Nested<list,hashSet,T> set(List<HashSet<T>> nested){
+            return Nested.of(widen(nested.map(HashSetKind::widen)),Instances.definitions(), HashSets.Instances.definitions());
         }
 
         public static <T> Nested<list,reactiveSeq,T> reactiveSeq(List<ReactiveSeq<T>> nested){

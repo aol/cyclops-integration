@@ -6,8 +6,18 @@ import java.util.function.Function;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.companion.functionaljava.Options;
+import cyclops.companion.functionaljava.Streams;
+import cyclops.control.Maybe;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.stream;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.MaybeT;
+import cyclops.monads.transformers.StreamT;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import fj.Equal;
 import fj.F;
 import fj.F0;
@@ -38,6 +48,20 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public  class StreamKind<T> implements Higher<stream, T> {
+
+
+    public Active<stream,T> allTypeclasses(){
+        return Active.of(this, Streams.Instances.definitions());
+    }
+
+    public <W2,R> Nested<stream,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Streams.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, T> liftM(W witness) {
+        return StreamT.of(witness.adapter().unit(ReactiveSeq.fromIterable(boxed)));
+    }
+
 
     public static <T> StreamKind<T> stream(final T... values) {
         

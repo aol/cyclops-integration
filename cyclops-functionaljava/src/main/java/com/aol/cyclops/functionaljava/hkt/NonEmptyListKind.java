@@ -8,8 +8,16 @@ import java.util.function.Function;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.collections.mutable.ListX;
+import cyclops.companion.functionaljava.Lists;
+import cyclops.companion.functionaljava.NonEmptyLists;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.nonEmptyList;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.ListT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import fj.F;
 import fj.F2;
 import fj.Ord;
@@ -32,6 +40,17 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public  class NonEmptyListKind<T> implements Higher<nonEmptyList, T> {
 
+    public Active<nonEmptyList,T> allTypeclasses(){
+        return Active.of(this, NonEmptyLists.Instances.definitions());
+    }
+
+    public <W2,R> Nested<nonEmptyList,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return NonEmptyLists.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> ListT<W, T> liftM(W witness) {
+        return ListT.of(witness.adapter().unit(ListX.fromIterable(boxed)));
+    }
     public <R> NonEmptyListKind<R> fold(Function<? super NonEmptyList<?  super T>,? extends NonEmptyList<R>> op){
         return widen(op.apply(boxed));
     }

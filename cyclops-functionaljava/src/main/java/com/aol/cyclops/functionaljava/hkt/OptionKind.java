@@ -8,11 +8,20 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 
+import cyclops.collections.mutable.ListX;
+import cyclops.companion.functionaljava.NonEmptyLists;
+import cyclops.companion.functionaljava.Options;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.control.Maybe;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.option;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.ListT;
+import cyclops.monads.transformers.MaybeT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import fj.F;
 import fj.F0;
 import fj.F2;
@@ -51,6 +60,18 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class OptionKind<T> implements Higher<option, T>, Iterable<T> {
     private final Option<T> boxed;
+
+    public Active<option,T> allTypeclasses(){
+        return Active.of(this, Options.Instances.definitions());
+    }
+
+    public <W2,R> Nested<option,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Options.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> MaybeT<W, T> liftM(W witness) {
+        return MaybeT.of(witness.adapter().unit(Maybe.fromIterable(boxed)));
+    }
     public <R> OptionKind<R> fold(Function<? super Option<?  super T>,? extends Option<R>> op){
         return widen(op.apply(boxed));
     }

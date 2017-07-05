@@ -8,7 +8,6 @@ import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
 import io.vavr.control.*;
 import com.aol.cyclops.vavr.hkt.*;
-import cyclops.VavrConverters;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -16,12 +15,8 @@ import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.FromJDK;
-import cyclops.conversion.vavr.FromJooqLambda;
 import cyclops.monads.*;
-import cyclops.monads.VavrWitness.*;
 import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
@@ -30,25 +25,13 @@ import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.*;
 
 import com.aol.cyclops.vavr.hkt.EitherKind;
-import cyclops.control.Maybe;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import com.aol.cyclops.vavr.hkt.LazyKind;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Value;
 import cyclops.collections.mutable.ListX;
-import cyclops.control.Eval;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
-import cyclops.function.Monoid;
 import cyclops.function.Reducer;
-import cyclops.monads.*;
 import cyclops.monads.transformers.EvalT;
-import cyclops.monads.transformers.XorT;
-import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -814,8 +797,8 @@ public class Lazys {
         public static <T> Nested<lazy,vector,T> vector(Lazy<Vector<T>> nested){
             return Nested.of(widen(nested.map(VectorKind::widen)),Instances.definitions(),Vectors.Instances.definitions());
         }
-        public static <T> Nested<lazy,VavrWitness.set,T> set(Lazy<HashSet<T>> nested){
-            return Nested.of(widen(nested.map(SetKind::widen)),Instances.definitions(),Sets.Instances.definitions());
+        public static <T> Nested<lazy,hashSet,T> set(Lazy<HashSet<T>> nested){
+            return Nested.of(widen(nested.map(HashSetKind::widen)),Instances.definitions(), HashSets.Instances.definitions());
         }
 
         public static <T> Nested<lazy,reactiveSeq,T> reactiveSeq(Lazy<ReactiveSeq<T>> nested){

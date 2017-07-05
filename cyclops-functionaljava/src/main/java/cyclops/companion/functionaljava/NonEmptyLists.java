@@ -1,6 +1,11 @@
 package cyclops.companion.functionaljava;
 
+import com.aol.cyclops.functionaljava.hkt.ListKind;
 import cyclops.collections.mutable.ListX;
+import cyclops.control.Maybe;
+import cyclops.conversion.functionaljava.FromJDK;
+import cyclops.conversion.functionaljava.FromJooqLambda;
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.nonEmptyList;
 import com.aol.cyclops.functionaljava.hkt.NonEmptyListKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -9,16 +14,29 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+import fj.F;
+import fj.P2;
+import fj.data.List;
 import fj.data.NonEmptyList;
+import fj.data.Option;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import static com.aol.cyclops.functionaljava.hkt.NonEmptyListKind.widen;
 
 
 public class NonEmptyLists {
@@ -159,7 +177,14 @@ public class NonEmptyLists {
 
     }
 
-
+    public static <T> Active<nonEmptyList,T> allTypeclasses(NonEmptyList<T> array){
+        return Active.of(widen(array), NonEmptyLists.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<nonEmptyList,W2,R> mapM(NonEmptyList<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        NonEmptyList<Higher<W2, R>> e = array.map(i->fn.apply(i));
+        NonEmptyListKind<Higher<W2, R>> lk = widen(e);
+        return Nested.of(lk, Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with NonEmptyLists
      * @author johnmcclean
@@ -168,7 +193,65 @@ public class NonEmptyLists {
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<nonEmptyList> definitions() {
+            return new InstanceDefinitions<nonEmptyList>() {
 
+                @Override
+                public <T, R> Functor<nonEmptyList> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<nonEmptyList> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<nonEmptyList> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<nonEmptyList> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<nonEmptyList>> monadZero() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<nonEmptyList>> monadPlus() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<nonEmptyList>> monadPlus(Monoid<Higher<nonEmptyList, T>> m) {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<nonEmptyList>> traverse() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Foldable<nonEmptyList>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<nonEmptyList>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<nonEmptyList>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        }
         /**
          *
          * Transform a list, mulitplying every element by 2
@@ -332,6 +415,7 @@ public class NonEmptyLists {
         private static <T,R> NonEmptyListKind<R> map(NonEmptyListKind<T> lt, Function<? super T, ? extends R> fn){
             return NonEmptyListKind.widen(NonEmptyListKind.narrow(lt).map(in->fn.apply(in)));
         }
+
     }
 
 

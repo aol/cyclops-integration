@@ -6,8 +6,15 @@ import java.util.function.Function;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.collections.mutable.ListX;
+import cyclops.companion.functionaljava.Lists;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.list;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.ListT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import fj.Equal;
 import fj.F;
 import fj.F0;
@@ -45,6 +52,17 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public  class ListKind<T> implements Higher<list, T> {
 
+    public Active<list,T> allTypeclasses(){
+        return Active.of(this, Lists.Instances.definitions());
+    }
+
+    public <W2,R> Nested<list,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Lists.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> ListT<W, T> liftM(W witness) {
+        return ListT.of(witness.adapter().unit(ListX.fromIterable(boxed)));
+    }
     public <R> ListKind<R> fold(Function<? super List<?  super T>,? extends List<R>> op){
         return widen(op.apply(boxed));
     }

@@ -6,7 +6,6 @@ import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
 import io.vavr.control.*;
 import com.aol.cyclops.vavr.hkt.*;
-import cyclops.VavrConverters;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -14,8 +13,6 @@ import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.FromJDK;
-import cyclops.conversion.vavr.FromJooqLambda;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.aol.cyclops2.hkt.Higher;
@@ -27,22 +24,12 @@ import cyclops.monads.Witness.*;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.ListKind;
-import cyclops.control.Maybe;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.queue;
 import com.aol.cyclops.vavr.hkt.QueueKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
-import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.XorM;
-import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -707,8 +694,8 @@ public class Queues {
         public static <T> Nested<queue,vector,T> vector(Queue<Vector<T>> nested){
             return Nested.of(widen(nested.map(VectorKind::widen)),Instances.definitions(),Vectors.Instances.definitions());
         }
-        public static <T> Nested<queue,VavrWitness.set,T> set(Queue<HashSet<T>> nested){
-            return Nested.of(widen(nested.map(SetKind::widen)),Instances.definitions(),Sets.Instances.definitions());
+        public static <T> Nested<queue,hashSet,T> set(Queue<HashSet<T>> nested){
+            return Nested.of(widen(nested.map(HashSetKind::widen)),Instances.definitions(), HashSets.Instances.definitions());
         }
 
         public static <T> Nested<queue,reactiveSeq,T> reactiveSeq(Queue<ReactiveSeq<T>> nested){
