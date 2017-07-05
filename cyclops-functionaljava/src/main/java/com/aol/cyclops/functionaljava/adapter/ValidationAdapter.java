@@ -72,6 +72,6 @@ public class ValidationAdapter<L> extends AbstractFunctionalAdapter<validation> 
 
     @Override
     public <T, R> AnyM<validation, R> map(AnyM<validation, T> t, Function<? super T, ? extends R> fn) {
-        return FJ.validation(validation(t)).map(x->fn.apply(x));
+        return FJ.validation(validation(t).map(x->fn.apply(x)));
     }
 }
