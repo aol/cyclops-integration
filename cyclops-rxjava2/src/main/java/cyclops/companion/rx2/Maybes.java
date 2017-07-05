@@ -1,6 +1,7 @@
 package cyclops.companion.rx2;
 
 
+import com.aol.cyclops.rx2.hkt.FlowableKind;
 import com.aol.cyclops.rx2.hkt.MaybeKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.react.Status;
@@ -20,9 +21,13 @@ import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.maybe;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.rx2.MaybeT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
@@ -39,6 +44,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static com.aol.cyclops.rx2.hkt.MaybeKind.widen;
 
 /**
  * Companion class for working with Reactor Maybe types
@@ -454,15 +461,80 @@ public class Maybes {
         return (Maybe<R>)apply;
     }
 
+    public static <T> Active<maybe,T> allTypeclasses(Maybe<T> type){
+        return Active.of(widen(type), Maybes.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<maybe,W2,R> mapM(Maybe<T> type, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Maybe<Higher<W2, R>> e = type.map(x->fn.apply(x));
+        MaybeKind<Higher<W2, R>> lk = MaybeKind.widen(e);
+        return Nested.of(lk, Maybes.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Maybes
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<maybe> definitions() {
+            return new InstanceDefinitions<maybe>() {
 
+                @Override
+                public <T, R> Functor<maybe> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<maybe> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<maybe> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<maybe> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> cyclops.control.Maybe<MonadZero<maybe>> monadZero() {
+                    return cyclops.control.Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> cyclops.control.Maybe<MonadPlus<maybe>> monadPlus() {
+                    return cyclops.control.Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> cyclops.control.Maybe<MonadPlus<maybe>> monadPlus(Monoid<Higher<maybe, T>> m) {
+                    return cyclops.control.Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> cyclops.control.Maybe<Traverse<maybe>> traverse() {
+                    return cyclops.control.Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> cyclops.control.Maybe<Foldable<maybe>> foldable() {
+                    return cyclops.control.Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> cyclops.control.Maybe<Comonad<maybe>> comonad() {
+                    return cyclops.control.Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> cyclops.control.Maybe<Unfoldable<maybe>> unfoldable() {
+                    return cyclops.control.Maybe.none();
+                }
+            };
+        }
         /**
          *
          * Transform a Maybe, mulitplying every element by 2
@@ -624,7 +696,7 @@ public class Maybes {
 
 
             Monoid<MaybeKind<T>> m = Monoid.of(MaybeKind.<T>widen(Maybe.empty()),
-                    (f,g)-> MaybeKind.widen(Maybe.ambArray(f.narrow(),g.narrow())));
+                    (f,g)-> widen(Maybe.ambArray(f.narrow(),g.narrow())));
 
             Monoid<Higher<maybe,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
@@ -645,7 +717,11 @@ public class Maybes {
          * @param m Monoid to use for combining Maybes
          * @return Type class for combining Maybes
          */
-        public static <T> MonadPlus<maybe> monadPlus(Monoid<MaybeKind<T>> m){
+        public static <T> MonadPlus<maybe> monadPlusK(Monoid<MaybeKind<T>> m){
+            Monoid<Higher<maybe,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<maybe> monadPlus(Monoid<Higher<maybe,T>> m){
             Monoid<Higher<maybe,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -684,19 +760,19 @@ public class Maybes {
         }
 
         private static <T> MaybeKind<T> of(T value){
-            return MaybeKind.widen(Maybe.just(value));
+            return widen(Maybe.just(value));
         }
         private static <T,R> MaybeKind<R> ap(MaybeKind<Function< T, R>> lt, MaybeKind<T> list){
 
 
-            return MaybeKind.widen(Maybes.combine(lt.narrow(),list.narrow(), (a, b)->a.apply(b)));
+            return widen(Maybes.combine(lt.narrow(),list.narrow(), (a, b)->a.apply(b)));
 
         }
         private static <T,R> Higher<maybe,R> flatMap(Higher<maybe,T> lt, Function<? super T, ? extends  Higher<maybe,R>> fn){
-            return MaybeKind.widen(MaybeKind.narrow(lt).flatMap(Functions.rxFunction(fn.andThen(MaybeKind::narrow))));
+            return widen(MaybeKind.narrow(lt).flatMap(Functions.rxFunction(fn.andThen(MaybeKind::narrow))));
         }
         private static <T,R> MaybeKind<R> map(MaybeKind<T> lt, Function<? super T, ? extends R> fn){
-            return MaybeKind.widen(lt.narrow().map(Functions.rxFunction(fn)));
+            return widen(lt.narrow().map(Functions.rxFunction(fn)));
         }
 
 

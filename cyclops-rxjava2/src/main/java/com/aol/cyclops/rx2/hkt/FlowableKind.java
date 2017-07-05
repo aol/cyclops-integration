@@ -2,9 +2,16 @@ package com.aol.cyclops.rx2.hkt;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.companion.rx2.Flowables;
+import cyclops.companion.rx2.Observables;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.flowable;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.reactivex.*;
 import io.reactivex.Observable;
 import io.reactivex.annotations.*;
@@ -54,6 +61,27 @@ public final class FlowableKind<T> implements Higher<flowable, T>, Publisher<T> 
 
     private FlowableKind(Flowable<T> boxed) {
         this.boxed = boxed;
+    }
+
+
+    public <R> FlowableKind<R> fold(java.util.function.Function<? super Flowable<?  super T>,? extends Flowable<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public Active<flowable,T> allTypeclasses(){
+        return Active.of(this, Flowables.Instances.definitions());
+    }
+
+    public static <T> Higher<flowable,T> widenK(final Flowable<T> completableList) {
+
+        return new FlowableKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<flowable,W2,R> mapM(java.util.function.Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Flowables.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, T> liftM(W witness) {
+        return Flowables.reactiveSeq(boxed).liftM(witness);
     }
 
     @Override

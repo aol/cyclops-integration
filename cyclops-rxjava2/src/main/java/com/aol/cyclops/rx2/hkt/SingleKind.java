@@ -3,8 +3,16 @@ package com.aol.cyclops.rx2.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.async.Future;
+import cyclops.companion.rx2.Maybes;
+import cyclops.companion.rx2.Singles;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.single;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.rx2.MaybeT;
+import cyclops.monads.transformers.rx2.SingleT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.reactivex.*;
 import io.reactivex.annotations.*;
 import io.reactivex.disposables.Disposable;
@@ -44,15 +52,25 @@ public final class SingleKind<T> implements Higher<single, T>, Publisher<T> {
         this.boxed = boxed;
     }
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+    public <R> SingleKind<R> fold(java.util.function.Function<? super Single<?  super T>,? extends Single<R>> op){
+        return widen(op.apply(boxed));
     }
-    
+    public Active<single,T> allTypeclasses(){
+        return Active.of(this, Singles.Instances.definitions());
+    }
+
+    public static <T> Higher<single,T> widenK(final Single<T> completableList) {
+
+        return new SingleKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<single,W2,R> mapM(java.util.function.Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Singles.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> SingleT<W, T> liftM(W witness) {
+        return SingleT.of(witness.adapter().unit(boxed));
+    }
     /**
      * Construct a HKT encoded completed Single
      * 

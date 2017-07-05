@@ -11,6 +11,11 @@ import java.util.concurrent.TimeUnit;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.observable;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import io.reactivex.*;
 import io.reactivex.annotations.*;
 import io.reactivex.disposables.Disposable;
@@ -40,6 +45,26 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ObservableKind<T> implements Higher<observable, T>, Publisher<T> {
+
+    public <R> ObservableKind<R> fold(java.util.function.Function<? super Observable<?  super T>,? extends Observable<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public Active<observable,T> allTypeclasses(){
+        return Active.of(this, Observables.Instances.definitions());
+    }
+
+    public static <T> Higher<observable,T> widenK(final Observable<T> completableList) {
+
+        return new ObservableKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<observable,W2,R> mapM(java.util.function.Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Observables.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, T> liftM(W witness) {
+        return Observables.reactiveSeq(boxed).liftM(witness);
+    }
 
     /**
      * Construct a HKT encoded completed Observable
