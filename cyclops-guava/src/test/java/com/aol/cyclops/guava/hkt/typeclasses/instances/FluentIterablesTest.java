@@ -25,7 +25,17 @@ import org.junit.Test;
 import com.google.common.collect.FluentIterable;
 
 public class FluentIterablesTest {
-    
+
+    @Test
+    public void optional(){
+        Higher<fluentIterable, Integer> res = FluentIterables.FluentIterableNested
+                .optional(FluentIterable.of(com.google.common.base.Optional.of(1)))
+                .map(i -> i * 20)
+                .foldsUnsafe()
+                .foldLeft(Monoids.intMax);
+        FluentIterable<Integer> fi = FluentIterableKind.narrow(res);
+        assertThat(fi.get(0),equalTo(20));
+    }
     @Test
     public void nestedOptionalJava(){
         Higher<fluentIterable, Integer> res = FluentIterables.FluentIterableNested

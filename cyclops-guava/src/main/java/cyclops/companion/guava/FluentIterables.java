@@ -677,6 +677,12 @@ public class FluentIterables {
             FluentIterableKind<Higher<GuavaWitness.optional,T>> y = (FluentIterableKind)x;
             return Nested.of(y,Instances.definitions(), Optionals.Instances.definitions());
         }
+        public static <T> Nested<fluentIterable,fluentIterable,T> fluentIterable(FluentIterable<FluentIterable<T>> nested){
+            FluentIterable<FluentIterableKind<T>> f = nested.transform(o -> FluentIterableKind.widen(o));
+            FluentIterableKind<FluentIterableKind<T>> x = widen(f);
+            FluentIterableKind<Higher<fluentIterable,T>> y = (FluentIterableKind)x;
+            return Nested.of(y,Instances.definitions(), Instances.definitions());
+        }
 
 
 
