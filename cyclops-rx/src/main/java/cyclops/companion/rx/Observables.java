@@ -1,11 +1,23 @@
 package cyclops.companion.rx;
 
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.aol.cyclops.rx.adapter.ObservableReactiveSeq;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.CompletableFutures.CompletableFutureKind;
+import cyclops.companion.Optionals;
+import cyclops.companion.Optionals.OptionalKind;
+import cyclops.companion.Streams;
+import cyclops.companion.Streams.StreamKind;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
 import cyclops.monads.RxWitness;
 import cyclops.monads.RxWitness.observable;
 import com.aol.cyclops.rx.hkt.ObservableKind;
@@ -15,18 +27,26 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.*;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
 
 
 import cyclops.stream.Spouts;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
+import org.jooq.lambda.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 import rx.*;
 import rx.Observable;
@@ -35,6 +55,8 @@ import rx.internal.operators.*;
 import rx.observables.AsyncOnSubscribe;
 import rx.observables.SyncOnSubscribe;
 import rx.schedulers.Schedulers;
+
+import static com.aol.cyclops.rx.hkt.ObservableKind.widen;
 
 /**
  * Companion class for working with RxJava Observable types
@@ -638,16 +660,81 @@ public class Observables {
         });
 
     }
-
+    public static <T> Active<observable,T> allTypeclasses(Observable<T> type){
+        return Active.of(widen(type), Observables.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<observable,W2,R> mapM(Observable<T> type, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Observable<Higher<W2, R>> e = type.map(x->fn.apply(x));
+        ObservableKind<Higher<W2, R>> lk = ObservableKind.widen(e);
+        return Nested.of(lk, Observables.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Observables
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<observable> definitions() {
+            return new InstanceDefinitions<observable>() {
 
+
+                @Override
+                public <T, R> Functor<observable> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<observable> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<observable> applicative() {
+                    return Instances.zippingApplicative();
+                }
+
+                @Override
+                public <T, R> Monad<observable> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<observable>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<observable>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<observable>> monadPlus(Monoid<Higher<observable, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<observable>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<observable>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<observable>> comonad() {
+                    return Maybe.none();
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<observable>> unfoldable() {
+                    return Maybe.just(Instances.unfoldable());
+                }
+            };
+        }
         /**
          *
          * Transform a observable, mulitplying every element by 2
@@ -788,7 +875,7 @@ public class Observables {
          */
         public static <T,R> MonadZero<observable> monadZero(){
             BiFunction<Higher<observable,T>,Predicate<? super T>,Higher<observable,T>> filter = Instances::filter;
-            Supplier<Higher<observable, T>> zero = ()-> ObservableKind.widen(Observable.empty());
+            Supplier<Higher<observable, T>> zero = ()-> widen(Observable.empty());
             return General.<observable,T,R>monadZero(monad(), zero,filter);
         }
         /**
@@ -804,7 +891,7 @@ public class Observables {
          * @return Type class for combining Observables by concatenation
          */
         public static <T> MonadPlus<observable> monadPlus(){
-            Monoid<ObservableKind<T>> m = Monoid.of(ObservableKind.widen(Observable.<T>empty()), Instances::concat);
+            Monoid<ObservableKind<T>> m = Monoid.of(widen(Observable.<T>empty()), Instances::concat);
             Monoid<Higher<observable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -824,7 +911,11 @@ public class Observables {
          * @param m Monoid to use for combining Observables
          * @return Type class for combining Observables
          */
-        public static <T> MonadPlus<observable> monadPlus(Monoid<ObservableKind<T>> m){
+        public static <T> MonadPlus<observable> monadPlusK(Monoid<ObservableKind<T>> m){
+            Monoid<Higher<observable,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+        public static <T> MonadPlus<observable> monadPlus(Monoid<Higher<observable,T>> m){
             Monoid<Higher<observable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -835,11 +926,11 @@ public class Observables {
         public static <C2,T> Traverse<observable> traverse(){
             BiFunction<Applicative<C2>,ObservableKind<Higher<C2, T>>,Higher<C2, ObservableKind<T>>> sequenceFn = (ap, observable) -> {
 
-                Higher<C2,ObservableKind<T>> identity = ap.unit(ObservableKind.widen(Observable.empty()));
+                Higher<C2,ObservableKind<T>> identity = ap.unit(widen(Observable.empty()));
 
-                BiFunction<Higher<C2,ObservableKind<T>>,Higher<C2,T>,Higher<C2,ObservableKind<T>>> combineToObservable =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> ObservableKind.widen(Observable.concat(ObservableKind.narrow(a),Observable.just(b)))),acc,next);
+                BiFunction<Higher<C2,ObservableKind<T>>,Higher<C2,T>,Higher<C2,ObservableKind<T>>> combineToObservable =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> widen(Observable.concat(ObservableKind.narrow(a),Observable.just(b)))),acc,next);
 
-                BinaryOperator<Higher<C2,ObservableKind<T>>> combineObservables = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> { return ObservableKind.widen(Observable.concat(l1.narrow(),l2.narrow()));}),a,b); ;
+                BinaryOperator<Higher<C2,ObservableKind<T>>> combineObservables = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> { return widen(Observable.concat(l1.narrow(),l2.narrow()));}),a,b); ;
 
                 return ReactiveSeq.fromPublisher(observable).reduce(identity,
                         combineToObservable,
@@ -874,26 +965,157 @@ public class Observables {
         }
 
         private static  <T> ObservableKind<T> concat(ObservableKind<T> l1, ObservableKind<T> l2){
-            return ObservableKind.widen(Observable.concat(l1.narrow(),l2.narrow()));
+            return widen(Observable.concat(l1.narrow(),l2.narrow()));
         }
         private <T> ObservableKind<T> of(T value){
-            return ObservableKind.widen(Observable.just(value));
+            return widen(Observable.just(value));
         }
         private static <T,R> ObservableKind<R> ap(ObservableKind<Function< T, R>> lt, ObservableKind<T> observable){
-            return ObservableKind.widen(lt.zipWith(observable.narrow(),(a, b)->a.apply(b)));
+            return widen(lt.zipWith(observable.narrow(),(a, b)->a.apply(b)));
         }
         private static <T,R> Higher<observable,R> flatMap(Higher<observable,T> lt, Function<? super T, ? extends  Higher<observable,R>> fn){
             Func1<? super T, ? extends  Observable<R>> f = t->fn.andThen(ObservableKind::narrow).apply(t);
 
-            return ObservableKind.widen(ObservableKind.narrowK(lt)
+            return widen(ObservableKind.narrowK(lt)
                     .flatMap(f));
         }
         private static <T,R> ObservableKind<R> map(ObservableKind<T> lt, Function<? super T, ? extends R> fn){
-            return ObservableKind.widen(lt.map(in->fn.apply(in)));
+            return widen(lt.map(in->fn.apply(in)));
         }
         private static <T> ObservableKind<T> filter(Higher<observable,T> lt, Predicate<? super T> fn){
-            return ObservableKind.widen(ObservableKind.narrow(lt).filter(in->fn.test(in)));
+            return widen(ObservableKind.narrow(lt).filter(in->fn.test(in)));
+        }
+        public static Unfoldable<observable> unfoldable(){
+            return new Unfoldable<observable>() {
+                @Override
+                public <R, T> Higher<observable, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                    return widen(Observables.fromStream(ReactiveSeq.unfold(b,fn)));
+                }
+            };
         }
     }
+
+    public static interface ObservableNested {
+
+        public static <T> Nested<observable,observable,T> observable(Observable<Observable<T>> nested){
+            Observable<ObservableKind<T>> f = nested.map(ObservableKind::widen);
+            ObservableKind<ObservableKind<T>> x = widen(f);
+            ObservableKind<Higher<observable,T>> y = (ObservableKind)x;
+            return Nested.of(y,Instances.definitions(), Observables.Instances.definitions());
+        }
+
+        public static <T> Nested<observable,reactiveSeq,T> reactiveSeq(Observable<ReactiveSeq<T>> nested){
+            ObservableKind<ReactiveSeq<T>> x = widen(nested);
+            ObservableKind<Higher<reactiveSeq,T>> y = (ObservableKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<observable,maybe,T> maybe(Observable<Maybe<T>> nested){
+            ObservableKind<Maybe<T>> x = widen(nested);
+            ObservableKind<Higher<maybe,T>> y = (ObservableKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<observable,eval,T> eval(Observable<Eval<T>> nested){
+            ObservableKind<Eval<T>> x = widen(nested);
+            ObservableKind<Higher<eval,T>> y = (ObservableKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<observable,future,T> future(Observable<cyclops.async.Future<T>> nested){
+            ObservableKind<cyclops.async.Future<T>> x = widen(nested);
+            ObservableKind<Higher<future,T>> y = (ObservableKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<observable,Higher<xor,S>, P> xor(Observable<Xor<S, P>> nested){
+            ObservableKind<Xor<S, P>> x = widen(nested);
+            ObservableKind<Higher<Higher<xor,S>, P>> y = (ObservableKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<observable,Higher<reader,S>, T> reader(Observable<Reader<S, T>> nested){
+            ObservableKind<Reader<S, T>> x = widen(nested);
+            ObservableKind<Higher<Higher<reader,S>, T>> y = (ObservableKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<observable,Higher<Witness.tryType,S>, P> cyclopsTry(Observable<cyclops.control.Try<P, S>> nested){
+            ObservableKind<cyclops.control.Try<P, S>> x = widen(nested);
+            ObservableKind<Higher<Higher<Witness.tryType,S>, P>> y = (ObservableKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<observable,optional,T> javaOptional(Observable<Optional<T>> nested){
+            Observable<OptionalKind<T>> f = nested.map(o -> OptionalKind.widen(o));
+            ObservableKind<OptionalKind<T>> x = ObservableKind.widen(f);
+
+            ObservableKind<Higher<optional,T>> y = (ObservableKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <T> Nested<observable,completableFuture,T> javaCompletableFuture(Observable<CompletableFuture<T>> nested){
+            Observable<CompletableFutureKind<T>> f = nested.map(o -> CompletableFutureKind.widen(o));
+            ObservableKind<CompletableFutureKind<T>> x = ObservableKind.widen(f);
+            ObservableKind<Higher<completableFuture,T>> y = (ObservableKind)x;
+            return Nested.of(y, Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<observable,Witness.stream,T> javaStream(Observable<java.util.stream.Stream<T>> nested){
+            Observable<StreamKind<T>> f = nested.map(o -> StreamKind.widen(o));
+            ObservableKind<StreamKind<T>> x = ObservableKind.widen(f);
+            ObservableKind<Higher<Witness.stream,T>> y = (ObservableKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+    }
+
+    public static interface NestedObservable{
+        public static <T> Nested<reactiveSeq,observable,T> reactiveSeq(ReactiveSeq<Observable<T>> nested){
+            ReactiveSeq<Higher<observable,T>> x = nested.map(ObservableKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,observable,T> maybe(Maybe<Observable<T>> nested){
+            Maybe<Higher<observable,T>> x = nested.map(ObservableKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,observable,T> eval(Eval<Observable<T>> nested){
+            Eval<Higher<observable,T>> x = nested.map(ObservableKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<future,observable,T> future(cyclops.async.Future<Observable<T>> nested){
+            cyclops.async.Future<Higher<observable,T>> x = nested.map(ObservableKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,observable, P> xor(Xor<S, Observable<P>> nested){
+            Xor<S, Higher<observable,P>> x = nested.map(ObservableKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,observable, T> reader(Reader<S, Observable<T>> nested){
+
+            Reader<S, Higher<observable, T>>  x = nested.map(ObservableKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,observable, P> cyclopsTry(cyclops.control.Try<Observable<P>, S> nested){
+            cyclops.control.Try<Higher<observable,P>, S> x = nested.map(ObservableKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,observable,T> javaOptional(Optional<Observable<T>> nested){
+            Optional<Higher<observable,T>> x = nested.map(ObservableKind::widenK);
+
+            return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,observable,T> javaCompletableFuture(CompletableFuture<Observable<T>> nested){
+            CompletableFuture<Higher<observable,T>> x = nested.thenApply(ObservableKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,observable,T> javaStream(java.util.stream.Stream<Observable<T>> nested){
+            java.util.stream.Stream<Higher<observable,T>> x = nested.map(ObservableKind::widenK);
+
+            return Nested.of(StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
+    }
+
+
 
 }

@@ -4,10 +4,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.monads.RxWitness;
 import cyclops.monads.RxWitness.observable;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -52,14 +58,27 @@ import rx.schedulers.Timestamped;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ObservableKind<T> implements Higher<observable, T>, Publisher<T> {
 
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+
+    public <R> ObservableKind<R> fold(Function<? super Observable<?  super T>,? extends Observable<R>> op){
+        return widen(op.apply(boxed));
     }
+    public Active<observable,T> allTypeclasses(){
+        return Active.of(this, Observables.Instances.definitions());
+    }
+
+    public static <T> Higher<observable,T> widenK(final Observable<T> completableList) {
+
+        return new ObservableKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<observable,W2,R> mapM(java.util.function.Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Observables.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, T> liftM(W witness) {
+        return Observables.reactiveSeq(boxed).liftM(witness);
+    }
+
 
     /**
      * Construct a HKT encoded completed Observable

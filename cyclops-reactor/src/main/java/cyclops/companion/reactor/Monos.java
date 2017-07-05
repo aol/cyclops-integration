@@ -898,7 +898,7 @@ public class Monos {
 
             return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
         }
-        public static <T> Nested<W1, W2, T> javaOptional(Optional<Mono<T>> nested){
+        public static <T> Nested<optional, mono, T> javaOptional(Optional<Mono<T>> nested){
             Optional<Higher<mono,T>> x = nested.map(MonoKind::widenK);
 
             return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
