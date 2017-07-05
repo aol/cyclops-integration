@@ -2,9 +2,15 @@ package com.aol.cyclops.reactor.hkt;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.companion.reactor.Fluxs;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.reactivestreams.Publisher;
@@ -40,6 +46,25 @@ public final class FluxKind<T> implements Higher<flux, T>, Publisher<T> {
         this.boxed = boxed;
     }
 
+    public <R> FluxKind<R> fold(Function<? super Flux<?  super T>,? extends Flux<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public Active<flux,T> allTypeclasses(){
+        return Active.of(this, Fluxs.Instances.definitions());
+    }
+
+    public static <T> Higher<flux,T> widenK(final Flux<T> completableList) {
+
+        return new FluxKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<flux,W2,R> mapM(java.util.function.Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Fluxs.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, T> liftM(W witness) {
+        return Fluxs.liftM(boxed,witness);
+    }
 
     
     /**

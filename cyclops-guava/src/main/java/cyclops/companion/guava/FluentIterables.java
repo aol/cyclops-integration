@@ -40,9 +40,6 @@ import java.util.function.*;
 
 import static com.aol.cyclops.guava.hkt.FluentIterableKind.widen;
 
-/**
- * Created by johnmcclean on 26/04/2017.
- */
 public class FluentIterables {
     public static  <W1,T> Coproduct<W1,fluentIterable,T> coproduct(FluentIterable<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
