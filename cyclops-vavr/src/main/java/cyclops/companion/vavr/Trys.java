@@ -67,8 +67,17 @@ public class Trys {
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,tryType,T> xorM(Try<T> type){
         return XorM.right(anyM(type));
     }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,tryType,T> xorM(T type){
+        return xorM(Try.success(type));
+    }
     public static  <W1,T> Coproduct<W1,tryType,T> coproduct(Try<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,tryType,T> coproductSuccess(T type, InstanceDefinitions<W1> def1){
+        return coproduct(Try.success(type),def1);
+    }
+    public static  <W1,T> Coproduct<W1,tryType,T> coproductSuccess(Throwable e, InstanceDefinitions<W1> def1){
+        return coproduct(Try.failure(e),def1);
     }
     public static <T> AnyMValue<tryType,T> anyM(Try<T> tryType) {
         return AnyM.ofValue(tryType, VavrWitness.tryType.INSTANCE);

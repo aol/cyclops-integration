@@ -55,8 +55,14 @@ public class Streams {
     public static  <W1,T> Coproduct<W1,stream,T> coproduct(Stream<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
     }
+    public static  <W1,T> Coproduct<W1,stream,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return coproduct(Stream.of(values),def1);
+    }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,stream,T> xorM(Stream<T> type){
         return XorM.right(anyM(type));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,stream,T> xorM(T... values){
+        return xorM(Stream.of(values));
     }
    
     public static <T> AnyMSeq<stream,T> anyM(Stream<T> option) {

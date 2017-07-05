@@ -55,8 +55,14 @@ public class Queues {
     public static  <W1,T> Coproduct<W1,queue,T> coproduct(Queue<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
     }
+    public static  <W1,T> Coproduct<W1,queue,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return  coproduct(Queue.of(values),def1);
+    }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,queue,T> xorM(Queue<T> type){
         return XorM.right(anyM(type));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,queue,T> xorM(T... values){
+        return xorM(Queue.of(values));
     }
 
     public static <T> AnyMSeq<queue,T> anyM(Queue<T> option) {

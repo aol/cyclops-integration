@@ -44,8 +44,14 @@ public class FluentIterables {
     public static  <W1,T> Coproduct<W1,fluentIterable,T> coproduct(FluentIterable<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
     }
+    public static  <W1,T> Coproduct<W1,fluentIterable,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return coproduct(FluentIterable.of(values),def1);
+    }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,fluentIterable,T> xorM(FluentIterable<T> type){
         return XorM.right(anyM(type));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,fluentIterable,T> xorM(T... values){
+        return xorM(FluentIterable.of(values));
     }
     public static <T,W extends WitnessType<W>> StreamT<W, T> liftM(FluentIterable<T> opt, W witness) {
         return StreamT.of(witness.adapter().unit(ReactiveSeq.fromIterable(opt)));

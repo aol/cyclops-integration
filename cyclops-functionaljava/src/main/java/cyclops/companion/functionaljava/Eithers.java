@@ -66,19 +66,19 @@ public class Eithers {
     public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproduct(Either<L,T> either, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(either)),def1,Instances.definitions());
     }
-    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproductR(T right, InstanceDefinitions<W1> def1){
+    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproductRight(T right, InstanceDefinitions<W1> def1){
         return coproduct(Either.right(right),def1);
     }
-    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproductL(L left, InstanceDefinitions<W1> def1){
+    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproductLeft(L left, InstanceDefinitions<W1> def1){
         return coproduct(Either.left(left),def1);
     }
     public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorM(Either<L,T> type){
         return XorM.right(anyM(type));
     }
-    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorMR(T right){
+    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorMRight(T right){
         return XorM.right(anyM(Either.right(right)));
     }
-    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorML(L left){
+    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorMLeft(L left){
         return XorM.right(anyM(Either.left(left)));
     }
     public static <L, R> Either<L, R> xor(Xor<L, R> value) {
