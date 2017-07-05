@@ -3,6 +3,8 @@ package cyclops.companion.rx2;
 
 import com.aol.cyclops.rx2.hkt.FlowableKind;
 import com.aol.cyclops.rx2.hkt.MaybeKind;
+import com.aol.cyclops.rx2.hkt.ObservableKind;
+import com.aol.cyclops.rx2.hkt.SingleKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.react.Status;
 import com.aol.cyclops2.types.MonadicValue;
@@ -10,17 +12,30 @@ import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.async.Future;
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.Optionals;
+import cyclops.companion.Optionals.OptionalKind;
+import cyclops.companion.Streams;
+import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 
+import cyclops.control.Reader;
+import cyclops.control.Xor;
 import cyclops.control.lazy.Either;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.monads.Rx2Witness;
+import cyclops.monads.Rx2Witness.flowable;
 import cyclops.monads.Rx2Witness.maybe;
+import cyclops.monads.Rx2Witness.observable;
+import cyclops.monads.Rx2Witness.single;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.*;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.rx2.MaybeT;
+import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -34,11 +49,13 @@ import cyclops.typeclasses.monad.*;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -782,6 +799,144 @@ public class Maybes {
             return applicative.map(MaybeKind::just, fn.apply(future.blockingGet()));
         }
 
+    }
+    public static interface MaybeNested {
+
+        public static <T> Nested<maybe,observable,T> observable(Maybe<Observable<T>> nested){
+            Maybe<ObservableKind<T>> f = nested.map(ObservableKind::widen);
+            MaybeKind<ObservableKind<T>> x = widen(f);
+            MaybeKind<Higher<observable,T>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(), Observables.Instances.definitions());
+        }
+        public static <T> Nested<maybe,flowable,T> flowable(Maybe<Flowable<T>> nested){
+            Maybe<FlowableKind<T>> f = nested.map(FlowableKind::widen);
+            MaybeKind<FlowableKind<T>> x = widen(f);
+            MaybeKind<Higher<flowable,T>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(), Flowables.Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,maybe,T> maybe(Maybe<Maybe<T>> nested){
+            Maybe<MaybeKind<T>> f = nested.map(MaybeKind::widen);
+            MaybeKind<MaybeKind<T>> x = widen(f);
+            MaybeKind<Higher<maybe,T>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(), Maybes.Instances.definitions());
+        }
+        public static <T> Nested<maybe,single,T> single(Maybe<Single<T>> nested){
+            Maybe<SingleKind<T>> f = nested.map(SingleKind::widen);
+            MaybeKind<SingleKind<T>> x = widen(f);
+            MaybeKind<Higher<single,T>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(), Singles.Instances.definitions());
+        }
+        public static <T> Nested<maybe,reactiveSeq,T> reactiveSeq(Maybe<ReactiveSeq<T>> nested){
+            MaybeKind<ReactiveSeq<T>> x = widen(nested);
+            MaybeKind<Higher<reactiveSeq,T>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,Witness.maybe,T> cyclopsMaybe(Maybe<cyclops.control.Maybe<T>> nested){
+            MaybeKind<cyclops.control.Maybe<T>> x = widen(nested);
+            MaybeKind<Higher<Witness.maybe,T>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(), cyclops.control.Maybe.Instances.definitions());
+        }
+        public static <T> Nested<maybe,eval,T> eval(Maybe<Eval<T>> nested){
+            MaybeKind<Eval<T>> x = widen(nested);
+            MaybeKind<Higher<eval,T>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<maybe,future,T> future(Maybe<cyclops.async.Future<T>> nested){
+            MaybeKind<cyclops.async.Future<T>> x = widen(nested);
+            MaybeKind<Higher<future,T>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<maybe,Higher<xor,S>, P> xor(Maybe<Xor<S, P>> nested){
+            MaybeKind<Xor<S, P>> x = widen(nested);
+            MaybeKind<Higher<Higher<xor,S>, P>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<maybe,Higher<reader,S>, T> reader(Maybe<Reader<S, T>> nested){
+            MaybeKind<Reader<S, T>> x = widen(nested);
+            MaybeKind<Higher<Higher<reader,S>, T>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<maybe,Higher<tryType,S>, P> cyclopsTry(Maybe<cyclops.control.Try<P, S>> nested){
+            MaybeKind<cyclops.control.Try<P, S>> x = widen(nested);
+            MaybeKind<Higher<Higher<tryType,S>, P>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<maybe,optional,T> javaOptional(Maybe<Optional<T>> nested){
+            Maybe<OptionalKind<T>> f = nested.map(o -> OptionalKind.widen(o));
+            MaybeKind<OptionalKind<T>> x = MaybeKind.widen(f);
+
+            MaybeKind<Higher<optional,T>> y = (MaybeKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <T> Nested<maybe,completableFuture,T> javaCompletableFuture(Maybe<CompletableFuture<T>> nested){
+            Maybe<CompletableFutures.CompletableFutureKind<T>> f = nested.map(o -> CompletableFutures.CompletableFutureKind.widen(o));
+            MaybeKind<CompletableFutures.CompletableFutureKind<T>> x = MaybeKind.widen(f);
+            MaybeKind<Higher<completableFuture,T>> y = (MaybeKind)x;
+            return Nested.of(y, Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<maybe,Witness.stream,T> javaStream(Maybe<java.util.stream.Stream<T>> nested){
+            Maybe<StreamKind<T>> f = nested.map(o -> StreamKind.widen(o));
+            MaybeKind<StreamKind<T>> x = MaybeKind.widen(f);
+            MaybeKind<Higher<Witness.stream,T>> y = (MaybeKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+    }
+
+    public static interface NestedMaybe{
+        public static <T> Nested<reactiveSeq,maybe,T> reactiveSeq(ReactiveSeq<Maybe<T>> nested){
+            ReactiveSeq<Higher<maybe,T>> x = nested.map(MaybeKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<Witness.maybe,maybe,T> maybe(cyclops.control.Maybe<Maybe<T>> nested){
+            cyclops.control.Maybe<Higher<maybe,T>> x = nested.map(MaybeKind::widenK);
+
+            return Nested.of(x, cyclops.control.Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,maybe,T> eval(Eval<Maybe<T>> nested){
+            Eval<Higher<maybe,T>> x = nested.map(MaybeKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<future,maybe,T> future(cyclops.async.Future<Maybe<T>> nested){
+            cyclops.async.Future<Higher<maybe,T>> x = nested.map(MaybeKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,maybe, P> xor(Xor<S, Maybe<P>> nested){
+            Xor<S, Higher<maybe,P>> x = nested.map(MaybeKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,maybe, T> reader(Reader<S, Maybe<T>> nested){
+
+            Reader<S, Higher<maybe, T>>  x = nested.map(MaybeKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<tryType,S>,maybe, P> cyclopsTry(cyclops.control.Try<Maybe<P>, S> nested){
+            cyclops.control.Try<Higher<maybe,P>, S> x = nested.map(MaybeKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,maybe,T> javaOptional(Optional<Maybe<T>> nested){
+            Optional<Higher<maybe,T>> x = nested.map(MaybeKind::widenK);
+
+            return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,maybe,T> javaCompletableFuture(CompletableFuture<Maybe<T>> nested){
+            CompletableFuture<Higher<maybe,T>> x = nested.thenApply(MaybeKind::widenK);
+
+            return Nested.of(CompletableFutures.CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,maybe,T> javaStream(java.util.stream.Stream<Maybe<T>> nested){
+            java.util.stream.Stream<Higher<maybe,T>> x = nested.map(MaybeKind::widenK);
+
+            return Nested.of(StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
     }
 
 }
