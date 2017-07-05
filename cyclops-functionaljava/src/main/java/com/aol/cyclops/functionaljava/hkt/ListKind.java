@@ -1,7 +1,10 @@
 package com.aol.cyclops.functionaljava.hkt;
 
+import java.lang.Class;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 
@@ -15,16 +18,7 @@ import cyclops.monads.transformers.ListT;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
-import fj.Equal;
-import fj.F;
-import fj.F0;
-import fj.F2;
-import fj.Monoid;
-import fj.Ord;
-import fj.Ordering;
-import fj.P1;
-import fj.P2;
-import fj.Unit;
+import fj.*;
 import fj.control.Trampoline;
 import fj.control.parallel.Promise;
 import fj.data.Array;
@@ -120,6 +114,193 @@ public  class ListKind<T> implements Higher<list, T> {
        
     }
 
+
+    public Array<T> toArray(Class<T[]> c) {
+        return boxed.toArray(c);
+    }
+
+    public T[] array(Class<T[]> c) {
+        return boxed.array(c);
+    }
+
+    public static <A, B, C> F<List<A>, F<List<B>, List<C>>> liftM2(F<A, F<B, C>> f) {
+        return List.liftM2(f);
+    }
+
+    public <E, B> Validation<E, List<B>> traverseValidation(Semigroup<E> s, F<T, Validation<E, B>> f) {
+        return boxed.traverseValidation(s, f);
+    }
+
+    public static <A, B, C> F<List<A>, F<List<B>, F<F<A, F<B, C>>, List<C>>>> zipWith() {
+        return List.zipWith();
+    }
+
+    public static <A, B> F<List<A>, F<List<B>, List<P2<A, B>>>> zip() {
+        return List.zip();
+    }
+
+    public static <A> F<List<A>, A> head_() {
+        return List.head_();
+    }
+
+    public static <A> F<List<A>, List<A>> tail_() {
+        return List.tail_();
+    }
+
+    public static <A> F<List<A>, Integer> length_() {
+        return List.length_();
+    }
+
+    public Option<T> maximumOption(Ord<T> o) {
+        return boxed.maximumOption(o);
+    }
+
+    public Option<T> minimumOption(Ord<T> o) {
+        return boxed.minimumOption(o);
+    }
+
+    @SafeVarargs
+    public static <A> List<A> arrayList(A... as) {
+        return List.arrayList(as);
+    }
+
+    @Deprecated
+    public static <A> List<A> list(Iterable<A> i) {
+        return List.list(i);
+    }
+
+    @Deprecated
+    public static <A> List<A> list(Iterator<A> it) {
+        return List.list(it);
+    }
+
+    public static <A> List<A> fromIterator(Iterator<A> it) {
+        return List.fromIterator(it);
+    }
+
+    public static <A> List<A> nil() {
+        return List.nil();
+    }
+
+    public static <A> F<A, F<List<A>, List<A>>> cons() {
+        return List.cons();
+    }
+
+    public static <A> F2<A, List<A>, List<A>> cons_() {
+        return List.cons_();
+    }
+
+    public static <A> F<A, List<A>> cons(List<A> tail) {
+        return List.cons(tail);
+    }
+
+    public static <A> F<List<A>, List<A>> cons_(A a) {
+        return List.cons_(a);
+    }
+
+    public static <A> List<A> cons(A head, List<A> tail) {
+        return List.cons(head, tail);
+    }
+
+    public static <A> F<List<A>, Boolean> isEmpty_() {
+        return List.isEmpty_();
+    }
+
+    public static <A> F<List<A>, Boolean> isNotEmpty_() {
+        return List.isNotEmpty_();
+    }
+
+    public static <A> List<A> join(List<List<A>> o) {
+        return List.join(o);
+    }
+
+    public static <A> F<List<List<A>>, List<A>> join() {
+        return List.join();
+    }
+
+    public static <A, B> List<A> unfold(F<B, Option<P2<A, B>>> f, B b) {
+        return List.unfold(f, b);
+    }
+
+    public static <A, B> P2<List<A>, List<B>> unzip(List<P2<A, B>> xs) {
+        return List.unzip(xs);
+    }
+
+    public static <A> List<A> replicate(int n, A a) {
+        return List.replicate(n, a);
+    }
+
+    public static List<Integer> range(int from, int to) {
+        return List.range(from, to);
+    }
+
+    public static List<Character> fromString(String s) {
+        return List.fromString(s);
+    }
+
+    public static F<String, List<Character>> fromString() {
+        return List.fromString();
+    }
+
+    public static String asString(List<Character> cs) {
+        return List.asString(cs);
+    }
+
+    public static F<List<Character>, String> asString() {
+        return List.asString();
+    }
+
+    public static <A> List<A> single(A a) {
+        return List.single(a);
+    }
+
+    public static <A> List<A> iterateWhile(F<A, A> f, F<A, Boolean> p, A a) {
+        return List.iterateWhile(f, p, a);
+    }
+
+    public static <A, B> Option<B> lookup(Equal<A> e, List<P2<A, B>> x, A a) {
+        return List.lookup(e, x, a);
+    }
+
+    public static <A, B> F2<List<P2<A, B>>, A, Option<B>> lookup(Equal<A> e) {
+        return List.lookup(e);
+    }
+
+    public static <A, B> F<F<A, List<B>>, F<List<A>, List<B>>> bind_() {
+        return List.bind_();
+    }
+
+    public static <A, B> F<F<A, B>, F<List<A>, List<B>>> map_() {
+        return List.map_();
+    }
+
+    public static <A, B> F<B, List<A>> sequence_(List<F<B, A>> fs) {
+        return List.sequence_(fs);
+    }
+
+    public static <A, B> F<F<B, F<A, B>>, F<B, F<List<A>, B>>> foldLeft() {
+        return List.foldLeft();
+    }
+
+    public static <A> F<Integer, F<List<A>, List<A>>> take() {
+        return List.take();
+    }
+
+    public static <A> List<A> iterableList(Iterable<A> i) {
+        return List.iterableList(i);
+    }
+
+    public static <A> List<A> iteratorList(Iterator<A> it) {
+        return List.iteratorList(it);
+    }
+
+    public void forEach(Consumer<? super T> action) {
+        boxed.forEach(action);
+    }
+
+    public Spliterator<T> spliterator() {
+        return boxed.spliterator();
+    }
 
     private final List<T> boxed;
 
@@ -259,22 +440,7 @@ public  class ListKind<T> implements Higher<list, T> {
     public final T[] toJavaArray() {
         return boxed.toJavaArray();
     }
-    /**
-     * @param c
-     * @return
-     * @see fj.data.List#toArray(java.lang.Class)
-     */
-    public final Array<T> toArray(Class<T[]> c) {
-        return boxed.toArray(c);
-    }
-    /**
-     * @param c
-     * @return
-     * @see fj.data.List#array(java.lang.Class)
-     */
-    public final T[] array(Class<T[]> c) {
-        return boxed.array(c);
-    }
+
     /**
      * @param a
      * @return
@@ -564,14 +730,7 @@ public  class ListKind<T> implements Higher<list, T> {
     public <B> List<List<B>> traverseList(F<T, List<B>> f) {
         return boxed.traverseList(f);
     }
-    /**
-     * @param f
-     * @return
-     * @see fj.data.List#traverseValidation(fj.F)
-     */
-    public <E, B> Validation<E, List<B>> traverseValidation(F<T, Validation<E, B>> f) {
-        return boxed.traverseValidation(f);
-    }
+
     /**
      * @param f
      * @return

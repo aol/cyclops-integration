@@ -239,7 +239,9 @@ e.g. using the Pure and Functor typeclasses for Vavr Streams
 The Active class represents a Higher Kinded encoding of a Vavr (or cyclops-react/ JDK/ reactor / rx etc) type *and* it's associated type classes
 
 The code above which creates a new Stream containing a single element "hello" and transforms it to Stream of Integers (the length of each word), can be written much more succintly with Active
+
 ```java
+
 Active<stream,Integer> active = Streams.allTypeClasses(Stream.empty());
 
 Active<stream,Integer> hello = active.unit("hello")
