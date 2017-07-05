@@ -49,6 +49,11 @@ public interface EitherKind<L,R> extends Either<L,R>,To<EitherKind<L,R>>,
     default <R2> EitherKind<L,R2> fold(Function<? super Either<? super L,? super R>,? extends Either<L,R2>> op){
         return widen(op.apply(this));
     }
+    public static <L,R> Higher<Higher<either,L>,R> widenK(final Either<L,R> completableList) {
+
+        return new EitherKind.Box<>(
+                completableList);
+    }
     public static <L,R> EitherKind<L,R> widen(final Either<L,R> either) {
         return new Box<>(either);
     }
