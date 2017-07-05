@@ -58,7 +58,11 @@ public  class NonEmptyListKind<T> implements Higher<nonEmptyList, T> {
         
         return widen(NonEmptyList.fromList(List.list(v).cons(first)).some());
     }
+    public static <T> Higher<nonEmptyList,T> widenK(final NonEmptyList<T> completableList) {
 
+        return new NonEmptyListKind<T>(
+                completableList);
+    }
     /**
      * Convert a NonEmptyList to a simulated HigherKindedType that captures NonEmptyList nature
      * and NonEmptyList element data type separately. Recover via @see NonEmptyListKind#narrow

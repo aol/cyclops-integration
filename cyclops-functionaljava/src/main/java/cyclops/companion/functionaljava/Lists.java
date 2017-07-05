@@ -1,17 +1,29 @@
 package cyclops.companion.functionaljava;
 
+import com.aol.cyclops.functionaljava.hkt.*;
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.*;
+import cyclops.companion.CompletableFutures.CompletableFutureKind;
+import cyclops.companion.Optionals.OptionalKind;
+import cyclops.companion.Streams;
+import cyclops.control.Eval;
 import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
 import cyclops.conversion.functionaljava.FromJDK;
 import cyclops.conversion.functionaljava.FromJooqLambda;
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.list;
-import com.aol.cyclops.functionaljava.hkt.ListKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.FJWitness.nonEmptyList;
+import cyclops.monads.FJWitness.option;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.*;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
@@ -26,12 +38,12 @@ import cyclops.typeclasses.monad.*;
 
 import fj.F;
 import fj.P2;
-import fj.data.List;
-import fj.data.Option;
+import fj.data.*;
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 
 import static com.aol.cyclops.functionaljava.hkt.ListKind.widen;
@@ -647,6 +659,149 @@ public class Lists {
             };
         }
     }
+    public static interface ListNested {
+        public static <T> Nested<list,option,T> option(List<Option<T>> nested){
+            List<OptionKind<T>> f = nested.map(OptionKind::widen);
+            ListKind<OptionKind<T>> x = widen(f);
+            ListKind<Higher<option,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(), Options.Instances.definitions());
+        }
+        public static <L,T> Nested<list,Higher<FJWitness.either,L>,T> either(List<Either<L,T>> nested){
+            List<EitherKind<L,T>> f = nested.map(EitherKind::widen);
+            ListKind<EitherKind<L,T>> x = widen(f);
+            ListKind<Higher<Higher<FJWitness.either,L>,T>> y = (ListKind)x;
 
+            return Nested.of(y,Instances.definitions(), Eithers.Instances.definitions());
+        }
+        public static <T> Nested<list,nonEmptyList,T> nonEmptyList(List<NonEmptyList<T>> nested){
+            List<NonEmptyListKind<T>> f = nested.map(NonEmptyListKind::widen);
+            ListKind<NonEmptyListKind<T>> x = widen(f);
+            ListKind<Higher<nonEmptyList,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),NonEmptyLists.Instances.definitions());
+        }
+        public static <T> Nested<list,FJWitness.stream,T> stream(List<Stream<T>> nested){
+            List<StreamKind<T>> f = nested.map(StreamKind::widen);
+            ListKind<StreamKind<T>> x = widen(f);
+            ListKind<Higher<FJWitness.stream,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.companion.functionaljava.Streams.Instances.definitions());
+        }
+        public static <T> Nested<list,list,T> list(List<List<T>> nested){
+            List<ListKind<T>> f = nested.map(ListKind::widen);
+            ListKind<ListKind<T>> x = widen(f);
+            ListKind<Higher<list,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),Lists.Instances.definitions());
+        }
+
+        public static <T> Nested<list,reactiveSeq,T> reactiveSeq(List<ReactiveSeq<T>> nested){
+            ListKind<ReactiveSeq<T>> x = widen(nested);
+            ListKind<Higher<reactiveSeq,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<list,Witness.maybe,T> maybe(List<Maybe<T>> nested){
+            ListKind<Maybe<T>> x = widen(nested);
+            ListKind<Higher<Witness.maybe,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<list,Witness.eval,T> eval(List<Eval<T>> nested){
+            ListKind<Eval<T>> x = widen(nested);
+            ListKind<Higher<Witness.eval,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<list,Witness.future,T> future(List<cyclops.async.Future<T>> nested){
+            ListKind<cyclops.async.Future<T>> x = widen(nested);
+            ListKind<Higher<Witness.future,T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<list,Higher<xor,S>, P> xor(List<Xor<S, P>> nested){
+            ListKind<Xor<S, P>> x = widen(nested);
+            ListKind<Higher<Higher<xor,S>, P>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<list,Higher<reader,S>, T> reader(List<Reader<S, T>> nested){
+            ListKind<Reader<S, T>> x = widen(nested);
+            ListKind<Higher<Higher<reader,S>, T>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<list,Higher<Witness.tryType,S>, P> cyclopsTry(List<cyclops.control.Try<P, S>> nested){
+            ListKind<cyclops.control.Try<P, S>> x = widen(nested);
+            ListKind<Higher<Higher<Witness.tryType,S>, P>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<list,optional,T> javaOptional(List<Optional<T>> nested){
+            List<OptionalKind<T>> f = nested.map(o -> OptionalKind.widen(o));
+            ListKind<OptionalKind<T>> x = ListKind.widen(f);
+
+            ListKind<Higher<optional,T>> y = (ListKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <T> Nested<list,completableFuture,T> javaCompletableFuture(List<CompletableFuture<T>> nested){
+            List<CompletableFutureKind<T>> f = nested.map(o -> CompletableFutureKind.widen(o));
+            ListKind<CompletableFutureKind<T>> x = ListKind.widen(f);
+            ListKind<Higher<completableFuture,T>> y = (ListKind)x;
+            return Nested.of(y, Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<list,Witness.stream,T> javaStream(List<java.util.stream.Stream<T>> nested){
+            List<Streams.StreamKind<T>> f = nested.map(o -> Streams.StreamKind.widen(o));
+            ListKind<Streams.StreamKind<T>> x = ListKind.widen(f);
+            ListKind<Higher<Witness.stream,T>> y = (ListKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+    }
+
+    public static interface NestedList{
+        public static <T> Nested<reactiveSeq,list,T> reactiveSeq(ReactiveSeq<List<T>> nested){
+            ReactiveSeq<Higher<list,T>> x = nested.map(ListKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,list,T> maybe(Maybe<List<T>> nested){
+            Maybe<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,list,T> eval(Eval<List<T>> nested){
+            Eval<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,list,T> future(cyclops.async.Future<List<T>> nested){
+            cyclops.async.Future<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,list, P> xor(Xor<S, List<P>> nested){
+            Xor<S, Higher<list,P>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,list, T> reader(Reader<S, List<T>> nested){
+
+            Reader<S, Higher<list, T>>  x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,list, P> cyclopsTry(cyclops.control.Try<List<P>, S> nested){
+            cyclops.control.Try<Higher<list,P>, S> x = nested.map(ListKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,list,T> javaOptional(Optional<List<T>> nested){
+            Optional<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,list,T> javaCompletableFuture(CompletableFuture<List<T>> nested){
+            CompletableFuture<Higher<list,T>> x = nested.thenApply(ListKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,list,T> javaStream(java.util.stream.Stream<List<T>> nested){
+            java.util.stream.Stream<Higher<list,T>> x = nested.map(ListKind::widenK);
+
+            return Nested.of(Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
+    }
 
 }

@@ -1,19 +1,30 @@
 package cyclops.companion.functionaljava;
 
-import com.aol.cyclops.functionaljava.hkt.ListKind;
+import com.aol.cyclops.functionaljava.hkt.*;
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.CompletableFutures.CompletableFutureKind;
+import cyclops.companion.Optionals;
+import cyclops.companion.Optionals.OptionalKind;
+import cyclops.control.Eval;
 import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
 import cyclops.conversion.functionaljava.FromJDK;
 import cyclops.conversion.functionaljava.FromJooqLambda;
 import cyclops.monads.FJWitness;
+import cyclops.monads.FJWitness.list;
 import cyclops.monads.FJWitness.nonEmptyList;
-import com.aol.cyclops.functionaljava.hkt.NonEmptyListKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.FJWitness.option;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.*;
+import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -26,6 +37,7 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import fj.F;
 import fj.P2;
+import fj.data.Either;
 import fj.data.List;
 import fj.data.NonEmptyList;
 import fj.data.Option;
@@ -33,6 +45,7 @@ import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -416,6 +429,150 @@ public class NonEmptyLists {
             return NonEmptyListKind.widen(NonEmptyListKind.narrow(lt).map(in->fn.apply(in)));
         }
 
+    }
+    public static interface NonEmptyListNested {
+        public static <T> Nested<nonEmptyList,nonEmptyList,T> nonEmptyList(NonEmptyList<NonEmptyList<T>> nested){
+            NonEmptyList<NonEmptyListKind<T>> f = nested.map(NonEmptyListKind::widen);
+            NonEmptyListKind<NonEmptyListKind<T>> x = widen(f);
+            NonEmptyListKind<Higher<nonEmptyList,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(), NonEmptyLists.Instances.definitions());
+        }
+        public static <L,T> Nested<nonEmptyList,Higher<FJWitness.either,L>,T> either(NonEmptyList<Either<L,T>> nested){
+            NonEmptyList<EitherKind<L,T>> f = nested.map(EitherKind::widen);
+            NonEmptyListKind<EitherKind<L,T>> x = widen(f);
+            NonEmptyListKind<Higher<Higher<FJWitness.either,L>,T>> y = (NonEmptyListKind)x;
+
+            return Nested.of(y,Instances.definitions(), Eithers.Instances.definitions());
+        }
+        public static <T> Nested<nonEmptyList,option,T> option(NonEmptyList<Option<T>> nested){
+            NonEmptyList<OptionKind<T>> f = nested.map(OptionKind::widen);
+            NonEmptyListKind<OptionKind<T>> x = widen(f);
+            NonEmptyListKind<Higher<option,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),Options.Instances.definitions());
+        }
+        public static <T> Nested<nonEmptyList,FJWitness.stream,T> stream(NonEmptyList<fj.data.Stream<T>> nested){
+            NonEmptyList<StreamKind<T>> f = nested.map(StreamKind::widen);
+            NonEmptyListKind<StreamKind<T>> x = widen(f);
+            NonEmptyListKind<Higher<FJWitness.stream,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.companion.functionaljava.Streams.Instances.definitions());
+        }
+        public static <T> Nested<nonEmptyList,list,T> list(NonEmptyList<List<T>> nested){
+            NonEmptyList<ListKind<T>> f = nested.map(ListKind::widen);
+            NonEmptyListKind<ListKind<T>> x = widen(f);
+            NonEmptyListKind<Higher<list,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),Lists.Instances.definitions());
+        }
+
+        public static <T> Nested<nonEmptyList,reactiveSeq,T> reactiveSeq(NonEmptyList<ReactiveSeq<T>> nested){
+            NonEmptyListKind<ReactiveSeq<T>> x = widen(nested);
+            NonEmptyListKind<Higher<reactiveSeq,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<nonEmptyList,Witness.maybe,T> maybe(NonEmptyList<Maybe<T>> nested){
+            NonEmptyListKind<Maybe<T>> x = widen(nested);
+            NonEmptyListKind<Higher<Witness.maybe,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<nonEmptyList,Witness.eval,T> eval(NonEmptyList<Eval<T>> nested){
+            NonEmptyListKind<Eval<T>> x = widen(nested);
+            NonEmptyListKind<Higher<Witness.eval,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<nonEmptyList,Witness.future,T> future(NonEmptyList<cyclops.async.Future<T>> nested){
+            NonEmptyListKind<cyclops.async.Future<T>> x = widen(nested);
+            NonEmptyListKind<Higher<Witness.future,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<nonEmptyList,Higher<xor,S>, P> xor(NonEmptyList<Xor<S, P>> nested){
+            NonEmptyListKind<Xor<S, P>> x = widen(nested);
+            NonEmptyListKind<Higher<Higher<xor,S>, P>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<nonEmptyList,Higher<reader,S>, T> reader(NonEmptyList<Reader<S, T>> nested){
+            NonEmptyListKind<Reader<S, T>> x = widen(nested);
+            NonEmptyListKind<Higher<Higher<reader,S>, T>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<nonEmptyList,Higher<Witness.tryType,S>, P> cyclopsTry(NonEmptyList<cyclops.control.Try<P, S>> nested){
+            NonEmptyListKind<cyclops.control.Try<P, S>> x = widen(nested);
+            NonEmptyListKind<Higher<Higher<Witness.tryType,S>, P>> y = (NonEmptyListKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<nonEmptyList,optional,T> javaOptional(NonEmptyList<Optional<T>> nested){
+            NonEmptyList<OptionalKind<T>> f = nested.map(o -> OptionalKind.widen(o));
+            NonEmptyListKind<OptionalKind<T>> x = NonEmptyListKind.widen(f);
+
+            NonEmptyListKind<Higher<optional,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <T> Nested<nonEmptyList,completableFuture,T> javaCompletableFuture(NonEmptyList<CompletableFuture<T>> nested){
+            NonEmptyList<CompletableFutureKind<T>> f = nested.map(o -> CompletableFutureKind.widen(o));
+            NonEmptyListKind<CompletableFutureKind<T>> x = NonEmptyListKind.widen(f);
+            NonEmptyListKind<Higher<completableFuture,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y, Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<nonEmptyList,Witness.stream,T> javaStream(NonEmptyList<java.util.stream.Stream<T>> nested){
+            NonEmptyList<cyclops.companion.Streams.StreamKind<T>> f = nested.map(o -> cyclops.companion.Streams.StreamKind.widen(o));
+            NonEmptyListKind<cyclops.companion.Streams.StreamKind<T>> x = NonEmptyListKind.widen(f);
+            NonEmptyListKind<Higher<Witness.stream,T>> y = (NonEmptyListKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+    }
+
+    public static interface NestedNonEmptyList{
+        public static <T> Nested<reactiveSeq,nonEmptyList,T> reactiveSeq(ReactiveSeq<NonEmptyList<T>> nested){
+            ReactiveSeq<Higher<nonEmptyList,T>> x = nested.map(NonEmptyListKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,nonEmptyList,T> maybe(Maybe<NonEmptyList<T>> nested){
+            Maybe<Higher<nonEmptyList,T>> x = nested.map(NonEmptyListKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,nonEmptyList,T> eval(Eval<NonEmptyList<T>> nested){
+            Eval<Higher<nonEmptyList,T>> x = nested.map(NonEmptyListKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,nonEmptyList,T> future(cyclops.async.Future<NonEmptyList<T>> nested){
+            cyclops.async.Future<Higher<nonEmptyList,T>> x = nested.map(NonEmptyListKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,nonEmptyList, P> xor(Xor<S, NonEmptyList<P>> nested){
+            Xor<S, Higher<nonEmptyList,P>> x = nested.map(NonEmptyListKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,nonEmptyList, T> reader(Reader<S, NonEmptyList<T>> nested){
+
+            Reader<S, Higher<nonEmptyList, T>>  x = nested.map(NonEmptyListKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,nonEmptyList, P> cyclopsTry(cyclops.control.Try<NonEmptyList<P>, S> nested){
+            cyclops.control.Try<Higher<nonEmptyList,P>, S> x = nested.map(NonEmptyListKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,nonEmptyList,T> javaNonEmptyListal(Optional<NonEmptyList<T>> nested){
+            Optional<Higher<nonEmptyList,T>> x = nested.map(NonEmptyListKind::widenK);
+
+            return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,nonEmptyList,T> javaCompletableFuture(CompletableFuture<NonEmptyList<T>> nested){
+            CompletableFuture<Higher<nonEmptyList,T>> x = nested.thenApply(NonEmptyListKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,nonEmptyList,T> javaStream(java.util.stream.Stream<NonEmptyList<T>> nested){
+            java.util.stream.Stream<Higher<nonEmptyList,T>> x = nested.map(NonEmptyListKind::widenK);
+
+            return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
     }
 
 

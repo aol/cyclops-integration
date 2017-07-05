@@ -75,7 +75,11 @@ public final class OptionKind<T> implements Higher<option, T>, Iterable<T> {
     public <R> OptionKind<R> fold(Function<? super Option<?  super T>,? extends Option<R>> op){
         return widen(op.apply(boxed));
     }
+    public static <T> Higher<option,T> widenK(final Option<T> completableList) {
 
+        return new OptionKind<>(
+                completableList);
+    }
     /**
      * @return An HKT encoded empty Option
      */

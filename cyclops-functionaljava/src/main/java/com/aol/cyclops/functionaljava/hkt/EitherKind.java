@@ -7,6 +7,7 @@ import com.aol.cyclops2.types.foldable.To;
 import cyclops.companion.functionaljava.Eithers;
 import cyclops.control.Xor;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.either;
 import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
@@ -42,6 +43,11 @@ public class EitherKind<L,R> implements To<EitherKind<L,R>>,
     }
     public static <L, R> Either<L, R> narrowK(final Higher<Higher<either, L>, R> either) {
         return (Either<L, R>)either;
+    }
+    public static <L,T> Higher<Higher<either,L>,T> widenK(final Either<L,T> completableList) {
+
+        return new EitherKind<>(
+                completableList);
     }
     public Active<Higher<either,L>,R> allTypeclasses(){
         return Active.of(this, Eithers.Instances.definitions());

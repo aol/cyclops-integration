@@ -1,11 +1,21 @@
 package cyclops.companion.functionaljava;
 
+import com.aol.cyclops.functionaljava.hkt.*;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.CompletableFutures.CompletableFutureKind;
+import cyclops.companion.Optionals;
+import cyclops.companion.Optionals.OptionalKind;
+import cyclops.control.Eval;
 import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
 import cyclops.conversion.functionaljava.FromJDK;
 import cyclops.conversion.functionaljava.FromJooqLambda;
 import cyclops.monads.FJWitness;
+import cyclops.monads.FJWitness.list;
+import cyclops.monads.FJWitness.nonEmptyList;
+import cyclops.monads.FJWitness.option;
 import cyclops.monads.FJWitness.stream;
-import com.aol.cyclops.functionaljava.hkt.StreamKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 
@@ -13,6 +23,8 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.*;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
@@ -26,13 +38,12 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import fj.F;
 import fj.P2;
-import fj.data.List;
-import fj.data.Option;
-import fj.data.Stream;
+import fj.data.*;
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -651,6 +662,149 @@ public class Streams {
         }
     }
 
+    public static interface StreamNested {
+        public static <T> Nested<stream,option,T> option(Stream<Option<T>> nested){
+            Stream<OptionKind<T>> f = nested.map(OptionKind::widen);
+            StreamKind<OptionKind<T>> x = widen(f);
+            StreamKind<Higher<option,T>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(), Options.Instances.definitions());
+        }
+        public static <L,T> Nested<stream,Higher<FJWitness.either,L>,T> either(Stream<Either<L,T>> nested){
+            Stream<EitherKind<L,T>> f = nested.map(EitherKind::widen);
+            StreamKind<EitherKind<L,T>> x = widen(f);
+            StreamKind<Higher<Higher<FJWitness.either,L>,T>> y = (StreamKind)x;
 
+            return Nested.of(y,Instances.definitions(), Eithers.Instances.definitions());
+        }
+        public static <T> Nested<stream,nonEmptyList,T> nonEmptyList(Stream<NonEmptyList<T>> nested){
+            Stream<NonEmptyListKind<T>> f = nested.map(NonEmptyListKind::widen);
+            StreamKind<NonEmptyListKind<T>> x = widen(f);
+            StreamKind<Higher<nonEmptyList,T>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),NonEmptyLists.Instances.definitions());
+        }
+        public static <T> Nested<stream,list,T> list(Stream<List<T>> nested){
+            Stream<ListKind<T>> f = nested.map(ListKind::widen);
+            StreamKind<ListKind<T>> x = widen(f);
+            StreamKind<Higher<FJWitness.list,T>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),Lists.Instances.definitions());
+        }
+        public static <T> Nested<stream,stream,T> stream(Stream<Stream<T>> nested){
+            Stream<StreamKind<T>> f = nested.map(StreamKind::widen);
+            StreamKind<StreamKind<T>> x = widen(f);
+            StreamKind<Higher<stream,T>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),Streams.Instances.definitions());
+        }
+
+        public static <T> Nested<stream,reactiveSeq,T> reactiveSeq(Stream<ReactiveSeq<T>> nested){
+            StreamKind<ReactiveSeq<T>> x = widen(nested);
+            StreamKind<Higher<reactiveSeq,T>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<stream,Witness.maybe,T> maybe(Stream<Maybe<T>> nested){
+            StreamKind<Maybe<T>> x = widen(nested);
+            StreamKind<Higher<Witness.maybe,T>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<stream,Witness.eval,T> eval(Stream<Eval<T>> nested){
+            StreamKind<Eval<T>> x = widen(nested);
+            StreamKind<Higher<Witness.eval,T>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<stream,Witness.future,T> future(Stream<cyclops.async.Future<T>> nested){
+            StreamKind<cyclops.async.Future<T>> x = widen(nested);
+            StreamKind<Higher<Witness.future,T>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<stream,Higher<xor,S>, P> xor(Stream<Xor<S, P>> nested){
+            StreamKind<Xor<S, P>> x = widen(nested);
+            StreamKind<Higher<Higher<xor,S>, P>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<stream,Higher<reader,S>, T> reader(Stream<Reader<S, T>> nested){
+            StreamKind<Reader<S, T>> x = widen(nested);
+            StreamKind<Higher<Higher<reader,S>, T>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<stream,Higher<Witness.tryType,S>, P> cyclopsTry(Stream<cyclops.control.Try<P, S>> nested){
+            StreamKind<cyclops.control.Try<P, S>> x = widen(nested);
+            StreamKind<Higher<Higher<Witness.tryType,S>, P>> y = (StreamKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<stream,optional,T> javaOptional(Stream<Optional<T>> nested){
+            Stream<OptionalKind<T>> f = nested.map(o -> OptionalKind.widen(o));
+            StreamKind<OptionalKind<T>> x = StreamKind.widen(f);
+
+            StreamKind<Higher<optional,T>> y = (StreamKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <T> Nested<stream,completableFuture,T> javaCompletableFuture(Stream<CompletableFuture<T>> nested){
+            Stream<CompletableFutureKind<T>> f = nested.map(o -> CompletableFutureKind.widen(o));
+            StreamKind<CompletableFutureKind<T>> x = StreamKind.widen(f);
+            StreamKind<Higher<completableFuture,T>> y = (StreamKind)x;
+            return Nested.of(y, Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<stream,Witness.stream,T> javaStream(Stream<java.util.stream.Stream<T>> nested){
+            Stream<cyclops.companion.Streams.StreamKind<T>> f = nested.map(o -> cyclops.companion.Streams.StreamKind.widen(o));
+            StreamKind<cyclops.companion.Streams.StreamKind<T>> x = StreamKind.widen(f);
+            StreamKind<Higher<Witness.stream,T>> y = (StreamKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+    }
+
+    public static interface NestedStream{
+        public static <T> Nested<reactiveSeq,stream,T> reactiveSeq(ReactiveSeq<Stream<T>> nested){
+            ReactiveSeq<Higher<stream,T>> x = nested.map(StreamKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,stream,T> maybe(Maybe<Stream<T>> nested){
+            Maybe<Higher<stream,T>> x = nested.map(StreamKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<eval,stream,T> eval(Eval<Stream<T>> nested){
+            Eval<Higher<stream,T>> x = nested.map(StreamKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,stream,T> future(cyclops.async.Future<Stream<T>> nested){
+            cyclops.async.Future<Higher<stream,T>> x = nested.map(StreamKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,stream, P> xor(Xor<S, Stream<P>> nested){
+            Xor<S, Higher<stream,P>> x = nested.map(StreamKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,stream, T> reader(Reader<S, Stream<T>> nested){
+
+            Reader<S, Higher<stream, T>>  x = nested.map(StreamKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,stream, P> cyclopsTry(cyclops.control.Try<Stream<P>, S> nested){
+            cyclops.control.Try<Higher<stream,P>, S> x = nested.map(StreamKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<optional,stream,T> javaOptional(Optional<Stream<T>> nested){
+            Optional<Higher<stream,T>> x = nested.map(StreamKind::widenK);
+
+            return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,stream,T> javaCompletableFuture(CompletableFuture<Stream<T>> nested){
+            CompletableFuture<Higher<stream,T>> x = nested.thenApply(StreamKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,stream,T> javaStream(java.util.stream.Stream<Stream<T>> nested){
+            java.util.stream.Stream<Higher<stream,T>> x = nested.map(StreamKind::widenK);
+
+            return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
+    }
 
 }

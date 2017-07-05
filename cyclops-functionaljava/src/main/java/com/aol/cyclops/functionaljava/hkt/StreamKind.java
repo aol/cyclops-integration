@@ -62,7 +62,11 @@ public  class StreamKind<T> implements Higher<stream, T> {
         return StreamT.of(witness.adapter().unit(ReactiveSeq.fromIterable(boxed)));
     }
 
+    public static <T> Higher<stream,T> widenK(final Stream<T> completableList) {
 
+        return new StreamKind<>(
+                completableList);
+    }
     public static <T> StreamKind<T> stream(final T... values) {
         
         return widen(Stream.stream(values));

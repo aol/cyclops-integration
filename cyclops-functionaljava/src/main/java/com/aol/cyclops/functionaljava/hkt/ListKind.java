@@ -56,6 +56,11 @@ public  class ListKind<T> implements Higher<list, T> {
         return Active.of(this, Lists.Instances.definitions());
     }
 
+    public static <T> Higher<list,T> widenK(final List<T> completableList) {
+
+        return new ListKind<>(
+                completableList);
+    }
     public <W2,R> Nested<list,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
         return Lists.mapM(boxed,fn,defs);
     }
