@@ -925,7 +925,7 @@ public class Options {
         }
 
     }
-    public static interface OptionNest{
+    public static interface OptionNested{
 
 
         public static <T> Nested<option,lazy,T> lazy(Option<Lazy<T>> type){
@@ -1016,7 +1016,7 @@ public class Options {
 
 
     }
-    public static interface OptionNested{
+    public static interface NestedOption{
         public static <T> Nested<reactiveSeq,option,T> reactiveSeq(ReactiveSeq<Option<T>> nested){
             ReactiveSeq<Higher<option,T>> x = nested.map(OptionKind::widenK);
             return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());

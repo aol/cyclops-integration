@@ -59,11 +59,11 @@ public class EitherKind<L,R> implements To<EitherKind<L,R>>,
         return XorT.of(witness.adapter().unit(ToCyclopsReact.xor(boxed)));
     }
 
-    public Either<L, R>.LeftProjection<L, R> left() {
+    public Either.LeftProjection<L, R> left() {
         return boxed.left();
     }
 
-    public Either<L, R>.RightProjection<L, R> right() {
+    public Either.RightProjection<L, R> right() {
         return boxed.right();
     }
 

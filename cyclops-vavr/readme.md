@@ -195,8 +195,30 @@ System.out.println(vec);
 
 # Higher Kinded Typeclasses
 
-If you really want / or need to program at a much higher level of abstraction cyclops-vavr provided psuedo Higher Kinded encordings and typeclasses for Vavr types
+cyclops provides the following Typeclasses and implementations for many Vavr Types
 
+* Unit / pure
+* Functor
+* Applicative
+* Monad
+* MonadZero
+* MonadPlus
+* Comonad
+* Foldable
+* Unfoldable
+* Eq
+* Traverse
+
+Instances are provided for the following Vavr types : Stream, List, Vector, Array, Queue, HashSet, Option, Try, Future, Either
+
+Type class instances are accessible through the Companion Object for each type.
+
+
+## Using Typeclasses
+
+### Directly 
+
+Typeclasses can be used directly (although this results in verbose and somewhat cumbersome code)
 e.g. using the Pure and Functor typeclasses for Vavr Streams
 
 ```java
@@ -204,15 +226,47 @@ e.g. using the Pure and Functor typeclasses for Vavr Streams
    Pure<stream> pure = Streams.Instances.unit();
    Functor<stream> functor = Streams.Instances.functor();
         
-   StreamKind<Integer> list = pure.unit("hello")
-                                  .apply(h->functor.map((String v) ->v.length(), h))
+   StreamKind<Integer> stream = pure.unit("hello")
+                                  .applyHKT(h->functor.map((String v) ->v.length(), h))
                                   .convert(StreamKind::narrowK);
 
         
    assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
 ```
 
+### Via Active
 
+The Active class represents a Higher Kinded encoding of a Vavr (or cyclops-react/ JDK/ reactor / rx etc) type *and* it's associated type classes
+
+The code above which creates a new Stream containing a single element "hello" and transforms it to Stream of Integers (the length of each word), can be written much more succintly with Active
+```java
+Active<stream,Integer> active = Streams.allTypeClasses(Stream.empty());
+
+Active<stream,Integer> hello = active.unit("hello")
+                                     .map(String::length);
+
+Stream<Integer> stream = StreamKind.narrow(hello.getActive());
+
+```
+
+### Via Nested
+
+The Nested class represents a Nested data structure, for example a List of Options *and* the associated typeclass instances for both types.
+
+```java
+import cyclops.companion.vavr.Options.OptionNested;
+
+Nested<option,list,Integer> optList  = OptionNested.list(Option.some(List.ofAll(1,10,2,3)))
+                                                                       .map(i -> i * 20);
+
+Option<Integer> opt  = optList.foldsUnsafe()
+                              .foldLeft(Monoids.intMax)
+                              .convert(OptionKind::narrowK);
+
+
+//[200]
+
+```
 
 
 
