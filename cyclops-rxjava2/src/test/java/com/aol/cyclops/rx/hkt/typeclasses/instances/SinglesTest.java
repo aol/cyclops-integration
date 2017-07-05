@@ -126,7 +126,7 @@ public class SinglesTest {
     public void monadPlusNonEmpty(){
         
         Monoid<SingleKind<Integer>> m = Monoid.of(widen(Single.never()), (a, b)->a.toFuture().isDone() ? b : a);
-        SingleKind<Integer> opt = Instances.<Integer>monadPlus(m)
+        SingleKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(widen(Single.just(5)), widen(Single.just(10)))
                                       .convert(SingleKind::narrowK);
         assertThat(opt.blockingGet(),equalTo(10));

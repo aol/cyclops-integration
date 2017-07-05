@@ -189,14 +189,7 @@ public final class ObservableKind<T> implements Higher<observable, T>, Publisher
         return boxed.equals(obj);
     }
 
-    /**
-     * @param conversion
-     * @return
-     * @see rx.Observable#extend(rx.functions.Func1)
-     */
-    public <R> R extend(Func1<? super OnSubscribe<T>, ? extends R> conversion) {
-        return boxed.extend(conversion);
-    }
+
 
     /**
      * @return

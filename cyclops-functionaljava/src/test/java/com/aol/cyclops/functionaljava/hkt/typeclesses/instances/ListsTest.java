@@ -115,7 +115,7 @@ public class ListsTest {
     public void monadPlusNonEmpty(){
         
         Monoid<ListKind<Integer>> m = Monoid.of(ListKind.widen(List.list()), (a, b)->a.isEmpty() ? b : a);
-        ListKind<Integer> list = Lists.Instances.<Integer>monadPlus(m)
+        ListKind<Integer> list = Lists.Instances.<Integer>monadPlusK(m)
                                       .plus(ListKind.widen(List.list(5)), ListKind.widen(List.list(10)))
                                       .convert(ListKind::narrowK);
         assertThat(list,equalTo(List.list(5)));

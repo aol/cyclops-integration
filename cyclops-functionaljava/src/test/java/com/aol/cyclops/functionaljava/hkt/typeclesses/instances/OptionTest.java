@@ -108,7 +108,7 @@ public class OptionTest {
     public void monadPlusNonEmpty(){
         
         Monoid<OptionKind<Integer>> m = Monoid.of(OptionKind.widen(Option.none()), (a, b)->a.isSome() ? b : a);
-        OptionKind<Integer> opt = Options.Instances.<Integer>monadPlus(m)
+        OptionKind<Integer> opt = Options.Instances.<Integer>monadPlusK(m)
                                       .plus(OptionKind.widen(Option.some(5)), OptionKind.widen(Option.some(10)))
                                       .convert(OptionKind::narrowK);
         assertThat(opt,equalTo(Option.some(10)));

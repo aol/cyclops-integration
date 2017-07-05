@@ -111,7 +111,7 @@ public class MaybesTest {
     public void monadPlusNonEmpty(){
         
         Monoid<MaybeKind<Integer>> m = Monoid.of(widen(Maybe.never()), (a, b)->a.toFuture().isDone() ? b : a);
-        MaybeKind<Integer> opt = Instances.<Integer>monadPlus(m)
+        MaybeKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(widen(Maybe.just(5)), widen(Maybe.just(10)))
                                       .convert(MaybeKind::narrowK);
         assertThat(opt.blockingGet(),equalTo(10));
