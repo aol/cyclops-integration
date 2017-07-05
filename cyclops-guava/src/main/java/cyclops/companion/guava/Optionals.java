@@ -942,6 +942,8 @@ public class Optionals {
     }
     public static interface OptionalNested{
         public static <T> Nested<optional,fluentIterable,T> fluentIterable(Optional<FluentIterable<T>> nested){
+
+            Optional<FluentIterableKind<T>> f = nested.transform(o -> FluentIterableKind.widen(o));
             OptionalKind<FluentIterable<T>> x = widen(nested);
             OptionalKind<Higher<fluentIterable,T>> y = (OptionalKind)x;
             return Nested.of(y,Instances.definitions(), FluentIterables.Instances.definitions());

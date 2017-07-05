@@ -672,7 +672,8 @@ public class FluentIterables {
 
     public static interface FluentIterableNested {
         public static <T> Nested<fluentIterable,GuavaWitness.optional,T> optional(FluentIterable<com.google.common.base.Optional<T>> nested){
-            FluentIterableKind<com.google.common.base.Optional<T>> x = widen(nested);
+            FluentIterable<OptionalKind<T>> f = nested.transform(o -> OptionalKind.widen(o));
+            FluentIterableKind<OptionalKind<T>> x = widen(f);
             FluentIterableKind<Higher<GuavaWitness.optional,T>> y = (FluentIterableKind)x;
             return Nested.of(y,Instances.definitions(), Optionals.Instances.definitions());
         }
