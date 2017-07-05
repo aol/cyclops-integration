@@ -670,7 +670,7 @@ public class Streams {
             return new Unfoldable<stream>() {
                 @Override
                 public <R, T> Higher<stream, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
-                    return widen(ReactiveSeq.unfold(b,fn).collect(Stream.collector()));
+                    return widen(Stream.ofAll((Iterable)ReactiveSeq.unfold(b,fn)));
 
                 }
             };

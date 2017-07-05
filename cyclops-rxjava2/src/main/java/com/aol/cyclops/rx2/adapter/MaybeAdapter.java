@@ -5,6 +5,7 @@ import cyclops.async.Future;
 import cyclops.companion.rx2.Functions;
 import cyclops.companion.rx2.Maybes;
 import cyclops.monads.AnyM;
+import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.maybe;
 import cyclops.stream.ReactiveSeq;
 import io.reactivex.Maybe;
@@ -78,4 +79,8 @@ public class MaybeAdapter extends AbstractFunctionalAdapter<maybe> {
         return ReactiveSeq.fromPublisher(future(t).toFlowable());
     }
 
+    @Override
+    public <T, R> AnyM<maybe, R> map(AnyM<maybe, T> t, Function<? super T, ? extends R> fn) {
+        return Maybes.anyM(future(t).map(x->fn.apply(x)));
+    }
 }

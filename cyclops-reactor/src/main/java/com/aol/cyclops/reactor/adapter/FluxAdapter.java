@@ -73,4 +73,9 @@ public class FluxAdapter extends AbstractFunctionalAdapter<ReactorWitness.flux> 
     public <T> ReactiveSeq<T> toStream(AnyM<flux, T> t) {
         return ReactiveSeq.fromPublisher(ReactorWitness.flux(t));
     }
+
+    @Override
+    public <T, R> AnyM<flux, R> map(AnyM<flux, T> t, Function<? super T, ? extends R> fn) {
+        return Fluxs.anyM(stream(t).map(fn));
+    }
 }

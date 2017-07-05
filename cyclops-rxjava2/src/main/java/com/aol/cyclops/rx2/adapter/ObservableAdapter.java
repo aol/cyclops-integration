@@ -1,7 +1,9 @@
 package com.aol.cyclops.rx2.adapter;
 
 
+import cyclops.companion.rx2.Flowables;
 import cyclops.companion.rx2.Observables;
+import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.observable;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
@@ -68,6 +70,9 @@ public class ObservableAdapter extends AbstractFunctionalAdapter<observable> {
         return Observables.anyM(Observable.just(o));
     }
 
-
+    @Override
+    public <T, R> AnyM<observable, R> map(AnyM<observable, T> t, Function<? super T, ? extends R> fn) {
+        return Observables.anyM(observable(t).map(i->fn.apply(i)));
+    }
 
 }

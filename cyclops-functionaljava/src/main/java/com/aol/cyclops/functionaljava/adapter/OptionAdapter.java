@@ -2,6 +2,7 @@ package com.aol.cyclops.functionaljava.adapter;
 
 
 import cyclops.monads.FJ;
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.option;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
@@ -66,6 +67,8 @@ public class OptionAdapter extends AbstractFunctionalAdapter<option> {
         return FJ.option(Option.some(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<option, R> map(AnyM<option, T> t, Function<? super T, ? extends R> fn) {
+        return FJ.option(option(t).map(x->fn.apply(x)));
+    }
 }

@@ -1,5 +1,6 @@
 package com.aol.cyclops.functionaljava.adapter;
 
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.list;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
@@ -66,5 +67,8 @@ public class ListAdapter extends AbstractFunctionalAdapter<list> {
     }
 
 
-
+    @Override
+    public <T, R> AnyM<list, R> map(AnyM<list, T> t, Function<? super T, ? extends R> fn) {
+        return anyM(stream(t).map(x->fn.apply(x)));
+    }
 }

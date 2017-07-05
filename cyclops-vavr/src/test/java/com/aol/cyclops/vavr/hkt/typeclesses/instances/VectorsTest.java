@@ -110,7 +110,7 @@ public class VectorsTest {
     public void monadPlusNonEmpty(){
         
         Monoid<VectorKind<Integer>> m = Monoid.of(VectorKind.widen(Vector.empty()), (a, b)->a.isEmpty() ? b : a);
-        VectorKind<Integer> list = Vectors.Instances.<Integer>monadPlus(m)
+        VectorKind<Integer> list = Vectors.Instances.<Integer>monadPlusK(m)
                                       .plus(VectorKind.widen(Vector.of(5)), VectorKind.widen(Vector.of(10)))
                                       .convert(VectorKind::narrowK);
         assertThat(list,equalTo(Vector.of(5)));

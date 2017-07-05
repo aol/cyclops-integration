@@ -110,7 +110,7 @@ public class QueuesTest {
     public void monadPlusNonEmpty(){
         
         Monoid<QueueKind<Integer>> m = Monoid.of(QueueKind.widen(Queue.empty()), (a, b)->a.isEmpty() ? b : a);
-        QueueKind<Integer> list = Queues.Instances.<Integer>monadPlus(m)
+        QueueKind<Integer> list = Queues.Instances.<Integer>monadPlusK(m)
                                       .plus(QueueKind.widen(Queue.of(5)), QueueKind.widen(Queue.of(10)))
                                       .convert(QueueKind::narrowK);
         assertThat(list,equalTo(Queue.of(5)));

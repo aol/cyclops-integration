@@ -53,6 +53,7 @@ public class Lists {
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,list,T> xorM(List<T> type){
         return XorM.right(anyM(type));
     }
+
     public static <T> AnyMSeq<list,T> anyM(List<T> option) {
         return AnyM.ofSeq(option, list.INSTANCE);
     }

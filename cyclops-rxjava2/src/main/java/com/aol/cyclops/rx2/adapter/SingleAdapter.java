@@ -83,4 +83,8 @@ public class SingleAdapter extends AbstractFunctionalAdapter<single> {
         return ReactiveSeq.fromPublisher(future(t).toFlowable());
     }
 
+    @Override
+    public <T, R> AnyM<single, R> map(AnyM<single, T> t, Function<? super T, ? extends R> fn) {
+        return Singles.anyM(future(t).map(x->fn.apply(x)));
+    }
 }

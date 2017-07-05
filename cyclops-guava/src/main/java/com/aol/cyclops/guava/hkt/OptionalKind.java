@@ -3,6 +3,9 @@ package com.aol.cyclops.guava.hkt;
 
 import java.util.Set;
 
+import com.google.common.collect.FluentIterable;
+import cyclops.companion.guava.FluentIterables;
+import cyclops.companion.guava.Optionals;
 import cyclops.conversion.guava.FromCyclopsReact;
 import cyclops.conversion.guava.FromJDK;
 import cyclops.conversion.guava.ToCyclopsReact;
@@ -17,6 +20,12 @@ import cyclops.control.Maybe;
 import cyclops.monads.GuavaWitness;
 import cyclops.monads.GuavaWitness.optional;
 import cyclops.monads.Witness;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.OptionalT;
+import cyclops.monads.transformers.StreamT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
@@ -31,15 +40,25 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class OptionalKind<T> implements Higher<optional, T> {
-    /**
-     * Witness type
-     * 
-     * @author johnmcclean
-     *
-     */
-    public static class µ {
+    public <R> OptionalKind<R> fold(java.util.function.Function<? super Optional<?  super T>,? extends Optional<R>> op){
+        return widen(op.apply(boxed));
     }
-    
+    public Active<optional,T> allTypeclasses(){
+        return Active.of(this, Optionals.Instances.definitions());
+    }
+
+    public static <T> Higher<optional,T> widenK(final Optional<T> completableList) {
+
+        return new OptionalKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<optional,W2,R> mapM(java.util.function.Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Optionals.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> OptionalT<W, T> liftM(W witness) {
+        return Optionals.liftM(boxed,witness);
+    }
     /**
      * @return Get the empty Optional (single instance)
      */

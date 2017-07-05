@@ -1,5 +1,6 @@
 package com.aol.cyclops.functionaljava.adapter;
 
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.nonEmptyList;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
@@ -65,6 +66,8 @@ public class NonEmptyListAdapter extends AbstractFunctionalAdapter<nonEmptyList>
         return anyM(NonEmptyList.nel(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<nonEmptyList, R> map(AnyM<nonEmptyList, T> t, Function<? super T, ? extends R> fn) {
+        return anyM(stream(t).map(x->fn.apply(x)));
+    }
 }

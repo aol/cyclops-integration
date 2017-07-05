@@ -5,6 +5,7 @@ import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
 
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.future;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
@@ -71,6 +72,8 @@ public class FutureAdapter extends AbstractFunctionalAdapter<future> {
         return Vavr.future(Future.successful(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<future, R> map(AnyM<future, T> t, Function<? super T, ? extends R> fn) {
+        return Vavr.future(future(t).map(fn));
+    }
 }

@@ -5,9 +5,17 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.companion.guava.FluentIterables;
 import cyclops.monads.GuavaWitness;
 import cyclops.monads.GuavaWitness.fluentIterable;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
+import fj.data.List;
+import io.vavr.collection.Stream;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -44,7 +52,25 @@ import lombok.AllArgsConstructor;
 public final class FluentIterableKind<E> implements Higher<fluentIterable, E>, Publisher<E>, Iterable<E> {
 
 
+    public <R> FluentIterableKind<R> fold(java.util.function.Function<? super FluentIterable<?  super E>,? extends FluentIterable<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public Active<fluentIterable,E> allTypeclasses(){
+        return Active.of(this, FluentIterables.Instances.definitions());
+    }
 
+    public static <T> Higher<fluentIterable,T> widenK(final FluentIterable<T> completableList) {
+
+        return new FluentIterableKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<fluentIterable,W2,R> mapM(java.util.function.Function<? super E,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return FluentIterables.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> StreamT<W, E> liftM(W witness) {
+        return FluentIterables.liftM(boxed,witness);
+    }
     /**
      * Construct a HKT encoded completed FluentIterable
      * 

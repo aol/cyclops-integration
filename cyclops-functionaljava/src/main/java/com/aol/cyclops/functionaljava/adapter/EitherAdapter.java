@@ -2,7 +2,9 @@ package com.aol.cyclops.functionaljava.adapter;
 
 
 
+import cyclops.companion.functionaljava.Eithers;
 import cyclops.monads.FJ;
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.either;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
@@ -70,6 +72,8 @@ public class EitherAdapter<L> extends AbstractFunctionalAdapter<either> {
         return FJ.either(Either.right(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<either, R> map(AnyM<either, T> t, Function<? super T, ? extends R> fn) {
+        return Eithers.anyM(either(t).bimap(i->i, x->fn.apply(x)));
+    }
 }

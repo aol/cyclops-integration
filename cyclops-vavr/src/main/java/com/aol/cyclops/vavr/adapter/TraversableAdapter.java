@@ -68,6 +68,8 @@ public abstract class TraversableAdapter<W extends VavrWitness.TraversableWitnes
         return anyM(singletonTraversable(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<W, R> map(AnyM<W, T> t, Function<? super T, ? extends R> fn) {
+        return anyM(stream(t).map(fn));
+    }
 }

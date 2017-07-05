@@ -2,6 +2,7 @@ package com.aol.cyclops.guava.adapter;
 
 import cyclops.companion.guava.FluentIterables;
 
+import cyclops.monads.GuavaWitness;
 import cyclops.monads.GuavaWitness.fluentIterable;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import com.google.common.collect.FluentIterable;
@@ -68,6 +69,8 @@ public class FluentIterableAdapter extends AbstractFunctionalAdapter<fluentItera
         return FluentIterables.anyM(FluentIterable.of(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<fluentIterable, R> map(AnyM<fluentIterable, T> t, Function<? super T, ? extends R> fn) {
+        return FluentIterables.anyM(stream(t).transform(x->fn.apply(x)));
+    }
 }

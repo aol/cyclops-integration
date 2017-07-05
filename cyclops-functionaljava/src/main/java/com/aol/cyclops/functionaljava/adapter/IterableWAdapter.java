@@ -1,5 +1,7 @@
 package com.aol.cyclops.functionaljava.adapter;
 
+import cyclops.monads.FJ;
+import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.iterableW;
 import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
@@ -66,6 +68,8 @@ public class IterableWAdapter extends AbstractFunctionalAdapter<iterableW> {
         return anyM(IterableW.iterable(o));
     }
 
-
-
+    @Override
+    public <T, R> AnyM<iterableW, R> map(AnyM<iterableW, T> t, Function<? super T, ? extends R> fn) {
+        return FJ.iterableW(iterableW(t).map(x->fn.apply(x)));
+    }
 }
