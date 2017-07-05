@@ -1,15 +1,15 @@
 package com.aol.cyclops.vavr.hkt;
 
 import com.aol.cyclops2.hkt.Higher;
-import cyclops.collections.vavr.VavrSetX;
 import cyclops.companion.vavr.Sets;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.set;
 import cyclops.monads.WitnessType;
-import cyclops.monads.transformers.SetT;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
+import io.vavr.collection.Array;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
 import lombok.AccessLevel;
@@ -30,17 +30,22 @@ import java.util.function.Function;
  * @param <T> Data type stored within the Set
  */
 
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class SetKind<T> implements Higher<set, T>, Publisher<T>, Set<T> {
 
-public interface SetKind<T> extends Higher<set, T>, Publisher<T>, Set<T> {
+    public static <T> Higher<set,T> widenK(final HashSet<T> completableList) {
 
-    default Active<set,T> allTypeclasses(){
+        return new SetKind<>(
+                completableList);
+    }
+    public Active<set,T> allTypeclasses(){
         return Active.of(this, Sets.Instances.definitions());
     }
 
-    default <W2,R> Nested<set,W2,R> mapM(Function<? super T, ? extends Higher<W2, R>> fn, InstanceDefinitions<W2> defs){
-        return Sets.mapM(this,fn,defs);
+    public <W2,R> Nested<set,W2,R> mapM(Function<? super T, ? extends Higher<W2, R>> fn, InstanceDefinitions<W2> defs){
+        return Sets.mapM(boxed,fn,defs);
     }
-    default <R> SetKind<R> fold(Function<? super Set<? super T>, ? extends Set<R>> op){
+    public <R> SetKind<R> fold(Function<? super Set<? super T>, ? extends HashSet<R>> op){
         return widen(op.apply(this));
     }
 
@@ -74,9 +79,9 @@ public interface SetKind<T> extends Higher<set, T>, Publisher<T>, Set<T> {
      * @param completableSet Set to widen to a SetKind
      * @return SetKind encoding HKT info about Sets
      */
-    public static <T> SetKind<T> widen(final Set<T> completableSet) {
+    public static <T> SetKind<T> widen(final HashSet<T> completableSet) {
 
-        return new Box<>(
+        return new SetKind<>(
                                 completableSet);
     }
 
@@ -95,7 +100,7 @@ public interface SetKind<T> extends Higher<set, T>, Publisher<T>, Set<T> {
 
     public static <T> SetKind<T> widen(final Publisher<T> completableSet) {
 
-        return new Box<>(
+        return new SetKind<>(
                                 HashSet.ofAll((Iterable<T>)ReactiveSeq.fromPublisher(completableSet)));
     }
 
@@ -115,27 +120,26 @@ public interface SetKind<T> extends Higher<set, T>, Publisher<T>, Set<T> {
      * @param set Type Constructor to convert back into narrowed type
      * @return Set from Higher Kinded Type
      */
-    public static <T> Set<T> narrow(final Higher<set, T> set) {
+    public static <T> HashSet<T> narrow(final Higher<set, T> set) {
 
         return ((SetKind<T>) set).narrow();
 
     }
-    public Set<T> narrow();
-    public ReactiveSeq<T> toReactiveSeq();
 
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    static final class Box<T> implements SetKind<T> {
+
 
         @Delegate
-        private final Set<T> boxed;
+        private final HashSet<T> boxed;
         public ReactiveSeq<T> toReactiveSeq(){
             return ReactiveSeq.fromIterable(boxed);
         }
 
+
+
         /**
          * @return wrapped Set
          */
-        public Set<T> narrow() {
+        public HashSet<T> narrow() {
             return boxed;
         }
 
@@ -177,5 +181,5 @@ public interface SetKind<T> extends Higher<set, T>, Publisher<T>, Set<T> {
 
 
 
-    }
+
 }

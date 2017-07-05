@@ -1,10 +1,34 @@
 package cyclops.companion.vavr;
 
 
+import io.vavr.collection.*;
+import io.vavr.control.*;
+import com.aol.cyclops.vavr.hkt.*;
+import cyclops.VavrConverters;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.Optionals;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
+import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromJDK;
+import cyclops.conversion.vavr.FromJooqLambda;
+import cyclops.monads.*;
+import cyclops.monads.VavrWitness.*;
+import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.types.anyM.AnyMSeq;
+import cyclops.function.Fn3;
+import cyclops.function.Fn4;
+import cyclops.function.Monoid;
+import cyclops.monads.Witness.*;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.TryKind;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.companion.Monoids;
 import cyclops.control.Maybe;
+import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
@@ -18,11 +42,10 @@ import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
 import cyclops.monads.VavrWitness.tryType;
+import cyclops.monads.WitnessType;
+import cyclops.monads.XorM;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -38,6 +61,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static com.aol.cyclops.vavr.hkt.TryKind.widen;
+
 /**
  * Utility class for working with JDK Tryals
  *
@@ -47,6 +72,12 @@ import java.util.stream.Stream;
 @UtilityClass
 public class Trys {
 
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,tryType,T> xorM(Try<T> type){
+        return XorM.right(anyM(type));
+    }
+    public static  <W1,T> Coproduct<W1,tryType,T> coproduct(Try<T> type, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+    }
     public static <T> AnyMValue<tryType,T> anyM(Try<T> tryType) {
         return AnyM.ofValue(tryType, VavrWitness.tryType.INSTANCE);
     }
@@ -567,11 +598,11 @@ public class Trys {
     }
 
     public static <T> Active<tryType,T> allTypeclasses(Try<T> tryType){
-        return Active.of(TryKind.widen(tryType), Trys.Instances.definitions());
+        return Active.of(widen(tryType), Trys.Instances.definitions());
     }
     public static <T,W2,R> Nested<tryType,W2,R> mapM(Try<T> tryType, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
         Try<Higher<W2, R>> e = tryType.map(fn);
-        TryKind<Higher<W2, R>> lk = TryKind.widen(e);
+        TryKind<Higher<W2, R>> lk = widen(e);
         return Nested.of(lk, Trys.Instances.definitions(), defs);
     }
 
@@ -799,7 +830,7 @@ public class Trys {
          */
         public static <T> MonadPlus<tryType> monadPlus(){
             Monoid<cyclops.control.Try<T,Throwable>> mn = Monoids.firstTrySuccess(new NoSuchElementException());
-            Monoid<TryKind<T>> m = Monoid.of(TryKind.widen(mn.zero()), (f, g)-> TryKind.widen(
+            Monoid<TryKind<T>> m = Monoid.of(widen(mn.zero()), (f, g)-> widen(
                     mn.apply(ToCyclopsReact.toTry(f), ToCyclopsReact.toTry(g))));
 
             Monoid<Higher<tryType,T>> m2= (Monoid)m;
@@ -860,17 +891,17 @@ public class Trys {
         }
 
         private <T> TryKind<T> of(T value){
-            return TryKind.widen(Try.success(value));
+            return widen(Try.success(value));
         }
         private static <T,R> TryKind<R> ap(TryKind<Function< T, R>> lt, TryKind<T> list){
-            return TryKind.widen(ToCyclopsReact.toTry(lt).combine(ToCyclopsReact.toTry(list), (a, b)->a.apply(b)));
+            return widen(ToCyclopsReact.toTry(lt).combine(ToCyclopsReact.toTry(list), (a, b)->a.apply(b)));
 
         }
         private static <T,R> Higher<tryType,R> flatMap(Higher<tryType,T> lt, Function<? super T, ? extends  Higher<tryType,R>> fn){
-            return TryKind.widen(TryKind.narrow(lt).flatMap(fn.andThen(TryKind::narrowK)));
+            return widen(TryKind.narrow(lt).flatMap(fn.andThen(TryKind::narrowK)));
         }
         private static <T,R> TryKind<R> map(TryKind<T> lt, Function<? super T, ? extends R> fn){
-            return TryKind.widen(lt.map(fn));
+            return widen(lt.map(fn));
         }
 
 

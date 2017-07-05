@@ -1,22 +1,49 @@
 package cyclops.companion.vavr;
 
+import cyclops.monads.VavrWitness.queue;
+import io.vavr.Lazy;
+import io.vavr.collection.*;
+import io.vavr.concurrent.Future;
+import io.vavr.control.*;
+import com.aol.cyclops.vavr.hkt.*;
+import cyclops.VavrConverters;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.Optionals;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
+import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromJDK;
+import cyclops.conversion.vavr.FromJooqLambda;
+import cyclops.monads.*;
+import cyclops.monads.VavrWitness.*;
+import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.types.anyM.AnyMSeq;
+import cyclops.function.Fn3;
+import cyclops.function.Fn4;
+import cyclops.function.Monoid;
+import cyclops.monads.Witness.*;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.SetKind;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 
 import cyclops.control.Maybe;
+import cyclops.control.Xor;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.hashSet;
 import cyclops.monads.VavrWitness.set;
 import cyclops.monads.WitnessType;
 
+import cyclops.monads.XorM;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -29,12 +56,21 @@ import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
+
+import static com.aol.cyclops.vavr.hkt.SetKind.widen;
 
 
 public class Sets {
 
-    public static <T> AnyMSeq<set,T> anyM(Set<T> option) {
+    public static  <W1,T> Coproduct<W1,set,T> coproduct(HashSet<T> type, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,set,T> xorM(HashSet<T> type){
+        return XorM.right(anyM(type));
+    }
+    public static <T> AnyMSeq<set,T> anyM(HashSet<T> option) {
         return AnyM.ofSeq(option, set.INSTANCE);
     }
     /**
@@ -307,12 +343,12 @@ public class Sets {
         });
     }
 
-    public static <T> Active<set,T> allTypeclasses(Set<T> array){
-        return Active.of(SetKind.widen(array), Sets.Instances.definitions());
+    public static <T> Active<set,T> allTypeclasses(HashSet<T> array){
+        return Active.of(widen(array), Sets.Instances.definitions());
     }
-    public static <T,W2,R> Nested<set,W2,R> mapM(Set<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
-        Set<Higher<W2, R>> e = array.map(fn);
-        SetKind<Higher<W2, R>> lk = SetKind.widen(e);
+    public static <T,W2,R> Nested<set,W2,R> mapM(HashSet<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        HashSet<Higher<W2, R>> e = array.map(fn);
+        SetKind<Higher<W2, R>> lk = widen(e);
         return Nested.of(lk, Sets.Instances.definitions(), defs);
     }
     /**
@@ -521,7 +557,7 @@ public class Sets {
          */
         public static <T,R> MonadZero<set> monadZero(){
             BiFunction<Higher<set,T>,Predicate<? super T>,Higher<set,T>> filter = Instances::filter;
-            Supplier<Higher<set, T>> zero = ()-> SetKind.widen(HashSet.empty());
+            Supplier<Higher<set, T>> zero = ()-> widen(HashSet.empty());
             return General.<set,T,R>monadZero(monad(), zero,filter);
         }
         /**
@@ -537,7 +573,7 @@ public class Sets {
          * @return Type class for combining Sets by concatenation
          */
         public static <T> MonadPlus<set> monadPlus(){
-            Monoid<SetKind<T>> m = Monoid.of(SetKind.widen(HashSet.<T>empty()), Instances::concat);
+            Monoid<SetKind<T>> m = Monoid.of(widen(HashSet.<T>empty()), Instances::concat);
             Monoid<Higher<set,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -572,7 +608,7 @@ public class Sets {
         public static <C2,T> Traverse<set> traverse(){
             BiFunction<Applicative<C2>,SetKind<Higher<C2, T>>,Higher<C2, SetKind<T>>> sequenceFn = (ap, set) -> {
 
-                Higher<C2,SetKind<T>> identity = ap.unit(SetKind.widen(HashSet.empty()));
+                Higher<C2,SetKind<T>> identity = ap.unit(widen(HashSet.empty()));
 
                 BiFunction<Higher<C2,SetKind<T>>,Higher<C2,T>,Higher<C2,SetKind<T>>> combineToSet =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> concat(a, SetKind.just(b))),acc,next);
 
@@ -611,34 +647,175 @@ public class Sets {
         }
 
         private static  <T> SetKind<T> concat(SetKind<T> l1, SetKind<T> l2){
-            return SetKind.widen(l1.addAll(l2));
+            return widen(l1.addAll(l2));
         }
         private <T> SetKind<T> of(T value){
-            return SetKind.widen(HashSet.of(value));
+            return widen(HashSet.of(value));
         }
         private static <T,R> SetKind<R> ap(SetKind<Function< T, R>> lt, SetKind<T> set){
-            return SetKind.widen(lt.toReactiveSeq().zip(set,(a, b)->a.apply(b)));
+            return widen(lt.toReactiveSeq().zip(set,(a, b)->a.apply(b)));
         }
         private static <T,R> Higher<set,R> flatMap(Higher<set,T> lt, Function<? super T, ? extends  Higher<set,R>> fn){
-            return SetKind.widen(SetKind.narrowK(lt).flatMap(fn.andThen(SetKind::narrowK)));
+            return widen(SetKind.narrowK(lt).flatMap(fn.andThen(SetKind::narrowK)));
         }
         private static <T,R> SetKind<R> map(SetKind<T> lt, Function<? super T, ? extends R> fn){
-            return SetKind.widen(lt.map(fn));
+            return widen(lt.map(fn));
         }
         private static <T> SetKind<T> filter(Higher<set,T> lt, Predicate<? super T> fn){
-            return SetKind.widen(SetKind.narrow(lt).filter(fn));
+            return widen(SetKind.narrow(lt).filter(fn));
         }
         public static Unfoldable<set> unfoldable(){
             return new Unfoldable<set>() {
                 @Override
                 public <R, T> Higher<set, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
-                    return SetKind.widen(ReactiveSeq.unfold(b,fn).collect(HashSet.collector()));
+                    return widen(ReactiveSeq.unfold(b,fn).collect(HashSet.collector()));
 
                 }
             };
         }
     }
+    public static interface Nesteds{
 
+
+        public static <T> Nested<set,lazy,T> lazy(HashSet<Lazy<T>> type){
+            return Nested.of(widen(type.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
+        }
+        public static <T> Nested<set,VavrWitness.tryType,T> setTry(HashSet<Try<T>> type){
+            return Nested.of(widen(type.map(TryKind::widen)),Instances.definitions(),Trys.Instances.definitions());
+        }
+        public static <T> Nested<set,VavrWitness.future,T> future(HashSet<Future<T>> type){
+            return Nested.of(widen(type.map(FutureKind::widen)),Instances.definitions(),Futures.Instances.definitions());
+        }
+        public static <T> Nested<set,queue,T>  queue(HashSet<Queue<T>> nested){
+            return Nested.of(widen(nested.map(QueueKind::widen)),Instances.definitions(),Queues.Instances.definitions());
+        }
+        public static <L, R> Nested<set,Higher<VavrWitness.either,L>, R> either(HashSet<Either<L, R>> nested){
+            return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
+        }
+        public static <T> Nested<set,VavrWitness.stream,T> stream(HashSet<Stream<T>> nested){
+            return Nested.of(widen(nested.map(StreamKind::widen)),Instances.definitions(),Streams.Instances.definitions());
+        }
+        public static <T> Nested<set,VavrWitness.list,T> list(HashSet<List<T>> nested){
+            return Nested.of(widen(nested.map(ListKind::widen)), Instances.definitions(),Lists.Instances.definitions());
+        }
+        public static <T> Nested<set,array,T> array(HashSet<Array<T>> nested){
+            return Nested.of(widen(nested.map(ArrayKind::widen)),Instances.definitions(),Arrays.Instances.definitions());
+        }
+        public static <T> Nested<set,vector,T> vector(HashSet<Vector<T>> nested){
+            return Nested.of(widen(nested.map(VectorKind::widen)),Instances.definitions(),Vectors.Instances.definitions());
+        }
+        public static <T> Nested<set,VavrWitness.set,T> set(HashSet<HashSet<T>> nested){
+            return Nested.of(widen(nested.map(SetKind::widen)),Instances.definitions(),Sets.Instances.definitions());
+        }
+
+        public static <T> Nested<set,reactiveSeq,T> reactiveSeq(HashSet<ReactiveSeq<T>> nested){
+            SetKind<ReactiveSeq<T>> x = widen(nested);
+            SetKind<Higher<reactiveSeq,T>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<set,maybe,T> maybe(HashSet<Maybe<T>> nested){
+            SetKind<Maybe<T>> x = widen(nested);
+            SetKind<Higher<maybe,T>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<set,eval,T> eval(HashSet<Eval<T>> nested){
+            SetKind<Eval<T>> x = widen(nested);
+            SetKind<Higher<eval,T>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<set,Witness.future,T> cyclopsFuture(HashSet<cyclops.async.Future<T>> nested){
+            SetKind<cyclops.async.Future<T>> x = widen(nested);
+            SetKind<Higher<Witness.future,T>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<set,Higher<xor,S>, P> xor(HashSet<Xor<S, P>> nested){
+            SetKind<Xor<S, P>> x = widen(nested);
+            SetKind<Higher<Higher<xor,S>, P>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<set,Higher<reader,S>, T> reader(HashSet<Reader<S, T>> nested){
+            SetKind<Reader<S, T>> x = widen(nested);
+            SetKind<Higher<Higher<reader,S>, T>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<set,Higher<Witness.tryType,S>, P> cyclopsTry(HashSet<cyclops.control.Try<P, S>> nested){
+            SetKind<cyclops.control.Try<P, S>> x = widen(nested);
+            SetKind<Higher<Higher<Witness.tryType,S>, P>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<set,optional,T> setal(HashSet<Optional<T>> nested){
+            SetKind<Optional<T>> x = widen(nested);
+            SetKind<Higher<optional,T>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(), Optionals.Instances.definitions());
+        }
+        public static <T> Nested<set,completableFuture,T> completableSet(HashSet<CompletableFuture<T>> nested){
+            SetKind<CompletableFuture<T>> x = widen(nested);
+            SetKind<Higher<completableFuture,T>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<set,Witness.stream,T> javaStream(HashSet<java.util.stream.Stream<T>> nested){
+            SetKind<java.util.stream.Stream<T>> x = widen(nested);
+            SetKind<Higher<Witness.stream,T>> y = (SetKind)x;
+            return Nested.of(y,Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+        public static interface Reversed{
+            public static <T> Nested<reactiveSeq,set,T> reactiveSeq(ReactiveSeq<HashSet<T>> nested){
+                ReactiveSeq<Higher<set,T>> x = nested.map(SetKind::widenK);
+                return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+            }
+
+            public static <T> Nested<maybe,set,T> maybe(Maybe<HashSet<T>> nested){
+                Maybe<Higher<set,T>> x = nested.map(SetKind::widenK);
+
+                return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+            }
+            public static <T> Nested<eval,set,T> eval(Eval<HashSet<T>> nested){
+                Eval<Higher<set,T>> x = nested.map(SetKind::widenK);
+
+                return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+            }
+            public static <T> Nested<Witness.future,set,T> cyclopsFuture(cyclops.async.Future<HashSet<T>> nested){
+                cyclops.async.Future<Higher<set,T>> x = nested.map(SetKind::widenK);
+
+                return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+            }
+            public static <S, P> Nested<Higher<xor,S>,set, P> xor(Xor<S, HashSet<P>> nested){
+                Xor<S, Higher<set,P>> x = nested.map(SetKind::widenK);
+
+                return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            }
+            public static <S,T> Nested<Higher<reader,S>,set, T> reader(Reader<S, HashSet<T>> nested){
+
+                Reader<S, Higher<set, T>>  x = nested.map(SetKind::widenK);
+
+                return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            }
+            public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,set, P> cyclopsTry(cyclops.control.Try<HashSet<P>, S> nested){
+                cyclops.control.Try<Higher<set,P>, S> x = nested.map(SetKind::widenK);
+
+                return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+            }
+            public static <T> Nested<optional,set,T> setal(Optional<HashSet<T>> nested){
+                Optional<Higher<set,T>> x = nested.map(SetKind::widenK);
+
+                return  Nested.of(Optionals.OptionalKind.widen(x), Optionals.Instances.definitions(), Instances.definitions());
+            }
+            public static <T> Nested<completableFuture,set,T> completableSet(CompletableFuture<HashSet<T>> nested){
+                CompletableFuture<Higher<set,T>> x = nested.thenApply(SetKind::widenK);
+
+                return Nested.of(CompletableFutures.CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+            }
+            public static <T> Nested<Witness.stream,set,T> javaStream(java.util.stream.Stream<HashSet<T>> nested){
+                java.util.stream.Stream<Higher<set,T>> x = nested.map(SetKind::widenK);
+
+                return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+            }
+        }
+
+
+    }
 
 
 }

@@ -23,6 +23,7 @@ import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.Lazy;
+import io.vavr.collection.Array;
 import io.vavr.collection.Iterator;
 import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
@@ -41,6 +42,11 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final  class LazyKind<T> implements Higher<lazy, T> {
 
+    public static <T> Higher<lazy,T> widenK(final Lazy<T> completableList) {
+
+        return new LazyKind<>(
+                completableList);
+    }
     public  Active<lazy,T> allTypeclasses(){
         return Active.of(this, Lazys.Instances.definitions());
     }

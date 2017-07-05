@@ -30,6 +30,7 @@ import cyclops.monads.transformers.ListT;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
+import io.vavr.collection.Array;
 import io.vavr.collection.Vector;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -47,6 +48,11 @@ import lombok.experimental.Delegate;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public  class VectorKind<T> implements Higher<vector, T>{
 
+    public static <T> Higher<vector,T> widenK(final Vector<T> completableList) {
+
+        return new VectorKind<>(
+                completableList);
+    }
     public Active<vector,T> allTypeclasses(){
         return Active.of(this, Vectors.Instances.definitions());
     }

@@ -1,15 +1,37 @@
 package cyclops.companion.vavr;
 
-
+import io.vavr.collection.*;
+import io.vavr.control.*;
+import com.aol.cyclops.vavr.hkt.*;
+import cyclops.VavrConverters;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.Optionals;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
+import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromJDK;
+import cyclops.conversion.vavr.FromJooqLambda;
+import cyclops.monads.*;
+import cyclops.monads.VavrWitness.*;
+import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.types.anyM.AnyMSeq;
+import cyclops.function.Fn3;
+import cyclops.function.Fn4;
+import cyclops.function.Monoid;
+import cyclops.monads.Witness.*;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.EitherKind;
+import com.aol.cyclops.vavr.hkt.ListKind;
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.companion.Monoids;
 import cyclops.control.Maybe;
 import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
-import cyclops.monads.Vavr;
-import cyclops.monads.VavrWitness;
+import cyclops.monads.*;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
 import com.aol.cyclops2.types.Value;
 import com.aol.cyclops2.types.anyM.AnyMValue;
@@ -18,21 +40,17 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
-import cyclops.monads.AnyM;
 import cyclops.monads.VavrWitness.either;
-import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.XorT;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.comonad.ComonadByPure;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.monad.*;
+import io.vavr.collection.List;
 import io.vavr.control.Either;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
@@ -49,6 +67,14 @@ import java.util.stream.Stream;
  */
 @UtilityClass
 public class Eithers {
+
+
+    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproduct(Either<L,T> either, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(EitherKind.widen(either)),def1,Instances.definitions());
+    }
+    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorM(Either<L,T> type){
+        return XorM.right(anyM(type));
+    }
     public static <L, R> Either<L, R> xor(Xor<L, R> value) {
         Xor<L, R> xor = (Xor) value.toXor();
         return xor.visit(l -> Either.left(l), r -> Either.right(r));

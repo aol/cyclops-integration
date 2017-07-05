@@ -270,12 +270,28 @@ public interface VavrWitness {
         }
 
     }
-    public static enum set implements WitnessType<set> {
+    public static enum set implements TraversableWitness<set> {
         INSTANCE;
 
         @Override
         public FunctionalAdapter<set> adapter() {
-            return null;
+            return new TraversableAdapter(INSTANCE){
+
+                @Override
+                public Traversable traversableFromIterable(Iterable value) {
+                    return HashSet.ofAll(value);
+                }
+
+                @Override
+                public Traversable singletonTraversable(Object value) {
+                    return HashSet.of(value);
+                }
+
+                @Override
+                public Traversable emptyTraversable() {
+                    return HashSet.empty();
+                }
+            };
         }
 
     }}

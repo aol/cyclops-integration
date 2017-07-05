@@ -11,6 +11,7 @@ import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.Lazy;
 import io.vavr.collection.Array;
+import io.vavr.collection.List;
 import io.vavr.collection.Queue;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -30,7 +31,11 @@ import java.util.function.Function;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public  class ArrayKind<T> implements Higher<array, T>{
 
+    public static <T> Higher<array,T> widenK(final Array<T> completableList) {
 
+        return new ArrayKind<>(
+                completableList);
+    }
     public Active<array,T> allTypeclasses(){
         return Active.of(this, Arrays.Instances.definitions());
     }

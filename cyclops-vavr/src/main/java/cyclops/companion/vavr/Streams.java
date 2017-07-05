@@ -1,7 +1,31 @@
 package cyclops.companion.vavr;
 
+import io.vavr.collection.*;
+import io.vavr.control.*;
+import com.aol.cyclops.vavr.hkt.*;
+import cyclops.VavrConverters;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.Optionals;
+import cyclops.control.Eval;
+import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
+import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromJDK;
+import cyclops.conversion.vavr.FromJooqLambda;
+import cyclops.monads.*;
+import cyclops.monads.VavrWitness.*;
+import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.types.anyM.AnyMSeq;
+import cyclops.function.Fn3;
+import cyclops.function.Fn4;
+import cyclops.function.Monoid;
+import cyclops.monads.Witness.*;
+import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.ListKind;
 import cyclops.control.Maybe;
+import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.stream;
@@ -12,11 +36,10 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.WitnessType;
+import cyclops.monads.XorM;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -33,10 +56,16 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+import static com.aol.cyclops.vavr.hkt.StreamKind.widen;
+
 
 public class Streams {
-
-
+    public static  <W1,T> Coproduct<W1,stream,T> coproduct(Stream<T> type, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,stream,T> xorM(Stream<T> type){
+        return XorM.right(anyM(type));
+    }
    
     public static <T> AnyMSeq<stream,T> anyM(Stream<T> option) {
         return AnyM.ofSeq(option, stream.INSTANCE);
@@ -311,11 +340,11 @@ public class Streams {
         });
     }
     public static <T> Active<stream,T> allTypeclasses(Stream<T> array){
-        return Active.of(StreamKind.widen(array), Streams.Instances.definitions());
+        return Active.of(widen(array), Streams.Instances.definitions());
     }
     public static <T,W2,R> Nested<stream,W2,R> mapM(Stream<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
         Stream<Higher<W2, R>> e = array.map(fn);
-        StreamKind<Higher<W2, R>> lk = StreamKind.widen(e);
+        StreamKind<Higher<W2, R>> lk = widen(e);
         return Nested.of(lk, Streams.Instances.definitions(), defs);
     }
     /**
@@ -526,7 +555,7 @@ public class Streams {
          */
         public static <T,R> MonadZero<stream> monadZero(){
 
-            return General.monadZero(monad(), StreamKind.widen(Stream.empty()));
+            return General.monadZero(monad(), widen(Stream.empty()));
         }
         /**
          * <pre>
@@ -541,7 +570,7 @@ public class Streams {
          * @return Type class for combining Streams by concatenation
          */
         public static <T> MonadPlus<stream> monadPlus(){
-            Monoid<StreamKind<T>> m = Monoid.of(StreamKind.widen(Stream.empty()), Instances::concat);
+            Monoid<StreamKind<T>> m = Monoid.of(widen(Stream.empty()), Instances::concat);
             Monoid<Higher<stream,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -577,12 +606,12 @@ public class Streams {
 
             BiFunction<Applicative<C2>,StreamKind<Higher<C2, T>>,Higher<C2, StreamKind<T>>> sequenceFn = (ap, list) -> {
 
-                Higher<C2,StreamKind<T>> identity = ap.unit(StreamKind.widen(Stream.empty()));
+                Higher<C2,StreamKind<T>> identity = ap.unit(widen(Stream.empty()));
 
-                BiFunction<Higher<C2,StreamKind<T>>,Higher<C2,T>,Higher<C2,StreamKind<T>>> combineToStream =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> StreamKind.widen(StreamKind.narrow(a).append(b))),
+                BiFunction<Higher<C2,StreamKind<T>>,Higher<C2,T>,Higher<C2,StreamKind<T>>> combineToStream =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> widen(StreamKind.narrow(a).append(b))),
                         acc,next);
 
-                BinaryOperator<Higher<C2,StreamKind<T>>> combineStreams = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> StreamKind.widen(StreamKind.narrow(l1).appendAll(l2))),a,b); ;
+                BinaryOperator<Higher<C2,StreamKind<T>>> combineStreams = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> widen(StreamKind.narrow(l1).appendAll(l2))),a,b); ;
 
                 return ReactiveSeq.fromIterable(StreamKind.narrow(list))
                         .reduce(identity,
@@ -619,24 +648,24 @@ public class Streams {
 
         private static  <T> StreamKind<T> concat(StreamKind<T> l1, StreamKind<T> l2){
 
-            return StreamKind.widen(l1.appendAll(StreamKind.narrow(l2)));
+            return widen(l1.appendAll(StreamKind.narrow(l2)));
 
         }
 
         private static <T,R> StreamKind<R> ap(StreamKind<Function< T, R>> lt, StreamKind<T> list){
-            return StreamKind.widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt).zip(list, (a, b)->a.apply(b))).toStream());
+            return widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt).zip(list, (a, b)->a.apply(b))).toStream());
         }
         private static <T,R> Higher<stream,R> flatMap(Higher<stream,T> lt, Function<? super T, ? extends  Higher<stream,R>> fn){
-            return StreamKind.widen(StreamKind.narrow(lt).flatMap(fn.andThen(StreamKind::narrow)));
+            return widen(StreamKind.narrow(lt).flatMap(fn.andThen(StreamKind::narrow)));
         }
         private static <T,R> StreamKind<R> map(StreamKind<T> lt, Function<? super T, ? extends R> fn){
-            return StreamKind.widen(StreamKind.narrow(lt).map(in->fn.apply(in)));
+            return widen(StreamKind.narrow(lt).map(in->fn.apply(in)));
         }
         public static Unfoldable<stream> unfoldable(){
             return new Unfoldable<stream>() {
                 @Override
                 public <R, T> Higher<stream, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
-                    return StreamKind.widen(ReactiveSeq.unfold(b,fn).collect(Stream.collector()));
+                    return widen(ReactiveSeq.unfold(b,fn).collect(Stream.collector()));
 
                 }
             };

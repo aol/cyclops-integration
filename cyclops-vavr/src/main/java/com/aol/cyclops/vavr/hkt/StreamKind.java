@@ -13,6 +13,7 @@ import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
+import io.vavr.collection.Array;
 import io.vavr.collection.Vector;
 import io.vavr.concurrent.Future;
 import org.reactivestreams.Publisher;
@@ -42,6 +43,11 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
         return Active.of(this, Streams.Instances.definitions());
     }
 
+    public static <T> Higher<stream,T> widenK(final Stream<T> completableList) {
+
+        return new StreamKind<>(
+                completableList);
+    }
     public <W2,R> Nested<stream,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
         return Streams.mapM(boxed,fn,defs);
     }

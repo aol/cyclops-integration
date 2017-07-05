@@ -15,6 +15,7 @@ import cyclops.monads.transformers.XorT;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
+import io.vavr.collection.List;
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
 import io.vavr.control.Option;
@@ -38,6 +39,11 @@ import java.util.function.Function;
 
 public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
 
+    public static <T> Higher<tryType,T> widenK(final Try<T> completableList) {
+
+        return new TryKind.Box<>(
+                completableList);
+    }
     default Active<tryType,T> allTypeclasses(){
         return Active.of(this, Trys.Instances.definitions());
     }

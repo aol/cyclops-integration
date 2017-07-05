@@ -89,6 +89,12 @@ public interface ListKind<T> extends Higher<list, T>, Publisher<T>, List<T> {
                                 completableList);
     }
 
+    public static <T> Higher<list,T> widenK(final List<T> completableList) {
+
+        return new Box<>(
+                completableList);
+    }
+
     /**
      * Widen a ListKind nested inside another HKT encoded type
      * 

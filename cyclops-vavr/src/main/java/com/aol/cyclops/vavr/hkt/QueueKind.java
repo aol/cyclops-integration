@@ -26,6 +26,7 @@ import cyclops.monads.VavrWitness.queue;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
+import io.vavr.collection.Array;
 import io.vavr.collection.LinearSeq;
 import io.vavr.collection.Queue;
 import lombok.AccessLevel;
@@ -43,6 +44,12 @@ import lombok.experimental.Delegate;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public  class QueueKind<T> implements Higher<queue, T> {
+
+    public static <T> Higher<queue,T> widenK(final Queue<T> completableList) {
+
+        return new QueueKind<>(
+                completableList);
+    }
     public Active<queue,T> allTypeclasses(){
         return Active.of(this, Queues.Instances.definitions());
     }

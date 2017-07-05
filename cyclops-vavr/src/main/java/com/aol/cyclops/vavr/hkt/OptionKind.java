@@ -25,6 +25,7 @@ import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.collection.Iterator;
+import io.vavr.collection.List;
 import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
@@ -42,6 +43,11 @@ import lombok.AllArgsConstructor;
 
 public interface OptionKind<T> extends Higher<option, T>, Option<T> {
 
+    public static <T> Higher<option,T> widenK(final Option<T> completableList) {
+
+        return new OptionKind.Box<>(
+                completableList);
+    }
     default Active<option,T> allTypeclasses(){
         return Active.of(this,Options.Instances.definitions());
     }

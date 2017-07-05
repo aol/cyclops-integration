@@ -22,6 +22,7 @@ import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.collection.Array;
+import io.vavr.collection.List;
 import io.vavr.collection.Queue;
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
@@ -42,6 +43,11 @@ import lombok.AllArgsConstructor;
 
 public interface FutureKind<T> extends Higher<future, T>, Future<T> {
 
+    public static <T> Higher<future,T> widenK(final Future<T> completableList) {
+
+        return new FutureKind.Box<>(
+                completableList);
+    }
     default Active<future,T> allTypeclasses(){
         return Active.of(this, Futures.Instances.definitions());
     }
