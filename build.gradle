@@ -20,6 +20,11 @@ repositories {
 
 test {
     systemProperties 'property': 'value'
+	forkEvery = 1
+	//maxParallelForks = Runtime.runtime.availableProcessors()
+	testLogging {
+		events "started","passed", "skipped", "failed"//, "standardOut", "standardError"
+	}
 }
 
 
