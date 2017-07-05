@@ -40,6 +40,7 @@ import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
+
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
@@ -55,10 +56,22 @@ import static com.aol.cyclops.guava.hkt.FluentIterableKind.widen;
 import static com.aol.cyclops.guava.hkt.OptionalKind.widen;
 import static cyclops.companion.Streams.StreamKind.*;
 
-/**
- * Created by johnmcclean on 26/04/2017.
- */
+
 public class Optionals {
+
+    public static  <W1,T> Coproduct<W1,optional,T> coproduct(T value, InstanceDefinitions<W1> def1){
+        return coproduct(Optional.of(value),def1);
+    }
+    public static  <W1,T> Coproduct<W1,optional,T> coproductAbsent(InstanceDefinitions<W1> def1){
+        return coproduct(Optional.absent(),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,optional,T> xorM(T present){
+        return XorM.right(anyM(Optional.of(present)));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,optional,T> xorMAbsent(){
+        return XorM.right(anyM(Optional.absent()));
+    }
+
     /**
      * <pre>
      * {@code

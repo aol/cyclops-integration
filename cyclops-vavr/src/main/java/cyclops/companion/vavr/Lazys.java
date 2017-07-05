@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 
 import static com.aol.cyclops.vavr.hkt.LazyKind.widen;
@@ -55,6 +56,9 @@ public class Lazys {
 
     public static  <W1,T> Coproduct<W1,lazy,T> coproduct(Lazy<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,lazy,T> coproduct(Supplier<T> type, InstanceDefinitions<W1> def1){
+        return coproduct(Lazy.of(type),def1);
     }
 
     /**

@@ -69,8 +69,20 @@ public class Options {
     public static  <W1,T> Coproduct<W1,option,T> coproduct(Option<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
     }
+    public static  <W1,T> Coproduct<W1,option,T> coproduct(T value, InstanceDefinitions<W1> def1){
+        return coproduct(Option.some(value),def1);
+    }
+    public static  <W1,T> Coproduct<W1,option,T> coproductNone(InstanceDefinitions<W1> def1){
+        return coproduct(Option.none(),def1);
+    }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,option,T> xorM(Option<T> type){
         return XorM.right(anyM(type));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,option,T> xorM(T type){
+        return XorM.right(anyM(Option.some(type)));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,option,T> xorMNone(){
+        return XorM.right(anyM(Option.none()));
     }
     public static <T,W extends WitnessType<W>> OptionalT<W, T> liftM(Option<T> opt, W witness) {
         return OptionalT.of(witness.adapter().unit(opt.toJavaOptional()));

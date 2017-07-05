@@ -270,6 +270,23 @@ Option<Integer> opt  = optList.foldsUnsafe()
 
 ```
 
+### Via Coproduct
+
+Coproduct is a Sum type for HKT encoded types that also stores the associated type classes
+
+```java
+import static 
+Coproduct<list,option,Integer> nums = Options.coproduct(10,Lists.Instances.definitions());
+
+
+int value = nums.map(i->i*2)
+                .foldUnsafe()
+                .foldLeft(0,(a,b)->a+b);
+
+//20
+
+```
+
 
 
 

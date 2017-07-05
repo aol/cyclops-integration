@@ -53,6 +53,9 @@ public class Arrays {
     public static  <W1,T> Coproduct<W1,array,T> coproduct(Array<T> list, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(list)),def1, Instances.definitions());
     }
+    public static  <W1,T> Coproduct<W1,array,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return coproduct(Array.of(values),def1);
+    }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,array,T> xorM(Array<T> type){
         return XorM.right(anyM(type));
     }

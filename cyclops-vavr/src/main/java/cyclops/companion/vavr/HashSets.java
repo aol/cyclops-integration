@@ -54,8 +54,14 @@ public class HashSets {
     public static  <W1,T> Coproduct<W1,hashSet,T> coproduct(HashSet<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
     }
+    public static  <W1,T> Coproduct<W1,hashSet,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return Coproduct.of(Xor.primary(HashSetKind.just(values)),def1, Instances.definitions());
+    }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,hashSet,T> xorM(HashSet<T> type){
         return XorM.right(anyM(type));
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,hashSet,T> xorM(T... values){
+        return xorM(HashSet.of(values));
     }
     public static <T> AnyMSeq<hashSet,T> anyM(HashSet<T> option) {
         return AnyM.ofSeq(option, hashSet.INSTANCE);

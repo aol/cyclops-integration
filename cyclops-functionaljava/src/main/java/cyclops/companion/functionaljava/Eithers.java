@@ -15,7 +15,7 @@ import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Try;
 import cyclops.control.Xor;
-import cyclops.monads.FJWitness;
+import cyclops.monads.*;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
 import com.aol.cyclops2.data.collections.extensions.CollectionX;
@@ -25,21 +25,15 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
-import cyclops.monads.AnyM;
 import cyclops.monads.FJWitness.either;
 import cyclops.monads.FJWitness.list;
 import cyclops.monads.FJWitness.nonEmptyList;
 import cyclops.monads.FJWitness.option;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.*;
-import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.XorT;
 import cyclops.stream.ReactiveSeq;
 
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.comonad.ComonadByPure;
 import cyclops.typeclasses.foldable.Foldable;
@@ -69,7 +63,24 @@ import static com.aol.cyclops.functionaljava.hkt.EitherKind.widen;
  */
 @UtilityClass
 public class Eithers {
-
+    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproduct(Either<L,T> either, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(widen(either)),def1,Instances.definitions());
+    }
+    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproductR(T right, InstanceDefinitions<W1> def1){
+        return coproduct(Either.right(right),def1);
+    }
+    public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproductL(L left, InstanceDefinitions<W1> def1){
+        return coproduct(Either.left(left),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorM(Either<L,T> type){
+        return XorM.right(anyM(type));
+    }
+    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorMR(T right){
+        return XorM.right(anyM(Either.right(right)));
+    }
+    public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorML(L left){
+        return XorM.right(anyM(Either.left(left)));
+    }
     public static <L, R> Either<L, R> xor(Xor<L, R> value) {
         Xor<L, R> xor = (Xor) value.toXor();
         return xor.visit(l -> Either.left(l), r -> Either.right(r));
