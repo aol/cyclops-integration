@@ -116,7 +116,7 @@ public class MonosTest {
     public void monadPlusNonEmpty(){
         
         Monoid<MonoKind<Integer>> m = Monoid.of(MonoKind.widen(Mono.empty()), (a, b)->a.toFuture().isDone() ? b : a);
-        MonoKind<Integer> opt = Instances.<Integer>monadPlus(m)
+        MonoKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(MonoKind.widen(Mono.just(5)), MonoKind.widen(Mono.just(10)))
                                       .convert(MonoKind::narrowK);
         assertThat(opt.block(),equalTo(10));
