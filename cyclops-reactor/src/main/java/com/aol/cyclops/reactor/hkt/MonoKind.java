@@ -13,8 +13,17 @@ import java.util.logging.Level;
 
 import com.aol.cyclops2.hkt.Higher;
 import cyclops.async.Future;
+import cyclops.companion.reactor.Fluxs;
+import cyclops.companion.reactor.Monos;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.mono;
+import cyclops.monads.WitnessType;
+import cyclops.monads.transformers.FutureT;
+import cyclops.monads.transformers.StreamT;
+import cyclops.monads.transformers.reactor.MonoT;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -50,7 +59,26 @@ public final class MonoKind<T> implements Higher<mono, T>, Publisher<T> {
     }
 
 
-    
+    public <R> MonoKind<R> fold(Function<? super Mono<?  super T>,? extends Mono<R>> op){
+        return widen(op.apply(boxed));
+    }
+    public Active<mono,T> allTypeclasses(){
+        return Active.of(this, Monos.Instances.definitions());
+    }
+
+    public static <T> Higher<mono,T> widenK(final Mono<T> completableList) {
+
+        return new MonoKind<>(
+                completableList);
+    }
+    public <W2,R> Nested<ReactorWitness.mono,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        return Monos.mapM(boxed,fn,defs);
+    }
+
+    public <W extends WitnessType<W>> MonoT<W, T> liftM(W witness) {
+        return Monos.liftM(boxed,witness);
+    }
+
     /**
      * Construct a HKT encoded completed Mono
      * 

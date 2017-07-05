@@ -1,19 +1,29 @@
 package cyclops.companion.reactor;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
+import com.aol.cyclops.reactor.hkt.FluxKind;
 import com.aol.cyclops2.react.Status;
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.CompletableFutures;
+import cyclops.companion.CompletableFutures.CompletableFutureKind;
+import cyclops.companion.Optionals;
+import cyclops.companion.Optionals.OptionalKind;
+import cyclops.companion.Streams;
+import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
+import cyclops.control.Reader;
+import cyclops.control.Xor;
 import cyclops.control.lazy.Either;
 import cyclops.monads.ReactorWitness;
+import cyclops.monads.ReactorWitness.flux;
 import cyclops.monads.ReactorWitness.mono;
 import com.aol.cyclops.reactor.hkt.MonoKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -24,13 +34,19 @@ import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
+import cyclops.monads.Witness;
+import cyclops.monads.Witness.*;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
 import cyclops.monads.transformers.reactor.MonoT;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Active;
+import cyclops.typeclasses.InstanceDefinitions;
+import cyclops.typeclasses.Nested;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
+import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
@@ -41,6 +57,9 @@ import org.reactivestreams.Publisher;
 import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import static com.aol.cyclops.reactor.hkt.MonoKind.widen;
+import static cyclops.companion.Streams.StreamKind.*;
 
 /**
  * Companion class for working with Reactor Mono types
@@ -58,6 +77,9 @@ public class Monos {
 
     public static <W extends WitnessType<W>,T> MonoT<W,T> liftM(AnyM<W,Mono<T>> nested){
         return MonoT.of(nested);
+    }
+    public static <T,W extends WitnessType<W>> MonoT<W, T> liftM(Mono<T> opt, W witness) {
+        return MonoT.of(witness.adapter().unit(opt));
     }
 
     public static <T> Future[] futures(Mono<T>... futures){
@@ -438,16 +460,80 @@ public class Monos {
     public static <R> Mono<R> narrow(Mono<? extends R> apply) {
         return (Mono<R>)apply;
     }
-
+    public static <T> Active<mono,T> allTypeclasses(Mono<T> type){
+        return Active.of(widen(type), Monos.Instances.definitions());
+    }
+    public static <T,W2,R> Nested<mono,W2,R> mapM(Mono<T> type, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
+        Mono<Higher<W2, R>> e = type.map(fn);
+        MonoKind<Higher<W2, R>> lk = widen(e);
+        return Nested.of(lk, Monos.Instances.definitions(), defs);
+    }
     /**
      * Companion class for creating Type Class instances for working with Monos
-     * @author johnmcclean
      *
      */
     @UtilityClass
     public static class Instances {
 
+        public static InstanceDefinitions<mono> definitions() {
+            return new InstanceDefinitions<mono>() {
 
+                @Override
+                public <T, R> Functor<mono> functor() {
+                    return Instances.functor();
+                }
+
+                @Override
+                public <T> Pure<mono> unit() {
+                    return Instances.unit();
+                }
+
+                @Override
+                public <T, R> Applicative<mono> applicative() {
+                    return Instances.applicative();
+                }
+
+                @Override
+                public <T, R> Monad<mono> monad() {
+                    return Instances.monad();
+                }
+
+                @Override
+                public <T, R> Maybe<MonadZero<mono>> monadZero() {
+                    return Maybe.just(Instances.monadZero());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<mono>> monadPlus() {
+                    return Maybe.just(Instances.monadPlus());
+                }
+
+                @Override
+                public <T> Maybe<MonadPlus<mono>> monadPlus(Monoid<Higher<mono, T>> m) {
+                    return Maybe.just(Instances.monadPlus(m));
+                }
+
+                @Override
+                public <C2, T> Maybe<Traverse<mono>> traverse() {
+                    return Maybe.just(Instances.traverse());
+                }
+
+                @Override
+                public <T> Maybe<Foldable<mono>> foldable() {
+                    return Maybe.just(Instances.foldable());
+                }
+
+                @Override
+                public <T> Maybe<Comonad<mono>> comonad() {
+                    return Maybe.just(Instances.comonad());
+                }
+
+                @Override
+                public <T> Maybe<Unfoldable<mono>> unfoldable() {
+                    return Maybe.none();
+                }
+            };
+        }
         /**
          *
          * Transform a Mono, mulitplying every element by 2
@@ -609,7 +695,7 @@ public class Monos {
 
 
             Monoid<MonoKind<T>> m = Monoid.of(MonoKind.<T>widen(Mono.empty()),
-                    (f,g)-> MonoKind.widen(Mono.first(f.narrow(),g.narrow())));
+                    (f,g)-> widen(Mono.first(f.narrow(),g.narrow())));
 
             Monoid<Higher<mono,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
@@ -630,7 +716,12 @@ public class Monos {
          * @param m Monoid to use for combining Monos
          * @return Type class for combining Monos
          */
-        public static <T> MonadPlus<mono> monadPlus(Monoid<MonoKind<T>> m){
+        public static <T> MonadPlus<mono> monadPlusK(Monoid<MonoKind<T>> m){
+            Monoid<Higher<mono,T>> m2= (Monoid)m;
+            return General.monadPlus(monadZero(),m2);
+        }
+
+        public static <T> MonadPlus<mono> monadPlus(Monoid<Higher<mono,T>> m){
             Monoid<Higher<mono,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -669,19 +760,19 @@ public class Monos {
         }
 
         private static <T> MonoKind<T> of(T value){
-            return MonoKind.widen(Mono.just(value));
+            return widen(Mono.just(value));
         }
         private static <T,R> MonoKind<R> ap(MonoKind<Function< T, R>> lt, MonoKind<T> list){
 
 
-            return MonoKind.widen(Monos.combine(lt.narrow(),list.narrow(), (a, b)->a.apply(b)));
+            return widen(Monos.combine(lt.narrow(),list.narrow(), (a, b)->a.apply(b)));
 
         }
         private static <T,R> Higher<mono,R> flatMap(Higher<mono,T> lt, Function<? super T, ? extends  Higher<mono,R>> fn){
-            return MonoKind.widen(MonoKind.narrow(lt).flatMap(fn.andThen(MonoKind::narrow)));
+            return widen(MonoKind.narrow(lt).flatMap(fn.andThen(MonoKind::narrow)));
         }
         private static <T,R> MonoKind<R> map(MonoKind<T> lt, Function<? super T, ? extends R> fn){
-            return MonoKind.widen(lt.narrow().map(fn));
+            return widen(lt.narrow().map(fn));
         }
 
 
@@ -691,6 +782,137 @@ public class Monos {
             return applicative.map(MonoKind::just, fn.apply(future.block()));
         }
 
+    }
+
+    public static interface MonoNested {
+        public static <T> Nested<mono,mono,T> mono(Mono<Mono<T>> nested){
+            Mono<MonoKind<T>> f = nested.map(MonoKind::widen);
+            MonoKind<MonoKind<T>> x = widen(f);
+            MonoKind<Higher<mono,T>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(), Monos.Instances.definitions());
+        }
+        public static <T> Nested<mono,flux,T> flux(Mono<Flux<T>> nested){
+            Mono<FluxKind<T>> f = nested.map(FluxKind::widen);
+            MonoKind<FluxKind<T>> x = widen(f);
+            MonoKind<Higher<flux,T>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(), Fluxs.Instances.definitions());
+        }
+
+
+        public static <T> Nested<mono,reactiveSeq,T> reactiveSeq(Mono<ReactiveSeq<T>> nested){
+            MonoKind<ReactiveSeq<T>> x = widen(nested);
+            MonoKind<Higher<reactiveSeq,T>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
+        }
+
+        public static <T> Nested<mono,maybe,T> maybe(Mono<Maybe<T>> nested){
+            MonoKind<Maybe<T>> x = widen(nested);
+            MonoKind<Higher<maybe,T>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
+        }
+        public static <T> Nested<mono,Witness.eval,T> eval(Mono<Eval<T>> nested){
+            MonoKind<Eval<T>> x = widen(nested);
+            MonoKind<Higher<Witness.eval,T>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
+        }
+        public static <T> Nested<mono,Witness.future,T> future(Mono<cyclops.async.Future<T>> nested){
+            MonoKind<cyclops.async.Future<T>> x = widen(nested);
+            MonoKind<Higher<Witness.future,T>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
+        }
+        public static <S, P> Nested<mono,Higher<xor,S>, P> xor(Mono<Xor<S, P>> nested){
+            MonoKind<Xor<S, P>> x = widen(nested);
+            MonoKind<Higher<Higher<xor,S>, P>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        }
+        public static <S,T> Nested<mono,Higher<reader,S>, T> reader(Mono<Reader<S, T>> nested){
+            MonoKind<Reader<S, T>> x = widen(nested);
+            MonoKind<Higher<Higher<reader,S>, T>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<mono,Higher<Witness.tryType,S>, P> cyclopsTry(Mono<cyclops.control.Try<P, S>> nested){
+            MonoKind<cyclops.control.Try<P, S>> x = widen(nested);
+            MonoKind<Higher<Higher<Witness.tryType,S>, P>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
+        }
+        public static <T> Nested<mono,optional,T> javaOptional(Mono<Optional<T>> nested){
+            Mono<OptionalKind<T>> f = nested.map(o -> OptionalKind.widen(o));
+            MonoKind<OptionalKind<T>> x = MonoKind.widen(f);
+
+            MonoKind<Higher<optional,T>> y = (MonoKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Optionals.Instances.definitions());
+        }
+        public static <T> Nested<mono,completableFuture,T> javaCompletableFuture(Mono<CompletableFuture<T>> nested){
+            Mono<CompletableFutureKind<T>> f = nested.map(o -> CompletableFutureKind.widen(o));
+            MonoKind<CompletableFutureKind<T>> x = MonoKind.widen(f);
+            MonoKind<Higher<completableFuture,T>> y = (MonoKind)x;
+            return Nested.of(y, Instances.definitions(), CompletableFutures.Instances.definitions());
+        }
+        public static <T> Nested<mono,Witness.stream,T> javaStream(Mono<java.util.stream.Stream<T>> nested){
+            Mono<StreamKind<T>> f = nested.map(o -> StreamKind.widen(o));
+            MonoKind<StreamKind<T>> x = MonoKind.widen(f);
+            MonoKind<Higher<Witness.stream,T>> y = (MonoKind)x;
+            return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
+        }
+
+
+
+
+
+    }
+
+    public static interface NestedMono{
+        public static <T> Nested<reactiveSeq,mono,T> reactiveSeq(ReactiveSeq<Mono<T>> nested){
+            ReactiveSeq<Higher<mono,T>> x = nested.map(MonoKind::widenK);
+            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
+        }
+
+        public static <T> Nested<maybe,mono,T> maybe(Maybe<Mono<T>> nested){
+            Maybe<Higher<mono,T>> x = nested.map(MonoKind::widenK);
+
+            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.eval,mono,T> eval(Eval<Mono<T>> nested){
+            Eval<Higher<mono,T>> x = nested.map(MonoKind::widenK);
+
+            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.future,mono,T> future(cyclops.async.Future<Mono<T>> nested){
+            cyclops.async.Future<Higher<mono,T>> x = nested.map(MonoKind::widenK);
+
+            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
+        }
+        public static <S, P> Nested<Higher<xor,S>,mono, P> xor(Xor<S, Mono<P>> nested){
+            Xor<S, Higher<mono,P>> x = nested.map(MonoKind::widenK);
+
+            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+        }
+        public static <S,T> Nested<Higher<reader,S>,mono, T> reader(Reader<S, Mono<T>> nested){
+
+            Reader<S, Higher<mono, T>>  x = nested.map(MonoKind::widenK);
+
+            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+        }
+        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,mono, P> cyclopsTry(cyclops.control.Try<Mono<P>, S> nested){
+            cyclops.control.Try<Higher<mono,P>, S> x = nested.map(MonoKind::widenK);
+
+            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<W1, W2, T> javaOptional(Optional<Mono<T>> nested){
+            Optional<Higher<mono,T>> x = nested.map(MonoKind::widenK);
+
+            return  Nested.of(OptionalKind.widen(x), cyclops.companion.Optionals.Instances.definitions(), Instances.definitions());
+        }
+        public static <T> Nested<completableFuture,mono,T> javaCompletableFuture(CompletableFuture<Mono<T>> nested){
+            CompletableFuture<Higher<mono,T>> x = nested.thenApply(MonoKind::widenK);
+
+            return Nested.of(CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
+        }
+        public static <T> Nested<Witness.stream,mono,T> javaStream(java.util.stream.Stream<Mono<T>> nested){
+            java.util.stream.Stream<Higher<mono,T>> x = nested.map(MonoKind::widenK);
+
+            return Nested.of(StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
+        }
     }
 
 }

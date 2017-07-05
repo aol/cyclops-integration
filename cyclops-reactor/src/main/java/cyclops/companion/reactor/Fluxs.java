@@ -867,8 +867,12 @@ public class Fluxs {
             FluxKind<Higher<mono,T>> y = (FluxKind)x;
             return Nested.of(y,Instances.definitions(), Monos.Instances.definitions());
         }
-
-
+        public static <T> Nested<flux,flux,T> flux(Flux<Flux<T>> nested){
+            Flux<FluxKind<T>> f = nested.map(FluxKind::widen);
+            FluxKind<FluxKind<T>> x = widen(f);
+            FluxKind<Higher<flux,T>> y = (FluxKind)x;
+            return Nested.of(y,Instances.definitions(), Fluxs.Instances.definitions());
+        }
 
         public static <T> Nested<flux,reactiveSeq,T> reactiveSeq(Flux<ReactiveSeq<T>> nested){
             FluxKind<ReactiveSeq<T>> x = widen(nested);
@@ -925,10 +929,6 @@ public class Fluxs {
             FluxKind<Higher<Witness.stream,T>> y = (FluxKind)x;
             return Nested.of(y, Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
         }
-
-
-
-
 
     }
 
