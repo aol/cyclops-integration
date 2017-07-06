@@ -343,15 +343,81 @@ AnyM<list,Mono<Integer>> anyM = trans.unwrap();
 System.out.println(anyM);
 ```
 
+## Using Typeclasses
 
-# Higher Kinded Types and Type classes
+### Directly 
 
-If you really want / or need to program at a much higher level of abstraction cyclops-reactor provided psuedo Higher Kinded encordings and typeclasses for Fluxs and Monos.
-This allows us to leverage truly generic Traverse and Sequence implementations (allowing us to invert the nesting of arbritrary monadic types, rather than hard coding the inversion of a List of Futures to a Future of a List - for example)
+Typeclasses can be used directly (although this results in verbose and somewhat cumbersome code)
+e.g. using the Pure and Functor typeclasses for Flux
 
-e.g. using traverse with Maybe and Mono types
+```java
 
-## Higher Kinded encoding for Mono
+   Pure<flux> pure = Fluxs.Instances.unit();
+   Functor<flux> functor = Fluxs.Instances.functor();
+        
+   FluxKind<Integer> flux = pure.unit("hello")
+                                  .applyHKT(h->functor.map((String v) ->v.length(), h))
+                                  .convert(FluxKind::narrowK);
+
+        
+   assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
+```
+
+### Via Active
+
+The Active class represents a Higher Kinded encoding of a Reactor (or cyclops-react/ JDK/ Vavr / rx etc) type *and* it's associated type classes
+
+The code above which creates a new Flux containing a single element "hello" and transforms it to a Flux of Integers (the length of each word), can be written much more succintly with Active
+
+```java
+
+Active<flux,Integer> active = Fluxs.allTypeClasses(Flux.empty());
+
+Active<flux,Integer> hello = active.unit("hello")
+                                   .map(String::length);
+
+Flux<Integer> stream = FluxKind.narrow(hello.getActive());
+
+```
+
+### Via Nested
+
+The Nested class represents a Nested data structure, for example a Mono with a Flux *and* the associated typeclass instances for both types.
+
+```java
+import cyclops.companion.reactor.Monos.MonoNested;
+
+Nested<mono,flux,Integer> monoFlux  = MonoNested.list(Mono.just(Flux.just(1,10,2,3)))
+                                                                       .map(i -> i * 20);
+
+Mono<Integer> opt  = monoFlux.foldsUnsafe()
+                               .foldLeft(Monoids.intMax)
+                               .convert(OptionKind::narrowK);
+
+
+//[200]
+
+```
+
+### Via Coproduct
+
+Coproduct is a Sum type for HKT encoded types that also stores the associated type classes
+
+```java
+import static 
+Coproduct<flux,mono,Integer> nums = Monos.coproduct(10,Fluxs.Instances.definitions());
+
+
+int value = nums.map(i->i*2)
+                .foldUnsafe()
+                .foldLeft(0,(a,b)->a+b);
+
+//20
+
+```
+
+
+## Direct examples with Mono
 
 We can use MonoKind to encode Mono at a higher level of abstraction.
 ```java
