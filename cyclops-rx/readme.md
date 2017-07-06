@@ -340,7 +340,7 @@ The Nested class represents a Nested data structure, for example a Vavr Option w
 ```java
 import cyclops.companion.vavr.Options.OptionNested;
 
-Nested<option,observable,Integer> optionObs  = MaybeNested.list(Option.some(Observable.just(1,10,2,3)))
+Nested<option,observable,Integer> optionObs  = OptionNested.list(Option.some(Observable.just(1,10,2,3)))
                                                                        .map(i -> i * 20);
 
 Option<Integer> opt  = optionObs.foldsUnsafe()
@@ -358,7 +358,7 @@ Coproduct is a Sum type for HKT encoded types that also stores the associated ty
 
 ```java
 import static 
-Coproduct<observable,option,Integer> nums = Observables.coproduct(10,Observables.Instances.definitions());
+Coproduct<observable,option,Integer> nums = Observables.coproduct(Observables.Instances.definitions(),10);
 
 
 int value = nums.map(i->i*2)
@@ -406,4 +406,27 @@ ObservableKind<Integer> list = pure.unit("hello")
 
         
 assertThat(list.toList().toBlocking().first(),equalTo(Arrays.asList("hello".length())));
+```
+
+# Kotlin style sequence generators
+
+```java
+
+import static cyclops.stream.Generator.suspend;
+import static cyclops.stream.Generator.times;
+
+i = 100;
+k = 9999;
+
+Observable<Integer> fi = Observable.from(suspend((Integer i) -> i != 4, s -> {
+
+                         Generator<Integer> gen1 = suspend(times(2), s2 -> s2.yield(i++));
+                         Generator<Integer> gen2 = suspend(times(2), s2 -> s2.yield(k--));
+
+                         return s.yieldAll(gen1.stream(), gen2.stream());
+                  }
+               ));
+
+
+//Observable(100, 101, 9999, 9998, 102)
 ```

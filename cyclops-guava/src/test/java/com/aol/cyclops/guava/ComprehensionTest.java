@@ -47,4 +47,13 @@ public class ComprehensionTest {
 
         assertThat(s, equalTo("[(1, 11), (2, 12), (3, 13)]"));
     }
+    @Test
+    public void generate2() {
+
+        String s = FluentIterables.forEach2(FluentIterable.of(1, 2, 3),
+                a -> FluentIterable.<Integer> of(a + 10), Tuple::tuple)
+                .toString();
+
+        assertThat(s, equalTo("[(1, 11), (2, 12), (3, 13)]"));
+    }
 }

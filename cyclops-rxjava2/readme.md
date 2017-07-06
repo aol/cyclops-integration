@@ -589,3 +589,27 @@ Our result is a little ugly - we should convert it back into a more readable for
 ```java
 Maybe<Single<Integer>> nk = res.convert(Maybe::narrowK)
                              .map(h -> h.convert(SingleKind::narrow));
+```
+
+# Kotlin style sequence generators
+
+```java
+
+import static cyclops.stream.Generator.suspend;
+import static cyclops.stream.Generator.times;
+
+i = 100;
+k = 9999;
+
+Observable<Integer> fi = Observable.from(suspend((Integer i) -> i != 4, s -> {
+
+                         Generator<Integer> gen1 = suspend(times(2), s2 -> s2.yield(i++));
+                         Generator<Integer> gen2 = suspend(times(2), s2 -> s2.yield(k--));
+
+                         return s.yieldAll(gen1.stream(), gen2.stream());
+                  }
+               ));
+
+
+//Observable(100, 101, 9999, 9998, 102)
+```

@@ -41,6 +41,7 @@ import java.util.function.*;
 import static com.aol.cyclops.guava.hkt.FluentIterableKind.widen;
 
 public class FluentIterables {
+
     public static  <W1,T> Coproduct<W1,fluentIterable,T> coproduct(FluentIterable<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
     }
@@ -56,6 +57,7 @@ public class FluentIterables {
     public static <T,W extends WitnessType<W>> StreamT<W, T> liftM(FluentIterable<T> opt, W witness) {
         return StreamT.of(witness.adapter().unit(ReactiveSeq.fromIterable(opt)));
     }
+
     /**
      * <pre>
      * {@code
@@ -357,7 +359,7 @@ public class FluentIterables {
      *
      */
     @UtilityClass
-    public class Instances {
+    public static class Instances {
 
         public static InstanceDefinitions<fluentIterable> definitions() {
             return new InstanceDefinitions<fluentIterable>() {
