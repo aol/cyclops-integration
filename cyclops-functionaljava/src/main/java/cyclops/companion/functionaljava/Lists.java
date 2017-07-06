@@ -12,23 +12,18 @@ import cyclops.control.Reader;
 import cyclops.control.Xor;
 import cyclops.conversion.functionaljava.FromJDK;
 import cyclops.conversion.functionaljava.FromJooqLambda;
-import cyclops.monads.FJWitness;
+import cyclops.monads.*;
 import cyclops.monads.FJWitness.list;
 import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
 import cyclops.monads.FJWitness.nonEmptyList;
 import cyclops.monads.FJWitness.option;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.*;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -39,6 +34,10 @@ import cyclops.typeclasses.monad.*;
 import fj.F;
 import fj.P2;
 import fj.data.*;
+import fj.data.Array;
+import fj.data.List;
+import fj.data.Stream;
+import io.vavr.collection.*;
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
@@ -50,7 +49,16 @@ import static com.aol.cyclops.functionaljava.hkt.ListKind.widen;
 
 
 public class Lists {
-   
+
+    public static  <W1,T> Coproduct<W1,list,T> coproduct(List<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(widen(list)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,list,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return coproduct(List.list(values),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,list,T> xorM(List<T> type){
+        return XorM.right(anyM(type));
+    }
     public static <T> AnyMSeq<list,T> anyM(List<T> option) {
         return AnyM.ofSeq(option, list.INSTANCE);
     }

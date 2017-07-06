@@ -489,9 +489,9 @@ e.g. using the Pure and Functor typeclasses for Observable
 
 ### Via Active
 
-The Active class represents a Higher Kinded encoding of a Reactor (or cyclops-react/ JDK/ Vavr / rx etc) type *and* it's associated type classes
+The Active class represents a Higher Kinded encoding of a RxJava2 (or cyclops-react/ JDK/ reactor/ Vavr / rx etc) type *and* it's associated type classes
 
-The code above which creates a new Flux containing a single element "hello" and transforms it to a Flux of Integers (the length of each word), can be written much more succintly with Active
+The code above which creates a new Observable containing a single element "hello" and transforms it to a Flux of Integers (the length of each word), can be written much more succintly with Active
 
 ```java
 
@@ -506,7 +506,7 @@ Observable<Integer> stream = ObservableKind.narrow(hello.getActive());
 
 ### Via Nested
 
-The Nested class represents a Nested data structure, for example a Mono with a Flux *and* the associated typeclass instances for both types.
+The Nested class represents a Nested data structure, for example a Single with a Observable *and* the associated typeclass instances for both types.
 
 ```java
 import cyclops.companion.rxjava2.Singles.SingleNested;

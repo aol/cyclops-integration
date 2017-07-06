@@ -22,7 +22,7 @@ import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Xor;
 import cyclops.control.lazy.Either;
-import cyclops.monads.ReactorWitness;
+import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
 import cyclops.monads.ReactorWitness.mono;
 import com.aol.cyclops.reactor.hkt.MonoKind;
@@ -33,17 +33,11 @@ import cyclops.async.Future;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.*;
-import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
 import cyclops.monads.transformers.reactor.MonoT;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -69,6 +63,16 @@ import static cyclops.companion.Streams.StreamKind.*;
  */
 @UtilityClass
 public class Monos {
+
+    public static  <W1,T> Coproduct<W1,mono,T> coproduct(Mono<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(MonoKind.widen(list)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,mono,T> coproduct(T value,InstanceDefinitions<W1> def1){
+        return coproduct(Mono.just(value),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,mono,T> xorM(Mono<T> type){
+        return XorM.right(anyM(type));
+    }
 
     public static <T> Mono<T> raw(AnyM<mono,T> anyM){
         return ReactorWitness.mono(anyM);
