@@ -360,7 +360,7 @@ e.g. using the Pure and Functor typeclasses for Flux
                                   .convert(FluxKind::narrowK);
 
         
-   assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
+   assertThat(list.collectList().block(),equalTo(Arrays.asList("hello".length())));
 ```
 
 ### Via Active
@@ -392,7 +392,7 @@ Nested<mono,flux,Integer> monoFlux  = MonoNested.list(Mono.just(Flux.just(1,10,2
 
 Mono<Integer> opt  = monoFlux.foldsUnsafe()
                                .foldLeft(Monoids.intMax)
-                               .convert(OptionKind::narrowK);
+                               .convert(MonoKind::narrowK);
 
 
 //[200]

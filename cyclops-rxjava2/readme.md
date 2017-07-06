@@ -467,11 +467,84 @@ System.out.println(anyM);
 ```
 
 
-# Higher Kinded Types and Type classes
+## Using Typeclasses
 
-If you really want / or need to program at a much higher level of abstraction cyclops-rx provided psuedo Higher Kinded encordings and typeclasses for Observables, Flowables, Singles and Maybes
+### Directly 
 
-e.g. using the Pure and Functor typeclasses for Vavr Streams
+Typeclasses can be used directly (although this results in verbose and somewhat cumbersome code)
+e.g. using the Pure and Functor typeclasses for Observable
+
+```java
+
+   Pure<observable> pure = Observables.Instances.unit();
+   Functor<observable> functor = Observables.Instances.functor();
+        
+   ObservableKind<Integer> flux = pure.unit("hello")
+                                      .applyHKT(h->functor.map((String v) ->v.length(), h))
+                                      .convert(ObservableKind::narrowK);
+
+        
+   assertThat(list.toList().blockingGet(),equalTo(Arrays.asList("hello".length())));
+```
+
+### Via Active
+
+The Active class represents a Higher Kinded encoding of a Reactor (or cyclops-react/ JDK/ Vavr / rx etc) type *and* it's associated type classes
+
+The code above which creates a new Flux containing a single element "hello" and transforms it to a Flux of Integers (the length of each word), can be written much more succintly with Active
+
+```java
+
+Active<observable,Integer> active = Observables.allTypeClasses(Flux.empty());
+
+Active<observable,Integer> hello = active.unit("hello")
+                                         .map(String::length);
+
+Observable<Integer> stream = ObservableKind.narrow(hello.getActive());
+
+```
+
+### Via Nested
+
+The Nested class represents a Nested data structure, for example a Mono with a Flux *and* the associated typeclass instances for both types.
+
+```java
+import cyclops.companion.rxjava2.Singles.SingleNested;
+
+Nested<single,observable,Integer> singleObs  = SingleNested.list(Single.just(Observable.just(1,10,2,3)))
+                                                                       .map(i -> i * 20);
+
+Single<Integer> opt  = singleObs.foldsUnsafe()
+                              .foldLeft(Monoids.intMax)
+                              .convert(SingleKind::narrowK);
+
+
+//[200]
+
+```
+
+### Via Coproduct
+
+Coproduct is a Sum type for HKT encoded types that also stores the associated type classes
+
+```java
+import static 
+Coproduct<observable,single,Integer> nums = Singles.coproduct(10,Observables.Instances.definitions());
+
+
+int value = nums.map(i->i*2)
+                .foldUnsafe()
+                .foldLeft(0,(a,b)->a+b);
+
+//20
+
+```
+
+
+# Higher Kinded examples
+
+
+e.g. using the Pure and Functor typeclasses for Observables
 
 ```java
 
