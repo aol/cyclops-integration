@@ -1,6 +1,7 @@
 package com.aol.cyclops.functionaljava.adapter;
 
 
+import com.aol.cyclops2.types.anyM.AnyMValue;
 import cyclops.monads.FJ;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.option;
@@ -19,7 +20,9 @@ import java.util.function.Predicate;
 public class OptionAdapter extends AbstractFunctionalAdapter<option> {
 
 
-
+    public <T> T get(AnyMValue<option,T> t){
+        return option(t).some();
+    }
     @Override
     public <T> Iterable<T> toIterable(AnyM<option, T> t) {
         return Maybe.fromIterable(t.unwrap());

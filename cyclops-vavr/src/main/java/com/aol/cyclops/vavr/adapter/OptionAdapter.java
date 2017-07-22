@@ -1,6 +1,8 @@
 package com.aol.cyclops.vavr.adapter;
 
 
+import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.aol.cyclops2.types.extensability.ValueAdapter;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
@@ -17,10 +19,12 @@ import java.util.function.Predicate;
 
 
 @AllArgsConstructor
-public class OptionAdapter extends AbstractFunctionalAdapter<option> {
+public class OptionAdapter implements ValueAdapter<option> {
 
 
-
+    public <T> T get(AnyMValue<option,T> t){
+        return option(t).get();
+    }
     @Override
     public <T> Iterable<T> toIterable(AnyM<option, T> t) {
         return Maybe.fromIterable(t.unwrap());

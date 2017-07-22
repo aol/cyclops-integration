@@ -809,4 +809,8 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     public ListT<stream, T> groupedWhileT(Predicate<? super T> predicate) {
         return ListT.fromStream(groupedWhile(predicate));
     }
+    @Override
+    public void forEachAsync(Consumer<? super T> action) {
+        observable.subscribe(a->action.accept(a));
+    }
 }

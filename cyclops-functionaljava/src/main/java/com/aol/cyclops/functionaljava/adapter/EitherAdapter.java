@@ -2,6 +2,8 @@ package com.aol.cyclops.functionaljava.adapter;
 
 
 
+import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.aol.cyclops2.types.extensability.ValueAdapter;
 import cyclops.companion.functionaljava.Eithers;
 import cyclops.monads.FJ;
 import cyclops.monads.FJWitness;
@@ -20,8 +22,10 @@ import java.util.function.Predicate;
 
 
 @AllArgsConstructor
-public class EitherAdapter<L> extends AbstractFunctionalAdapter<either> {
-
+public class EitherAdapter<L> implements ValueAdapter<either> {
+    public <T> T get(AnyMValue<either,T> t){
+        return either(t).right().value();
+    }
 
 
     @Override
