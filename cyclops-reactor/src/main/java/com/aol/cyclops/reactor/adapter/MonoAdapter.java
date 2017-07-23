@@ -1,5 +1,7 @@
 package com.aol.cyclops.reactor.adapter;
 
+import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.aol.cyclops2.types.extensability.ValueAdapter;
 import cyclops.companion.reactor.Monos;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.mono;
@@ -17,7 +19,7 @@ import static cyclops.monads.ReactorWitness.mono;
 
 
 @AllArgsConstructor
-public class MonoAdapter extends AbstractFunctionalAdapter<mono> {
+public class MonoAdapter implements ValueAdapter<mono> {
 
 
 
@@ -79,5 +81,10 @@ public class MonoAdapter extends AbstractFunctionalAdapter<mono> {
     @Override
     public <T, R> AnyM<mono, R> map(AnyM<mono, T> t, Function<? super T, ? extends R> fn) {
         return Monos.anyM(future(t).map(fn));
+    }
+
+    @Override
+    public <T> T get(AnyMValue<mono, T> t) {
+        return future(t).block();
     }
 }

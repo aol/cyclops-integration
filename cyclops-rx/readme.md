@@ -295,9 +295,103 @@ StreamT<list,Integer> trans = Observables.just(1,2,3).liftM(list.INSTANCE);
 ListX<Observable<Integer>> listObs = Witness.list(trans.unwrapTo(Observables::fromStream));
 ```
 
-# Higher Kinded Types and Type classes
 
-If you really want / or need to program at a much higher level of abstraction cyclops-rx provided psuedo Higher Kinded encordings and typeclasses for Observables
+## Using Typeclasses
+
+### Directly 
+
+Typeclasses can be used directly (although this results in verbose and somewhat cumbersome code)
+e.g. using the Pure and Functor typeclasses for Observable
+
+```java
+
+   Pure<observable> pure = Observables.Instances.unit();
+   Functor<observable> functor = Observables.Instances.functor();
+        
+   ObservableKind<Integer> flux = pure.unit("hello")
+                                      .applyHKT(h->functor.map((String v) ->v.length(), h))
+                                      .convert(ObservableKind::narrowK);
+
+        
+   assertThat(list.toList().blockingGet(),equalTo(Arrays.asList("hello".length())));
+```
+
+### Via Active
+
+The Active class represents a Higher Kinded encoding of a RxJava (or cyclops-react/ JDK/ reactor/ Vavr etc) type *and* it's associated type classes
+
+The code above which creates a new Observable containing a single element "hello" and transforms it to a Flux of Integers (the length of each word), can be written much more succintly with Active
+
+```java
+
+Active<observable,Integer> active = Observables.allTypeClasses(Flux.empty());
+
+Active<observable,Integer> hello = active.unit("hello")
+                                         .map(String::length);
+
+Observable<Integer> stream = ObservableKind.narrow(hello.getActive());
+
+```
+
+### Via Nested
+
+The Nested class represents a Nested data structure, for example a Vavr Option with a Observable *and* the associated typeclass instances for both types.
+
+```java
+import cyclops.companion.vavr.Options.OptionNested;
+
+Nested<option,observable,Integer> optionObs  = OptionNested.list(Option.some(Observable.just(1,10,2,3)))
+                                                                       .map(i -> i * 20);
+
+Option<Integer> opt  = optionObs.foldsUnsafe()
+                                .foldLeft(Monoids.intMax)
+                                .convert(OptionKind::narrowK);
+
+
+//[200]
+
+```
+
+### Via Coproduct
+
+Coproduct is a Sum type for HKT encoded types that also stores the associated type classes
+
+```java
+import static 
+Coproduct<observable,option,Integer> nums = Observables.coproduct(Observables.Instances.definitions(),10);
+
+
+int value = nums.map(i->i*2)
+                .foldUnsafe()
+                .foldLeft(0,(a,b)->a+b);
+
+//20
+
+```
+
+
+# Higher Kinded examples
+
+
+e.g. using the Pure and Functor typeclasses for Observables
+
+```java
+
+Pure<observable> pure = Observables.Instances.unit();
+Functor<observable> functor = Observables.Instances.functor();
+        
+ObservableKind<Integer> list = pure.unit("hello")
+                                   .apply(h->functor.map((String v) ->v.length(), h))
+                                  .convert(ObservableKind::narrowK);
+
+        
+assertThat(list.toList().toBlocking().first(),equalTo(Arrays.asList("hello".length())));
+
+```
+
+
+# Direct Higher Kinded Types and Type classes examples
+
 
 e.g. using the Pure and Functor typeclasses for Vavr Streams
 
@@ -312,4 +406,27 @@ ObservableKind<Integer> list = pure.unit("hello")
 
         
 assertThat(list.toList().toBlocking().first(),equalTo(Arrays.asList("hello".length())));
+```
+
+# Kotlin style sequence generators
+
+```java
+
+import static cyclops.stream.Generator.suspend;
+import static cyclops.stream.Generator.times;
+
+i = 100;
+k = 9999;
+
+Observable<Integer> fi = Observable.from(suspend((Integer i) -> i != 4, s -> {
+
+                         Generator<Integer> gen1 = suspend(times(2), s2 -> s2.yield(i++));
+                         Generator<Integer> gen2 = suspend(times(2), s2 -> s2.yield(k--));
+
+                         return s.yieldAll(gen1.stream(), gen2.stream());
+                  }
+               ));
+
+
+//Observable(100, 101, 9999, 9998, 102)
 ```

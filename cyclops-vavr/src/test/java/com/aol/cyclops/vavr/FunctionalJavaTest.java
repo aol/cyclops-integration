@@ -16,7 +16,7 @@ public class FunctionalJavaTest {
     	}
     	@Test
     	public void testFromFunctionalJavaOption(){
-    		assertThat(FromFunctionalJava.option(fj.data.Option.some(1)).get(),is(1));
+    		assertThat(FromFunctionalJava.option(fj.data.Option.some(1)).load(),is(1));
     	}
     	@Test
     	public void testFromFunctionalJavaOptionNull(){
@@ -24,11 +24,11 @@ public class FunctionalJavaTest {
     	}
     	@Test
     	public void testFromFunctionalJavaEitherLeft(){
-    		assertThat(FromFunctionalJava.either(fj.data.Either.left(1)).left().get(),is(1));
+    		assertThat(FromFunctionalJava.either(fj.data.Either.left(1)).left().load(),is(1));
     	}
     	@Test
     	public void testFromFunctionalJavaEitherRight(){
-    		assertThat(FromFunctionalJava.either(fj.data.Either.right(1)).right().get(),is(1));
+    		assertThat(FromFunctionalJava.either(fj.data.Either.right(1)).right().load(),is(1));
     	}
     	@Test
     	public void testFromFunctionalJavaTuple1(){

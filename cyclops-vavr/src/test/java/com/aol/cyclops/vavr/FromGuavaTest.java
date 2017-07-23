@@ -16,7 +16,7 @@ public class FromGuavaTest {
     }
     @Test
     public void testGuavaOption(){
-        assertThat(FromGuava.option(com.google.common.base.Optional.of(1)).get(),is(1));
+        assertThat(FromGuava.option(com.google.common.base.Optional.of(1)).load(),is(1));
     }
     @Test
     public void testJDKGuavaNull(){

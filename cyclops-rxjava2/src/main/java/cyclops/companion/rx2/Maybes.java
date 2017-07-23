@@ -25,21 +25,15 @@ import cyclops.control.lazy.Either;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
-import cyclops.monads.Rx2Witness;
+import cyclops.monads.*;
 import cyclops.monads.Rx2Witness.flowable;
 import cyclops.monads.Rx2Witness.maybe;
 import cyclops.monads.Rx2Witness.observable;
 import cyclops.monads.Rx2Witness.single;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.*;
-import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.rx2.MaybeT;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -72,6 +66,20 @@ import static com.aol.cyclops.rx2.hkt.MaybeKind.widen;
  */
 @UtilityClass
 public class Maybes {
+
+    public static  <W1,T> Coproduct<W1,maybe,T> coproduct(Maybe<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(MaybeKind.widen(list)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,maybe,T> coproductNone(InstanceDefinitions<W1> def1){
+        return coproduct(Maybe.never(),def1);
+    }
+    public static  <W1,T> Coproduct<W1,maybe,T> coproductJust(T value,InstanceDefinitions<W1> def1){
+        return coproduct(Maybe.just(value),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,maybe,T> xorM(Maybe<T> type){
+        return XorM.right(anyM(type));
+    }
+
     public static <T> Maybe<T> fromPublisher(Publisher<T> maybe){
         return Single.fromPublisher(maybe).toMaybe();
     }

@@ -18,7 +18,7 @@ import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Xor;
-import cyclops.monads.RxWitness;
+import cyclops.monads.*;
 import cyclops.monads.RxWitness.observable;
 import com.aol.cyclops.rx.hkt.ObservableKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -26,19 +26,13 @@ import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.*;
-import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
 
 
 import cyclops.stream.Spouts;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -66,6 +60,16 @@ import static com.aol.cyclops.rx.hkt.ObservableKind.widen;
  */
 @UtilityClass
 public class Observables {
+
+    public static  <W1,T> Coproduct<W1,observable,T> coproduct(Observable<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(ObservableKind.widen(list)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,observable,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return coproduct(Observable.from(values),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,observable,T> xorM(Observable<T> type){
+        return XorM.right(anyM(type));
+    }
 
     public static <T,W extends WitnessType<W>> AnyM<W,Observable<T>> fromStream(AnyM<W,Stream<T>> anyM){
         return anyM.map(s->fromStream(s));

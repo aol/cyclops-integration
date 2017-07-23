@@ -489,9 +489,9 @@ e.g. using the Pure and Functor typeclasses for Observable
 
 ### Via Active
 
-The Active class represents a Higher Kinded encoding of a Reactor (or cyclops-react/ JDK/ Vavr / rx etc) type *and* it's associated type classes
+The Active class represents a Higher Kinded encoding of a RxJava2 (or cyclops-react/ JDK/ reactor/ Vavr / rx etc) type *and* it's associated type classes
 
-The code above which creates a new Flux containing a single element "hello" and transforms it to a Flux of Integers (the length of each word), can be written much more succintly with Active
+The code above which creates a new Observable containing a single element "hello" and transforms it to a Flux of Integers (the length of each word), can be written much more succintly with Active
 
 ```java
 
@@ -506,7 +506,7 @@ Observable<Integer> stream = ObservableKind.narrow(hello.getActive());
 
 ### Via Nested
 
-The Nested class represents a Nested data structure, for example a Mono with a Flux *and* the associated typeclass instances for both types.
+The Nested class represents a Nested data structure, for example a Single with a Observable *and* the associated typeclass instances for both types.
 
 ```java
 import cyclops.companion.rxjava2.Singles.SingleNested;
@@ -589,3 +589,27 @@ Our result is a little ugly - we should convert it back into a more readable for
 ```java
 Maybe<Single<Integer>> nk = res.convert(Maybe::narrowK)
                              .map(h -> h.convert(SingleKind::narrow));
+```
+
+# Kotlin style sequence generators
+
+```java
+
+import static cyclops.stream.Generator.suspend;
+import static cyclops.stream.Generator.times;
+
+i = 100;
+k = 9999;
+
+Observable<Integer> fi = Observable.from(suspend((Integer i) -> i != 4, s -> {
+
+                         Generator<Integer> gen1 = suspend(times(2), s2 -> s2.yield(i++));
+                         Generator<Integer> gen2 = suspend(times(2), s2 -> s2.yield(k--));
+
+                         return s.yieldAll(gen1.stream(), gen2.stream());
+                  }
+               ));
+
+
+//Observable(100, 101, 9999, 9998, 102)
+```

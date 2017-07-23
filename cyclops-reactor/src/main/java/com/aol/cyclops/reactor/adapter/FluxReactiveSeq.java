@@ -758,6 +758,10 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
         return flux.collect((Collector<T,A,R>)collector).block();
     }
 
+    @Override
+    public void forEachAsync(Consumer<? super T> action) {
+        flux.subscribe(action);
+    }
 
     @Override
     public T singleUnsafe() {

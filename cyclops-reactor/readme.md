@@ -448,3 +448,26 @@ Maybe<Mono<Integer>> nk = res.convert(Maybe::narrowK)
                              .map(h -> h.convert(MonoKind::narrow));
 ```
 
+
+# Kotlin style sequence generators
+
+```java
+
+import static cyclops.stream.Generator.suspend;
+import static cyclops.stream.Generator.times;
+
+i = 100;
+k = 9999;
+
+Flux<Integer> fi = Flux.fromIterable(suspend((Integer i) -> i != 4, s -> {
+
+                         Generator<Integer> gen1 = suspend(times(2), s2 -> s2.yield(i++));
+                         Generator<Integer> gen2 = suspend(times(2), s2 -> s2.yield(k--));
+
+                         return s.yieldAll(gen1.stream(), gen2.stream());
+                  }
+               ));
+
+
+//Flux(100, 101, 9999, 9998, 102)
+```

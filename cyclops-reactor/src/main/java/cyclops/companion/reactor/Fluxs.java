@@ -12,7 +12,7 @@ import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Xor;
-import cyclops.monads.ReactorWitness;
+import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
 import com.aol.cyclops2.hkt.Higher;
@@ -20,17 +20,11 @@ import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
 import cyclops.monads.ReactorWitness.mono;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.*;
-import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -59,7 +53,15 @@ import static com.aol.cyclops.reactor.hkt.FluxKind.widen;
  */
 @UtilityClass
 public class Fluxs {
-
+    public static  <W1,T> Coproduct<W1,flux,T> coproduct(Flux<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(FluxKind.widen(list)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,flux,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return coproduct(Flux.fromArray(values),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,flux,T> xorM(Flux<T> type){
+        return XorM.right(anyM(type));
+    }
     public static <T> Flux<T> raw(AnyM<flux,T> anyM){
         return ReactorWitness.flux(anyM);
     }

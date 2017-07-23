@@ -52,7 +52,7 @@ public class Vavr {
         return AnyM.ofValue(option, VavrWitness.option.INSTANCE);
     }
 
-    public static <R> AnyM<VavrWitness.future,R> future(io.vavr.concurrent.Future<R> res) {
+    public static <R> AnyMValue<VavrWitness.future,R> future(io.vavr.concurrent.Future<R> res) {
         return AnyM.ofValue(res, VavrWitness.future.INSTANCE);
     }
 

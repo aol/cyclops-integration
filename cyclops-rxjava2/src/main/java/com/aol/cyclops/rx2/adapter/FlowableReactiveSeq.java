@@ -837,6 +837,9 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
         return ListT.fromStream(groupedWhile(predicate));
     }
 
-
+    @Override
+    public void forEachAsync(Consumer<? super T> action) {
+        this.flowable.subscribe(a->action.accept(a));
+    }
 
 }

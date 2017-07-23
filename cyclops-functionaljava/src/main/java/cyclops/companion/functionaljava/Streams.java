@@ -11,7 +11,7 @@ import cyclops.control.Reader;
 import cyclops.control.Xor;
 import cyclops.conversion.functionaljava.FromJDK;
 import cyclops.conversion.functionaljava.FromJooqLambda;
-import cyclops.monads.FJWitness;
+import cyclops.monads.*;
 import cyclops.monads.FJWitness.list;
 import cyclops.monads.FJWitness.nonEmptyList;
 import cyclops.monads.FJWitness.option;
@@ -22,14 +22,9 @@ import com.aol.cyclops2.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.*;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -52,7 +47,16 @@ import static com.aol.cyclops.functionaljava.hkt.StreamKind.widen;
 
 
 public class Streams {
-   
+
+    public static  <W1,T> Coproduct<W1,stream,T> coproduct(Stream<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(StreamKind.widen(list)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,stream,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return coproduct(Stream.stream(values),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,stream,T> xorM(Stream<T> type){
+        return XorM.right(anyM(type));
+    }
     public static <T> AnyMSeq<stream,T> anyM(Stream<T> option) {
         return AnyM.ofSeq(option, stream.INSTANCE);
     }

@@ -23,23 +23,17 @@ import cyclops.control.lazy.Either;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
+import cyclops.monads.*;
 
-import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.flowable;
 import cyclops.monads.Rx2Witness.maybe;
 import cyclops.monads.Rx2Witness.observable;
 import cyclops.monads.Rx2Witness.single;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.*;
-import cyclops.monads.WitnessType;
 
 import cyclops.monads.transformers.rx2.SingleT;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -73,6 +67,16 @@ import static com.aol.cyclops.rx2.hkt.SingleKind.widen;
 @UtilityClass
 public class Singles {
 
+    public static  <W1,T> Coproduct<W1,single,T> coproduct(Single<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(SingleKind.widen(list)),def1, Instances.definitions());
+    }
+
+    public static  <W1,T> Coproduct<W1,single,T> coproduct(T value,InstanceDefinitions<W1> def1){
+        return coproduct(Single.just(value),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,single,T> xorM(Single<T> type){
+        return XorM.right(anyM(type));
+    }
     public static <T> Single<T> raw(AnyM<single,T> anyM){
         return Rx2Witness.single(anyM);
     }

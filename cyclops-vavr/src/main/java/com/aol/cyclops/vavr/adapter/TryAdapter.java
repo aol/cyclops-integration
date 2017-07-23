@@ -1,6 +1,8 @@
 package com.aol.cyclops.vavr.adapter;
 
 
+import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.aol.cyclops2.types.extensability.ValueAdapter;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
@@ -17,9 +19,11 @@ import java.util.function.Predicate;
 
 
 @AllArgsConstructor
-public class TryAdapter extends AbstractFunctionalAdapter<tryType> {
+public class TryAdapter implements ValueAdapter<tryType> {
 
-
+    public <T> T get(AnyMValue<tryType,T> t){
+         return tryType(t).get();
+    }
 
     @Override
     public <T> Iterable<T> toIterable(AnyM<tryType, T> t) {
@@ -28,10 +32,14 @@ public class TryAdapter extends AbstractFunctionalAdapter<tryType> {
 
     @Override
     public <T, R> AnyM<tryType, R> ap(AnyM<tryType,? extends Function<? super T,? extends R>> fn, AnyM<tryType, T> apply) {
-        Try<T> f = tryType(apply);
-        Try<? extends Function<? super T, ? extends R>> fnF = tryType(fn);
-        Try<R> res = FromCyclopsReact.toTry(ToCyclopsReact.toTry(fnF).combine(ToCyclopsReact.toTry(f), (a, b) -> a.apply(b)));
-        return Vavr.tryM(res);
+        try {
+            Try<T> f = tryType(apply);
+            Try<? extends Function<? super T, ? extends R>> fnF = tryType(fn);
+            Try<R> res = FromCyclopsReact.toTry(ToCyclopsReact.toTry(fnF).combine(ToCyclopsReact.toTry(f), (a, b) -> a.apply(b)));
+            return Vavr.tryM(res);
+        }catch(Throwable t){
+            return Vavr.tryM(Try.failure(t));
+        }
 
     }
 

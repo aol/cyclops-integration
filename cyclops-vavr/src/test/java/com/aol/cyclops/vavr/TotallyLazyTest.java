@@ -16,7 +16,7 @@ public class TotallyLazyTest {
     	}
     	@Test
     	public void testFromTotallyLazyOption(){
-    		assertThat(FromTotallyLazy.option(com.googlecode.totallylazy.Option.option(1)).get(),is(1));
+    		assertThat(FromTotallyLazy.option(com.googlecode.totallylazy.Option.option(1)).load(),is(1));
     	}
     	@Test
     	public void testFromTotallyLazyOptionNull(){
@@ -24,11 +24,11 @@ public class TotallyLazyTest {
     	}
     	@Test
     	public void testFromTotallyLazyEitherLeft(){
-    		assertThat(FromTotallyLazy.either(com.googlecode.totallylazy.Either.left(1)).left().get(),is(1));
+    		assertThat(FromTotallyLazy.either(com.googlecode.totallylazy.Either.left(1)).left().load(),is(1));
     	}
     	@Test
     	public void testFromTotallyLazyEitherRight(){
-    		assertThat(FromTotallyLazy.either(com.googlecode.totallylazy.Either.right(1)).right().get(),is(1));
+    		assertThat(FromTotallyLazy.either(com.googlecode.totallylazy.Either.right(1)).right().load(),is(1));
     	}
     	@Test
     	public void testFromTotallyLazyTuple2(){

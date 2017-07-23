@@ -16,23 +16,17 @@ import cyclops.control.Xor;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
-import cyclops.monads.AnyM;
+import cyclops.monads.*;
 
-import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.flowable;
 import cyclops.monads.Rx2Witness.maybe;
 import cyclops.monads.Rx2Witness.observable;
 import cyclops.monads.Rx2Witness.single;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.eval;
 import cyclops.monads.Witness.reactiveSeq;
-import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Active;
-import cyclops.typeclasses.InstanceDefinitions;
-import cyclops.typeclasses.Nested;
-import cyclops.typeclasses.Pure;
+import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
 import cyclops.typeclasses.foldable.Unfoldable;
@@ -63,6 +57,16 @@ import static com.aol.cyclops.rx2.hkt.FlowableKind.widen;
  */
 @UtilityClass
 public class Flowables {
+
+    public static  <W1,T> Coproduct<W1,flowable,T> coproduct(Flowable<T> list, InstanceDefinitions<W1> def1){
+        return Coproduct.of(Xor.primary(FlowableKind.widen(list)),def1, Instances.definitions());
+    }
+    public static  <W1,T> Coproduct<W1,flowable,T> coproduct(InstanceDefinitions<W1> def1,T... values){
+        return coproduct(Flowable.fromArray(values),def1);
+    }
+    public static  <W1 extends WitnessType<W1>,T> XorM<W1,flowable,T> xorM(Flowable<T> type){
+        return XorM.right(anyM(type));
+    }
 
     public static <T> Flowable<T> raw(AnyM<flowable,T> anyM){
         return flowable(anyM);

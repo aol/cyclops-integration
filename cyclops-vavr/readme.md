@@ -145,7 +145,7 @@ Observable<Integer> backToRx = RxWitness.observable(summedRx);
 ```
 
 
-## Schedule emission from  JavaSlang Stream
+## Schedule emission from  Vavr Stream
 
 ```java
 
@@ -159,10 +159,10 @@ stream(Stream.ofAll(1,2,3)).schedule("* * * * * ?", Executors.newScheduledThread
 
 
 
-Use Javaslang.<type> to wrap Javaslang Monads
+Use Vavr.<type> to wrap Vavr Monads
 
 ```java	
-assertThat(Javaslang.tryM(Try.of(this::success))
+assertThat(Vavr.tryM(Try.of(this::success))
 			.map(String::toUpperCase)
 			.toList(),equalTo(Arrays.asList("HELLO WORLD")));
 ```

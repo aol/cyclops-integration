@@ -1,6 +1,8 @@
 package com.aol.cyclops.functionaljava.adapter;
 
 
+import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.aol.cyclops2.types.extensability.ValueAdapter;
 import cyclops.monads.FJ;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.validation;
@@ -18,10 +20,12 @@ import java.util.function.Predicate;
 
 
 @AllArgsConstructor
-public class ValidationAdapter<L> extends AbstractFunctionalAdapter<validation> {
+public class ValidationAdapter<L> implements ValueAdapter<validation> {
 
 
-
+    public <T> T get(AnyMValue<validation,T> t){
+        return validation(t).success();
+    }
     @Override
     public <T> Iterable<T> toIterable(AnyM<validation, T> t) {
         return Maybe.fromIterable(t.unwrap());
