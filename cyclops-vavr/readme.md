@@ -2,6 +2,11 @@
 
 v9.0.0 of cyclops-javaslang requires v0.9.0 of Vavr.
 
+
+## Articles 
+
+* [A type safe, JAVA Monad API. Part I : With Vavr’s Future and Try](https://medium.com/@johnmcclean/a-type-safe-java-monad-api-part-i-with-vavrs-future-and-try-7beaea28d351)
+
 ## Get cyclops-javaslang
 
 
