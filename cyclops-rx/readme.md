@@ -129,7 +129,7 @@ LinkedListX<Integer> asyncList = listX(reactiveSeq(observable))
 asyncList.get(1); //will bock until data is available
 
 //will also block until data is available
-LinkedListX<Integer> raw = asyncList.to(ScalaConverters::List); 
+List<Integer> raw = asyncList.to(ScalaConverters::List); 
 
 
 ```
