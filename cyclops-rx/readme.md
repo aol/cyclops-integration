@@ -118,7 +118,7 @@ Or even a Scala List
 import static cyclops.collections.scala.ScalaListX;
 import static cyclops.companion.rx.Observables.reactiveSeq
 
-VectorX<Integer> asyncList = vectorX(reactiveSeq(observable))
+LinkedListX<Integer> asyncList = listX(reactiveSeq(observable))
                                         .map(i->i+1);
 
 
@@ -129,7 +129,7 @@ VectorX<Integer> asyncList = vectorX(reactiveSeq(observable))
 asyncList.get(1); //will bock until data is available
 
 //will also block until data is available
-Vector<Integer> raw = asyncList.to(VavrConverters::Vector); 
+LinkedListX<Integer> raw = asyncList.to(ScalaConverters::List); 
 
 
 ```
