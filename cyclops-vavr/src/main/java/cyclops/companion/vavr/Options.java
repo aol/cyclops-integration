@@ -56,6 +56,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
+import static com.aol.cyclops.vavr.hkt.OptionKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.OptionKind.widen;
 
 /**
@@ -90,6 +91,31 @@ public class Options {
     public static <T> AnyMValue<option,T> anyM(Option<T> option) {
         return AnyM.ofValue(option, VavrWitness.option.INSTANCE);
     }
+    public static <L, T, R> Option<R> tailRec(T initial, Function<? super T, ? extends Option<? extends Either<T, R>>> fn) {
+        Option<? extends Either<T, R>> next[] = new Option[1];
+        next[0] = Option.some(Either.left(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].map(p -> p.fold(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).getOrElse(false);
+        } while (cont);
+        return next[0].map(Either::get);
+    }
+    public static <T, R> Option< R> tailRecXor(T initial, Function<? super T, ? extends Option<? extends Xor<T, R>>> fn) {
+        Option<? extends Xor<T, R>> next[] = new Option[1];
+        next[0] = Option.some(Xor.secondary(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].map(p -> p.visit(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).getOrElse(false);
+        } while (cont);
+        return next[0].map(Xor::get);
+    }
+
     /**
      * Perform a For Comprehension over a Option, accepting 3 generating function.
      * This results in a four level nested internal iteration over the provided Options.
@@ -672,13 +698,13 @@ public class Options {
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<option>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<option> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<option>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<option> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -902,9 +928,22 @@ public class Options {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<option> foldable(){
-            BiFunction<Monoid<T>,Higher<option,T>,T> foldRightFn =  (m, l)-> OptionKind.narrow(l).getOrElse(m.zero());
-            BiFunction<Monoid<T>,Higher<option,T>,T> foldLeftFn = (m, l)-> OptionKind.narrow(l).getOrElse(m.zero());
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<option>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<option, T> ds) {
+                    return narrowK(ds).getOrElse(monoid.zero());
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<option, T> ds) {
+                    return narrowK(ds).getOrElse(monoid.zero());
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<option, T> nestedA) {
+                    return narrowK(nestedA).<R>map(fn).getOrElse(mb.zero());
+                }
+            };
         }
         public static <T> Comonad<option> comonad(){
             Function<? super Higher<option, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionKind::narrow).get();

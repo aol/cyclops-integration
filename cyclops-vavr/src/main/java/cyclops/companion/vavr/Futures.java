@@ -58,6 +58,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 
+import static com.aol.cyclops.vavr.hkt.FutureKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.FutureKind.widen;
 
 /**
@@ -84,6 +85,47 @@ public class Futures {
     }
     public static <T> AnyMValue<future,T> anyM(Future<T> future) {
         return AnyM.ofValue(future, VavrWitness.future.INSTANCE);
+    }
+
+    public static <T, R> Future<R> tailRec(T initial, Function<? super T, ? extends Future<  ? extends Either<T, R>>> fn) {
+        Future<? extends Either<T, R>> next[] = new Future[1];
+        next[0] = Future.of(()->Either.left(initial));
+        boolean cont = true;
+        do {
+
+            try{
+                next[0].get();
+            }catch(Throwable t){
+                cont= false;
+            }
+            if(cont) {
+                cont =  next[0].get().fold(s -> {
+                    next[0] = fn.apply(s);
+                    return true;
+                }, pr -> false);
+            }
+        } while (cont);
+        return next[0].map(Either::get);
+    }
+    public static <L, T, R> Future< R> tailRecXor(T initial, Function<? super T, ? extends Future< ? extends Xor<T, R>>> fn) {
+        Future<? extends Xor<T, R>> next[] = new Future[1];
+        next[0] = Future.of(()->Xor.secondary(initial));
+        boolean cont = true;
+        do {
+
+            try{
+              next[0].get();
+            }catch(Throwable t){
+                cont= false;
+            }
+            if(cont) {
+                cont = next[0].get().visit(s -> {
+                    next[0] = fn.apply(s);
+                    return true;
+                }, pr -> false);
+            }
+        } while (cont);
+        return next[0].map(Xor::get);
     }
 
     /**
@@ -774,13 +816,13 @@ public class Futures {
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<future>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<future> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<future>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<future> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -1006,9 +1048,24 @@ public class Futures {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<future> foldable(){
-            BiFunction<Monoid<T>,Higher<future,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), FutureKind.narrow(l).get());
-            BiFunction<Monoid<T>,Higher<future,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), FutureKind.narrow(l).get());
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<future>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<future, T> ds) {
+                    return narrowK(ds).recover(e->monoid.zero()).get();
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<future, T> ds) {
+                    return narrowK(ds).recover(e->monoid.zero()).get();
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<future, T> nestedA) {
+                   return narrowK(nestedA).<R>map(fn).recover(e -> mb.zero()).get();
+                }
+            };
+
+
         }
         public static <T> Comonad<future> comonad(){
             Function<? super Higher<future, T>, ? extends T> extractFn = maybe -> maybe.convert(FutureKind::narrow).get();

@@ -49,6 +49,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
+import static com.aol.cyclops.vavr.hkt.EitherKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.EitherKind.widen;
 
 /**
@@ -86,6 +87,35 @@ public class Eithers {
     public static <T> AnyMValue<either,T> anyM(Either<?,T> either) {
         return AnyM.ofValue(either, VavrWitness.either.INSTANCE);
     }
+
+    public static <L, T, R> Either<L, R> tailRec(T initial, Function<? super T, ? extends Either<L, ? extends Either<T, R>>> fn) {
+        Either<L,? extends Either<T, R>> next[] = new Either[1];
+        next[0] = Either.right(Either.left(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].fold(__ -> false,p -> p.fold(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false));
+        } while (cont);
+        return next[0].map(Either::get);
+    }
+    public static <L, T, R> Either<L, R> tailRecXor(T initial, Function<? super T, ? extends Either<L, ? extends Xor<T, R>>> fn) {
+        Either<L,? extends Xor<T, R>> next[] = new Either[1];
+        next[0] = Either.right(Xor.secondary(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].fold(__ -> false,p -> p.visit(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false));
+        } while (cont);
+        return next[0].map(Xor::get);
+    }
+
+
+
+
     /**
      * Perform a For Comprehension over a Either, accepting 3 generating function.
      * This results in a four level nested internal iteration over the provided Eithers.
@@ -524,13 +554,13 @@ public class Eithers {
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<Higher<either, L>>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<Higher<either, L>> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<Higher<either, L>>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<Higher<either, L>> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -550,7 +580,7 @@ public class Eithers {
 
                 @Override
                 public <T, R> Higher<Higher<either, L>, R> map(Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> ds) {
-                    Either<L, T> either = EitherKind.narrowK(ds);
+                    Either<L, T> either = narrowK(ds);
                     return widen(either.bimap(i -> i, r -> fn.apply(r)));
                 }
             };
@@ -572,8 +602,8 @@ public class Eithers {
 
                 @Override
                 public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
-                    Either<L, T> either = EitherKind.narrowK(apply);
-                    Either<L, ? extends Function<T, R>> eitherFn = EitherKind.narrowK(fn);
+                    Either<L, T> either = narrowK(apply);
+                    Either<L, ? extends Function<T, R>> eitherFn = narrowK(fn);
                     return widen(Eithers.xor(ToCyclopsReact.xor(eitherFn).combine(ToCyclopsReact.xor(either), (a, b) -> a.apply(b))));
                 }
 
@@ -594,7 +624,7 @@ public class Eithers {
 
                 @Override
                 public <T, R> Higher<Higher<either, L>, R> flatMap(Function<? super T, ? extends Higher<Higher<either, L>, R>> fn, Higher<Higher<either, L>, T> ds) {
-                    Either<L, T> either = EitherKind.narrowK(ds);
+                    Either<L, T> either = narrowK(ds);
                     return widen(either.flatMap(fn.andThen(EitherKind::narrowK)));
                 }
 
@@ -621,7 +651,7 @@ public class Eithers {
 
                 @Override
                 public <C2, T, R> Higher<C2, Higher<Higher<either, L>, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn, Higher<Higher<either, L>, T> ds) {
-                    Either<L, T> maybe = EitherKind.narrowK(ds);
+                    Either<L, T> maybe = narrowK(ds);
                     return maybe.fold(left -> applicative.unit(EitherKind.<L, R>leftK(left)),
                             right -> applicative.map(m -> EitherKind.rightK(m), fn.apply(right)));
                 }
@@ -656,14 +686,19 @@ public class Eithers {
 
                 @Override
                 public <T> T foldRight(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
-                    Either<L, T> either = EitherKind.narrowK(ds);
+                    Either<L, T> either = narrowK(ds);
                     return ToCyclopsReact.xor(either).foldRight(monoid);
                 }
 
                 @Override
                 public <T> T foldLeft(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
-                    Either<L, T> either = EitherKind.narrowK(ds);
+                    Either<L, T> either = narrowK(ds);
                     return ToCyclopsReact.xor(either).foldLeft(monoid);
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<Higher<either, L>, T> nestedA) {
+                    return narrowK(nestedA).map(fn).fold(l->mb.zero(), r -> r);
                 }
             };
         }
@@ -678,7 +713,7 @@ public class Eithers {
 
                 @Override
                 public <T, R> Higher<Higher<either, L>, R> flatMap(Function<? super T, ? extends Higher<Higher<either, L>, R>> fn, Higher<Higher<either, L>, T> ds) {
-                    Either<L, T> either = EitherKind.narrowK(ds);
+                    Either<L, T> either = narrowK(ds);
                     return widen(either.flatMap(fn.andThen(EitherKind::narrowK)));
                 }
 
@@ -701,7 +736,7 @@ public class Eithers {
         }
 
         public static <L> MonadPlus<Higher<either, L>> monadPlus() {
-            Monoid m = Monoids.firstPrimaryXor((Either) EitherKind.narrowK(Instances.<L>monadZero().zero()));
+            Monoid m = Monoids.firstPrimaryXor((Either) narrowK(Instances.<L>monadZero().zero()));
 
             return monadPlus(m);
         }
@@ -721,7 +756,7 @@ public class Eithers {
 
                 @Override
                 public <T, R> Higher<Higher<either, L>, R> flatMap(Function<? super T, ? extends Higher<Higher<either, L>, R>> fn, Higher<Higher<either, L>, T> ds) {
-                    Either<L, T> either = EitherKind.narrowK(ds);
+                    Either<L, T> either = narrowK(ds);
                     return widen(either.flatMap(fn.andThen(EitherKind::narrowK)));
                 }
 
@@ -749,7 +784,7 @@ public class Eithers {
 
                 @Override
                 public <T> T extract(Higher<Higher<either, L>, T> ds) {
-                    Either<L, T> either = EitherKind.narrowK(ds);
+                    Either<L, T> either = narrowK(ds);
                     return either.get();
                 }
 

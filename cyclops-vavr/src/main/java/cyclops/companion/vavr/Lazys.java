@@ -50,6 +50,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 
+import static com.aol.cyclops.vavr.hkt.LazyKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.LazyKind.widen;
 
 public class Lazys {
@@ -60,6 +61,32 @@ public class Lazys {
     public static  <W1,T> Coproduct<W1,lazy,T> coproduct(Supplier<T> type, InstanceDefinitions<W1> def1){
         return coproduct(Lazy.of(type),def1);
     }
+
+    public static <L, T, R> Lazy<R> tailRec(T initial, Function<? super T, ? extends Lazy<? extends Either<T, R>>> fn) {
+        Lazy<? extends Either<T, R>> next[] = new Lazy[1];
+        next[0] = Lazy.of(()->Either.left(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].map(p -> p.fold(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).getOrElse(false);
+        } while (cont);
+        return next[0].map(Either::get);
+    }
+    public static <T, R> Lazy< R> tailRecXor(T initial, Function<? super T, ? extends Lazy<? extends Xor<T, R>>> fn) {
+        Lazy<? extends Xor<T, R>> next[] = new Lazy[1];
+        next[0] = Lazy.of(()->Xor.secondary(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].map(p -> p.visit(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).getOrElse(false);
+        } while (cont);
+        return next[0].map(Xor::get);
+    }
+
 
     /**
      * Lifts a vavr Lazy into a cyclops LazyT monad transformer (involves an observables conversion to
@@ -499,18 +526,23 @@ public class Lazys {
                 }
 
                 @Override
+                public <T> MonadRec<lazy> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<lazy>> monadPlus(Monoid<Higher<lazy, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<lazy>> traverse() {
-                    return null;
+                public <C2, T> Traverse<lazy> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<lazy>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<lazy> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -734,9 +766,32 @@ public class Lazys {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<lazy> foldable(){
-            BiFunction<Monoid<T>,Higher<lazy,T>,T> foldRightFn =  (m, l)-> LazyKind.narrow(l).getOrElse(m.zero());
-            BiFunction<Monoid<T>,Higher<lazy,T>,T> foldLeftFn = (m, l)-> LazyKind.narrow(l).getOrElse(m.zero());
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<lazy>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<lazy, T> ds) {
+                    return narrowK(ds).narrow().getOrElse(monoid.zero());
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<lazy, T> ds) {
+                    return narrowK(ds).narrow().getOrElse(monoid.zero());
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<lazy, T> nestedA) {
+                    return narrowK(nestedA).narrow().<R>map(fn).getOrElse(mb.zero());
+                }
+            };
+
+        }
+        public static <T> MonadRec<lazy> monadRec(){
+            return new MonadRec<lazy>() {
+                @Override
+                public <T, R> Higher<lazy, R> tailRec(T initial, Function<? super T, ? extends Higher<lazy, ? extends Xor<T, R>>> fn) {
+                    return widen(Lazys.tailRecXor(initial, fn.andThen(l ->  narrowK(l).narrow())));
+
+                }
+            };
         }
         public static <T> Comonad<lazy> comonad(){
             Function<? super Higher<lazy, T>, ? extends T> extractFn = maybe -> maybe.convert(LazyKind::narrow).get();

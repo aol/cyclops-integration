@@ -64,9 +64,7 @@ sourceSets {
 	test.runtimeClasspath += [configurations.provided]
 }
 eclipse.classpath.plusConfigurations += [configurations.provided]  // Eclipse users only
-test {
-    systemProperties 'property': 'value'
-}
+
 javadoc {
     source configurations.doc.collect { zipTree(it) }
     include '**/*.java'

@@ -1,12 +1,14 @@
 package cyclops.companion.vavr;
 
 import com.aol.cyclops.vavr.hkt.*;
+import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Xor;
+import cyclops.conversion.vavr.FromJooqLambda;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import cyclops.collections.vavr.VavrListX;
@@ -35,6 +37,7 @@ import io.vavr.concurrent.Future;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
+import io.vavr.control.Validation;
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
@@ -42,6 +45,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 
+import static com.aol.cyclops.vavr.hkt.ListKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.ListKind.widen;
 
 
@@ -58,6 +62,47 @@ public class Lists {
 
     public static <T> AnyMSeq<list,T> anyM(List<T> option) {
         return AnyM.ofSeq(option, list.INSTANCE);
+    }
+
+    public static  <T,R> List<R> tailRec(T initial, Function<? super T, ? extends List<? extends Either<T, R>>> fn) {
+        List<Either<T, R>> next = List.of(Either.left(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.fold(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return List.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Either::isRight).map(Either::get);
+    }
+    public static  <T,R> List<R> tailRecXor(T initial, Function<? super T, ? extends List<? extends Xor<T, R>>> fn) {
+        List<Xor<T, R>> next = List.of(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return List.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).map(Xor::get);
     }
     /**
      * Perform a For Comprehension over a List, accepting 3 generating functions.
@@ -378,18 +423,23 @@ public class Lists {
                 }
 
                 @Override
+                public <T> MonadRec<list> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<list>> monadPlus(Monoid<Higher<list, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<list>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<list> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<list>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<list> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -403,6 +453,8 @@ public class Lists {
                 }
             };
         }
+
+
         /**
          *
          * Transform a list, mulitplying every element by 2
@@ -563,6 +615,14 @@ public class Lists {
             Monoid<Higher<list,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static <T> MonadRec<list> monadRec(){
+            return new MonadRec<list>() {
+                @Override
+                public <T, R> Higher<list, R> tailRec(T initial, Function<? super T, ? extends Higher<list, ? extends Xor<T, R>>> fn) {
+                    return widen(Lists.tailRecXor(initial, fn.andThen(l -> narrowK(l))));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -627,9 +687,23 @@ public class Lists {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<list> foldable(){
-            BiFunction<Monoid<T>,Higher<list,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(ListKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<list,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(ListKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<list>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<list, T> ds) {
+                    return ListKind.narrowK(ds).foldRight(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<list, T> ds) {
+                    return ListKind.narrowK(ds).foldLeft(monoid.zero(),monoid);;
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<list, T> nestedA) {
+                   return ListKind.narrowK(nestedA).foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
+                }
+            };
+
         }
 
         private static  <T> ListKind<T> concat(ListKind<T> l1, ListKind<T> l2){
@@ -654,8 +728,8 @@ public class Lists {
             return new Unfoldable<list>() {
                 @Override
                 public <R, T> Higher<list, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
-                    return widen(ReactiveSeq.unfold(b,fn).collect(List.collector()));
-
+                    Function<? super T, Option<io.vavr.Tuple2<? extends R, ? extends T>>> f2 = fn.andThen(a -> Option.ofOptional(a).map(t -> FromJooqLambda.tuple(t)));
+                    return widen(List.<T,R>unfoldRight(b,f2));
                 }
             };
         }

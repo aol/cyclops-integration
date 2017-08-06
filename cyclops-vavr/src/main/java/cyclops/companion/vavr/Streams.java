@@ -48,6 +48,7 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+import static com.aol.cyclops.vavr.hkt.StreamKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.StreamKind.widen;
 
 
@@ -392,13 +393,13 @@ public class Streams {
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<stream>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<stream> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<stream>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<stream> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -619,7 +620,7 @@ public class Streams {
 
             };
             BiFunction<Applicative<C2>,Higher<stream,Higher<C2, T>>,Higher<C2, Higher<stream,T>>> sequenceNarrow  =
-                    (a,b) -> StreamKind.widen2(sequenceFn.apply(a, StreamKind.narrowK(b)));
+                    (a,b) -> StreamKind.widen2(sequenceFn.apply(a, narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
 
@@ -639,9 +640,22 @@ public class Streams {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<stream> foldable(){
-            BiFunction<Monoid<T>,Higher<stream,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<stream,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<stream>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<stream, T> ds) {
+                    return narrowK(ds).foldRight(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<stream, T> ds) {
+                    return narrowK(ds).foldLeft(monoid.zero(),monoid);;
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<stream, T> nestedA) {
+                    return narrowK(nestedA).foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
+                }
+            };
         }
 
         private static  <T> StreamKind<T> concat(StreamKind<T> l1, StreamKind<T> l2){

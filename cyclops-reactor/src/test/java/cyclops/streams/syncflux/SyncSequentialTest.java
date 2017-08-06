@@ -37,6 +37,7 @@ public class SyncSequentialTest extends BaseSequentialTest {
     }
     @Test
     public void flatMapStream() {
+        Flux.create()
         for (int i = 0; i < ITERATIONS; i++) {
             assertThat(of(1, 2, 3).flatMap(Stream::of)
                             .collect(Collectors.toList()),
