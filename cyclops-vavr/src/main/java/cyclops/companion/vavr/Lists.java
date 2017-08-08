@@ -700,7 +700,7 @@ public class Lists {
 
                 @Override
                 public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<list, T> nestedA) {
-                   return ListKind.narrowK(nestedA).foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
+                   return ListKind.narrowK(nestedA).foldLeft(mb.zero(),(a,b)->mb.apply(a,fn.apply(b)));
                 }
             };
 
