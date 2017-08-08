@@ -899,7 +899,7 @@ public class Eithers {
                 return Nested.of(y, Instances.definitions(), cyclops.control.Try.Instances.definitions());
             }
 
-            public static <L, T> Nested<Higher<either, L>, optional, T> optionalal(Either<L, Optional<T>> nested) {
+            public static <L, T> Nested<Higher<either, L>, optional, T> optional(Either<L, Optional<T>> nested) {
                 EitherKind<L, Optional<T>> x = widen(nested);
                 EitherKind<L, Higher<optional, T>> y = (EitherKind) x;
                 return Nested.of(y, Instances.definitions(), Optionals.Instances.definitions());
