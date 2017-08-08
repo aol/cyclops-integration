@@ -1,5 +1,6 @@
 package cyclops.companion.vavr;
 
+import cyclops.control.*;
 import cyclops.monads.VavrWitness.queue;
 import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
@@ -9,10 +10,6 @@ import io.vavr.control.*;
 import com.aol.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
-import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
@@ -39,6 +36,7 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
+import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
@@ -72,13 +70,20 @@ public class Streams {
         boolean newValue[] = {true};
         for(;;){
 
-            next = next.flatMap(e -> e.fold(s -> {
-                        newValue[0]=true;
-                        return fn.apply(s); },
-                    p -> {
-                        newValue[0]=false;
-                        return Stream.of(e);
-                    }));
+            Stream<Either<T, R>> rebuild = Stream.of();
+            for(Either<T,R> e : next){
+                Stream<? extends Either<T, R>> r = e.fold(s -> {
+                            newValue[0] = true;
+
+                            return fn.apply(s);
+                        },
+                        p -> {
+                            newValue[0] = false;
+                            return Stream.of(e);
+                        });
+                rebuild = Stream.concat(rebuild,r);
+            }
+            next = rebuild;
             if(!newValue[0])
                 break;
 
@@ -92,13 +97,21 @@ public class Streams {
         boolean newValue[] = {true};
         for(;;){
 
-            next = next.flatMap(e -> e.visit(s -> {
-                        newValue[0]=true;
-                        return fn.apply(s); },
-                    p -> {
-                        newValue[0]=false;
-                        return Stream.of(e);
-                    }));
+            Stream<Xor<T, R>> rebuild = Stream.of();
+            for(Xor<T,R> e : next){
+                Stream<? extends Xor<T, R>> r = e.visit(s -> {
+                            newValue[0] = true;
+
+                            return fn.apply(s);
+                        },
+                        p -> {
+                            newValue[0] = false;
+                            return Stream.of(e);
+                        });
+                rebuild = Stream.concat(rebuild,r);
+            }
+
+            next = rebuild;
             if(!newValue[0])
                 break;
 
@@ -114,16 +127,18 @@ public class Streams {
             return fn.apply(stream.head(),foldRight(stream.tail(),identity,fn));
     }
 
-    public static <T,R> R foldRight(Stream<T> stream,R identity, BiFunction<? super T, ? super R, ? extends R> fn){
-        return foldRightRec(stream,Eval.now(identity),(a,b)-> b.map(b2->fn.apply(a,b2))).get();
-    }
-    private static <T,R> Eval<R> foldRightRec(Stream<T> stream,Eval<R> identity, BiFunction<? super T, ? super Eval<R>, ? extends Eval<R>> fn){
+    public static <T,R> R foldRight(Stream<T> stream,R identity, BiFunction<? super T, ? super R, ? extends R> p){
+        class Step{
+            public Trampoline<R> loop(Stream<T> s, Function<? super R, ? extends Trampoline<R>> fn){
+                   if (s.isEmpty())
+                       return fn.apply(identity);
+                   return Trampoline.more(()->loop(s.tail(), rem -> Trampoline.more(() -> fn.apply(p.apply(s.head(), rem)))));
 
-        if(stream.isEmpty())
-            return identity;
-        else
-            return identity.flatMap(i-> fn.apply(stream.head(), foldRightRec(stream.tail(), identity, fn)));
+            }
+        }
+        return new Step().loop(stream,i->Trampoline.done(i)).result();
     }
+
 
 
     public static <T> AnyMSeq<stream,T> anyM(Stream<T> option) {
