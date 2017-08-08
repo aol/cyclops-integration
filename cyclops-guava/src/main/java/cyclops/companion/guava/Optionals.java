@@ -847,7 +847,7 @@ public class Optionals {
                 public <T, R> Higher<optional, R> tailRec(T initial, Function<? super T, ? extends Higher<optional, ? extends Xor<T, R>>> fn) {
                     return widen(Optionals.tailRec(initial,fn.andThen(OptionalKind::narrow)));
                 }
-            }
+            };
         }
         /**
          *

@@ -193,14 +193,12 @@ public class AsyncActiveTest {
         System.out.println("Run asynchronously..");
         Capitalizer<future> processorAsync = new Capitalizer<>(new AsyncWork());
         assertTrue(processorAsync.process()
-                                 .foldsUnsafe()
                                  .foldLeft(false,(a,b)->a|b));
 
 
         System.out.println("Run synchronously..");
         Capitalizer<tryType> processorSync = new Capitalizer<>(new SyncWork());
         assertTrue(processorSync.process()
-                                .foldsUnsafe()
                                 .foldLeft(false,(a,b)->a|b));
 
 
