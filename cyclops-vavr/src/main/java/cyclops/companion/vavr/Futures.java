@@ -811,6 +811,11 @@ public class Futures {
                 }
 
                 @Override
+                public <T> MonadRec<future> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<future>> monadPlus(Monoid<Higher<future, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
@@ -957,6 +962,14 @@ public class Futures {
 
             BiFunction<Higher<future,T>,Function<? super T, ? extends Higher<future,R>>,Higher<future,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
+        }
+        public static <T,R> MonadRec<future> monadRec(){
+            return new MonadRec<future>() {
+                @Override
+                public <T, R> Higher<future, R> tailRec(T initial, Function<? super T, ? extends Higher<future, ? extends Xor<T, R>>> fn) {
+                    return widen(Futures.tailRecXor(initial,fn.andThen(FutureKind::narrowK)));
+                }
+            };
         }
         /**
          *
@@ -1158,10 +1171,10 @@ public class Futures {
             FutureKind<Higher<Higher<xor,S>, P>> y = (FutureKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<future,Higher<reader,S>, T> reader(Future<Reader<S, T>> nested){
+        public static <S,T> Nested<future,Higher<reader,S>, T> reader(Future<Reader<S, T>> nested,S defaultValue){
             FutureKind<Reader<S, T>> x = widen(nested);
             FutureKind<Higher<Higher<reader,S>, T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<future,Higher<Witness.tryType,S>, P> cyclopsTry(Future<cyclops.control.Try<P, S>> nested){
             FutureKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -1214,11 +1227,11 @@ public class Futures {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,future, T> reader(Reader<S, Future<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,future, T> reader(Reader<S, Future<T>> nested,S defaultValue){
 
             Reader<S, Higher<future, T>>  x = nested.map(FutureKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,future, P> cyclopsTry(cyclops.control.Try<Future<P>, S> nested){
             cyclops.control.Try<Higher<future,P>, S> x = nested.map(FutureKind::widenK);

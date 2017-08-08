@@ -695,7 +695,7 @@ public class Lists {
 
                 @Override
                 public <T> T foldLeft(Monoid<T> monoid, Higher<list, T> ds) {
-                    return ListKind.narrowK(ds).foldLeft(monoid.zero(),monoid);;
+                    return ListKind.narrowK(ds).foldLeft(monoid.zero(),monoid);
                 }
 
                 @Override
@@ -805,10 +805,10 @@ public class Lists {
             ListKind<Higher<Higher<xor,S>, P>> y = (ListKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<list,Higher<reader,S>, T> reader(List<Reader<S, T>> nested){
+        public static <S,T> Nested<list,Higher<reader,S>, T> reader(List<Reader<S, T>> nested,S defaultValue){
             ListKind<Reader<S, T>> x = widen(nested);
             ListKind<Higher<Higher<reader,S>, T>> y = (ListKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<list,Higher<Witness.tryType,S>, P> cyclopsTry(List<cyclops.control.Try<P, S>> nested){
             ListKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -861,11 +861,11 @@ public class Lists {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,list, T> reader(Reader<S, List<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,list, T> reader(Reader<S, List<T>> nested,S defaultValue){
 
             Reader<S, Higher<list, T>>  x = nested.map(ListKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,list, P> cyclopsTry(cyclops.control.Try<List<P>, S> nested){
             cyclops.control.Try<Higher<list,P>, S> x = nested.map(ListKind::widenK);

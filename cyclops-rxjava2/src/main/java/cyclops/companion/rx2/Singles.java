@@ -88,6 +88,18 @@ public class Singles {
     public static <W extends WitnessType<W>,T> SingleT<W,T> liftM(AnyM<W,Single<T>> nested){
         return SingleT.of(nested);
     }
+    public static <T, R> Single< R> tailRec(T initial, Function<? super T, ? extends Single<? extends Xor<T, R>>> fn) {
+        Single<? extends Xor<T, R>> next[] = new Single[1];
+        next[0] = Single.just(Xor.secondary(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].map(p -> p.visit(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).blockingGet();
+        } while (cont);
+        return next[0].map(Xor::get);
+    }
 
     public static <T> Future[] futures(Single<T>... futures){
 
@@ -518,18 +530,23 @@ public class Singles {
                 }
 
                 @Override
+                public <T> MonadRec<single> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> cyclops.control.Maybe<MonadPlus<single>> monadPlus(Monoid<Higher<single, T>> m) {
                     return cyclops.control.Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> cyclops.control.Maybe<Traverse<single>> traverse() {
-                    return cyclops.control.Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<single> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> cyclops.control.Maybe<Foldable<single>> foldable() {
-                    return cyclops.control.Maybe.just(Instances.foldable());
+                public <T> Foldable<single> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -687,6 +704,14 @@ public class Singles {
 
             return General.monadZero(monad(), SingleKind.empty());
         }
+        public static <T,R> MonadRec<single> monadRec(){
+            return new MonadRec<single>() {
+                @Override
+                public <T, R> Higher<single, R> tailRec(T initial, Function<? super T, ? extends Higher<single, ? extends Xor<T, R>>> fn) {
+                    return widen(Singles.tailRec(initial,fn.andThen(SingleKind::narrowK).andThen(a->a.narrow())));
+                }
+            };
+        }
         /**
          * Combines Singles by selecting the first result returned
          *
@@ -759,9 +784,23 @@ public class Singles {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<single> foldable(){
-            BiFunction<Monoid<T>,Higher<single,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), SingleKind.narrow(l).blockingGet());
-            BiFunction<Monoid<T>,Higher<single,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), SingleKind.narrow(l).blockingGet());
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<single>() {
+                @Override
+                public <T> T foldRight(Monoid<T> m, Higher<single, T> ds) {
+                    return m.apply(m.zero(), SingleKind.narrow(ds).blockingGet());
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> m, Higher<single, T> ds) {
+                    return m.apply(m.zero(), SingleKind.narrow(ds).blockingGet());
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<single, T> nestedA) {
+                    return mb.apply(mb.zero(), SingleKind.narrow(nestedA).map(a->fn.apply(a)).blockingGet());
+                }
+            };
+
         }
         public static <T> Comonad<single> comonad(){
             Function<? super Higher<single, T>, ? extends T> extractFn = maybe -> maybe.convert(SingleKind::narrow).blockingGet();
@@ -845,10 +884,10 @@ public class Singles {
             SingleKind<Higher<Higher<xor,S>, P>> y = (SingleKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<single,Higher<reader,S>, T> reader(Single<Reader<S, T>> nested){
+        public static <S,T> Nested<single,Higher<reader,S>, T> reader(Single<Reader<S, T>> nested, S defaultValue){
             SingleKind<Reader<S, T>> x = widen(nested);
             SingleKind<Higher<Higher<reader,S>, T>> y = (SingleKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<single,Higher<Witness.tryType,S>, P> cyclopsTry(Single<cyclops.control.Try<P, S>> nested){
             SingleKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -903,11 +942,11 @@ public class Singles {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,single, T> reader(Reader<S, Single<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,single, T> reader(Reader<S, Single<T>> nested, S defaultValue){
 
             Reader<S, Higher<single, T>>  x = nested.map(SingleKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,single, P> cyclopsTry(cyclops.control.Try<Single<P>, S> nested){
             cyclops.control.Try<Higher<single,P>, S> x = nested.map(SingleKind::widenK);

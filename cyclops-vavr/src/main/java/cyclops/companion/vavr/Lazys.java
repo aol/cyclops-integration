@@ -886,10 +886,10 @@ public class Lazys {
             LazyKind<Higher<Higher<xor,S>, P>> y = (LazyKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<lazy,Higher<reader,S>, T> reader(Lazy<Reader<S, T>> nested){
+        public static <S,T> Nested<lazy,Higher<reader,S>, T> reader(Lazy<Reader<S, T>> nested,S defaultValue){
             LazyKind<Reader<S, T>> x = widen(nested);
             LazyKind<Higher<Higher<reader,S>, T>> y = (LazyKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<lazy,Higher<Witness.tryType,S>, P> cyclopsTry(Lazy<cyclops.control.Try<P, S>> nested){
             LazyKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -943,11 +943,11 @@ public class Lazys {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,lazy, T> reader(Reader<S, Lazy<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,lazy, T> reader(Reader<S, Lazy<T>> nested,S defaultValue){
 
             Reader<S, Higher<lazy, T>>  x = nested.map(LazyKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,lazy, P> cyclopsTry(cyclops.control.Try<Lazy<P>, S> nested){
             cyclops.control.Try<Higher<lazy,P>, S> x = nested.map(LazyKind::widenK);

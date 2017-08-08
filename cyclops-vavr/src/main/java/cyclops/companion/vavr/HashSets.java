@@ -429,6 +429,11 @@ public class HashSets {
                 }
 
                 @Override
+                public <T> MonadRec<hashSet> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<hashSet>> monadPlus(Monoid<Higher<hashSet, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
@@ -575,6 +580,15 @@ public class HashSets {
             BiFunction<Higher<hashSet,T>,Function<? super T, ? extends Higher<hashSet,R>>,Higher<hashSet,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
+        public static <T> MonadRec<hashSet> monadRec(){
+            return new MonadRec<hashSet>(){
+
+                @Override
+                public <T, R> Higher<hashSet, R> tailRec(T initial, Function<? super T, ? extends Higher<hashSet, ? extends Xor<T, R>>> fn) {
+                    return widen(tailRecXor(initial,fn.andThen(HashSetKind::narrowK).andThen(hs->hs.narrow())));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -686,7 +700,7 @@ public class HashSets {
 
                 @Override
                 public <T> T foldLeft(Monoid<T> monoid, Higher<hashSet, T> ds) {
-                    return narrowK(ds).foldLeft(monoid.zero(),monoid);;
+                    return narrowK(ds).foldLeft(monoid.zero(),monoid);
                 }
 
                 @Override
@@ -784,10 +798,10 @@ public class HashSets {
             HashSetKind<Higher<Higher<xor,S>, P>> y = (HashSetKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<hashSet,Higher<reader,S>, T> reader(HashSet<Reader<S, T>> nested){
+        public static <S,T> Nested<hashSet,Higher<reader,S>, T> reader(HashSet<Reader<S, T>> nested,S defaultValue){
             HashSetKind<Reader<S, T>> x = widen(nested);
             HashSetKind<Higher<Higher<reader,S>, T>> y = (HashSetKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<hashSet,Higher<Witness.tryType,S>, P> cyclopsTry(HashSet<cyclops.control.Try<P, S>> nested){
             HashSetKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -839,11 +853,11 @@ public class HashSets {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,hashSet, T> reader(Reader<S, HashSet<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,hashSet, T> reader(Reader<S, HashSet<T>> nested,S defaultValue){
 
             Reader<S, Higher<hashSet, T>>  x = nested.map(HashSetKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,hashSet, P> cyclopsTry(cyclops.control.Try<HashSet<P>, S> nested){
             cyclops.control.Try<Higher<hashSet,P>, S> x = nested.map(HashSetKind::widenK);

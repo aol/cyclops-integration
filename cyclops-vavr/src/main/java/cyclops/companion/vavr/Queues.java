@@ -430,6 +430,11 @@ public class Queues {
                 }
 
                 @Override
+                public <T> MonadRec<queue> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<queue>> monadPlus(Monoid<Higher<queue, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
@@ -578,6 +583,15 @@ public class Queues {
             BiFunction<Higher<queue,T>,Function<? super T, ? extends Higher<queue,R>>,Higher<queue,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
+        public static <T> MonadRec<queue> monadRec(){
+            return new MonadRec<queue>(){
+
+                @Override
+                public <T, R> Higher<queue, R> tailRec(T initial, Function<? super T, ? extends Higher<queue, ? extends Xor<T, R>>> fn) {
+                    return widen(tailRecXor(initial,fn.andThen(QueueKind::narrowK).andThen(q->q.narrow())));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -686,17 +700,17 @@ public class Queues {
             return new Foldable<queue>() {
                 @Override
                 public <T> T foldRight(Monoid<T> monoid, Higher<queue, T> ds) {
-                    return narrowK(ds).foldRight(monoid.zero(),monoid);
+                    return narrowK(ds).narrow().foldRight(monoid.zero(),monoid);
                 }
 
                 @Override
                 public <T> T foldLeft(Monoid<T> monoid, Higher<queue, T> ds) {
-                    return narrowK(ds).foldLeft(monoid.zero(),monoid);;
+                    return narrowK(ds).narrow().foldLeft(monoid.zero(),monoid);
                 }
 
                 @Override
                 public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<queue, T> nestedA) {
-                    return narrowK(nestedA).foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
+                    return narrowK(nestedA).narrow().foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
                 }
             };
         }
@@ -788,10 +802,10 @@ public class Queues {
             QueueKind<Higher<Higher<xor,S>, P>> y = (QueueKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<queue,Higher<reader,S>, T> reader(Queue<Reader<S, T>> nested){
+        public static <S,T> Nested<queue,Higher<reader,S>, T> reader(Queue<Reader<S, T>> nested, S defaultValue){
             QueueKind<Reader<S, T>> x = widen(nested);
             QueueKind<Higher<Higher<reader,S>, T>> y = (QueueKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<queue,Higher<Witness.tryType,S>, P> cyclopsTry(Queue<cyclops.control.Try<P, S>> nested){
             QueueKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -844,11 +858,11 @@ public class Queues {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,queue, T> reader(Reader<S, Queue<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,queue, T> reader(Reader<S, Queue<T>> nested,S defaultValue){
 
             Reader<S, Higher<queue, T>>  x = nested.map(QueueKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,queue, P> cyclopsTry(cyclops.control.Try<Queue<P>, S> nested){
             cyclops.control.Try<Higher<queue,P>, S> x = nested.map(QueueKind::widenK);

@@ -674,6 +674,11 @@ public class Trys {
                 }
 
                 @Override
+                public <T> MonadRec<tryType> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<tryType>> monadPlus(Monoid<Higher<tryType, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
@@ -821,23 +826,31 @@ public class Trys {
             BiFunction<Higher<tryType,T>,Function<? super T, ? extends Higher<tryType,R>>,Higher<tryType,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
-        /**
-         *
-         * <pre>
-         * {@code
-         *  TryKind<String> ft = Trys.unit()
-        .unit("hello")
-        .then(h->Trys.monadZero().filter((String t)->t.startsWith("he"), h))
-        .convert(TryKind::narrowK);
+        public static <T,R> MonadRec<tryType> monadRec() {
+            return new MonadRec<tryType>() {
+                @Override
+                public <T, R> Higher<tryType, R> tailRec(T initial, Function<? super T, ? extends Higher<tryType, ? extends Xor<T, R>>> fn) {
+                    return widen(Trys.tailRecXor(initial,fn.andThen(TryKind::narrowK)));
+                }
+            };
+        }
+            /**
+             *
+             * <pre>
+             * {@code
+             *  TryKind<String> ft = Trys.unit()
+            .unit("hello")
+            .then(h->Trys.monadZero().filter((String t)->t.startsWith("he"), h))
+            .convert(TryKind::narrowK);
 
-        //Arrays.asTry("hello"));
-         *
-         * }
-         * </pre>
-         *
-         *
-         * @return A filterable monad (with default value)
-         */
+            //Arrays.asTry("hello"));
+             *
+             * }
+             * </pre>
+             *
+             *
+             * @return A filterable monad (with default value)
+             */
         public static <T,R> MonadZero<tryType> monadZero(){
 
             return General.monadZero(monad(), TryKind.failed(new NoSuchElementException()));
@@ -1013,10 +1026,10 @@ public class Trys {
             TryKind<Higher<Higher<xor,S>, P>> y = (TryKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<tryType,Higher<reader,S>, T> reader(Try<Reader<S, T>> nested){
+        public static <S,T> Nested<tryType,Higher<reader,S>, T> reader(Try<Reader<S, T>> nested, S defaultValue){
             TryKind<Reader<S, T>> x = widen(nested);
             TryKind<Higher<Higher<reader,S>, T>> y = (TryKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<tryType,Higher<Witness.tryType,S>, P> cyclopsTry(Try<cyclops.control.Try<P, S>> nested){
             TryKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -1068,11 +1081,11 @@ public class Trys {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,tryType, T> reader(Reader<S, Try<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,tryType, T> reader(Reader<S, Try<T>> nested, S defaultValue){
 
             Reader<S, Higher<tryType, T>>  x = nested.map(TryKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,tryType, P> cyclopsTry(cyclops.control.Try<Try<P>, S> nested){
             cyclops.control.Try<Higher<tryType,P>, S> x = nested.map(TryKind::widenK);

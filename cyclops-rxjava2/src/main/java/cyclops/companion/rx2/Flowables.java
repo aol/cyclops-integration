@@ -68,6 +68,27 @@ public class Flowables {
         return XorM.right(anyM(type));
     }
 
+    public static  <T,R> Flowable<R> tailRec(T initial, Function<? super T, ? extends Flowable<? extends Xor<T, R>>> fn) {
+        Flowable<Xor<T, R>> next = Flowable.just(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return Flowable.just(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).map(Xor::get);
+    }
+
     public static <T> Flowable<T> raw(AnyM<flowable,T> anyM){
         return flowable(anyM);
     }
@@ -541,18 +562,23 @@ public class Flowables {
                 }
 
                 @Override
+                public <T> MonadRec<flowable> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> cyclops.control.Maybe<MonadPlus<flowable>> monadPlus(Monoid<Higher<flowable, T>> m) {
                     return cyclops.control.Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> cyclops.control.Maybe<Traverse<flowable>> traverse() {
-                    return cyclops.control.Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<flowable> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> cyclops.control.Maybe<Foldable<flowable>> foldable() {
-                    return cyclops.control.Maybe.just(Instances.foldable());
+                public <T> Foldable<flowable> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -752,6 +778,14 @@ public class Flowables {
             Monoid<Higher<flowable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static <T> MonadRec<flowable> monadRec(){
+            return new MonadRec<flowable>() {
+                @Override
+                public <T, R> Higher<flowable, R> tailRec(T initial, Function<? super T, ? extends Higher<flowable, ? extends Xor<T, R>>> fn) {
+                    return widen(Flowables.tailRec(initial,fn.andThen(FlowableKind::narrowK).andThen(f->f.narrow())));
+                }
+            };
+        }
 
         /**
          * @return Type class for traversables with traverse / sequence operations
@@ -792,9 +826,29 @@ public class Flowables {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<flowable> foldable(){
-            BiFunction<Monoid<T>,Higher<flowable,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FlowableKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<flowable,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FlowableKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<flowable>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<flowable, T> ds) {
+                    return ReactiveSeq.fromPublisher(FlowableKind.narrow(ds)).reduce(monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<flowable, T> ds) {
+                    return FlowableKind.narrowK(ds)
+                            .narrow()
+                            .reduce(monoid.zero(), (a, b) -> monoid.apply(a, b))
+                            .blockingGet();
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> monoid, Function<? super T, ? extends R> fn, Higher<flowable, T> nestedA) {
+                    return FlowableKind.narrowK(nestedA)
+                            .narrow()
+                            .reduce(monoid.zero(), (a, b) -> monoid.apply(a, fn.apply(b)))
+                            .blockingGet();
+                }
+            };
+
         }
 
         private static  <T> FlowableKind<T> concat(FlowableKind<T> l1, FlowableKind<T> l2){
@@ -879,10 +933,10 @@ public class Flowables {
             FlowableKind<Higher<Higher<Witness.xor,S>, P>> y = (FlowableKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<flowable,Higher<Witness.reader,S>, T> reader(Flowable<Reader<S, T>> nested){
+        public static <S,T> Nested<flowable,Higher<Witness.reader,S>, T> reader(Flowable<Reader<S, T>> nested, S defaultValue){
             FlowableKind<Reader<S, T>> x = widen(nested);
             FlowableKind<Higher<Higher<Witness.reader,S>, T>> y = (FlowableKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<flowable,Higher<Witness.tryType,S>, P> cyclopsTry(Flowable<cyclops.control.Try<P, S>> nested){
             FlowableKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -937,11 +991,11 @@ public class Flowables {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<Witness.reader,S>,flowable, T> reader(Reader<S, Flowable<T>> nested){
+        public static <S,T> Nested<Higher<Witness.reader,S>,flowable, T> reader(Reader<S, Flowable<T>> nested, S defaultValue){
 
             Reader<S, Higher<flowable, T>>  x = nested.map(FlowableKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,flowable, P> cyclopsTry(cyclops.control.Try<Flowable<P>, S> nested){
             cyclops.control.Try<Higher<flowable,P>, S> x = nested.map(FlowableKind::widenK);

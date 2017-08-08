@@ -549,6 +549,11 @@ public class Eithers {
                 }
 
                 @Override
+                public <T> MonadRec<Higher<either, L>> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<Higher<either, L>>> monadPlus(Monoid<Higher<Higher<either, L>, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
@@ -676,6 +681,14 @@ public class Eithers {
                 @Override
                 public <T> Higher<Higher<either, L>, T> unit(T value) {
                     return Instances.<L>unit().unit(value);
+                }
+            };
+        }
+        public static <L> MonadRec<Higher<either, L>> monadRec() {
+            return new MonadRec<Higher<either, L>>() {
+                @Override
+                public <T, R> Higher<Higher<either, L>, R> tailRec(T initial, Function<? super T, ? extends Higher<Higher<either, L>, ? extends Xor<T, R>>> fn) {
+                    return widen(Eithers.tailRecXor(initial,fn.andThen(EitherKind::narrowK)));
                 }
             };
         }
@@ -874,10 +887,10 @@ public class Eithers {
                 return Nested.of(y, Instances.definitions(), Xor.Instances.definitions());
             }
 
-            public static <L, S, T> Nested<Higher<either, L>, Higher<reader, S>, T> reader(Either<L, Reader<S, T>> nested) {
+            public static <L, S, T> Nested<Higher<either, L>, Higher<reader, S>, T> reader(Either<L, Reader<S, T>> nested, S defaultValue) {
                 EitherKind<L, Reader<S, T>> x = widen(nested);
                 EitherKind<L, Higher<Higher<reader, S>, T>> y = (EitherKind) x;
-                return Nested.of(y, Instances.definitions(), Reader.Instances.definitions());
+                return Nested.of(y, Instances.definitions(), Reader.Instances.definitions(defaultValue));
             }
 
             public static <L, S extends Throwable, P> Nested<Higher<either, L>, Higher<Witness.tryType, S>, P> cyclopsTry(Either<L, cyclops.control.Try<P, S>> nested) {
@@ -938,11 +951,11 @@ public class Eithers {
                 return Nested.of(x, Xor.Instances.definitions(), Instances.definitions());
             }
 
-            public static <L, S, T> Nested<Higher<reader, S>, Higher<either, L>, T> reader(Reader<S, Either<L, T>> nested) {
+            public static <L, S, T> Nested<Higher<reader, S>, Higher<either, L>, T> reader(Reader<S, Either<L, T>> nested, S defaultValue) {
 
                 Reader<S, Higher<Higher<either, L>, T>> x = nested.map(EitherKind::widenK);
 
-                return Nested.of(x, Reader.Instances.definitions(), Instances.definitions());
+                return Nested.of(x, Reader.Instances.definitions(defaultValue), Instances.definitions());
             }
 
             public static <L, S extends Throwable, P> Nested<Higher<Witness.tryType, S>, Higher<either, L>, P> cyclopsTry(cyclops.control.Try<Either<L, P>, S> nested) {

@@ -423,6 +423,11 @@ public class Arrays {
                 }
 
                 @Override
+                public <T> MonadRec<array> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<array>> monadPlus(Monoid<Higher<array, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
@@ -571,6 +576,16 @@ public class Arrays {
             BiFunction<Higher<array,T>,Function<? super T, ? extends Higher<array,R>>,Higher<array,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
+
+        public static <T> MonadRec<array> monadRec(){
+            return new MonadRec<array>(){
+
+                @Override
+                public <T, R> Higher<array, R> tailRec(T initial, Function<? super T, ? extends Higher<array, ? extends Xor<T, R>>> fn) {
+                    return widen(tailRecXor(initial,fn.andThen(ArrayKind::narrowK).andThen(a->a.narrow())));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -687,17 +702,17 @@ public class Arrays {
             return new Foldable<array>() {
                 @Override
                 public <T> T foldRight(Monoid<T> monoid, Higher<array, T> ds) {
-                    return narrowK(ds).foldRight(monoid.zero(),monoid);
+                    return narrowK(ds).narrow().foldRight(monoid.zero(),monoid);
                 }
 
                 @Override
                 public <T> T foldLeft(Monoid<T> monoid, Higher<array, T> ds) {
-                    return narrowK(ds).foldLeft(monoid.zero(),monoid);;
+                    return narrowK(ds).narrow().foldLeft(monoid.zero(),monoid);
                 }
 
                 @Override
                 public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<array, T> nestedA) {
-                    return narrowK(nestedA).foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
+                    return narrowK(nestedA).narrow().foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
                 }
             };
         }
@@ -782,10 +797,10 @@ public class Arrays {
             ArrayKind<Higher<Higher<xor,S>, P>> y = (ArrayKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<array,Higher<reader,S>, T> reader(Array<Reader<S, T>> nested){
+        public static <S,T> Nested<array,Higher<reader,S>, T> reader(Array<Reader<S, T>> nested, S defaultValue){
             ArrayKind<Reader<S, T>> x = widen(nested);
             ArrayKind<Higher<Higher<reader,S>, T>> y = (ArrayKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<array,Higher<Witness.tryType,S>, P> cyclopsTry(Array<cyclops.control.Try<P, S>> nested){
             ArrayKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -837,11 +852,11 @@ public class Arrays {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,array, T> reader(Reader<S, Array<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,array, T> reader(Reader<S, Array<T>> nested, S defaultValue){
 
             Reader<S, Higher<array, T>>  x = nested.map(ArrayKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,array, P> cyclopsTry(cyclops.control.Try<Array<P>, S> nested){
             cyclops.control.Try<Higher<array,P>, S> x = nested.map(ArrayKind::widenK);

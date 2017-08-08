@@ -693,6 +693,11 @@ public class Options {
                 }
 
                 @Override
+                public <T> MonadRec<option> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<option>> monadPlus(Monoid<Higher<option, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
@@ -839,6 +844,14 @@ public class Options {
 
             BiFunction<Higher<option,T>,Function<? super T, ? extends Higher<option,R>>,Higher<option,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
+        }
+        public static <T,R> MonadRec<option> monadRec(){
+            return new MonadRec<option>() {
+                @Override
+                public <T, R> Higher<option, R> tailRec(T initial, Function<? super T, ? extends Higher<option, ? extends Xor<T, R>>> fn) {
+                    return widen(Options.tailRecXor(initial,fn.andThen(OptionKind::narrowK)));
+                }
+            };
         }
         /**
          *
@@ -1039,10 +1052,10 @@ public class Options {
             OptionKind<Higher<Higher<xor,S>, P>> y = (OptionKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<option,Higher<reader,S>, T> reader(Option<Reader<S, T>> nested){
+        public static <S,T> Nested<option,Higher<reader,S>, T> reader(Option<Reader<S, T>> nested,S defaultValue){
             OptionKind<Reader<S, T>> x = widen(nested);
             OptionKind<Higher<Higher<reader,S>, T>> y = (OptionKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<option,Higher<Witness.tryType,S>, P> cyclopsTry(Option<cyclops.control.Try<P, S>> nested){
             OptionKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -1093,11 +1106,11 @@ public class Options {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,option, T> reader(Reader<S, Option<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,option, T> reader(Reader<S, Option<T>> nested,S defaultValue){
 
             Reader<S, Higher<option, T>>  x = nested.map(OptionKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,option, P> cyclopsTry(cyclops.control.Try<Option<P>, S> nested){
             cyclops.control.Try<Higher<option,P>, S> x = nested.map(OptionKind::widenK);
