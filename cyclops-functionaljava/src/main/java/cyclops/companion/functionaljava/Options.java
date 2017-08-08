@@ -61,6 +61,34 @@ import static com.aol.cyclops.functionaljava.hkt.OptionKind.widen;
  */
 @UtilityClass
 public class Options {
+
+    public static <L, T, R> Option<R> tailRec(T initial, Function<? super T, ? extends Option<? extends Either<T, R>>> fn) {
+        Option<? extends Either<T, R>> next[] = new Option[1];
+        next[0] = Option.some(Either.left(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].map(p -> p.either(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).orSome(false);
+        } while (cont);
+        return next[0].map(e -> e.right()
+                .iterator()
+                .next());
+    }
+    public static <T, R> Option< R> tailRecXor(T initial, Function<? super T, ? extends Option<? extends Xor<T, R>>> fn) {
+        Option<? extends Xor<T, R>> next[] = new Option[1];
+        next[0] = Option.some(Xor.secondary(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].map(p -> p.visit(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).orSome(false);
+        } while (cont);
+        return next[0].map(Xor::get);
+    }
+
     public static  <W1,T> Coproduct<W1,option,T> coproduct(Option<T> type, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
     }
@@ -661,18 +689,23 @@ public class Options {
                 }
 
                 @Override
+                public <T> MonadRec<option> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<option>> monadPlus(Monoid<Higher<option, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<option>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<option> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<option>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<option> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -850,6 +883,14 @@ public class Options {
             Monoid<Higher<option,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static <T> MonadRec<option> monadRec(){
+            return new MonadRec<option>() {
+                @Override
+                public <T, R> Higher<option, R> tailRec(T initial, Function<? super T, ? extends Higher<option, ? extends Xor<T, R>>> fn) {
+                    return widen(Options.tailRecXor(initial,fn.andThen(OptionKind::narrow)));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -899,9 +940,24 @@ public class Options {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<option> foldable(){
-            BiFunction<Monoid<T>,Higher<option,T>,T> foldRightFn =  (m, l)-> OptionKind.narrow(l).orSome(m.zero());
-            BiFunction<Monoid<T>,Higher<option,T>,T> foldLeftFn = (m, l)-> OptionKind.narrow(l).orSome(m.zero());
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<option>() {
+                @Override
+                public <T> T foldRight(Monoid<T> m, Higher<option, T> ds) {
+                    return OptionKind.narrow(ds).orSome(m.zero());
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> m, Higher<option, T> ds) {
+                    return OptionKind.narrow(ds).orSome(m.zero());
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> m, Function<? super T, ? extends R> fn, Higher<option, T> ds) {
+                    Option<R> o = OptionKind.narrow(ds).map(a -> fn.apply(a));
+                    return o.orSome(m.zero());
+                }
+            };
+
         }
         public static <T> Comonad<option> comonad(){
             Function<? super Higher<option, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionKind::narrow).some();
@@ -994,10 +1050,10 @@ public class Options {
             OptionKind<Higher<Higher<xor,S>, P>> y = (OptionKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<option,Higher<reader,S>, T> reader(Option<Reader<S, T>> nested){
+        public static <S,T> Nested<option,Higher<reader,S>, T> reader(Option<Reader<S, T>> nested, S defaultValue){
             OptionKind<Reader<S, T>> x = widen(nested);
             OptionKind<Higher<Higher<reader,S>, T>> y = (OptionKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<option,Higher<Witness.tryType,S>, P> cyclopsTry(Option<cyclops.control.Try<P, S>> nested){
             OptionKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -1052,11 +1108,11 @@ public class Options {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,option, T> reader(Reader<S, Option<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,option, T> reader(Reader<S, Option<T>> nested,S defaultValue){
 
             Reader<S, Higher<option, T>>  x = nested.map(OptionKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,option, P> cyclopsTry(cyclops.control.Try<Option<P>, S> nested){
             cyclops.control.Try<Higher<option,P>, S> x = nested.map(OptionKind::widenK);
