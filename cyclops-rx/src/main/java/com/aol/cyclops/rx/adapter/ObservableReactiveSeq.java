@@ -673,6 +673,11 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
+    public ReactiveSeq<T> complete(Runnable fn) {
+        return observable(observable.doOnCompleted(()->fn.run()));
+    }
+
+    @Override
     public ReactiveSeq<T> recover(Function<? super Throwable, ? extends T> fn) {
         return observable(Observables.connectToReactiveSeq(observable).recover(fn));
     }
@@ -787,32 +792,32 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
         return asyncNoBackPressure.apply(this);
     }
     @Override
-    public ListT<stream, T> groupedT(int groupSize) {
+    public ListT<reactiveSeq, T> groupedT(int groupSize) {
         return ListT.fromStream(grouped(groupSize));
     }
 
     @Override
-    public ListT<stream, T> slidingT(int windowSize, int increment) {
+    public ListT<reactiveSeq, T> slidingT(int windowSize, int increment) {
         return ListT.fromStream(sliding(windowSize,increment));
     }
 
     @Override
-    public ListT<stream, T> slidingT(int windowSize) {
+    public ListT<reactiveSeq, T> slidingT(int windowSize) {
         return ListT.fromStream(sliding(windowSize));
     }
 
     @Override
-    public ListT<stream, T> groupedUntilT(Predicate<? super T> predicate) {
+    public ListT<reactiveSeq, T> groupedUntilT(Predicate<? super T> predicate) {
         return ListT.fromStream(groupedUntil(predicate));
     }
 
     @Override
-    public ListT<stream, T> groupedStatefullyUntilT(BiPredicate<ListX<? super T>, ? super T> predicate) {
+    public ListT<reactiveSeq, T> groupedStatefullyUntilT(BiPredicate<ListX<? super T>, ? super T> predicate) {
         return ListT.fromStream(groupedStatefullyWhile(predicate));
     }
 
     @Override
-    public ListT<stream, T> groupedWhileT(Predicate<? super T> predicate) {
+    public ListT<reactiveSeq, T> groupedWhileT(Predicate<? super T> predicate) {
         return ListT.fromStream(groupedWhile(predicate));
     }
     @Override
