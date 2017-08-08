@@ -5,10 +5,8 @@ import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
 import cyclops.companion.Optionals;
 import cyclops.companion.Optionals.OptionalKind;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
+import cyclops.control.*;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
 import cyclops.conversion.functionaljava.FromJDK;
 import cyclops.conversion.functionaljava.FromJooqLambda;
 import cyclops.monads.*;
@@ -103,15 +101,16 @@ public class Streams {
         return next.filter(Xor::isPrimary).map(Xor::get);
     }
 
-    public static <T,R> R foldRight(Stream<T> stream,R identity, BiFunction<? super T, ? super R, ? extends R> fn){
-        return foldRightRec(stream,Eval.now(identity),(a,b)-> b.map(b2->fn.apply(a,b2))).get();
-    }
-    private static <T,R> Eval<R> foldRightRec(Stream<T> stream,Eval<R> identity, BiFunction<? super T, ? super Eval<R>, ? extends Eval<R>> fn){
+    public static <T,R> R foldRight(Stream<T> stream,R identity, BiFunction<? super T, ? super R, ? extends R> p){
+        class Step{
+            public Trampoline<R> loop(Stream<T> s, Function<? super R, ? extends Trampoline<R>> fn){
+                if (s.isEmpty())
+                    return fn.apply(identity);
+                return Trampoline.more(()->loop(s.tail()._1(), rem -> Trampoline.more(() -> fn.apply(p.apply(s.head(), rem) )) ));
 
-        if(stream.isEmpty())
-            return identity;
-        else
-            return identity.flatMap(i-> fn.apply(stream.head(), foldRightRec(stream.tail()._1(), identity, fn)));
+            }
+        }
+        return new Step().loop(stream,i->Trampoline.done(i)).result();
     }
     /**
      * Perform a For Comprehension over a Stream, accepting 3 generating functions.
