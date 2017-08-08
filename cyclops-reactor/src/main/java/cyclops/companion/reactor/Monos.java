@@ -78,7 +78,18 @@ public class Monos {
         return ReactorWitness.mono(anyM);
     }
 
-
+    public static <T, R> Mono< R> tailRec(T initial, Function<? super T, ? extends Mono<? extends Xor<T, R>>> fn) {
+        Mono<? extends Xor<T, R>> next[] = new Mono[1];
+        next[0] = Mono.just(Xor.secondary(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].map(p -> p.visit(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).block();
+        } while (cont);
+        return next[0].map(Xor::get);
+    }
     public static <W extends WitnessType<W>,T> MonoT<W,T> liftM(AnyM<W,Mono<T>> nested){
         return MonoT.of(nested);
     }
@@ -513,18 +524,23 @@ public class Monos {
                 }
 
                 @Override
+                public <T> MonadRec<mono> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<mono>> monadPlus(Monoid<Higher<mono, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<mono>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<mono> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<mono>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T>  Foldable<mono> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -724,6 +740,14 @@ public class Monos {
             Monoid<Higher<mono,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static <T> MonadRec<mono> monadRec(){
+            return new MonadRec<mono>() {
+                @Override
+                public <T, R> Higher<mono, R> tailRec(T initial, Function<? super T, ? extends Higher<mono, ? extends Xor<T, R>>> fn) {
+                    return widen(Monos.tailRec(initial,fn.andThen(MonoKind::narrow)));
+                }
+            };
+        }
 
         public static <T> MonadPlus<mono> monadPlus(Monoid<Higher<mono,T>> m){
             Monoid<Higher<mono,T>> m2= (Monoid)m;
@@ -754,9 +778,22 @@ public class Monos {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<mono> foldable(){
-            BiFunction<Monoid<T>,Higher<mono,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), MonoKind.narrow(l).block());
-            BiFunction<Monoid<T>,Higher<mono,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), MonoKind.narrow(l).block());
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<mono>() {
+                @Override
+                public <T> T foldRight(Monoid<T> m, Higher<mono, T> ds) {
+                   return  m.apply(m.zero(), MonoKind.narrow(ds).block());
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> m, Higher<mono, T> ds) {
+                    return  m.apply(m.zero(), MonoKind.narrow(ds).block());
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> m, Function<? super T, ? extends R> fn, Higher<mono, T> ds) {
+                    return  m.apply(m.zero(), MonoKind.narrow(ds).map(fn).block());
+                }
+            };
         }
         public static <T> Comonad<mono> comonad(){
             Function<? super Higher<mono, T>, ? extends T> extractFn = maybe -> maybe.convert(MonoKind::narrow).block();
@@ -829,10 +866,10 @@ public class Monos {
             MonoKind<Higher<Higher<xor,S>, P>> y = (MonoKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<mono,Higher<reader,S>, T> reader(Mono<Reader<S, T>> nested){
+        public static <S,T> Nested<mono,Higher<reader,S>, T> reader(Mono<Reader<S, T>> nested, S defaultValue){
             MonoKind<Reader<S, T>> x = widen(nested);
             MonoKind<Higher<Higher<reader,S>, T>> y = (MonoKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<mono,Higher<Witness.tryType,S>, P> cyclopsTry(Mono<cyclops.control.Try<P, S>> nested){
             MonoKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -891,11 +928,11 @@ public class Monos {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,mono, T> reader(Reader<S, Mono<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,mono, T> reader(Reader<S, Mono<T>> nested, S defaultValue){
 
             Reader<S, Higher<mono, T>>  x = nested.map(MonoKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,mono, P> cyclopsTry(cyclops.control.Try<Mono<P>, S> nested){
             cyclops.control.Try<Higher<mono,P>, S> x = nested.map(MonoKind::widenK);
