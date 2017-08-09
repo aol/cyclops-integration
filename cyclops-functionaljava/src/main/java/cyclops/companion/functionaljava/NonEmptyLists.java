@@ -6,6 +6,7 @@ import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
 import cyclops.companion.Optionals;
 import cyclops.companion.Optionals.OptionalKind;
+import cyclops.companion.functionaljava.functionaljava.NonEmptyListSupplier;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
@@ -43,9 +44,13 @@ import org.jooq.lambda.tuple.Tuple2;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+import static com.aol.cyclops.functionaljava.hkt.NonEmptyListKind.narrow;
+import static com.aol.cyclops.functionaljava.hkt.NonEmptyListKind.narrowK;
 import static com.aol.cyclops.functionaljava.hkt.NonEmptyListKind.widen;
+import static javafx.scene.input.KeyCode.G;
 
 
 public class NonEmptyLists {
@@ -59,6 +64,55 @@ public class NonEmptyLists {
     }
     public static <T> AnyMSeq<nonEmptyList,T> anyM(NonEmptyList<T> option) {
         return AnyM.ofSeq(option, nonEmptyList.INSTANCE);
+    }
+    public static  <T,R> NonEmptyList<R> tailRec(NonEmptyList<R> defaultValue,T initial, Function<? super T, ? extends NonEmptyList<? extends Either<T, R>>> fn) {
+        NonEmptyList<Either<T, R>> next = NonEmptyList.nel(Either.left(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.bind(e -> e.either(s -> {
+                        newValue[0]=true;
+                        return (NonEmptyList<Either<T,R>>)fn.apply(s);
+                    },
+                    p -> {
+                        newValue[0]=false;
+                        return NonEmptyList.nel(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+
+        return NonEmptyList.fromList(next.toList().filter(Either::isRight).map(e -> e.right()
+                .iterator()
+                .next())).orSome(defaultValue);
+    }
+    public static  <T,R> NonEmptyList<R> tailRecXor(NonEmptyList<R> defaultValue, T initial, Function<? super T, ? extends NonEmptyList<? extends Xor<T, R>>> fn) {
+        NonEmptyList<Xor<T, R>> next = NonEmptyList.nel(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.bind(e -> e.visit(s -> {
+
+                        newValue[0]=true;
+                        return (NonEmptyList<Xor<T,R>>)fn.apply(s);
+
+
+                    },
+                    p -> {
+                        Xor<T, R> x = e;
+                        newValue[0]=false;
+                        return NonEmptyList.nel(x);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return  NonEmptyList.fromList(next.toList().filter(Xor::isPrimary).map(Xor::get)).orSome(defaultValue);
     }
     /**
      * Perform a For Comprehension over a NonEmptyList, accepting 3 generating functions.
@@ -243,18 +297,23 @@ public class NonEmptyLists {
                 }
 
                 @Override
+                public <T> MonadRec<nonEmptyList> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<nonEmptyList>> monadPlus(Monoid<Higher<nonEmptyList, T>> m) {
                     return Maybe.none();
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<nonEmptyList>> traverse() {
-                    return Maybe.none();
+                public <C2, T> Traverse<nonEmptyList> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<nonEmptyList>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<nonEmptyList> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -394,8 +453,56 @@ public class NonEmptyLists {
 
 
 
+        public static <T> MonadRec<nonEmptyList> monadRec(){
+            return new MonadRec<nonEmptyList>() {
+                @Override
+                public <T, R> Higher<nonEmptyList, R> tailRec(T initial, Function<? super T, ? extends Higher<nonEmptyList, ? extends Xor<T, R>>> fn) {
+                    return widen(NonEmptyLists.tailRecXor(null, initial, a->{
+                        Higher<nonEmptyList, ? extends Xor<T, R>> r = fn.apply(a);
+                        NonEmptyList<? extends Xor<T, R>> x = r.convert(NonEmptyListKind::narrowK).narrow();
+                        return x;
+                    }));
 
+                };
+            };
+        }
 
+        public static <T> Traverse<nonEmptyList> traverse(){
+            return new Traverse<nonEmptyList>() {
+                @Override
+                public <C2, T, R> Higher<C2, Higher<nonEmptyList, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn, Higher<nonEmptyList, T> ds) {
+
+                    NonEmptyListKind<T> nel = narrowK(ds);
+                    Traverse<list> traverseList = Lists.Instances.traverse();
+
+                    Eval<Higher<C2, Higher<list, R>>> x = Eval.always(() -> traverseList.traverseA(applicative, fn, ListKind.widen(nel.tail())));
+
+                   return applicative.<R,Higher<list, R>,Higher<nonEmptyList,R>>lazyZip(fn.apply(nel.head()), x,
+                                                (a,b) ->  widen(NonEmptyList.nel(a,  ListKind.narrow(b)))).get();
+
+                }
+
+                @Override
+                public <C2, T> Higher<C2, Higher<nonEmptyList, T>> sequenceA(Applicative<C2> applicative, Higher<nonEmptyList, Higher<C2, T>> ds) {
+                    return traverseA(applicative,Function.identity(),ds);
+                }
+
+                @Override
+                public <T, R> Higher<nonEmptyList, R> ap(Higher<nonEmptyList, ? extends Function<T, R>> fn, Higher<nonEmptyList, T> apply) {
+                    return Instances.zippingApplicative().ap(fn,apply);
+                }
+
+                @Override
+                public <T> Higher<nonEmptyList, T> unit(T value) {
+                    return Instances.unit().unit(value);
+                }
+
+                @Override
+                public <T, R> Higher<nonEmptyList, R> map(Function<? super T, ? extends R> fn, Higher<nonEmptyList, T> ds) {
+                    return Instances.functor().map(fn,ds);
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -412,9 +519,24 @@ public class NonEmptyLists {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<nonEmptyList> foldable(){
-            BiFunction<Monoid<T>,Higher<nonEmptyList,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(NonEmptyListKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<nonEmptyList,T>,T> foldLeftFn = (m, l)-> ListX.fromIterable(NonEmptyListKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<nonEmptyList>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<nonEmptyList, T> ds) {
+                    return narrow(ds).foldRight1((a,b)->monoid.apply(a,b));
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<nonEmptyList, T> ds) {
+                    return narrow(ds).foldLeft1((a,b)->monoid.apply(a,b));
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<nonEmptyList, T> nestedA) {
+                    NonEmptyList<R> nel = narrow(nestedA).map(a -> fn.apply(a));
+                   return nel.foldLeft1((a,b)->mb.apply(a,b));
+                }
+            };
+
         }
 
 
@@ -492,10 +614,10 @@ public class NonEmptyLists {
             NonEmptyListKind<Higher<Higher<xor,S>, P>> y = (NonEmptyListKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<nonEmptyList,Higher<reader,S>, T> reader(NonEmptyList<Reader<S, T>> nested){
+        public static <S,T> Nested<nonEmptyList,Higher<reader,S>, T> reader(NonEmptyList<Reader<S, T>> nested, S defaultValue){
             NonEmptyListKind<Reader<S, T>> x = widen(nested);
             NonEmptyListKind<Higher<Higher<reader,S>, T>> y = (NonEmptyListKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<nonEmptyList,Higher<Witness.tryType,S>, P> cyclopsTry(NonEmptyList<cyclops.control.Try<P, S>> nested){
             NonEmptyListKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -550,11 +672,11 @@ public class NonEmptyLists {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,nonEmptyList, T> reader(Reader<S, NonEmptyList<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,nonEmptyList, T> reader(Reader<S, NonEmptyList<T>> nested,S defaultValue){
 
             Reader<S, Higher<nonEmptyList, T>>  x = nested.map(NonEmptyListKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,nonEmptyList, P> cyclopsTry(cyclops.control.Try<NonEmptyList<P>, S> nested){
             cyclops.control.Try<Higher<nonEmptyList,P>, S> x = nested.map(NonEmptyListKind::widenK);

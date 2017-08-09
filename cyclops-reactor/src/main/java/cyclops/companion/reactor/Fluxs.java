@@ -68,6 +68,26 @@ public class Fluxs {
     public static <T,W extends WitnessType<W>> AnyM<W,Flux<T>> fromStream(AnyM<W,Stream<T>> anyM){
         return anyM.map(s->fluxFrom(ReactiveSeq.fromStream(s)));
     }
+    public static  <T,R> Flux<R> tailRec(T initial, Function<? super T, ? extends Flux<? extends Xor<T, R>>> fn) {
+        Flux<Xor<T, R>> next = Flux.just(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return Flux.just(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).map(Xor::get);
+    }
     public static <T> Flux<T> narrow(Flux<? extends T> observable) {
         return (Flux<T>)observable;
     }
@@ -578,18 +598,23 @@ public class Fluxs {
                 }
 
                 @Override
+                public <T> MonadRec<flux> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<flux>> monadPlus(Monoid<Higher<flux, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<flux>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<flux> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<flux>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<flux> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -747,6 +772,14 @@ public class Fluxs {
             Supplier<Higher<flux, T>> zero = ()-> widen(Flux.empty());
             return General.<flux,T,R>monadZero(monad(), zero,filter);
         }
+        public static <T,R> MonadRec<flux> monadRec(){
+            return new MonadRec<flux>() {
+                @Override
+                public <T, R> Higher<flux, R> tailRec(T initial, Function<? super T, ? extends Higher<flux, ? extends Xor<T, R>>> fn) {
+                    return widen(Fluxs.tailRec(initial,fn.andThen(FluxKind::narrow)));
+                }
+            };
+        }
         /**
          * <pre>
          * {@code
@@ -828,9 +861,27 @@ public class Fluxs {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<flux> foldable(){
-            BiFunction<Monoid<T>,Higher<flux,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<flux,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FluxKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<flux>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<flux, T> ds) {
+                    return ReactiveSeq.fromPublisher(FluxKind.narrow(ds)).foldRight(monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<flux, T> ds) {
+                    return FluxKind.narrow(ds)
+                            .reduce(monoid.zero(), (a, b) -> monoid.apply(a, b))
+                            .block();
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> monoid, Function<? super T, ? extends R> fn, Higher<flux, T> ds) {
+                    return FluxKind.narrow(ds)
+                            .reduce(monoid.zero(), (a, b) -> monoid.apply(a, fn.apply(b)))
+                            .block();
+                }
+            };
+
         }
 
         private static  <T> FluxKind<T> concat(FluxKind<T> l1, FluxKind<T> l2){
@@ -902,10 +953,10 @@ public class Fluxs {
             FluxKind<Higher<Higher<xor,S>, P>> y = (FluxKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<flux,Higher<reader,S>, T> reader(Flux<Reader<S, T>> nested){
+        public static <S,T> Nested<flux,Higher<reader,S>, T> reader(Flux<Reader<S, T>> nested, S defaultValue){
             FluxKind<Reader<S, T>> x = widen(nested);
             FluxKind<Higher<Higher<reader,S>, T>> y = (FluxKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<flux,Higher<Witness.tryType,S>, P> cyclopsTry(Flux<cyclops.control.Try<P, S>> nested){
             FluxKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -960,11 +1011,11 @@ public class Fluxs {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,flux, T> reader(Reader<S, Flux<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,flux, T> reader(Reader<S, Flux<T>> nested, S defaultValue){
 
             Reader<S, Higher<flux, T>>  x = nested.map(FluxKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,flux, P> cyclopsTry(cyclops.control.Try<Flux<P>, S> nested){
             cyclops.control.Try<Higher<flux,P>, S> x = nested.map(FluxKind::widenK);

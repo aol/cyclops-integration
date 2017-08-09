@@ -1,5 +1,6 @@
 package cyclops.companion.vavr;
 
+import cyclops.control.*;
 import cyclops.monads.VavrWitness.queue;
 import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
@@ -9,10 +10,6 @@ import io.vavr.control.*;
 import com.aol.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
-import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
@@ -39,6 +36,7 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
+import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
@@ -48,6 +46,7 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+import static com.aol.cyclops.vavr.hkt.StreamKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.StreamKind.widen;
 
 
@@ -64,7 +63,84 @@ public class Streams {
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,stream,T> xorM(T... values){
         return xorM(Stream.of(values));
     }
-   
+
+    public static  <T,R> Stream<R> tailRec(T initial, Function<? super T, ? extends Stream<? extends Either<T, R>>> fn) {
+        Stream<Either<T, R>> next = Stream.of(Either.left(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            Stream<Either<T, R>> rebuild = Stream.of();
+            for(Either<T,R> e : next){
+                Stream<? extends Either<T, R>> r = e.fold(s -> {
+                            newValue[0] = true;
+
+                            return fn.apply(s);
+                        },
+                        p -> {
+                            newValue[0] = false;
+                            return Stream.of(e);
+                        });
+                rebuild = Stream.concat(rebuild,r);
+            }
+            next = rebuild;
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Either::isRight).map(Either::get);
+    }
+    public static  <T,R> Stream<R> tailRecXor(T initial, Function<? super T, ? extends Stream<? extends Xor<T, R>>> fn) {
+        Stream<Xor<T, R>> next = Stream.of(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            Stream<Xor<T, R>> rebuild = Stream.of();
+            for(Xor<T,R> e : next){
+                Stream<? extends Xor<T, R>> r = e.visit(s -> {
+                            newValue[0] = true;
+
+                            return fn.apply(s);
+                        },
+                        p -> {
+                            newValue[0] = false;
+                            return Stream.of(e);
+                        });
+                rebuild = Stream.concat(rebuild,r);
+            }
+
+            next = rebuild;
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).map(Xor::get);
+    }
+    //not tail-recursive, may blow stack, but have better performance
+    public static <T,R> R foldRightUnsafe(Stream<T> stream,R identity, BiFunction<? super T, ? super R, ? extends R> fn){
+        if(stream.isEmpty())
+            return identity;
+        else
+            return fn.apply(stream.head(),foldRight(stream.tail(),identity,fn));
+    }
+
+    public static <T,R> R foldRight(Stream<T> stream,R identity, BiFunction<? super T, ? super R, ? extends R> p){
+        class Step{
+            public Trampoline<R> loop(Stream<T> s, Function<? super R, ? extends Trampoline<R>> fn){
+                   if (s.isEmpty())
+                       return fn.apply(identity);
+                   return Trampoline.more(()->loop(s.tail(), rem -> Trampoline.more(() -> fn.apply(p.apply(s.head(), rem)))));
+
+            }
+        }
+        return new Step().loop(stream,i->Trampoline.done(i)).result();
+    }
+
+
+
     public static <T> AnyMSeq<stream,T> anyM(Stream<T> option) {
         return AnyM.ofSeq(option, stream.INSTANCE);
     }
@@ -387,18 +463,23 @@ public class Streams {
                 }
 
                 @Override
+                public <T> MonadRec<stream> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<stream>> monadPlus(Monoid<Higher<stream, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<stream>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<stream> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<stream>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<stream> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -619,7 +700,7 @@ public class Streams {
 
             };
             BiFunction<Applicative<C2>,Higher<stream,Higher<C2, T>>,Higher<C2, Higher<stream,T>>> sequenceNarrow  =
-                    (a,b) -> StreamKind.widen2(sequenceFn.apply(a, StreamKind.narrowK(b)));
+                    (a,b) -> StreamKind.widen2(sequenceFn.apply(a, narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
 
@@ -639,9 +720,32 @@ public class Streams {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<stream> foldable(){
-            BiFunction<Monoid<T>,Higher<stream,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<stream,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(StreamKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<stream>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<stream, T> ds) {
+                    return Streams.foldRight(narrowK(ds),monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<stream, T> ds) {
+                    return narrowK(ds).foldLeft(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<stream, T> nestedA) {
+                    return Streams.foldRight(narrowK(nestedA),mb.zero(),(a,b)->mb.apply(b,fn.apply(a)));
+                }
+            };
+        }
+
+        public static <T> MonadRec<stream> monadRec(){
+            return new MonadRec<stream>(){
+
+                @Override
+                public <T, R> Higher<stream, R> tailRec(T initial, Function<? super T, ? extends Higher<stream, ? extends Xor<T, R>>> fn) {
+                    return widen(Streams.tailRecXor(initial,fn.andThen(StreamKind::narrowK)));
+                }
+            };
         }
 
         private static  <T> StreamKind<T> concat(StreamKind<T> l1, StreamKind<T> l2){
@@ -730,10 +834,10 @@ public class Streams {
             StreamKind<Higher<Higher<xor,S>, P>> y = (StreamKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<stream,Higher<reader,S>, T> reader(Stream<Reader<S, T>> nested){
+        public static <S,T> Nested<stream,Higher<reader,S>, T> reader(Stream<Reader<S, T>> nested, S defaultValue){
             StreamKind<Reader<S, T>> x = widen(nested);
             StreamKind<Higher<Higher<reader,S>, T>> y = (StreamKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<stream,Higher<Witness.tryType,S>, P> cyclopsTry(Stream<cyclops.control.Try<P, S>> nested){
             StreamKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -787,11 +891,11 @@ public class Streams {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,stream, T> reader(Reader<S, Stream<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,stream, T> reader(Reader<S, Stream<T>> nested, S defaultValue){
 
             Reader<S, Higher<stream, T>>  x = nested.map(StreamKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,stream, P> cyclopsTry(cyclops.control.Try<Stream<P>, S> nested){
             cyclops.control.Try<Higher<stream,P>, S> x = nested.map(StreamKind::widenK);

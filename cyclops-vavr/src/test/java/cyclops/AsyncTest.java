@@ -52,7 +52,7 @@ public class AsyncTest {
 
         public AnyMValue<W,Boolean> process(){
             return worker.get()
-                    .map(s->s.toUpperCase())
+                    .map(String::toUpperCase)
                     .peek(System.out::println)
                     .flatMap(worker::save)
                     .peek(System.out::println);

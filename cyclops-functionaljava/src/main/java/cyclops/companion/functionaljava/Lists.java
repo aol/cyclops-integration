@@ -50,6 +50,55 @@ import static com.aol.cyclops.functionaljava.hkt.ListKind.widen;
 
 public class Lists {
 
+    public static  <T,R> List<R> tailRec(T initial, Function<? super T, ? extends List<? extends Either<T, R>>> fn) {
+        List<Either<T, R>> next = List.list(Either.left(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.bind(e -> e.either(s -> {
+                        newValue[0]=true;
+                        return (List<Either<T,R>>)fn.apply(s);
+                        },
+                    p -> {
+                        newValue[0]=false;
+                        return List.list(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Either::isRight).map(e->e.right()
+                                                    .iterator()
+                                                     .next());
+    }
+    public static  <T,R> List<R> tailRecXor(T initial, Function<? super T, ? extends List<? extends Xor<T, R>>> fn) {
+        List<Xor<T, R>> next = List.arrayList(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.bind(e -> e.visit(s -> {
+
+                        newValue[0]=true;
+                        return (List<Xor<T,R>>)fn.apply(s);
+
+
+                        },
+                    p -> {
+                        Xor<T, R> x = e;
+                        newValue[0]=false;
+                        return List.arrayList(x);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).map(Xor::get);
+    }
+
     public static  <W1,T> Coproduct<W1,list,T> coproduct(List<T> list, InstanceDefinitions<W1> def1){
         return Coproduct.of(Xor.primary(widen(list)),def1, Instances.definitions());
     }
@@ -381,18 +430,23 @@ public class Lists {
                 }
 
                 @Override
+                public <T> MonadRec<list> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<list>> monadPlus(Monoid<Higher<list, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<list>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<list> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<list>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<list> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -549,6 +603,14 @@ public class Lists {
 
             return General.monadZero(monad(), widen(List.list()));
         }
+        public static <T,R> MonadRec<list> monadRec(){
+            return new MonadRec<list>() {
+                @Override
+                public <T, R> Higher<list, R> tailRec(T initial, Function<? super T, ? extends Higher<list, ? extends Xor<T, R>>> fn) {
+                    return widen(Lists.tailRecXor(initial,fn.andThen(ListKind::narrow)));
+                }
+            };
+        }
         /**
          * <pre>
          * {@code
@@ -634,9 +696,23 @@ public class Lists {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<list> foldable(){
-            BiFunction<Monoid<T>,Higher<list,T>,T> foldRightFn =  (m, l)-> ListX.fromIterable(ListKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<list,T>,T> foldLeftFn = (m, l)-> ListX.fromIterable(ListKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<list>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<list, T> ds) {
+                    return ListKind.narrowK(ds).foldRight((a,b)->monoid.apply(a,b),monoid.zero());
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<list, T> ds) {
+                    return ListKind.narrowK(ds).foldLeft((a,b)->monoid.apply(a,b),monoid.zero());
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<list, T> ds) {
+                    return ListKind.narrowK(ds).foldLeft((a,b)->mb.apply(a,fn.apply(b)),mb.zero());
+                }
+            };
+
         }
 
         private static  <T> ListKind<T> concat(ListKind<T> l1, ListKind<T> l2){
@@ -726,10 +802,10 @@ public class Lists {
             ListKind<Higher<Higher<xor,S>, P>> y = (ListKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<list,Higher<reader,S>, T> reader(List<Reader<S, T>> nested){
+        public static <S,T> Nested<list,Higher<reader,S>, T> reader(List<Reader<S, T>> nested, S defaultValue){
             ListKind<Reader<S, T>> x = widen(nested);
             ListKind<Higher<Higher<reader,S>, T>> y = (ListKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<list,Higher<Witness.tryType,S>, P> cyclopsTry(List<cyclops.control.Try<P, S>> nested){
             ListKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -784,11 +860,11 @@ public class Lists {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,list, T> reader(Reader<S, List<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,list, T> reader(Reader<S, List<T>> nested,S defaultValue){
 
             Reader<S, Higher<list, T>>  x = nested.map(ListKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,list, P> cyclopsTry(cyclops.control.Try<List<P>, S> nested){
             cyclops.control.Try<Higher<list,P>, S> x = nested.map(ListKind::widenK);

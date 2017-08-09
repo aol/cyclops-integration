@@ -35,7 +35,6 @@ public class NestedTest {
         Higher<list, Integer> res = ListNested
                                          .option(List.of(Option.some(1)))
                                          .map(i -> i * 20)
-                                         .foldsUnsafe()
                                          .foldLeft(Monoids.intMax);
         List<Integer> fi = ListKind.narrow(res);
         assertThat(fi.get(0),equalTo(20));
@@ -44,7 +43,6 @@ public class NestedTest {
     public void streamEither(){
         Higher<stream, Integer> res = StreamNested.either(Stream.of(Either.right(1)))
                                                   .map(i -> i * 20)
-                                                  .foldsUnsafe()
                                                   .foldLeft(Monoids.intMax);
         Stream<Integer> fi = StreamKind.narrow(res);
         assertThat(fi.get(0),equalTo(20));
@@ -55,8 +53,7 @@ public class NestedTest {
         Nested<option,list,Integer> optList  = OptionNested.list(Option.some(List.ofAll(1,10,2,3)))
                                                                        .map(i -> i * 20);
 
-        Option<Integer> opt  = optList.foldsUnsafe()
-                                      .foldLeft(Monoids.intMax)
+        Option<Integer> opt  = optList.foldLeft(Monoids.intMax)
                                       .convert(OptionKind::narrowK);
 
         assertThat(opt,equalTo(Option.some(200)));

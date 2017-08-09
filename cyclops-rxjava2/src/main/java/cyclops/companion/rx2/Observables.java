@@ -1,6 +1,6 @@
 package cyclops.companion.rx2;
 
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
@@ -39,12 +39,14 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import io.reactivex.*;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 
 import static com.aol.cyclops.rx2.hkt.ObservableKind.widen;
+import static jdk.nashorn.internal.objects.NativeArray.reduce;
 
 
 /**
@@ -67,6 +69,27 @@ public class Observables {
     }
     public static <T,W extends WitnessType<W>> AnyM<W,Observable<T>> fromStream(AnyM<W,Stream<T>> anyM){
         return anyM.map(s->fromStream(s));
+    }
+
+    public static  <T,R> Observable<R> tailRec(T initial, Function<? super T, ? extends Observable<? extends Xor<T, R>>> fn) {
+        Observable<Xor<T, R>> next = Observable.just(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return Observable.just(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).map(Xor::get);
     }
     public static <T> Observable<T> raw(AnyM<observable,T> anyM){
         return Rx2Witness.observable(anyM);
@@ -652,18 +675,23 @@ public class Observables {
                 }
 
                 @Override
+                public <T> MonadRec<observable> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> cyclops.control.Maybe<MonadPlus<observable>> monadPlus(Monoid<Higher<observable, T>> m) {
                     return cyclops.control.Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> cyclops.control.Maybe<Traverse<observable>> traverse() {
-                    return cyclops.control.Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<observable> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> cyclops.control.Maybe<Foldable<observable>> foldable() {
-                    return cyclops.control.Maybe.just(Instances.foldable());
+                public <T> Foldable<observable> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -838,6 +866,14 @@ public class Observables {
             Monoid<Higher<observable,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static <T> MonadRec<observable> monadRec(){
+            return new MonadRec<observable>() {
+                @Override
+                public <T, R> Higher<observable, R> tailRec(T initial, Function<? super T, ? extends Higher<observable, ? extends Xor<T, R>>> fn) {
+                    return widen(Observables.tailRec(initial,fn.andThen(ObservableKind::narrowK).andThen(o->o.narrow())));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -902,9 +938,30 @@ public class Observables {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<observable> foldable(){
-            BiFunction<Monoid<T>,Higher<observable,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(ObservableKind.narrowK(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<observable,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(ObservableKind.narrowK(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<observable>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<observable, T> ds) {
+                    return ReactiveSeq.fromPublisher(ObservableKind.narrowK(ds)).foldRight(monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<observable, T> ds) {
+                    return ObservableKind.narrowK(ds)
+                            .narrow()
+                            .reduce(monoid.zero(), (a, b) -> monoid.apply(a, b))
+                            .blockingGet();
+
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<observable, T> nestedA) {
+                    return ObservableKind.narrowK(nestedA)
+                            .narrow()
+                            .reduce(mb.zero(), (a, b) -> mb.apply(a, fn.apply(b)))
+                            .blockingGet();
+                }
+            };
+
         }
 
         private static  <T> ObservableKind<T> concat(ObservableKind<T> l1, ObservableKind<T> l2){
@@ -992,10 +1049,10 @@ public class Observables {
             ObservableKind<Higher<Higher<Witness.xor,S>, P>> y = (ObservableKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<observable,Higher<Witness.reader,S>, T> reader(Observable<Reader<S, T>> nested){
+        public static <S,T> Nested<observable,Higher<Witness.reader,S>, T> reader(Observable<Reader<S, T>> nested, S defaultValue){
             ObservableKind<Reader<S, T>> x = widen(nested);
             ObservableKind<Higher<Higher<Witness.reader,S>, T>> y = (ObservableKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<observable,Higher<Witness.tryType,S>, P> cyclopsTry(Observable<cyclops.control.Try<P, S>> nested){
             ObservableKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -1050,11 +1107,11 @@ public class Observables {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<Witness.reader,S>,observable, T> reader(Reader<S, Observable<T>> nested){
+        public static <S,T> Nested<Higher<Witness.reader,S>,observable, T> reader(Reader<S, Observable<T>> nested, S defaultValue){
 
             Reader<S, Higher<observable, T>>  x = nested.map(ObservableKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,observable, P> cyclopsTry(cyclops.control.Try<Observable<P>, S> nested){
             cyclops.control.Try<Higher<observable,P>, S> x = nested.map(ObservableKind::widenK);

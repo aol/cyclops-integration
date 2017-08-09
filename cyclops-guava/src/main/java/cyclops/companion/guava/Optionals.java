@@ -5,7 +5,6 @@ import com.google.common.collect.FluentIterable;
 import cyclops.async.Future;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
-import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 import cyclops.control.Reader;
@@ -31,7 +30,6 @@ import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.OptionalT;
-import cyclops.monads.transformers.StreamT;
 import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
@@ -54,7 +52,6 @@ import java.util.stream.Stream;
 
 import static com.aol.cyclops.guava.hkt.FluentIterableKind.widen;
 import static com.aol.cyclops.guava.hkt.OptionalKind.widen;
-import static cyclops.companion.Streams.StreamKind.*;
 
 
 public class Optionals {
@@ -71,7 +68,18 @@ public class Optionals {
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,optional,T> xorMAbsent(){
         return XorM.right(anyM(Optional.absent()));
     }
-
+    public static <T, R> Optional< R> tailRec(T initial, Function<? super T, ? extends Optional<? extends Xor<T, R>>> fn) {
+        Optional<? extends Xor<T, R>> next[] = new Optional[1];
+        next[0] = Optional.of(Xor.secondary(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].transform(p -> p.visit(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).or(false);
+        } while (cont);
+        return next[0].transform(Xor::get);
+    }
     /**
      * <pre>
      * {@code
@@ -678,18 +686,23 @@ public class Optionals {
                 }
 
                 @Override
+                public <T> MonadRec<optional> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<optional>> monadPlus(Monoid<Higher<optional, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<optional>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<optional> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<optional>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<optional> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -828,6 +841,14 @@ public class Optionals {
             BiFunction<Higher<optional,T>,Function<? super T, ? extends Higher<optional,R>>,Higher<optional,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
+        public static <T,R> MonadRec<optional> monadRec(){
+            return new MonadRec<optional>() {
+                @Override
+                public <T, R> Higher<optional, R> tailRec(T initial, Function<? super T, ? extends Higher<optional, ? extends Xor<T, R>>> fn) {
+                    return widen(Optionals.tailRec(initial,fn.andThen(OptionalKind::narrow)));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -918,9 +939,24 @@ public class Optionals {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<optional> foldable(){
-            BiFunction<Monoid<T>,Higher<optional,T>,T> foldRightFn =  (m, l)-> OptionalKind.narrow(l).or(m.zero());
-            BiFunction<Monoid<T>,Higher<optional,T>,T> foldLeftFn = (m, l)-> OptionalKind.narrow(l).or(m.zero());
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<optional>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<optional, T> ds) {
+                    return OptionalKind.narrow(ds).or(monoid.zero());
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<optional, T> ds) {
+                    return OptionalKind.narrow(ds).or(monoid.zero());
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<optional, T> nestedA) {
+                    Optional<R> x = OptionalKind.narrow(nestedA).transform(a -> fn.apply(a));
+                    return x.or(mb.zero());
+                }
+            };
+
         }
         public static <T> Comonad<optional> comonad(){
             Function<? super Higher<optional, T>, ? extends T> extractFn = maybe -> maybe.convert(OptionalKind::narrow).get();
@@ -997,10 +1033,10 @@ public class Optionals {
             OptionalKind<Higher<Higher<xor,S>, P>> y = (OptionalKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<optional,Higher<reader,S>, T> reader(Optional<Reader<S, T>> nested){
+        public static <S,T> Nested<optional,Higher<reader,S>, T> reader(Optional<Reader<S, T>> nested, S defaultValue){
             OptionalKind<Reader<S, T>> x = widen(nested);
             OptionalKind<Higher<Higher<reader,S>, T>> y = (OptionalKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<optional,Higher<Witness.tryType,S>, P> cyclopsTry(Optional<cyclops.control.Try<P, S>> nested){
             OptionalKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -1054,11 +1090,11 @@ public class Optionals {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,optional, T> reader(Reader<S, Optional<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,optional, T> reader(Reader<S, Optional<T>> nested, S defaultValue){
 
             Reader<S, Higher<optional, T>>  x = nested.map(OptionalKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,optional, P> cyclopsTry(cyclops.control.Try<Optional<P>, S> nested){
             cyclops.control.Try<Higher<optional,P>, S> x = nested.map(OptionalKind::widenK);

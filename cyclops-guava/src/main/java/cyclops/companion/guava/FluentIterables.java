@@ -29,14 +29,13 @@ import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
-import io.vavr.collection.List;
-import io.vavr.collection.Stream;
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
+import java.util.stream.Stream;
 
 import static com.aol.cyclops.guava.hkt.FluentIterableKind.widen;
 
@@ -56,6 +55,26 @@ public class FluentIterables {
     }
     public static <T,W extends WitnessType<W>> StreamT<W, T> liftM(FluentIterable<T> opt, W witness) {
         return StreamT.of(witness.adapter().unit(ReactiveSeq.fromIterable(opt)));
+    }
+    public static  <T,R> FluentIterable<R> tailRec(T initial, Function<? super T, ? extends FluentIterable<? extends Xor<T, R>>> fn) {
+        FluentIterable<Xor<T, R>> next = FluentIterable.of(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.transformAndConcat(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return FluentIterable.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).transform(Xor::get);
     }
 
     /**
@@ -395,18 +414,23 @@ public class FluentIterables {
                 }
 
                 @Override
+                public <T> MonadRec<fluentIterable> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<fluentIterable>> monadPlus(Monoid<Higher<fluentIterable, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<fluentIterable>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<fluentIterable> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<fluentIterable>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<fluentIterable> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -563,6 +587,15 @@ public class FluentIterables {
             Supplier<Higher<fluentIterable, T>> zero = ()-> widen(FluentIterable.of());
             return General.<fluentIterable,T,R>monadZero(monad(), zero,filter);
         }
+
+        public static <T> MonadRec<fluentIterable> monadRec(){
+            return new MonadRec<fluentIterable>() {
+                @Override
+                public <T, R> Higher<fluentIterable, R> tailRec(T initial, Function<? super T, ? extends Higher<fluentIterable, ? extends Xor<T, R>>> fn) {
+                    return widen(FluentIterables.tailRec(initial,fn.andThen(FluentIterableKind::narrow)));
+                }
+            };
+        }
         /**
          * <pre>
          * {@code
@@ -644,9 +677,26 @@ public class FluentIterables {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<fluentIterable> foldable(){
-            BiFunction<Monoid<T>,Higher<fluentIterable,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromPublisher(FluentIterableKind.narrowK(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<fluentIterable,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromPublisher(FluentIterableKind.narrowK(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<fluentIterable>() {
+                @Override
+                public <T> T foldRight(Monoid<T> m, Higher<fluentIterable, T> ds) {
+                    return ReactiveSeq.fromPublisher(FluentIterableKind.narrowK(ds)).foldRight(m);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<fluentIterable, T> ds) {
+                    return FluentIterableKind.narrow(ds).stream().reduce(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<fluentIterable, T> ds) {
+                    Stream<T> s = FluentIterableKind.narrow(ds).stream();
+                    Stream<R> x = s.map(a -> fn.apply(a));
+                    return x.reduce(mb.zero(),mb);
+
+                }
+            };
+
         }
 
         private static  <T> FluentIterableKind<T> concat(FluentIterableKind<T> l1, FluentIterableKind<T> l2){
@@ -720,10 +770,10 @@ public class FluentIterables {
             FluentIterableKind<Higher<Higher<xor,S>, P>> y = (FluentIterableKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<fluentIterable,Higher<reader,S>, T> reader(FluentIterable<Reader<S, T>> nested){
+        public static <S,T> Nested<fluentIterable,Higher<reader,S>, T> reader(FluentIterable<Reader<S, T>> nested, S defaultValue){
             FluentIterableKind<Reader<S, T>> x = widen(nested);
             FluentIterableKind<Higher<Higher<reader,S>, T>> y = (FluentIterableKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<fluentIterable,Higher<Witness.tryType,S>, P> cyclopsTry(FluentIterable<cyclops.control.Try<P, S>> nested){
             FluentIterableKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -782,11 +832,11 @@ public class FluentIterables {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,fluentIterable, T> reader(Reader<S, FluentIterable<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,fluentIterable, T> reader(Reader<S, FluentIterable<T>> nested,S defaultValue){
 
             Reader<S, Higher<fluentIterable, T>>  x = nested.map(FluentIterableKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,fluentIterable, P> cyclopsTry(cyclops.control.Try<FluentIterable<P>, S> nested){
             cyclops.control.Try<Higher<fluentIterable,P>, S> x = nested.map(FluentIterableKind::widenK);

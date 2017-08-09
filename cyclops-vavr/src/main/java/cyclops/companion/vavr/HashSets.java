@@ -46,6 +46,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 
+import static com.aol.cyclops.vavr.hkt.HashSetKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.HashSetKind.widen;
 
 
@@ -66,6 +67,49 @@ public class HashSets {
     public static <T> AnyMSeq<hashSet,T> anyM(HashSet<T> option) {
         return AnyM.ofSeq(option, hashSet.INSTANCE);
     }
+
+    public static  <T,R> HashSet<R> tailRec(T initial, Function<? super T, ? extends HashSet<? extends Either<T, R>>> fn) {
+        HashSet<Either<T, R>> next = HashSet.of(Either.left(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.fold(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return HashSet.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Either::isRight).map(Either::get);
+    }
+    public static  <T,R> HashSet<R> tailRecXor(T initial, Function<? super T, ? extends HashSet<? extends Xor<T, R>>> fn) {
+        HashSet<Xor<T, R>> next = HashSet.of(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return HashSet.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).map(Xor::get);
+    }
+
+
     /**
      * Perform a For Comprehension over a Set, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Publishers.
@@ -385,18 +429,23 @@ public class HashSets {
                 }
 
                 @Override
+                public <T> MonadRec<hashSet> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<hashSet>> monadPlus(Monoid<Higher<hashSet, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<hashSet>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<hashSet> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<hashSet>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<hashSet> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -531,6 +580,15 @@ public class HashSets {
             BiFunction<Higher<hashSet,T>,Function<? super T, ? extends Higher<hashSet,R>>,Higher<hashSet,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
+        public static <T> MonadRec<hashSet> monadRec(){
+            return new MonadRec<hashSet>(){
+
+                @Override
+                public <T, R> Higher<hashSet, R> tailRec(T initial, Function<? super T, ? extends Higher<hashSet, ? extends Xor<T, R>>> fn) {
+                    return widen(tailRecXor(initial,fn.andThen(HashSetKind::narrowK).andThen(hs->hs.narrow())));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -634,9 +692,22 @@ public class HashSets {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<hashSet> foldable(){
-            BiFunction<Monoid<T>,Higher<hashSet,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(HashSetKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<hashSet,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(HashSetKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<hashSet>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<hashSet, T> ds) {
+                    return narrowK(ds).foldRight(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<hashSet, T> ds) {
+                    return narrowK(ds).foldLeft(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<hashSet, T> nestedA) {
+                    return narrowK(nestedA).foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
+                }
+            };
         }
 
         private static  <T> HashSetKind<T> concat(HashSetKind<T> l1, HashSetKind<T> l2){
@@ -727,10 +798,10 @@ public class HashSets {
             HashSetKind<Higher<Higher<xor,S>, P>> y = (HashSetKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<hashSet,Higher<reader,S>, T> reader(HashSet<Reader<S, T>> nested){
+        public static <S,T> Nested<hashSet,Higher<reader,S>, T> reader(HashSet<Reader<S, T>> nested,S defaultValue){
             HashSetKind<Reader<S, T>> x = widen(nested);
             HashSetKind<Higher<Higher<reader,S>, T>> y = (HashSetKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<hashSet,Higher<Witness.tryType,S>, P> cyclopsTry(HashSet<cyclops.control.Try<P, S>> nested){
             HashSetKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -782,11 +853,11 @@ public class HashSets {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,hashSet, T> reader(Reader<S, HashSet<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,hashSet, T> reader(Reader<S, HashSet<T>> nested,S defaultValue){
 
             Reader<S, Higher<hashSet, T>>  x = nested.map(HashSetKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,hashSet, P> cyclopsTry(cyclops.control.Try<HashSet<P>, S> nested){
             cyclops.control.Try<Higher<hashSet,P>, S> x = nested.map(HashSetKind::widenK);

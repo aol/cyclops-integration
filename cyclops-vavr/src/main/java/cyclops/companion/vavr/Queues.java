@@ -1,5 +1,6 @@
 package cyclops.companion.vavr;
 
+import cyclops.collections.mutable.ListX;
 import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
@@ -47,6 +48,7 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+import static com.aol.cyclops.vavr.hkt.QueueKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.QueueKind.widen;
 
 
@@ -68,6 +70,49 @@ public class Queues {
     public static <T> AnyMSeq<queue,T> anyM(Queue<T> option) {
         return AnyM.ofSeq(option, queue.INSTANCE);
     }
+
+    public static  <T,R> Queue<R> tailRec(T initial, Function<? super T, ? extends Queue<? extends Either<T, R>>> fn) {
+        Queue<Either<T, R>> next = Queue.of(Either.left(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.fold(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return Queue.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Either::isRight).map(Either::get);
+    }
+    public static  <T,R> Queue<R> tailRecXor(T initial, Function<? super T, ? extends Queue<? extends Xor<T, R>>> fn) {
+        Queue<Xor<T, R>> next = Queue.of(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return Queue.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).map(Xor::get);
+    }
+
+
     /**
      * Perform a For Comprehension over a Queue, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Publishers.
@@ -385,18 +430,23 @@ public class Queues {
                 }
 
                 @Override
+                public <T> MonadRec<queue> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<queue>> monadPlus(Monoid<Higher<queue, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<queue>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<queue> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<queue>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<queue> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -533,6 +583,15 @@ public class Queues {
             BiFunction<Higher<queue,T>,Function<? super T, ? extends Higher<queue,R>>,Higher<queue,R>> flatMap = Instances::flatMap;
             return General.monad(zippingApplicative(), flatMap);
         }
+        public static <T> MonadRec<queue> monadRec(){
+            return new MonadRec<queue>(){
+
+                @Override
+                public <T, R> Higher<queue, R> tailRec(T initial, Function<? super T, ? extends Higher<queue, ? extends Xor<T, R>>> fn) {
+                    return widen(tailRecXor(initial,fn.andThen(QueueKind::narrowK).andThen(q->q.narrow())));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -638,9 +697,22 @@ public class Queues {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<queue> foldable(){
-            BiFunction<Monoid<T>,Higher<queue,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(QueueKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<queue,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(QueueKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<queue>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<queue, T> ds) {
+                    return narrowK(ds).narrow().foldRight(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<queue, T> ds) {
+                    return narrowK(ds).narrow().foldLeft(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<queue, T> nestedA) {
+                    return narrowK(nestedA).narrow().foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
+                }
+            };
         }
 
         private static  <T> QueueKind<T> concat(QueueKind<T> l1, QueueKind<T> l2){
@@ -730,10 +802,10 @@ public class Queues {
             QueueKind<Higher<Higher<xor,S>, P>> y = (QueueKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<queue,Higher<reader,S>, T> reader(Queue<Reader<S, T>> nested){
+        public static <S,T> Nested<queue,Higher<reader,S>, T> reader(Queue<Reader<S, T>> nested, S defaultValue){
             QueueKind<Reader<S, T>> x = widen(nested);
             QueueKind<Higher<Higher<reader,S>, T>> y = (QueueKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<queue,Higher<Witness.tryType,S>, P> cyclopsTry(Queue<cyclops.control.Try<P, S>> nested){
             QueueKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -786,11 +858,11 @@ public class Queues {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,queue, T> reader(Reader<S, Queue<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,queue, T> reader(Reader<S, Queue<T>> nested,S defaultValue){
 
             Reader<S, Higher<queue, T>>  x = nested.map(QueueKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,queue, P> cyclopsTry(cyclops.control.Try<Queue<P>, S> nested){
             cyclops.control.Try<Higher<queue,P>, S> x = nested.map(QueueKind::widenK);

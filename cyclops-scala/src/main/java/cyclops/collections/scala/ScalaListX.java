@@ -53,6 +53,7 @@ public class ScalaListX<T> extends AbstractList<T>implements PStack<T>, HasScala
     }
     public LazyLinkedListX<T> plusLoop(int max, IntFunction<T> value) {
 
+
         List<T> toUse = list;
         for (int i = 0; i < max; i++) {
             toUse = toUse.$colon$colon(value.apply(i));

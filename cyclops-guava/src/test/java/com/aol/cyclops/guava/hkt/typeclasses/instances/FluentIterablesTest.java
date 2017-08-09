@@ -31,7 +31,6 @@ public class FluentIterablesTest {
         Higher<fluentIterable, Integer> res = FluentIterables.FluentIterableNested
                 .optional(FluentIterable.of(com.google.common.base.Optional.of(1)))
                 .map(i -> i * 20)
-                .foldsUnsafe()
                 .foldLeft(Monoids.intMax);
         FluentIterable<Integer> fi = FluentIterableKind.narrow(res);
         assertThat(fi.get(0),equalTo(20));
@@ -41,7 +40,6 @@ public class FluentIterablesTest {
         Higher<fluentIterable, Integer> res = FluentIterables.FluentIterableNested
                                                             .javaOptional(FluentIterable.of(Optional.of(1)))
                                                             .map(i -> i * 20)
-                                                            .foldsUnsafe()
                                                             .foldLeft(Monoids.intMax);
         FluentIterable<Integer> fi = FluentIterableKind.narrow(res);
         assertThat(fi.get(0),equalTo(20));
@@ -51,7 +49,6 @@ public class FluentIterablesTest {
         Higher<fluentIterable, Integer> res = FluentIterables.FluentIterableNested
                 .javaStream(FluentIterable.of(Stream.of(1)))
                 .map(i -> i * 20)
-                .foldsUnsafe()
                 .foldLeft(Monoids.intMax);
         FluentIterable<Integer> fi = FluentIterableKind.narrow(res);
         assertThat(fi.get(0),equalTo(20));
@@ -61,7 +58,6 @@ public class FluentIterablesTest {
         Higher<fluentIterable, Integer> res = FluentIterables.FluentIterableNested
                 .javaCompletableFuture(FluentIterable.of(CompletableFuture.completedFuture(1)))
                 .map(i -> i * 20)
-                .foldsUnsafe()
                 .foldLeft(Monoids.intMax);
         FluentIterable<Integer> fi = FluentIterableKind.narrow(res);
         assertThat(fi.get(0),equalTo(20));

@@ -58,6 +58,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 
+import static com.aol.cyclops.vavr.hkt.FutureKind.narrowK;
 import static com.aol.cyclops.vavr.hkt.FutureKind.widen;
 
 /**
@@ -84,6 +85,47 @@ public class Futures {
     }
     public static <T> AnyMValue<future,T> anyM(Future<T> future) {
         return AnyM.ofValue(future, VavrWitness.future.INSTANCE);
+    }
+
+    public static <T, R> Future<R> tailRec(T initial, Function<? super T, ? extends Future<  ? extends Either<T, R>>> fn) {
+        Future<? extends Either<T, R>> next[] = new Future[1];
+        next[0] = Future.of(()->Either.left(initial));
+        boolean cont = true;
+        do {
+
+            try{
+                next[0].get();
+            }catch(Throwable t){
+                cont= false;
+            }
+            if(cont) {
+                cont =  next[0].get().fold(s -> {
+                    next[0] = fn.apply(s);
+                    return true;
+                }, pr -> false);
+            }
+        } while (cont);
+        return next[0].map(Either::get);
+    }
+    public static <L, T, R> Future< R> tailRecXor(T initial, Function<? super T, ? extends Future< ? extends Xor<T, R>>> fn) {
+        Future<? extends Xor<T, R>> next[] = new Future[1];
+        next[0] = Future.of(()->Xor.secondary(initial));
+        boolean cont = true;
+        do {
+
+            try{
+              next[0].get();
+            }catch(Throwable t){
+                cont= false;
+            }
+            if(cont) {
+                cont = next[0].get().visit(s -> {
+                    next[0] = fn.apply(s);
+                    return true;
+                }, pr -> false);
+            }
+        } while (cont);
+        return next[0].map(Xor::get);
     }
 
     /**
@@ -769,18 +811,23 @@ public class Futures {
                 }
 
                 @Override
+                public <T> MonadRec<future> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<future>> monadPlus(Monoid<Higher<future, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<future>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<future> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<future>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<future> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -916,6 +963,14 @@ public class Futures {
             BiFunction<Higher<future,T>,Function<? super T, ? extends Higher<future,R>>,Higher<future,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
+        public static <T,R> MonadRec<future> monadRec(){
+            return new MonadRec<future>() {
+                @Override
+                public <T, R> Higher<future, R> tailRec(T initial, Function<? super T, ? extends Higher<future, ? extends Xor<T, R>>> fn) {
+                    return widen(Futures.tailRecXor(initial,fn.andThen(FutureKind::narrowK)));
+                }
+            };
+        }
         /**
          *
          * <pre>
@@ -1006,9 +1061,24 @@ public class Futures {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<future> foldable(){
-            BiFunction<Monoid<T>,Higher<future,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), FutureKind.narrow(l).get());
-            BiFunction<Monoid<T>,Higher<future,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), FutureKind.narrow(l).get());
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<future>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<future, T> ds) {
+                    return narrowK(ds).recover(e->monoid.zero()).get();
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<future, T> ds) {
+                    return narrowK(ds).recover(e->monoid.zero()).get();
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<future, T> nestedA) {
+                   return narrowK(nestedA).<R>map(fn).recover(e -> mb.zero()).get();
+                }
+            };
+
+
         }
         public static <T> Comonad<future> comonad(){
             Function<? super Higher<future, T>, ? extends T> extractFn = maybe -> maybe.convert(FutureKind::narrow).get();
@@ -1101,10 +1171,10 @@ public class Futures {
             FutureKind<Higher<Higher<xor,S>, P>> y = (FutureKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<future,Higher<reader,S>, T> reader(Future<Reader<S, T>> nested){
+        public static <S,T> Nested<future,Higher<reader,S>, T> reader(Future<Reader<S, T>> nested,S defaultValue){
             FutureKind<Reader<S, T>> x = widen(nested);
             FutureKind<Higher<Higher<reader,S>, T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<future,Higher<Witness.tryType,S>, P> cyclopsTry(Future<cyclops.control.Try<P, S>> nested){
             FutureKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -1157,11 +1227,11 @@ public class Futures {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,future, T> reader(Reader<S, Future<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,future, T> reader(Reader<S, Future<T>> nested,S defaultValue){
 
             Reader<S, Higher<future, T>>  x = nested.map(FutureKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,future, P> cyclopsTry(cyclops.control.Try<Future<P>, S> nested){
             cyclops.control.Try<Higher<future,P>, S> x = nested.map(FutureKind::widenK);

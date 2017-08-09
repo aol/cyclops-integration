@@ -80,6 +80,20 @@ public class Maybes {
         return XorM.right(anyM(type));
     }
 
+
+    public static <T, R> Maybe< R> tailRec(T initial, Function<? super T, ? extends Maybe<? extends Xor<T, R>>> fn) {
+        Maybe<? extends Xor<T, R>> next[] = new Maybe[1];
+        next[0] = Maybe.just(Xor.secondary(initial));
+        boolean cont = true;
+        do {
+            cont = next[0].map(p -> p.visit(s -> {
+                next[0] = fn.apply(s);
+                return true;
+            }, pr -> false)).blockingGet(false);
+        } while (cont);
+        return next[0].map(Xor::get);
+    }
+
     public static <T> Maybe<T> fromPublisher(Publisher<T> maybe){
         return Single.fromPublisher(maybe).toMaybe();
     }
@@ -535,18 +549,23 @@ public class Maybes {
                 }
 
                 @Override
+                public <T> MonadRec<maybe> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> cyclops.control.Maybe<MonadPlus<maybe>> monadPlus(Monoid<Higher<maybe, T>> m) {
                     return cyclops.control.Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> cyclops.control.Maybe<Traverse<maybe>> traverse() {
-                    return cyclops.control.Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<maybe> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> cyclops.control.Maybe<Foldable<maybe>> foldable() {
-                    return cyclops.control.Maybe.just(Instances.foldable());
+                public <T> Foldable<maybe> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -682,6 +701,14 @@ public class Maybes {
             BiFunction<Higher<maybe,T>,Function<? super T, ? extends Higher<maybe,R>>,Higher<maybe,R>> flatMap = Instances::flatMap;
             return General.monad(applicative(), flatMap);
         }
+        public static <T> MonadRec<maybe> monadRec(){
+            return new MonadRec<maybe>() {
+                @Override
+                public <T, R> Higher<maybe, R> tailRec(T initial, Function<? super T, ? extends Higher<maybe, ? extends Xor<T, R>>> fn) {
+                    return MaybeKind.widen(Maybes.tailRec(initial,fn.andThen(MaybeKind::narrowK).andThen(m->m.narrow())));
+                };
+            };
+        }
         /**
          *
          * <pre>
@@ -775,9 +802,23 @@ public class Maybes {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<maybe> foldable(){
-            BiFunction<Monoid<T>,Higher<maybe,T>,T> foldRightFn =  (m, l)-> m.apply(m.zero(), MaybeKind.narrow(l).blockingGet());
-            BiFunction<Monoid<T>,Higher<maybe,T>,T> foldLeftFn = (m, l)->  m.apply(m.zero(), MaybeKind.narrow(l).blockingGet());
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<maybe>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<maybe, T> ds) {
+                    return monoid.apply(monoid.zero(),MaybeKind.narrow(ds).blockingGet());
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<maybe, T> ds) {
+                    return monoid.apply(monoid.zero(),MaybeKind.narrow(ds).blockingGet());
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<maybe, T> nestedA) {
+                    return mb.apply(mb.zero(),MaybeKind.narrow(nestedA).map(a->fn.apply(a)).blockingGet());
+                }
+            };
+
         }
         public static <T> Comonad<maybe> comonad(){
             Function<? super Higher<maybe, T>, ? extends T> extractFn = maybe -> maybe.convert(MaybeKind::narrow).blockingGet();
@@ -861,10 +902,10 @@ public class Maybes {
             MaybeKind<Higher<Higher<xor,S>, P>> y = (MaybeKind)x;
             return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
         }
-        public static <S,T> Nested<maybe,Higher<reader,S>, T> reader(Maybe<Reader<S, T>> nested){
+        public static <S,T> Nested<maybe,Higher<reader,S>, T> reader(Maybe<Reader<S, T>> nested, S defaultValue){
             MaybeKind<Reader<S, T>> x = widen(nested);
             MaybeKind<Higher<Higher<reader,S>, T>> y = (MaybeKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
         }
         public static <S extends Throwable, P> Nested<maybe,Higher<tryType,S>, P> cyclopsTry(Maybe<cyclops.control.Try<P, S>> nested){
             MaybeKind<cyclops.control.Try<P, S>> x = widen(nested);
@@ -919,11 +960,11 @@ public class Maybes {
 
             return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
         }
-        public static <S,T> Nested<Higher<reader,S>,maybe, T> reader(Reader<S, Maybe<T>> nested){
+        public static <S,T> Nested<Higher<reader,S>,maybe, T> reader(Reader<S, Maybe<T>> nested,S defaultValue){
 
             Reader<S, Higher<maybe, T>>  x = nested.map(MaybeKind::widenK);
 
-            return Nested.of(x,Reader.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
         }
         public static <S extends Throwable, P> Nested<Higher<tryType,S>,maybe, P> cyclopsTry(cyclops.control.Try<Maybe<P>, S> nested){
             cyclops.control.Try<Higher<maybe,P>, S> x = nested.map(MaybeKind::widenK);

@@ -1,7 +1,9 @@
 package cyclops.companion.vavr;
 
 import com.aol.cyclops.vavr.hkt.ListKind;
+import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
+import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.vector;
@@ -28,11 +30,15 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import io.vavr.collection.List;
 import io.vavr.collection.Vector;
+import io.vavr.control.Either;
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.function.*;
+
+import static com.aol.cyclops.vavr.hkt.VectorKind.narrowK;
+import static com.aol.cyclops.vavr.hkt.VectorKind.widen;
 
 
 public class Vectors {
@@ -44,6 +50,48 @@ public class Vectors {
     public static <T> AnyMSeq<vector,T> anyM(Vector<T> option) {
         return AnyM.ofSeq(option, vector.INSTANCE);
     }
+
+    public static  <T,R> Vector<R> tailRec(T initial, Function<? super T, ? extends Vector<? extends Either<T, R>>> fn) {
+        Vector<Either<T, R>> next = Vector.of(Either.left(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.fold(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return Vector.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Either::isRight).map(Either::get);
+    }
+    public static  <T,R> Vector<R> tailRecXor(T initial, Function<? super T, ? extends Vector<? extends Xor<T, R>>> fn) {
+        Vector<Xor<T, R>> next = Vector.of(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fn.apply(s); },
+                    p -> {
+                        newValue[0]=false;
+                        return Vector.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+
+        return next.filter(Xor::isPrimary).map(Xor::get);
+    }
+
     /**
      * Perform a For Comprehension over a Vector, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Publishers.
@@ -314,11 +362,11 @@ public class Vectors {
         });
     }
     public static <T> Active<vector,T> allTypeclasses(Vector<T> array){
-        return Active.of(VectorKind.widen(array), Vectors.Instances.definitions());
+        return Active.of(widen(array), Vectors.Instances.definitions());
     }
     public static <T,W2,R> Nested<vector,W2,R> mapM(Vector<T> array, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
         Vector<Higher<W2, R>> e = array.map(fn);
-        VectorKind<Higher<W2, R>> lk = VectorKind.widen(e);
+        VectorKind<Higher<W2, R>> lk = widen(e);
         return Nested.of(lk, Vectors.Instances.definitions(), defs);
     }
     /**
@@ -362,18 +410,23 @@ public class Vectors {
                 }
 
                 @Override
+                public <T> MonadRec<vector> monadRec() {
+                    return Instances.monadRec();
+                }
+
+                @Override
                 public <T> Maybe<MonadPlus<vector>> monadPlus(Monoid<Higher<vector, T>> m) {
                     return Maybe.just(Instances.monadPlus(m));
                 }
 
                 @Override
-                public <C2, T> Maybe<Traverse<vector>> traverse() {
-                    return Maybe.just(Instances.traverse());
+                public <C2, T> Traverse<vector> traverse() {
+                    return Instances.traverse();
                 }
 
                 @Override
-                public <T> Maybe<Foldable<vector>> foldable() {
-                    return Maybe.just(Instances.foldable());
+                public <T> Foldable<vector> foldable() {
+                    return Instances.foldable();
                 }
 
                 @Override
@@ -528,7 +581,7 @@ public class Vectors {
          */
         public static <T,R> MonadZero<vector> monadZero(){
 
-            return General.monadZero(monad(), VectorKind.widen(Vector.empty()));
+            return General.monadZero(monad(), widen(Vector.empty()));
         }
         /**
          * <pre>
@@ -543,7 +596,7 @@ public class Vectors {
          * @return Type class for combining Vectors by concatenation
          */
         public static <T> MonadPlus<vector> monadPlus(){
-            Monoid<VectorKind<T>> m = Monoid.of(VectorKind.widen(Vector.empty()), Instances::concat);
+            Monoid<VectorKind<T>> m = Monoid.of(widen(Vector.empty()), Instances::concat);
             Monoid<Higher<vector,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
@@ -571,7 +624,15 @@ public class Vectors {
             Monoid<Higher<vector,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
         }
+        public static <T> MonadRec<vector> monadRec(){
+            return new MonadRec<vector>(){
 
+                @Override
+                public <T, R> Higher<vector, R> tailRec(T initial, Function<? super T, ? extends Higher<vector, ? extends Xor<T, R>>> fn) {
+                    return widen(tailRecXor(initial,fn.andThen(VectorKind::narrowK).andThen(v->v.narrow())));
+                }
+            };
+        }
         /**
          * @return Type class for traversables with traverse / sequence operations
          */
@@ -579,12 +640,12 @@ public class Vectors {
 
             BiFunction<Applicative<C2>,VectorKind<Higher<C2, T>>,Higher<C2, VectorKind<T>>> sequenceFn = (ap, list) -> {
 
-                Higher<C2,VectorKind<T>> identity = ap.unit(VectorKind.widen(Vector.empty()));
+                Higher<C2,VectorKind<T>> identity = ap.unit(widen(Vector.empty()));
 
-                BiFunction<Higher<C2,VectorKind<T>>,Higher<C2,T>,Higher<C2,VectorKind<T>>> combineToVector =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> VectorKind.widen(VectorKind.narrow(a).append(b))),
+                BiFunction<Higher<C2,VectorKind<T>>,Higher<C2,T>,Higher<C2,VectorKind<T>>> combineToVector =   (acc, next) -> ap.apBiFn(ap.unit((a, b) -> widen(VectorKind.narrow(a).append(b))),
                         acc,next);
 
-                BinaryOperator<Higher<C2,VectorKind<T>>> combineVectors = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> VectorKind.widen(VectorKind.narrow(l1).appendAll(l2.narrow()))),a,b); ;
+                BinaryOperator<Higher<C2,VectorKind<T>>> combineVectors = (a, b)-> ap.apBiFn(ap.unit((l1, l2)-> widen(VectorKind.narrow(l1).appendAll(l2.narrow()))),a,b); ;
 
                 return ReactiveSeq.fromIterable(VectorKind.narrow(list))
                         .reduce(identity,
@@ -594,7 +655,7 @@ public class Vectors {
 
             };
             BiFunction<Applicative<C2>,Higher<vector,Higher<C2, T>>,Higher<C2, Higher<vector,T>>> sequenceNarrow  =
-                    (a,b) -> VectorKind.widen2(sequenceFn.apply(a, VectorKind.narrowK(b)));
+                    (a,b) -> VectorKind.widen2(sequenceFn.apply(a, narrowK(b)));
             return General.traverse(zippingApplicative(), sequenceNarrow);
         }
 
@@ -614,31 +675,44 @@ public class Vectors {
          * @return Type class for folding / reduction operations
          */
         public static <T> Foldable<vector> foldable(){
-            BiFunction<Monoid<T>,Higher<vector,T>,T> foldRightFn =  (m, l)-> ReactiveSeq.fromIterable(VectorKind.narrow(l)).foldRight(m);
-            BiFunction<Monoid<T>,Higher<vector,T>,T> foldLeftFn = (m, l)-> ReactiveSeq.fromIterable(VectorKind.narrow(l)).reduce(m);
-            return General.foldable(foldRightFn, foldLeftFn);
+            return new Foldable<vector>() {
+                @Override
+                public <T> T foldRight(Monoid<T> monoid, Higher<vector, T> ds) {
+                    return narrowK(ds).narrow().foldRight(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T> T foldLeft(Monoid<T> monoid, Higher<vector, T> ds) {
+                    return narrowK(ds).narrow().foldLeft(monoid.zero(),monoid);
+                }
+
+                @Override
+                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<vector, T> nestedA) {
+                    return narrowK(nestedA).narrow().foldRight(mb.zero(),(a,b)->mb.apply(fn.apply(a),b));
+                }
+            };
         }
 
         private static  <T> VectorKind<T> concat(VectorKind<T> l1, VectorKind<T> l2){
 
-            return VectorKind.widen(l1.appendAll(VectorKind.narrow(l2)));
+            return widen(l1.appendAll(VectorKind.narrow(l2)));
 
         }
 
         private static <T,R> VectorKind<R> ap(VectorKind<Function< T, R>> lt, VectorKind<T> list){
-            return VectorKind.widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toVector());
+            return widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toVector());
         }
         private static <T,R> Higher<vector,R> flatMap(Higher<vector,T> lt, Function<? super T, ? extends  Higher<vector,R>> fn){
-            return VectorKind.widen(VectorKind.narrow(lt).flatMap(fn.andThen(VectorKind::narrow)));
+            return widen(VectorKind.narrow(lt).flatMap(fn.andThen(VectorKind::narrow)));
         }
         private static <T,R> VectorKind<R> map(VectorKind<T> lt, Function<? super T, ? extends R> fn){
-            return VectorKind.widen(VectorKind.narrow(lt).map(in->fn.apply(in)));
+            return widen(VectorKind.narrow(lt).map(in->fn.apply(in)));
         }
         public static Unfoldable<vector> unfoldable(){
             return new Unfoldable<vector>() {
                 @Override
                 public <R, T> Higher<vector, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
-                    return VectorKind.widen(ReactiveSeq.unfold(b,fn).collect(Vector.collector()));
+                    return widen(ReactiveSeq.unfold(b,fn).collect(Vector.collector()));
 
                 }
             };
