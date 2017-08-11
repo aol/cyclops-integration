@@ -50,7 +50,8 @@ Asynchronously populate a Vavr Vector
                                   .to()
                                   .vectorX(LAZY)
                                   .type(VavrTypes.vector())
-                                  .map(this::expensiveOp);
+                                  .map(this::expensiveOp)
+				  .materialize();//kick of the async population
 
 /** Continue processing **/
 
