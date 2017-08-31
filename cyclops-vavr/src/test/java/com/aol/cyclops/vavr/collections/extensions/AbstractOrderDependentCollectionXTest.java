@@ -23,7 +23,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public abstract class AbstractOrderDependentCollectionXTest extends AbstractCollectionXTest {
-    
+
+
     @Test
     public void forEach2OD() {
 
