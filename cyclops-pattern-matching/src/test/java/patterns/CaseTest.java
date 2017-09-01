@@ -17,7 +17,7 @@ import static patterns.CaseClass2._CASE_;
  * Created by johnmcclean on 11/08/2017.
  */
 public class CaseTest {
-
+/**
     @Test
     public void test(){
 
@@ -52,4 +52,5 @@ public class CaseTest {
                                     female->"female");
         //female
     }
+    **/
 }

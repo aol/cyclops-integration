@@ -1,5 +1,6 @@
 package cyclops.collections.adt;
 
+import cyclops.companion.Monoids;
 import cyclops.stream.ReactiveSeq;
 import org.junit.Test;
 
@@ -22,6 +23,6 @@ public class ListTest {
 
     @Test
     public void foldRight(){
-        SafeList.fromStream(ReactiveSeq.range(0,10_000)).foldRight()
+        SafeList.fromStream(ReactiveSeq.range(0,100_000)).foldRight(Monoids.intSum);
     }
 }

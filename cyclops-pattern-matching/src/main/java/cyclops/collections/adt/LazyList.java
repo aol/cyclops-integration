@@ -8,6 +8,7 @@ import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
@@ -87,9 +88,9 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
         return cons(value,()->this);
     }
     default LazyList<T> prependAll(LazyList<T> value){
-        return this.match(cons->
+        return value.match(cons->
                         cons.foldRight(this,(a,b)->b.prepend(a))
-                ,nil->value);
+                ,nil->this);
     }
     default LazyList<T> appendAll(LazyList<T> append) {
         return this.match(cons->{
@@ -107,6 +108,9 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
         return acc;
     }
 
+    default String mkString(){
+        return stream().join(",","[","]");
+    }
 
     default Iterable<T> iterable(){
         return ()->new Iterator<T>() {
@@ -139,8 +143,11 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
         return foldRight(empty(), (a, l) -> l.prepend(fn.apply(a)));
     }
 
-    default <R> LazyList<R> flatMap(Function<? super T, ? extends LazyList<R>> fn) {
-        return foldRight(empty(), (a, l) -> fn.apply(a).prependAll(l));
+    default <R> LazyList<R> flatMap(Function<? super T, ? extends LazyList<? extends R>> fn) {
+        return this.match(cons->{
+            LazyList<R> l1 = (LazyList<R>)fn.apply(cons.head);
+            return l1.appendAll(cons.tail.get().flatMap(a -> fn.apply(a)));
+        },nil->empty());
     }
     int size();
 
@@ -198,8 +205,23 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
         }
 
         @Override
+        public int hashCode() {
+            return linkedListX().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if(obj instanceof LazyList)
+                return linkedListX().equals(((LazyList)obj).linkedListX());
+            return false;
+        }
+
+        @Override
         public <R> R match(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
             return fn1.apply(this);
+        }
+        public String toString(){
+            return mkString();
         }
     }
 
@@ -224,6 +246,11 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
         public <R> R match(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
             return fn2.apply(this);
         }
+        public String toString(){
+            return mkString();
+        }
+
+
     }
 
 }

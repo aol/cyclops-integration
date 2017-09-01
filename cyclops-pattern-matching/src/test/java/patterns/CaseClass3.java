@@ -1,7 +1,7 @@
 package patterns;
 
 import cyclops.function.Fn3;
-import cyclops.function.P3;
+import cyclops.patterns.P3;
 import lombok.Value;
 import org.jooq.lambda.tuple.Tuple1;
 import org.jooq.lambda.tuple.Tuple2;

@@ -204,7 +204,7 @@ public interface Match {
         return new Sealed2<BlockingQueue<T>, java.util.Queue<T>>() {
             @Override
             public <R> R match(Function<? super BlockingQueue<T>, ? extends R> fn1, Function<? super java.util.Queue<T>, ? extends R> fn2) {
-                return queue instanceof BlockingQueue ? fn1.apply((BlockingQueue) queue) : fn2.apply(queue);
+                return queue instanceof BlockingQueue ? fn1.apply((BlockingQueue<T>) queue) : fn2.apply(queue);
             }
         };
     }

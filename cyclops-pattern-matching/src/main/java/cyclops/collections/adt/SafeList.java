@@ -31,6 +31,7 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil> {
     default LinkedListX<T> linkedListX(){
         return LinkedListX.fromIterable(iterable());
     }
+
     static <T> SafeList<T> of(T... value){
         SafeList<T> result = empty();
         for(int i=value.length;i>0;i--){
@@ -72,9 +73,9 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil> {
         return cons(value,this);
     }
     default SafeList<T> prependAll(SafeList<T> value){
-        return this.match(cons->
-            cons.foldRight(this,(a,b)->b.prepend(a))
-        ,nil->value);
+        return value.match(cons->
+                        cons.foldRight(this,(a,b)->b.prepend(a))
+                ,nil->this);
     }
 
     default SafeList<T> take(final int num) {
@@ -207,6 +208,17 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil> {
                     break;
             }
             return result;
+        }
+        @Override
+        public int hashCode() {
+            return linkedListX().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if(obj instanceof LazyList)
+                return linkedListX().equals(((LazyList)obj).linkedListX());
+            return false;
         }
 
         @Override
