@@ -8,7 +8,6 @@ import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
@@ -49,6 +48,17 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
         return Nil.Instance;
     }
 
+    default Tuple2<LazyList<T>, LazyList<T>> span(Predicate<? super T> pred) {
+        return Tuple.tuple(takeWhile(pred), dropWhile(pred));
+    }
+    default Tuple2<LazyList<T>,LazyList<T>> splitBy(Predicate<? super T> test) {
+        return span(test.negate());
+    }
+    default LazyList<LazyList<T>> split(Predicate<? super T> test) {
+        LazyList<T> next = dropWhile(test);
+        Tuple2<LazyList<T>, LazyList<T>> split = next.splitBy(test);
+        return next.match(c->cons(split.v1,()->split.v2.split(test)),n->n);
+    }
     default LazyList<T> take(final int n) {
         if( n <= 0)
             return LazyList.Nil.Instance;
@@ -57,6 +67,27 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
         }
         return fromStream(ReactiveSeq.fromIterable(this.iterable()).take(n));
 
+    }
+    default LazyList<T> takeWhile(Predicate<? super T> p) {
+        return match(c->{
+            if(p.test(c.head)){
+                return cons(c.head,()->c.tail.get().takeWhile(p));
+            }else{
+                return empty();
+            }
+        },n->this);
+    }
+    default LazyList<T> dropWhile(Predicate<? super T> p) {
+        LazyList<T> current = this;
+        while(true && !current.isEmpty()){
+            current =  current.match(c->{
+                if(!p.test(c.head)){
+                    return LazyList.empty();
+                }
+                return c.tail.get();
+            },empty->empty);
+        }
+        return current;
     }
     default LazyList<T> drop(final int num) {
         LazyList<T> current = this;
