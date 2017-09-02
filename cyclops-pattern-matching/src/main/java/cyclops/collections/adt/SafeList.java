@@ -1,6 +1,9 @@
 package cyclops.collections.adt;
 
 
+import com.aol.cyclops2.types.Filters;
+import com.aol.cyclops2.types.foldable.Folds;
+import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.control.Trampoline;
 import cyclops.function.Monoid;
@@ -18,12 +21,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 //safe list implementation that does not support exceptional states
-public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil> {
+public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Folds<T>, Filters<T>, Transformable<T> {
 
     default ReactiveSeq<T> stream(){
         return ReactiveSeq.fromIterable(iterable());
@@ -127,10 +131,10 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil> {
     }
     <R> R foldRight(R zero, BiFunction<? super T, ? super R, ? extends R> f);
 
-    default <R> R foldLeft(R zero, BiFunction<? super T, ? super R, ? extends R> f){
+    default <R> R foldLeft(R zero, BiFunction< R, ? super T,  R> f){
         R acc= zero;
         for(T next : iterable()){
-            acc= f.apply(next,acc);
+            acc= f.apply(acc,next);
         }
         return acc;
     }
@@ -182,7 +186,12 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil> {
             return false;
         }
 
-        public <R> R foldRight(R zero,BiFunction<? super T, ? super R, ? extends R> f) {
+        @Override
+        public T foldRight(T identity, BinaryOperator<T> accumulator) {
+            return foldRight(identity,accumulator);
+        }
+
+        public <R> R foldRight(R zero, BiFunction<? super T, ? super R, ? extends R> f) {
             class Step{
                 public Trampoline<R> loop(SafeList<T> s, Function<? super R, ? extends Trampoline<R>> fn){
 
