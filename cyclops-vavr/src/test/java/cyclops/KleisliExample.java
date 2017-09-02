@@ -53,7 +53,7 @@ public class KleisliExample {
         return null;
     }
     public boolean logIfFail(long id, String name, boolean success){
-        return null;
+        return true;
     }
     @Test
     public void forComp(){

@@ -67,7 +67,7 @@ public interface EitherKind<L,R> extends Either<L,R>,To<EitherKind<L,R>>,
         return (Either<L, R>)xor;
     }
     public static <L, R> Either<L, R> narrowK(final Higher<Higher<either, L>, R> either) {
-        return (Either<L, R>)either;
+        return ((EitherKind<L, R>)either).narrow();
     }
     default Active<Higher<either,L>,R> allTypeclasses(){
         return Active.of(this, Eithers.Instances.definitions());
@@ -89,7 +89,7 @@ public interface EitherKind<L,R> extends Either<L,R>,To<EitherKind<L,R>>,
     public static <L1, R1> Either<L1, R1> narrow(Either<? extends L1, ? extends R1> either) {
         return Either.narrow(either);
     }
-
+    Either<L,R> narrow();
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     static final class Box<L,R> implements EitherKind<L,R> {
 
@@ -122,6 +122,11 @@ public interface EitherKind<L,R> extends Either<L,R>,To<EitherKind<L,R>>,
         @Override
         public String stringPrefix() {
             return boxed.stringPrefix();
+        }
+
+        @Override
+        public String toString() {
+            return boxed.toString();
         }
     }
 

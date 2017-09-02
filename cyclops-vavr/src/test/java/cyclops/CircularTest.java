@@ -1,6 +1,7 @@
 package cyclops;
 
 import cyclops.collections.mutable.ListX;
+import cyclops.companion.vavr.Eithers;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Maybe.Nothing;
@@ -13,6 +14,8 @@ import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Test;
 
+import java.util.stream.Stream;
+
 import static cyclops.CircularTest.TotalAndLength.totalAndLength;
 import static cyclops.collections.mutable.ListX.empty;
 import static org.jooq.lambda.tuple.Tuple.tuple;
@@ -21,6 +24,7 @@ import static org.jooq.lambda.tuple.Tuple.tuple;
  * Created by johnmcclean on 27/07/2017.
  */
 public class CircularTest {
+
 
     @Test
     public void test(){

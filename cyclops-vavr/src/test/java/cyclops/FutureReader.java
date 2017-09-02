@@ -19,14 +19,17 @@ public class FutureReader {
         return null;
     }
     public Boolean logIfFail(long id, String name, boolean success){
-        return Future.ofResult(true);
+        return true;
     }
     public void forTest(){
+        /**
         Reader<DAO, Future<Boolean>> load10 =
                 loadName(10l).forEach2(nameF ->  dao -> {
                             Future<Boolean> r = nameF.flatMap(name -> updateName(10, name + "suffix").apply(dao));
                             return r;
                         }
                         ,(nameF, successF) -> successF.flatMap(success -> nameF.flatMap(name -> logIfFail(10, name, success))));
+
+         }**/
     }
 }
