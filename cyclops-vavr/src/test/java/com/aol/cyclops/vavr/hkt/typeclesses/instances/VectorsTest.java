@@ -19,9 +19,43 @@ import cyclops.function.Lambda;
 import cyclops.function.Monoid;
 
 import io.vavr.collection.Vector;
+import org.pcollections.PVector;
+import org.pcollections.TreePVector;
+
+import java.util.ArrayList;
 
 public class VectorsTest {
 
+    @Test
+    public void add10000Vavr(){
+        //6174
+        long start = System.currentTimeMillis();
+        Vector<Integer> v = Vector.of(1);
+        for(int i=0;i<100_000_00;i++){
+            v =v.append(i);
+        }
+        System.out.println(System.currentTimeMillis()-start);
+        System.out.println(v.size());
+    }
+    @Test
+    public void read10000(){
+        //163
+
+
+        Vector<Integer> v = Vector.of(1);
+        for(int i=0;i<100_000_00;i++){
+            v =v.append(i);
+        }
+        ArrayList<Integer> al = new ArrayList(v.size());
+
+        long start = System.currentTimeMillis();
+
+        for(int i=0;i<100_000_00;i++){
+            al.add(v.get(i));
+        }
+        System.out.println(System.currentTimeMillis()-start);
+        System.out.println(al.size());
+    }
     @Test
     public void unit(){
         

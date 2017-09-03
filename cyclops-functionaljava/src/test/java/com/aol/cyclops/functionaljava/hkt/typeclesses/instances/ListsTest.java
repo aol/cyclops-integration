@@ -9,6 +9,8 @@ import cyclops.companion.functionaljava.Lists;
 import com.aol.cyclops.functionaljava.hkt.ListKind;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.list;
+import fj.data.Seq;
+import io.vavr.collection.Vector;
 import org.junit.Test;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -21,6 +23,17 @@ import fj.data.List;
 
 public class ListsTest {
 
+    @Test
+    public void add10000FJ(){
+        //24677
+        long start = System.currentTimeMillis();
+        Seq<Integer> v = Seq.seq(1);
+        for(int i=0;i<100_000_00;i++){
+            v =v.cons(i);
+        }
+        System.out.println(System.currentTimeMillis()-start);
+        System.out.println(v.length());
+    }
     @Test
     public void unit(){
 

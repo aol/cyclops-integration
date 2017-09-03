@@ -14,11 +14,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
-/*
- Simplified Hash Array Map Trie implementation,bitset manipulation based on HighJ's approach (don't store a bitset to represent populated nodes,
- populate the Tree with a static array of Immutable Empty nodes instead).
- */
-public interface HAMT<K, V>  {
+public interface HashedPatriciaTrie<K, V>  {
 
     static final int BITS = 5;
     static final int BUCKET_SIZE = 1 << BITS;
@@ -41,7 +37,7 @@ public interface HAMT<K, V>  {
 
 
 
-    interface Node<K, V> extends Sealed4<EmptyNode<K,V>,SingleNode<K,V>,CollisionNode<K,V>,ArrayNode<K,V>>{
+    interface Node<K, V> extends Sealed4<EmptyNode<K,V>,SingleNode<K,V>,CollisionNode<K,V>,ArrayNode<K,V>> {
 
         boolean isEmpty();
 
@@ -146,7 +142,7 @@ public interface HAMT<K, V>  {
                     if (index != 0) {
                         nodes[0] = this;
                     } else {
-                         nodes[0] = nodes[0].put(0, this.key, this.value);
+                        nodes[0] = nodes[0].put(0, this.key, this.value);
                     }
                 }
                 return new ArrayNode<>(nodes);
@@ -156,7 +152,7 @@ public interface HAMT<K, V>  {
         @Override
         public Optional<V> get(int hash, K key) {
             if(hash==0 && this.key.equals(key))
-               return Optional.of(value);
+                return Optional.of(value);
             return Optional.empty();
 
         }
@@ -186,12 +182,6 @@ public interface HAMT<K, V>  {
     static class CollisionNode<K, V> implements Node<K, V>, CaseClass1<LazyList<Tuple2<K,V>>> {
 
         private final LazyList<Tuple2<K, V>> bucket;
-/**
-        private CollisionNode(K key, V value) {
-            this.bucket = LazyList.of(Tuple.tuple(key, value));
-        }
-**/
-
 
         @Override
         public boolean isEmpty() {
@@ -241,7 +231,7 @@ public interface HAMT<K, V>  {
                 return this;
 
             LazyList<Tuple2<K, V>> newBucket = bucket.filter(t2 -> !t2.v1.equals(key));
-            return newBucket.match(c->c.size()>1? new CollisionNode<>(newBucket) : new SingleNode<>(newBucket.get(0).get()),nil->  HAMT.empty());
+            return newBucket.match(c->c.size()>1? new CollisionNode<K,V>(newBucket) : new SingleNode<>(newBucket.get(0).get()),nil->  HashedPatriciaTrie.empty());
         }
 
 

@@ -1,22 +1,18 @@
 package cyclops.collections.adt;
 
 import cyclops.patterns.CaseClass1;
-import cyclops.patterns.CaseClass2;
 import cyclops.patterns.Sealed3;
-import cyclops.patterns.Sealed4;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple1;
-import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
-
-public interface BAMT<V>  {
+public interface IntPatriciaTrie<V>  {
 
     static final int BITS = 5;
     static final int BUCKET_SIZE = 1 << BITS;
@@ -48,6 +44,7 @@ public interface BAMT<V>  {
         Node<V> put(int hash,int pos, V value);
 
         Optional<V> get(int hash, int pos);
+        V getOrElse(int hash, int pos,V value);
 
         Node<V> minus(int hash, int pos);
 
@@ -91,6 +88,11 @@ public interface BAMT<V>  {
         @Override
         public Optional<V> get(int hash, int pos) {
             return Optional.empty();
+        }
+
+        @Override
+        public V getOrElse(int hash, int pos, V value) {
+            return value;
         }
 
         @Override
@@ -139,7 +141,7 @@ public interface BAMT<V>  {
                     if (index != 0) {
                         nodes[0] = this;
                     } else {
-                         nodes[0] = nodes[0].put(0, key, this.value);
+                        nodes[0] = nodes[0].put(0, key, this.value);
                     }
                 }
                 return new ArrayNode<>(nodes);
@@ -149,11 +151,17 @@ public interface BAMT<V>  {
         @Override
         public Optional<V> get(int hash, int key) {
             if(hash==0)
-               return Optional.of(value);
+                return Optional.of(value);
             return Optional.empty();
 
         }
 
+        @Override
+        public V getOrElse(int hash, int pos, V value) {
+            if(hash==0)
+                return this.value;
+            return value;
+        }
 
 
         @Override
@@ -195,6 +203,13 @@ public interface BAMT<V>  {
             int newHash = hash >>> BITS;
             int index = hash & MASK;
             return nodes[index].get(newHash, key);
+        }
+
+        @Override
+        public V getOrElse(int hash, int pos, V value) {
+            int newHash = hash >>> BITS;
+            int index = hash & MASK;
+            return nodes[index].getOrElse(newHash, pos,value);
         }
 
         @Override

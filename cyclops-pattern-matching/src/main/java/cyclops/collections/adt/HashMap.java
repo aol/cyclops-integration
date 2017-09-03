@@ -8,10 +8,10 @@ import java.util.Optional;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class HashMap<K,V> {
-    HAMT.Node<K,V> rootNode;
+    HashedPatriciaTrie.Node<K,V> rootNode;
 
     public static <K,V> HashMap<K,V> empty(){
-        return new HashMap<>(HAMT.empty());
+        return new HashMap<>(HashedPatriciaTrie.empty());
     }
 
     public HashMap<K,V> plus(K key, V value){
