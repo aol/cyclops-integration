@@ -70,7 +70,7 @@ public class NonEmptyList<T> implements CaseClass2<T,SafeList<T>> {
         return asList().foldRight(zero,f);
 
     }
-    public <R> R foldLeft(R zero,BiFunction<? super T, ? super R, ? extends R> f) {
+    public <R> R foldLeft(R zero,BiFunction<R, ? super T, R> f) {
         return asList().foldLeft(zero,f);
     }
 

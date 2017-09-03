@@ -1,6 +1,9 @@
 package cyclops.collections.adt;
 
 
+import com.aol.cyclops2.types.Filters;
+import com.aol.cyclops2.types.foldable.Folds;
+import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.control.Trampoline;
 import cyclops.patterns.CaseClass2;
@@ -8,10 +11,13 @@ import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.val;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
+import org.jooq.lambda.tuple.Tuple3;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -20,7 +26,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 //safe LazyList (Stream) that does not support exceptional states
-public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
+public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Folds<T>, Filters<T>,Transformable<T> {
 
     default ReactiveSeq<T> stream(){
         return ReactiveSeq.fromIterable(iterable());
@@ -104,6 +110,32 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
         }
         return res;
     }
+
+    default LazyList<T> replace(T currentElement, T newElement) {
+        LazyList<T> preceding = empty();
+        LazyList<T> tail = this;
+        while(!tail.isEmpty()){
+            LazyList<T> ref=  preceding;
+            LazyList<T> tailRef = tail;
+            Tuple3<LazyList<T>, LazyList<T>, Boolean> t3 = tail.match(c -> {
+                if (Objects.equals(c.head, currentElement))
+                    return Tuple.tuple(ref, tailRef, true);
+                return Tuple.tuple(ref.prepend(c.head), c.tail.get(), false);
+            }, nil -> Tuple.tuple(ref, tailRef, true));
+
+            preceding = t3.v1;
+            tail = t3.v2;
+            if(t3.v3)
+                break;
+
+        }
+
+        LazyList<T> start = preceding;
+        return tail.match(cons->cons.tail.get().prepend(newElement).prependAll(start),nil->this);
+
+    }
+
+
     default Optional<T> get(int pos){
         T result = null;
         LazyList<T> l = this;
@@ -131,10 +163,10 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
         },nil->append);
 
     }
-    default <R> R foldLeft(R zero, BiFunction<? super T, ? super R, ? extends R> f){
+    default <R> R foldLeft(R zero, BiFunction<R, ? super T,  R> f){
         R acc= zero;
         for(T next : iterable()){
-            acc= f.apply(next,acc);
+            acc= f.apply(acc,next);
         }
         return acc;
     }
@@ -221,7 +253,7 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil> {
 
         public int size(){
             int result =1;
-            LazyList<T> current[] = new LazyList[0];
+            LazyList<T> current[] = new LazyList[1];
             current[0]=tail.get();
             while(true){
                int toAdd =current[0].match(c->{

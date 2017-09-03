@@ -1,9 +1,12 @@
 package cyclops.collections.adt;
 
 
+import com.aol.cyclops2.types.foldable.Folds;
+import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.collections.adt.Witness.lazylist;
 import cyclops.function.Fn0;
 import cyclops.monads.Witness.supplier;
+import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Kleisli;
 import cyclops.typeclasses.free.Free;
 import lombok.AccessLevel;
@@ -12,7 +15,7 @@ import lombok.AllArgsConstructor;
 import java.util.function.Function;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class DifferenceList<T> {
+public class DifferenceList<T> implements Folds<T>, Transformable<T> {
 
     private final Function<LazyList<T>,Free<supplier, LazyList<T>>> appending;
 
@@ -47,4 +50,8 @@ public class DifferenceList<T> {
                                      }));
     }
 
+    @Override
+    public ReactiveSeq<T> stream() {
+        return ReactiveSeq.fromIterable(run().iterable());
+    }
 }

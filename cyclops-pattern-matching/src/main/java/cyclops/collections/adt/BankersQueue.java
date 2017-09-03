@@ -38,6 +38,7 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         return ReactiveSeq.fromIterable(lazyList().iterable());
     }
 
+    BankersQueue<T> replace(T currentElement, T newElement);
     public static <T> BankersQueue<T> cons(T value){
         return new Cons<>(1,LazyList.cons(value,()->LazyList.empty()),0,LazyList.empty());
     }
@@ -58,6 +59,12 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         private final int sizeBack;
         private final LazyList<T> back;
 
+        private Cons(LazyList<T> front, LazyList<T> back){
+            this.sizeFront = front.size();
+            this.sizeBack=back.size();
+            this.front = front;
+            this.back = back;
+        }
 
 
        private static <T> BankersQueue<T> check(Cons<T> check) {
@@ -101,6 +108,11 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
             return front.match(cons->cons.match((head,tail)->Tuple.tuple(head,tail.match(c->check(new Cons<>(sizeFront-1,tail,sizeBack,back)),n->Nil.Instance)))
                                  ,nil->{throw new RuntimeException("Unreachable!");});
 
+        }
+        public BankersQueue<T> replace(T currentElement, T newElement) {
+            LazyList<T> replaceF = front.replace(currentElement, newElement);
+            LazyList<T> replaceB = back.replace(currentElement, newElement);
+            return  front==replaceF && back==replaceB ? this : new Cons<>(replaceF, replaceB);
         }
        public Optional<T> get(int n) {
            if (n < sizeFront)
@@ -153,6 +165,11 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         @Override
         public <R> BankersQueue<R> flatMap(Function<? super T, ? extends BankersQueue<? extends R>> fn) {
             return Instance;
+        }
+
+        @Override
+        public BankersQueue<T> replace(T currentElement, T newElement) {
+            return this;
         }
 
 
