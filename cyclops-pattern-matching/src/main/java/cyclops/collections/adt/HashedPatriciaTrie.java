@@ -49,7 +49,7 @@ public interface HashedPatriciaTrie<K, V>  {
         V getOrElse(int hash, K key,V alt);
 
         Node<K, V> minus(int hash, K key);
-
+        ReactiveSeq<Tuple2<K,V>> stream();
 
     }
 
@@ -100,6 +100,11 @@ public interface HashedPatriciaTrie<K, V>  {
         @Override
         public Node<K, V> minus(int hash, K key) {
             return this;
+        }
+
+        @Override
+        public  ReactiveSeq<Tuple2<K,V>> stream() {
+            return ReactiveSeq.empty();
         }
 
         @Override
@@ -178,6 +183,11 @@ public interface HashedPatriciaTrie<K, V>  {
             return this;
         }
 
+        @Override
+        public ReactiveSeq<Tuple2<K,V>> stream() {
+            return ReactiveSeq.of(Tuple.tuple(key,value));
+        }
+
 
         @Override
         public <R> R match(Function<? super EmptyNode<K, V>, ? extends R> fn1, Function<? super SingleNode<K, V>, ? extends R> fn2, Function<? super CollisionNode<K, V>, ? extends R> fn3, Function<? super ArrayNode<K, V>, ? extends R> fn4) {
@@ -252,6 +262,11 @@ public interface HashedPatriciaTrie<K, V>  {
             return newBucket.match(c->c.size()>1? new CollisionNode<K,V>(newBucket) : new SingleNode<>(newBucket.get(0).get()),nil->  HashedPatriciaTrie.empty());
         }
 
+        @Override
+        public ReactiveSeq<Tuple2<K, V>> stream() {
+            return ReactiveSeq.fromIterable(bucket.iterable());
+        }
+
 
         @Override
         public <R> R match(Function<? super EmptyNode<K, V>, ? extends R> fn1, Function<? super SingleNode<K, V>, ? extends R> fn2, Function<? super CollisionNode<K, V>, ? extends R> fn3, Function<? super ArrayNode<K, V>, ? extends R> fn4) {
@@ -314,6 +329,12 @@ public interface HashedPatriciaTrie<K, V>  {
             }
 
         }
+
+        @Override
+        public ReactiveSeq<Tuple2<K, V>> stream() {
+            return ReactiveSeq.of(nodes).flatMap(Node::stream);
+        }
+
         @Override
         public boolean isEmpty() {
             return ReactiveSeq.of(nodes).anyMatch(Node::isEmpty);

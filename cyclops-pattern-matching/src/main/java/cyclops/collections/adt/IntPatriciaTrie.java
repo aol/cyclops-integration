@@ -48,6 +48,8 @@ public interface IntPatriciaTrie<V>  {
 
         Node<V> minus(int hash, int pos);
 
+        ReactiveSeq<V> stream();
+
 
     }
 
@@ -98,6 +100,11 @@ public interface IntPatriciaTrie<V>  {
         @Override
         public Node<V> minus(int hash, int pos) {
             return this;
+        }
+
+        @Override
+        public ReactiveSeq<V> stream() {
+            return ReactiveSeq.empty();
         }
 
         @Override
@@ -177,6 +184,10 @@ public interface IntPatriciaTrie<V>  {
             return fn2.apply(this);
         }
 
+        public ReactiveSeq<V> stream(){
+            return ReactiveSeq.of(value);
+        }
+
 
     }
 
@@ -232,6 +243,12 @@ public interface IntPatriciaTrie<V>  {
             }
 
         }
+
+        @Override
+        public ReactiveSeq<V> stream() {
+            return ReactiveSeq.of(nodes).flatMap(n->n.stream());
+        }
+
         @Override
         public boolean isEmpty() {
             return ReactiveSeq.of(nodes).anyMatch(Node::isEmpty);

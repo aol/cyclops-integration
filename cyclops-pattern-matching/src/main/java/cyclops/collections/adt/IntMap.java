@@ -1,6 +1,7 @@
 package cyclops.collections.adt;
 
 
+import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
@@ -41,5 +42,10 @@ public class IntMap<T> {
     public int size(){
         return size;
     }
+
+    public ReactiveSeq<T> stream(){
+        return intMap.stream();
+    }
+
 }
 
