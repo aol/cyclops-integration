@@ -9,29 +9,34 @@ import java.util.Optional;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class IntMap<T> {
 
-    private final IntPatriciaTrie.Node<T> vector;
+    private static final int STARTING_OFFSET = Integer.MAX_VALUE/2;
+    private final IntPatriciaTrie.Node<T> intMap;
     private final int size;
+    private final int offset;
 
     public static <T> IntMap<T> of(T... values){
         IntPatriciaTrie.Node<T> tree = IntPatriciaTrie.empty();
         for(int i=0;i<values.length;i++){
-            tree = tree.put(i,i,values[i]);
+            tree = tree.put(i+STARTING_OFFSET,i+STARTING_OFFSET,values[i]);
         }
-        return new IntMap<T>(tree,values.length);
+        return new IntMap<T>(tree,values.length,+STARTING_OFFSET);
     }
     public IntMap<T> plus(T value){
-        return new IntMap<>(vector.put(size,size,value),size+1);
+        return new IntMap<>(intMap.put(size+offset,size+offset,value),size+1,offset);
+    }
+    public IntMap<T> prepend(T value){
+        return new IntMap<>(intMap.put(offset-1,offset-1,value),size+1,offset-1);
     }
 
     public Optional<T> get(int index){
-        return vector.get(index,index);
+        return intMap.get(index+offset,index+offset);
     }
     public T getOrElse(int index,T value){
-        return vector.getOrElse(index,index,value);
+        return intMap.getOrElse(index+offset,index+offset,value);
     }
 
     int calcSize(){
-        return vector.size();
+        return intMap.size();
     }
     public int size(){
         return size;

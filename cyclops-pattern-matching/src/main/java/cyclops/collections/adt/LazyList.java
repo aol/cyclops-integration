@@ -147,6 +147,17 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         }
         return Optional.ofNullable(l.match(c->c.head,n->null));
     }
+    default T getOrElse(int pos, T alt){
+        T result = null;
+        LazyList<T> l = this;
+        for(int i=0;i<pos;i++){
+            l = l.match(c->c.tail.get(),n->n);
+            if(l instanceof Nil){ //short circuit
+                return alt;
+            }
+        }
+        return l.match(c->c.head,n->null);
+    }
     default LazyList<T> prepend(T value){
         return cons(value,()->this);
     }

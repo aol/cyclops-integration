@@ -13,8 +13,14 @@ import static org.junit.Assert.assertThat;
 
 
 
-public class VectorTest {
+public class IntMapTest {
 
+    @Test
+    public void appendPrependGet(){
+        assertThat(IntMap.of(1,2,3).plus(4).get(3).get(),equalTo(4));
+        assertThat(IntMap.of(1,2,3).prepend(4).get(0).get(),equalTo(4));
+        assertThat(IntMap.of(1,2,3).prepend(4).get(3).get(),equalTo(3));
+    }
     @Test
     public void testSize() {
         assertThat(IntMap.of(1,2,3).size(),equalTo(3));
@@ -25,7 +31,7 @@ public class VectorTest {
         assertThat(IntMap.of(1,2,3).calcSize(),equalTo(3));
         assertThat(IntMap.of(1,2,3).plus(1).calcSize(),equalTo(4));
     }
-
+/**
     @Test
     public void add10000AL(){
         //2717
@@ -96,6 +102,6 @@ public class VectorTest {
         System.out.println(System.currentTimeMillis()-start);
         System.out.println(v.size());
     }
-
+**/
 
 }

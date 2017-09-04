@@ -2,18 +2,15 @@ package cyclops.collections.adt;
 
 
 import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.factory.Unit;
 import cyclops.typeclasses.Pure;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import org.jooq.lambda.tuple.Tuple;
-import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MultiMap<W,K,V> {
-    private final HashMap<K,Higher<W,V>> multiMap;
+    private final TrieMap<K,Higher<W,V>> multiMap;
     private final Appender<W,V> appender;
     private final Pure<W> pure;
 

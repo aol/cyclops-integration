@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+
 public interface RedBlackTree {
 
     public static <K,V> Tree<K,V> fromStream(Comparator<? super K> comp,Stream<? extends Tuple2<? extends K,? extends V>> stream){
@@ -208,7 +209,7 @@ public interface RedBlackTree {
 
         @Override
         public Tree<K, V> plus(K key, V value) {
-            return new Node(false,new Leaf(comp),new Leaf(comp),key,value,comp);
+            return new Node(false,new Leaf<>(comp),new Leaf<>(comp),key,value,comp);
         }
 
         @Override

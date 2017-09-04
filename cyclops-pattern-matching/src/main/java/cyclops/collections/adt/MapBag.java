@@ -3,16 +3,14 @@ package cyclops.collections.adt;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
-import java.util.Optional;
-
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MapBag<T> {
 
-    private final HashMap<T,Integer> map;
+    private final TrieMap<T,Integer> map;
     private final int size;
 
     public static <T> MapBag<T> empty() {
-        return new MapBag<>(HashMap.empty(), 0);
+        return new MapBag<>(TrieMap.empty(), 0);
     }
 
 

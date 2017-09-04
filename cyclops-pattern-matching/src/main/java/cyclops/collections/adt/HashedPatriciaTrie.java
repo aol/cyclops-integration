@@ -46,6 +46,7 @@ public interface HashedPatriciaTrie<K, V>  {
         Node<K, V> put(int hash, K key, V value);
 
         Optional<V> get(int hash, K key);
+        V getOrElse(int hash, K key,V alt);
 
         Node<K, V> minus(int hash, K key);
 
@@ -89,6 +90,11 @@ public interface HashedPatriciaTrie<K, V>  {
         @Override
         public Optional<V> get(int hash, K key) {
             return Optional.empty();
+        }
+
+        @Override
+        public V getOrElse(int hash, K key, V alt) {
+            return alt;
         }
 
         @Override
@@ -157,6 +163,12 @@ public interface HashedPatriciaTrie<K, V>  {
 
         }
 
+        @Override
+        public V getOrElse(int hash, K key, V alt) {
+            if(hash==0 && this.key.equals(key))
+                return value;
+            return alt;
+        }
 
 
         @Override
@@ -223,6 +235,12 @@ public interface HashedPatriciaTrie<K, V>  {
                     : Optional.empty();
         }
 
+        @Override
+        public V getOrElse(int hash, K key, V alt) {
+            return (hash == 0)
+                    ? bucket.filter(t2 -> t2.v1.equals(key)).map(t->t.v2).getOrElse(0,alt)
+                    : alt;
+        }
 
 
         @Override
@@ -267,6 +285,13 @@ public interface HashedPatriciaTrie<K, V>  {
             int newHash = hash >>> BITS;
             int index = hash & MASK;
             return nodes[index].get(newHash, key);
+        }
+
+        @Override
+        public V getOrElse(int hash, K key, V alt) {
+            int newHash = hash >>> BITS;
+            int index = hash & MASK;
+            return nodes[index].getOrElse(newHash, key,alt);
         }
 
         @Override

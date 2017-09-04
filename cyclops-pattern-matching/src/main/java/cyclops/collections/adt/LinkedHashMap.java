@@ -11,7 +11,7 @@ import java.util.Optional;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class LinkedHashMap<K,V> {
 
-    private final HashMap<K, V> map;
+    private final TrieMap<K, V> map;
     private final BankersQueue<Tuple2<K, V>> order;
 
     public Optional<V> get(K key){
