@@ -10,6 +10,8 @@ import cyclops.companion.vavr.Vectors;
 import com.aol.cyclops.vavr.hkt.VectorKind;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.vector;
+
+import io.vavr.collection.HashMap;
 import org.junit.Test;
 
 import com.aol.cyclops2.hkt.Higher;
@@ -27,12 +29,20 @@ import java.util.ArrayList;
 public class VectorsTest {
 
     @Test
+    public void hashMap(){
+        HashMap<Integer,Integer> map = HashMap.empty();
+        for(int i=0;i<500;i++){
+            map = map.put(i,i*2);
+        }
+        assertThat(map.size(),equalTo(500));
+    }
+    @Test
     public void add10000Vavr(){
         //6174
         long start = System.currentTimeMillis();
-        Vector<Integer> v = Vector.of(1);
+        Vector<String> v = Vector.of("1");
         for(int i=0;i<100_000_00;i++){
-            v =v.append(i);
+            v =v.append(""+i);
         }
         System.out.println(System.currentTimeMillis()-start);
         System.out.println(v.size());

@@ -44,6 +44,7 @@ public class IntMapTest {
         System.out.println(System.currentTimeMillis()-start);
         System.out.println(v.size());
     }
+ **/
 
     @Test
     public void add10000(){
@@ -56,6 +57,7 @@ public class IntMapTest {
         System.out.println(System.currentTimeMillis()-start);
         System.out.println(v.size());
     }
+    /**
     @Test
     public void read10000(){
         //2197

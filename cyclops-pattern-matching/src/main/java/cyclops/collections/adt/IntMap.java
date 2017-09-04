@@ -1,6 +1,8 @@
 package cyclops.collections.adt;
 
 
+import com.aol.cyclops2.types.foldable.Evaluation;
+import cyclops.collections.immutable.VectorX;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -43,6 +45,9 @@ public class IntMap<T> {
         return size;
     }
 
+    public VectorX<T> vectorX(){
+        return stream().to().vectorX(Evaluation.LAZY);
+    }
     public ReactiveSeq<T> stream(){
         return intMap.stream();
     }
