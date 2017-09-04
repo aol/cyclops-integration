@@ -5,13 +5,13 @@ import com.aol.cyclops2.types.Filters;
 import com.aol.cyclops2.types.foldable.Folds;
 import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.collections.immutable.LinkedListX;
+import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.patterns.CaseClass2;
 import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.val;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
@@ -147,6 +147,25 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         }
         return Optional.ofNullable(l.match(c->c.head,n->null));
     }
+    default Tuple2<LazyList<T>, LazyList<T>> splitAt(int n) {
+        return Tuple.tuple(take(n), drop(n));
+    }
+
+    default Zipper<T> focusAt(int pos, T alt){
+        Tuple2<LazyList<T>, LazyList<T>> t2 = splitAt(pos);
+        T value = t2.v2.match(c -> c.head, n -> alt);
+        LazyList<T> right= t2.v2.match(c->c.tail.get(),n->null);
+        return Zipper.of(t2.v1,value, right);
+    }
+    default Maybe<Zipper<T>> focusAt(int pos){
+        Tuple2<LazyList<T>, LazyList<T>> t2 = splitAt(pos);
+        Maybe<T> value = t2.v2.match(c -> Maybe.just(c.head), n -> Maybe.none());
+        return value.map(l-> {
+            LazyList<T> right = t2.v2.match(c -> c.tail.get(), n -> null);
+            return Zipper.of(t2.v1, l, right);
+        });
+    }
+
     default T getOrElse(int pos, T alt){
         T result = null;
         LazyList<T> l = this;
@@ -165,6 +184,10 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         return value.match(cons->
                         cons.foldRight(this,(a,b)->b.prepend(a))
                 ,nil->this);
+    }
+    default LazyList<T> append(T append) {
+        return appendAll(LazyList.of(append));
+
     }
     default LazyList<T> appendAll(LazyList<T> append) {
         return this.match(cons->{
@@ -276,6 +299,11 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
                     break;
             }
             return result;
+        }
+
+        @Override
+        public Cons<T> reverse() {
+            return (Cons<T>)LazyList.super.reverse();
         }
 
         @Override
