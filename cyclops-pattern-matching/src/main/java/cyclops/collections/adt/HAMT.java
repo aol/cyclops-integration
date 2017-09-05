@@ -37,6 +37,7 @@ public class HAMT<K, V>  {
        public Node<K,V> minus(int bitShiftDepth,int hash,K key);
        int size();
        LazyList<Tuple2<K,V>> lazyList();
+       ReactiveSeq<Tuple2<K, V>> stream();
    }
 
    public static class EmptyNode<K,V> implements Node<K,V>{
@@ -64,6 +65,11 @@ public class HAMT<K, V>  {
        @Override
        public LazyList<Tuple2<K, V>> lazyList() {
            return LazyList.empty();
+       }
+
+       @Override
+       public ReactiveSeq<Tuple2<K, V>> stream() {
+           return ReactiveSeq.empty();
        }
    }
    @AllArgsConstructor
@@ -120,6 +126,11 @@ public class HAMT<K, V>  {
        @Override
        public LazyList<Tuple2<K, V>> lazyList() {
            return LazyList.of(unapply());
+       }
+
+       @Override
+       public ReactiveSeq<Tuple2<K, V>> stream() {
+           return ReactiveSeq.empty();
        }
 
        @Override
@@ -182,6 +193,11 @@ public class HAMT<K, V>  {
         @Override
         public LazyList<Tuple2<K, V>> lazyList() {
             return bucket;
+        }
+
+        @Override
+        public ReactiveSeq<Tuple2<K, V>> stream() {
+            return bucket.stream();
         }
     }
     @AllArgsConstructor
@@ -246,9 +262,12 @@ public class HAMT<K, V>  {
 
         @Override
         public LazyList<Tuple2<K, V>> lazyList() {
-            return null;
+            return LazyList.fromStream(stream());
         }
-
+        @Override
+        public ReactiveSeq<Tuple2<K, V>> stream() {
+            return ReactiveSeq.of(nodes).flatMap(n -> n.stream());
+        }
         static int bitpos(int hash, int shift){
             return 1 << mask(hash, shift);
         }
