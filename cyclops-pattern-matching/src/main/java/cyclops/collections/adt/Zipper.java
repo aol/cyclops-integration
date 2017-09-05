@@ -1,9 +1,19 @@
 package cyclops.collections.adt;
 
 import cyclops.control.Maybe;
+import cyclops.stream.ReactiveSeq;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.experimental.Wither;
+import org.jooq.lambda.tuple.Tuple;
+import org.jooq.lambda.tuple.Tuple2;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @AllArgsConstructor
+@Getter
+@Wither
 public class Zipper<T> {
 
     private final LazyList<T> left;
@@ -14,6 +24,9 @@ public class Zipper<T> {
     public static <T> Zipper<T> of(LazyList<T> left, T value, LazyList<T> right){
         return new Zipper<>(left,value,right);
     }
+    public static <T> Zipper of(ReactiveSeq<T> left, T value, ReactiveSeq<T> right){
+        return new Zipper<>(LazyList.fromStream(left),value,LazyList.fromStream(right));
+    }
 
     public boolean isStart(){
         return left.isEmpty();
@@ -21,6 +34,20 @@ public class Zipper<T> {
     public boolean isEnd(){
         return right.isEmpty();
     }
+    public <R> Zipper<R> map(Function<? super T, ? extends R> fn){
+        return of(left.map(fn),fn.apply(point),right.map(fn));
+    }
+    public <R> Zipper<R> zip(Zipper<T> zipper, BiFunction<? super T, ? super T, ? extends R> fn){
+        ReactiveSeq<R> newLeft = left.stream().zip(zipper.left.stream(),fn);
+        R newPoint = fn.apply(point, zipper.point);
+        ReactiveSeq<R> newRight = right.stream().zip(zipper.right.stream(),fn);
+        return of(newLeft,newPoint,newRight);
+    }
+
+    public  Zipper<Tuple2<T,T>> zip(Zipper<T> zipper){
+        return zip(zipper, Tuple::tuple);
+    }
+
     public Zipper<T> start() {
         Maybe<Zipper<T>> result = Maybe.just(this);
         Maybe<Zipper<T>> next = result;
