@@ -47,7 +47,7 @@ public class VectorTest {
 
 
     }
-    /**
+
     @Test
     public void test3PowSet(){
         Vector<Integer> ints = Vector.<Integer>empty();
@@ -59,7 +59,20 @@ public class VectorTest {
         }
         for(int i=0;i<p;i++){
             System.out.println(i);
-            ints = ints.set(i*2);
+            ints = ints.set(i,i*2);
+        }
+        for(int i=0;i<p;i++){
+            assertThat(ints.get(i),equalTo(Optional.of(i*2)));
+        }
+
+    }
+    @Test
+    public void test4Pow(){
+        Vector<Integer> ints = Vector.<Integer>empty();
+
+        int p  = Double.valueOf(Math.pow(2,20)).intValue();
+        for(int i=0;i<p;i++){
+            ints = ints.plus(i);
         }
         for(int i=0;i<p;i++){
             assertThat(ints.get(i),equalTo(Optional.of(i)));
@@ -67,6 +80,25 @@ public class VectorTest {
 
 
     }
-    **/
+
+    @Test
+    public void test4PowSet(){
+        Vector<Integer> ints = Vector.<Integer>empty();
+
+        int p  = Double.valueOf(Math.pow(2,20)).intValue();
+        for(int i=0;i<p;i++){
+
+
+            ints = ints.plus(i);
+        }
+        for(int i=0;i<p;i++){
+            ints = ints.set(i,i*2);
+        }
+        for(int i=0;i<p;i++){
+            assertThat(ints.get(i),equalTo(Optional.of(i*2)));
+        }
+
+    }
+
 
 }

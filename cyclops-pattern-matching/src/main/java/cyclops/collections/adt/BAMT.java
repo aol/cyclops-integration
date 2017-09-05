@@ -1,9 +1,13 @@
 package cyclops.collections.adt;
 
+import com.sun.org.apache.bcel.internal.generic.POP;
+import cyclops.stream.ReactiveSeq;
 import lombok.AllArgsConstructor;
+import lombok.val;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static cyclops.collections.adt.BAMT.ArrayUtils.last;
 import static cyclops.collections.adt.BAMT.Two.two;
@@ -25,6 +29,12 @@ public class BAMT<T> {
         static int mask(int hash){
             return (hash) & (SIZE-1);
         }
+
+        default  <R> R match(Function<? super Zero<T>,? extends R> zeroFn, Function<? super PopulatedArray<T>,? extends R> popFn){
+            return this instanceof Zero ?  zeroFn.apply((Zero<T>)this) : popFn.apply((PopulatedArray<T>)this);
+        }
+
+        ReactiveSeq<T> stream();
 
     }
     public interface PopulatedArray<T> extends NestedArray<T>{
@@ -90,7 +100,7 @@ public class BAMT<T> {
         }
 
         @Override
-        public PopulatedArray<T> set(int pos, T value) {
+        public ActiveTail<T> set(int pos, T value) {
             T[] updatedNodes =  Arrays.copyOf(array, array.length);
             updatedNodes[pos] = value;
             return new ActiveTail<>(updatedNodes);
@@ -103,12 +113,22 @@ public class BAMT<T> {
         public NestedArray<T> append(ActiveTail<T> tail) {
             return tail;
         }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return ReactiveSeq.of(array);
+        }
     }
 
     public static class Zero<T> implements NestedArray<T>{
         @Override
         public NestedArray<T> append(ActiveTail<T> tail) {
             return new One(tail.array);
+        }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return ReactiveSeq.empty();
         }
     }
 
@@ -127,6 +147,11 @@ public class BAMT<T> {
 
         public NestedArray<T> append(ActiveTail<T> t) {
             return two(new  Object[][]{array,t.array});
+        }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return ReactiveSeq.of(array);
         }
 
         @Override
@@ -204,6 +229,14 @@ public class BAMT<T> {
 
 
         }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return ReactiveSeq.iterate(0,i->i+1)
+                                .take(array.length)
+                                .map(indx->array[indx])
+                                .flatMap(a->ReactiveSeq.of((T[])a));
+        }
     }
     @AllArgsConstructor
     public static class Three<T> implements PopulatedArray<T>{
@@ -233,7 +266,7 @@ public class BAMT<T> {
         @Override
         public Optional<T> get(int pos) {
             T[] local = getNestedArrayAt(pos);
-            int resolved = NestedArray.bitpos(pos,bitShiftDepth);
+          //  int resolved = NestedArray.bitpos(pos,bitShiftDepth);
             int indx = pos & 0x01f;
             if(indx<local.length){
                 return Optional.of(local[indx]);
@@ -259,7 +292,7 @@ public class BAMT<T> {
 
         @Override
         public NestedArray<T> append(ActiveTail<T> tail) {
-            if(array[array.length-1].length<32){
+            if(last(array).length<32){
                 Object[][][] updatedNodes = Arrays.copyOf(array, array.length,Object[][][].class);
                 updatedNodes[updatedNodes.length-1]=Arrays.copyOf(last(updatedNodes), last(updatedNodes).length+1,Object[][].class);
                 last(updatedNodes)[last(array).length] = tail.array;
@@ -270,10 +303,130 @@ public class BAMT<T> {
                 updatedNodes[array.length] = new Object[][]{tail.array};
                 return three(updatedNodes);
 
+            }
+            return Four.four(new Object[][][][]{array,new Object[][][]{new Object[][]{tail.array}}});
+
+        }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return ReactiveSeq.iterate(0,i->i+1)
+                              .take(array.length)
+                              .map(indx->array[indx])
+                              .flatMap(a->{
+                                  return ReactiveSeq.iterate(0,i->i+1)
+                                                    .take(a.length)
+                                                    .map(indx->a[indx])
+                                                    .flatMap(a2->ReactiveSeq.of((T[])a2));
+                              });
+        }
+    }
+
+    @AllArgsConstructor
+    public static class Four<T> implements PopulatedArray<T>{
+        public static final int bitShiftDepth = 15;
+        private final Object[][][][] array;
+
+        public static <T> Four<T> four(Object[][][][] array){
+            return new Four<T>(array);
+        }
+
+        @Override
+        public PopulatedArray<T> set(int pos, T t) {
+            Object[][][][] n1 = Arrays.copyOf(array, array.length);
+            int indx = NestedArray.mask(pos,bitShiftDepth);
+            Object[][][] n2 = n1[indx];
+            Object[][][] newNode = Arrays.copyOf(n2,n2.length);
+            n1[indx] = newNode;
+            int indx2 = NestedArray.mask(pos,Three.bitShiftDepth);
+            Object[][] n3 = n2[indx2];
+            Object[][] newNode2 = Arrays.copyOf(n3,n3.length);
+            int indx3 = NestedArray.mask(pos,Two.bitShiftDepth);
+            Object[] n4 = n3[indx3];
+            Object[] newNode3 = Arrays.copyOf(n3,n3.length);
+            newNode2[indx3]=n3;
+            n4[NestedArray.mask(pos)]=t;
+            return four(n1);
+
+        }
+
+        @Override
+        public Optional<T> get(int pos) {
+            T[] local = getNestedArrayAt(pos);
+            int resolved = NestedArray.bitpos(pos,bitShiftDepth);
+            int indx = pos & 0x01f;
+            if(indx<local.length){
+                return Optional.of(local[indx]);
+            }
+            return Optional.empty();
+        }
+
+        @Override
+        public T[] getNestedArrayAt(int pos) {
+
+
+            int indx = NestedArray.mask(pos, bitShiftDepth);
+            if(indx<array.length){
+                Object[][][] twoArray = array[indx];
+                int indx2 = NestedArray.mask(pos,Three.bitShiftDepth);
+                if(indx2<twoArray.length){
+                    int indx3 = NestedArray.mask(pos,Two.bitShiftDepth);
+                    Object[][] threeArray = twoArray[indx2];
+                    if(indx3<threeArray.length){
+                        return (T[])threeArray[indx3];
+                    }
+                }
+            }
+
+            return (T[])new Object[0];
+
+
+        }
+
+
+        @Override
+        public NestedArray<T> append(ActiveTail<T> tail) {
+            if(last(last(array)).length<32){
+                Object[][][][] updatedNodes = Arrays.copyOf(array, array.length,Object[][][][].class);
+                updatedNodes[updatedNodes.length-1]=Arrays.copyOf(last(updatedNodes), last(updatedNodes).length,Object[][][].class);
+                last(updatedNodes)[last(updatedNodes).length-1]=Arrays.copyOf(last(last(updatedNodes)), last(last(updatedNodes)).length+1,Object[][].class);
+                last(last(updatedNodes))[last(last(array)).length] = tail.array;
+                return four(updatedNodes);
+
+            }
+            if(last(array).length<32){
+                Object[][][][] updatedNodes = Arrays.copyOf(array, array.length,Object[][][][].class);
+                updatedNodes[updatedNodes.length-1]=Arrays.copyOf(last(updatedNodes), last(updatedNodes).length+1,Object[][][].class);
+                last(updatedNodes)[last(array).length] = new Object[][]{tail.array};
+                return four(updatedNodes);
+            }
+            if(array.length<32){
+                Object[][][][] updatedNodes = Arrays.copyOf(array, array.length+1,Object[][][][].class);
+                updatedNodes[array.length] = new Object[][][]{new Object[][]{tail.array}};
+                return four(updatedNodes);
+
 
 
             }
             return null;
+        }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return ReactiveSeq.iterate(0,i->i+1)
+                    .take(array.length)
+                    .map(indx->array[indx])
+                    .flatMap(a->{
+                        return ReactiveSeq.iterate(0,i->i+1)
+                                .take(a.length)
+                                .map(indx->a[indx])
+                                .flatMap(a2->{
+                                    return ReactiveSeq.iterate(0,i->i+1)
+                                            .take(a2.length)
+                                            .map(indx->a2[indx])
+                                            .flatMap(a3->ReactiveSeq.of((T[])a2));
+                                });
+                    });
         }
     }
 
