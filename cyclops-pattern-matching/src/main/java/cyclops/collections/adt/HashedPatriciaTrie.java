@@ -133,8 +133,8 @@ public interface HashedPatriciaTrie<K, V>  {
             return 1;
         }
 
-        LazyList<Tuple2<K,V>> bucket(){
-            return LazyList.of(Tuple.tuple(key,value));
+        LazySeq<Tuple2<K,V>> bucket(){
+            return LazySeq.of(Tuple.tuple(key,value));
         }
 
         @Override
@@ -201,9 +201,9 @@ public interface HashedPatriciaTrie<K, V>  {
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    static class CollisionNode<K, V> implements Node<K, V>, CaseClass1<LazyList<Tuple2<K,V>>> {
+    static class CollisionNode<K, V> implements Node<K, V>, CaseClass1<LazySeq<Tuple2<K,V>>> {
 
-        private final LazyList<Tuple2<K, V>> bucket;
+        private final LazySeq<Tuple2<K, V>> bucket;
 
         @Override
         public boolean isEmpty() {
@@ -258,7 +258,7 @@ public interface HashedPatriciaTrie<K, V>  {
             if (hash != 0)
                 return this;
 
-            LazyList<Tuple2<K, V>> newBucket = bucket.filter(t2 -> !t2.v1.equals(key));
+            LazySeq<Tuple2<K, V>> newBucket = bucket.filter(t2 -> !t2.v1.equals(key));
             return newBucket.match(c->c.size()>1? new CollisionNode<K,V>(newBucket) : new SingleNode<>(newBucket.get(0).get()),nil->  HashedPatriciaTrie.empty());
         }
 
@@ -274,7 +274,7 @@ public interface HashedPatriciaTrie<K, V>  {
         }
 
         @Override
-        public Tuple1<LazyList<Tuple2<K, V>>> unapply() {
+        public Tuple1<LazySeq<Tuple2<K, V>>> unapply() {
             return Tuple.tuple(bucket);
         }
     }

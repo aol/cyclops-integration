@@ -1,10 +1,7 @@
 package cyclops.collections.adt;
 
 
-import com.aol.cyclops2.internal.stream.OneShotStreamX;
 import com.aol.cyclops2.types.Filters;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
 import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
@@ -15,22 +12,22 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class LazyString implements Sealed2<LazyList.Cons<Character>,LazyList.Nil>,Filters<Character> {
-    private final LazyList<Character> string;
+public final class LazyString implements Sealed2<LazySeq.Cons<Character>,LazySeq.Nil>,Filters<Character> {
+    private final LazySeq<Character> string;
 
-    private static final LazyString Nil = fromLazyList(LazyList.empty());
-    public static LazyString fromLazyList(LazyList<Character> string){
+    private static final LazyString Nil = fromLazyList(LazySeq.empty());
+    public static LazyString fromLazyList(LazySeq<Character> string){
         return new LazyString(string);
     }
     public static LazyString of(CharSequence seq){
-        return fromLazyList(LazyList.fromStream( seq.chars().mapToObj(i -> (char) i)));
+        return fromLazyList(LazySeq.fromStream( seq.chars().mapToObj(i -> (char) i)));
     }
 
     public static LazyString empty(){
         return Nil;
     }
 
-    public LazyString op(Function<? super LazyList<Character>, ? extends LazyList<Character>> custom){
+    public LazyString op(Function<? super LazySeq<Character>, ? extends LazySeq<Character>> custom){
         return fromLazyList(custom.apply(string));
     }
 
@@ -46,10 +43,10 @@ public final class LazyString implements Sealed2<LazyList.Cons<Character>,LazyLi
     public LazyString toLowerCase(){
         return fromLazyList(string.map(c->c.toString().toLowerCase().charAt(0)));
     }
-    public LazyList<LazyString> words() {
+    public LazySeq<LazyString> words() {
         return string.split(t -> t.equals(' ')).map(l->fromLazyList(l));
     }
-    public LazyList<LazyString> lines() {
+    public LazySeq<LazyString> lines() {
         return string.split(t -> t.equals('\n')).map(l->fromLazyList(l));
     }
     public LazyString map(Function<Character,Character> fn){
@@ -85,7 +82,7 @@ public final class LazyString implements Sealed2<LazyList.Cons<Character>,LazyLi
         return fromLazyList(string.prependAll(value.string));
     }
     public LazyString append(String s){
-        return fromLazyList(string.appendAll(LazyList.fromStream( s.chars().mapToObj(i -> (char) i))));
+        return fromLazyList(string.appendAll(LazySeq.fromStream( s.chars().mapToObj(i -> (char) i))));
     }
     public int size(){
         return length();
@@ -97,7 +94,7 @@ public final class LazyString implements Sealed2<LazyList.Cons<Character>,LazyLi
         return string.stream().join("");
     }
     @Override
-    public <R> R match(Function<? super LazyList.Cons<Character>, ? extends R> fn1, Function<? super LazyList.Nil, ? extends R> fn2) {
+    public <R> R match(Function<? super LazySeq.Cons<Character>, ? extends R> fn1, Function<? super LazySeq.Nil, ? extends R> fn2) {
         return string.match(fn1,fn2);
     }
 }

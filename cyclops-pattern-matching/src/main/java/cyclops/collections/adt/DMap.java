@@ -1,7 +1,6 @@
 package cyclops.collections.adt;
 
 import com.aol.cyclops2.types.foldable.To;
-import cyclops.control.Xor;
 import cyclops.control.lazy.Either;
 import cyclops.control.lazy.Either3;
 import cyclops.stream.ReactiveSeq;
@@ -16,10 +15,10 @@ public interface DMap{
 
 
     public static <K1,V1,K2,V2> Two<K1,V1,K2,V2> twoEmpty(){
-        return new DMap2<>(ImmutableHashMap.empty(),ImmutableHashMap.empty());
+        return new DMap2<>(HashMap.empty(), HashMap.empty());
     }
     public static <K1,V1,K2,V2,K3,V3> Three<K1,V1,K2,V2,K3,V3> threeEmpty(){
-        return new DMap3<>(ImmutableHashMap.empty(),ImmutableHashMap.empty(),ImmutableHashMap.empty());
+        return new DMap3<>(HashMap.empty(), HashMap.empty(), HashMap.empty());
     }
 
 

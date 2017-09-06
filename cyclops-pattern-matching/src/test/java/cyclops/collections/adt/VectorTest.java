@@ -13,12 +13,12 @@ public class VectorTest {
 
     @Test
     public void testVector(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty().plus(1);
+        Vector<Integer> ints = Vector.<Integer>empty().plus(1);
         assertThat(ints.get(0),equalTo(Optional.of(1)));
     }
     @Test
     public void testVector100(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty();
+        Vector<Integer> ints = Vector.<Integer>empty();
         for(int i=0;i<1025;i++){
             ints = ints.plus(i);
         }
@@ -34,7 +34,7 @@ public class VectorTest {
     }
     @Test
     public void test3Pow(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty();
+        Vector<Integer> ints = Vector.<Integer>empty();
 
         int p  = Double.valueOf(Math.pow(2,15)).intValue();
         for(int i=0;i<p;i++){
@@ -46,7 +46,7 @@ public class VectorTest {
         }
 
 
-        final ImmutableVector<Integer> finalRef = ints;
+        final Vector<Integer> finalRef = ints;
         ints.stream().forEach(next-> {
                     assertThat(finalRef.get(next), equalTo(Optional.of(next)));
                 }
@@ -55,7 +55,7 @@ public class VectorTest {
 
     @Test
     public void test3PowSet(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty();
+        Vector<Integer> ints = Vector.<Integer>empty();
 
         int p  = Double.valueOf(Math.pow(2,15)).intValue();
         for(int i=0;i<p;i++){
@@ -73,7 +73,7 @@ public class VectorTest {
     }
     @Test
     public void test4Pow(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty();
+        Vector<Integer> ints = Vector.<Integer>empty();
 
         int p  = Double.valueOf(Math.pow(2,20)).intValue();
         for(int i=0;i<p;i++){
@@ -83,7 +83,7 @@ public class VectorTest {
             assertThat(ints.get(i),equalTo(Optional.of(i)));
         }
 
-        final ImmutableVector<Integer> finalRef = ints;
+        final Vector<Integer> finalRef = ints;
         ints.stream().forEach(next-> {
                     assertThat(finalRef.get(next), equalTo(Optional.of(next)));
                 }
@@ -92,7 +92,7 @@ public class VectorTest {
 
     @Test
     public void test4PowSet(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty();
+        Vector<Integer> ints = Vector.<Integer>empty();
 
         int p  = Double.valueOf(Math.pow(2,20)).intValue();
         for(int i=0;i<p;i++){
@@ -110,7 +110,7 @@ public class VectorTest {
     }
     @Test
     public void test5Pow(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty();
+        Vector<Integer> ints = Vector.<Integer>empty();
 
         int p  = Double.valueOf(Math.pow(2,25)).intValue();
         for(int i=0;i<p;i++){
@@ -120,7 +120,7 @@ public class VectorTest {
             assertThat(ints.get(i),equalTo(Optional.of(i)));
         }
 
-        final ImmutableVector<Integer> finalRef = ints;
+        final Vector<Integer> finalRef = ints;
         ints.stream().forEach(next-> {
                     assertThat(finalRef.get(next), equalTo(Optional.of(next)));
                 }
@@ -129,7 +129,7 @@ public class VectorTest {
 
     @Test
     public void test5PowSet(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty();
+        Vector<Integer> ints = Vector.<Integer>empty();
 
         int p  = Double.valueOf(Math.pow(2,25)).intValue();
         for(int i=0;i<p;i++){
@@ -147,7 +147,7 @@ public class VectorTest {
     }
     @Test @Ignore
     public void test6Pow(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty();
+        Vector<Integer> ints = Vector.<Integer>empty();
 
         int p  = Double.valueOf(Math.pow(2,30)).intValue();
         for(int i=0;i<p;i++){
@@ -157,7 +157,7 @@ public class VectorTest {
             assertThat(ints.get(i),equalTo(Optional.of(i)));
         }
 
-        final ImmutableVector<Integer> finalRef = ints;
+        final Vector<Integer> finalRef = ints;
         ints.stream().forEach(next-> {
                     assertThat(finalRef.get(next), equalTo(Optional.of(next)));
                 }
@@ -166,7 +166,7 @@ public class VectorTest {
 
     @Test @Ignore
     public void test6PowSet(){
-        ImmutableVector<Integer> ints = ImmutableVector.<Integer>empty();
+        Vector<Integer> ints = Vector.<Integer>empty();
 
         int p  = Double.valueOf(Math.pow(2,30)).intValue()/2;
         for(int i=0;i<p;i++){

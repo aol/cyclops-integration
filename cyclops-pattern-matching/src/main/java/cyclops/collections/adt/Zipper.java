@@ -17,16 +17,16 @@ import java.util.function.Predicate;
 @Wither
 public class Zipper<T> {
 
-    private final LazyList<T> left;
+    private final ImmutableList<T> left;
     private final T point;
-    private final LazyList<T> right;
+    private final ImmutableList<T> right;
 
 
-    public static <T> Zipper<T> of(LazyList<T> left, T value, LazyList<T> right){
+    public static <T> Zipper<T> of(ImmutableList<T> left, T value, ImmutableList<T> right){
         return new Zipper<>(left,value,right);
     }
     public static <T> Zipper of(ReactiveSeq<T> left, T value, ReactiveSeq<T> right){
-        return new Zipper<>(LazyList.fromStream(left),value,LazyList.fromStream(right));
+        return new Zipper<>(LazySeq.fromStream(left),value, LazySeq.fromStream(right));
     }
 
     public boolean isStart(){
@@ -87,7 +87,7 @@ public class Zipper<T> {
         return Maybe.just(result);
     }
     public <R> Maybe<Zipper<T>>  next(){
-        return right.match(c->Maybe.just(new Zipper(left.prepend(point), c.hashCode(), c.tail.get())), nil->Maybe.none());
+        return right.match(c->Maybe.just(new Zipper(left.prepend(point), c.hashCode(), c.tail())), nil->Maybe.none());
     }
     public <R> Zipper<T> next(Zipper<T> alt){
         return next().orElse(alt);
@@ -97,19 +97,19 @@ public class Zipper<T> {
     }
     public Zipper<T> cycleNext() {
         return left.match(cons->right.match(c->next().orElse(this),nil->{
-            LazyList.Cons<T> reversed = cons.reverse();
-            return of(LazyList.empty(),reversed.head,reversed.tail.get().append(point));
+            ImmutableList.Some<T> reversed = cons.reverse();
+            return of(LazySeq.empty(),reversed.head(),reversed.tail().append(point));
         }),nil->this);
 
     }
     public Zipper<T> cyclePrevious() {
         return right.match(cons->left.match(c->next().orElse(this),nil->{
-            LazyList.Cons<T> reversed = cons.reverse();
-            return of(reversed.tail.get().append(point),reversed.head,LazyList.empty());
+            ImmutableList.Some<T> reversed = cons.reverse();
+            return of(reversed.tail().append(point),reversed.head(), LazySeq.empty());
         }),nil->this);
     }
     public <R> Maybe<Zipper<T>>  previous(){
-        return left.match(c->Maybe.just(new Zipper(c.tail.get(),c.head ,right.prepend(point))), nil->Maybe.none());
+        return left.match(c->Maybe.just(new Zipper(c.tail(),c.head() ,right.prepend(point))), nil->Maybe.none());
     }
 
     public Zipper<T> left(T value){
@@ -119,17 +119,17 @@ public class Zipper<T> {
         return new Zipper<>(left.prepend(value),value,right);
     }
     public Zipper<T> deleteLeftAndRight() {
-        return new Zipper<>(LazyList.empty(), point, LazyList.empty());
+        return new Zipper<>(LazySeq.empty(), point, LazySeq.empty());
     }
     public Maybe<Zipper<T>> deleteLeft() {
 
-        return left.match(c->right.match(c2->Maybe.just(of(c.tail.get(),c.head,right)),n->Maybe.just(of(c.tail.get(),c.head,right))),
-                n->right.match(c->Maybe.just(of(left,c.head,c.tail.get())),n2->Maybe.none()));
+        return left.match(c->right.match(c2->Maybe.just(of(c.tail(),c.head(),right)),n->Maybe.just(of(c.tail(),c.head(),right))),
+                n->right.match(c->Maybe.just(of(left,c.head(),c.tail())),n2->Maybe.none()));
     }
     public Maybe<Zipper<T>> deleteRight() {
 
-        return right.match(c->left.match(c2->Maybe.just(of(left,c.head,c.tail.get())),n->Maybe.just(of(left,c.head,c.tail.get()))),
-                n->left.match(c->Maybe.just(of(c.tail.get(),c.head,right)),n2->Maybe.none()));
+        return right.match(c->left.match(c2->Maybe.just(of(left,c.head(),c.tail())),n->Maybe.just(of(left,c.head(),c.tail()))),
+                n->left.match(c->Maybe.just(of(c.tail(),c.head(),right)),n2->Maybe.none()));
     }
 
 
@@ -144,10 +144,10 @@ public class Zipper<T> {
     }
 
 
-    public Tuple2<LazyList<T>, LazyList<T>> split() {
+    public Tuple2<ImmutableList<T>, ImmutableList<T>> split() {
         return Tuple.tuple(left, right);
     }
-    public LazyList<T> lazyList(){
+    public ImmutableList<T> list(){
         return right.prepend(point).prependAll(left);
     }
 }

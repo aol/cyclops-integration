@@ -1,12 +1,9 @@
 package cyclops.collections.adt;
 
-import cyclops.patterns.CaseClass2;
 import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
@@ -40,9 +37,9 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
 
     BankersQueue<T> replace(T currentElement, T newElement);
     public static <T> BankersQueue<T> cons(T value){
-        return new Cons<>(1,LazyList.cons(value,()->LazyList.empty()),0,LazyList.empty());
+        return new Cons<>(1, LazySeq.cons(value,()-> LazySeq.empty()),0, LazySeq.empty());
     }
-     LazyList<T> lazyList();
+     LazySeq<T> lazyList();
 
     static <T> BankersQueue<T> of(T... values) {
         BankersQueue<T> result = empty();
@@ -55,11 +52,11 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Cons<T> implements  BankersQueue<T> {
         private final int sizeFront;
-        private final LazyList<T> front;
+        private final LazySeq<T> front;
         private final int sizeBack;
-        private final LazyList<T> back;
+        private final LazySeq<T> back;
 
-        private Cons(LazyList<T> front, LazyList<T> back){
+        private Cons(LazySeq<T> front, LazySeq<T> back){
             this.sizeFront = front.size();
             this.sizeBack=back.size();
             this.front = front;
@@ -70,7 +67,7 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
        private static <T> BankersQueue<T> check(Cons<T> check) {
             if(check.sizeBack<check.sizeFront)
                 return check;
-           return new Cons((check.sizeFront + check.sizeBack), check.front.prependAll(check.back), 0, LazyList.empty());
+           return new Cons((check.sizeFront + check.sizeBack), check.front.prependAll(check.back), 0, LazySeq.empty());
         }
 
         @Override
@@ -110,8 +107,8 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
 
         }
         public BankersQueue<T> replace(T currentElement, T newElement) {
-            LazyList<T> replaceF = front.replace(currentElement, newElement);
-            LazyList<T> replaceB = back.replace(currentElement, newElement);
+            LazySeq<T> replaceF = front.replace(currentElement, newElement);
+            LazySeq<T> replaceB = back.replace(currentElement, newElement);
             return  front==replaceF && back==replaceB ? this : new Cons<>(replaceF, replaceB);
         }
        public Optional<T> get(int n) {
@@ -125,7 +122,7 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
 
        }
         @Override
-        public LazyList<T> lazyList() {
+        public LazySeq<T> lazyList() {
             return front.appendAll(back.reverse());
         }
 
@@ -174,8 +171,8 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
 
 
         @Override
-        public LazyList<T> lazyList() {
-            return LazyList.empty();
+        public LazySeq<T> lazyList() {
+            return LazySeq.empty();
         }
 
         @Override

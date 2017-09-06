@@ -17,10 +17,10 @@ import java.util.function.Predicate;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of={"head,tail"})
-public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>> {
+public class NonEmptyList<T> implements CaseClass2<T,Seq<T>> {
 
     private final T head;
-    private final ImmutableList<T> tail;
+    private final Seq<T> tail;
 
     public ReactiveSeq<T> stream(){
         return ReactiveSeq.fromIterable(iterable());
@@ -29,7 +29,7 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>> {
         return LinkedListX.fromIterable(iterable());
     }
     public static <T> NonEmptyList<T> of(T head, T... value){
-        ImmutableList<T> list = ImmutableList.of(value);
+        Seq<T> list = Seq.of(value);
         return cons(head,list);
     }
 
@@ -40,8 +40,8 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>> {
         return tail.get(pos);
 
     }
-    public ImmutableList<T> asList(){
-        return ImmutableList.cons(head,tail);
+    public Seq<T> asList(){
+        return Seq.cons(head,tail);
     }
     public NonEmptyList<T> prepend(T value){
         return cons(value,asList());
@@ -53,16 +53,16 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>> {
     public Iterable<T> iterable(){
         return asList().iterable();
     }
-    public ImmutableList<T> filter(Predicate<? super T> pred){
+    public Seq<T> filter(Predicate<? super T> pred){
         return asList().filter(pred);
     }
 
     public <R> NonEmptyList<R> map(Function<? super T, ? extends R> fn) {
-        ImmutableList<R> list = asList().map(fn);
+        Seq<R> list = asList().map(fn);
         return list.asNonEmptyList().get();
     }
     public <R> NonEmptyList<R> flatMap(Function<? super T, ? extends NonEmptyList<R>> fn) {
-        ImmutableList<R> l = asList().flatMap(fn.andThen(a -> a.asList()));
+        Seq<R> l = asList().flatMap(fn.andThen(a -> a.asList()));
         return l.asNonEmptyList().get();
     }
 
@@ -78,12 +78,12 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>> {
         return 1+tail.size();
     }
 
-    public static <T> NonEmptyList<T> cons(T value, ImmutableList<T> tail){
+    public static <T> NonEmptyList<T> cons(T value, Seq<T> tail){
         return new NonEmptyList<>(value,tail);
     }
 
     @Override
-    public Tuple2<T, ImmutableList<T>> unapply() {
+    public Tuple2<T, Seq<T>> unapply() {
         return Tuple.tuple(head,tail);
     }
 }

@@ -2,12 +2,8 @@ package cyclops.collections.adt;
 
 
 import cyclops.patterns.CaseClass2;
-import cyclops.patterns.Sealed4;
 import cyclops.stream.ReactiveSeq;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.experimental.Wither;
-import org.agrona.collections.ArrayUtil;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
@@ -39,7 +35,7 @@ public class HAMT<K, V>  {
        public V getOrElseGet(int bitShiftDepth,int hash,K key,Supplier<V> alt);
        public Node<K,V> minus(int bitShiftDepth,int hash,K key);
        int size();
-       LazyList<Tuple2<K,V>> lazyList();
+       LazySeq<Tuple2<K,V>> lazyList();
        ReactiveSeq<Tuple2<K, V>> stream();
    }
 
@@ -76,8 +72,8 @@ public class HAMT<K, V>  {
        }
 
        @Override
-       public LazyList<Tuple2<K, V>> lazyList() {
-           return LazyList.empty();
+       public LazySeq<Tuple2<K, V>> lazyList() {
+           return LazySeq.empty();
        }
 
        @Override
@@ -100,7 +96,7 @@ public class HAMT<K, V>  {
        private Node<K,V> merge(int bitShiftDepth,  ValueNode<K, V> that) {
            //hash each merge into a collision node if hashes are the same, otherwise store in new location under a BitsetNode
            if(hash==that.hash)
-                return new CollisionNode<>(hash,LazyList.of(Tuple.tuple(key,value),that.unapply()));
+                return new CollisionNode<>(hash, LazySeq.of(Tuple.tuple(key,value),that.unapply()));
            //create new BitsetNode
            int posThis = BitsetNode.bitpos(hash,bitShiftDepth);
            int posThat = BitsetNode.bitpos(that.hash,bitShiftDepth);
@@ -147,8 +143,8 @@ public class HAMT<K, V>  {
        }
 
        @Override
-       public LazyList<Tuple2<K, V>> lazyList() {
-           return LazyList.of(unapply());
+       public LazySeq<Tuple2<K, V>> lazyList() {
+           return LazySeq.of(unapply());
        }
 
        @Override
@@ -165,10 +161,10 @@ public class HAMT<K, V>  {
    public static class CollisionNode<K,V> implements Node<K,V>{
 
        private final int hash;
-       private final LazyList<Tuple2<K,V>> bucket;
+       private final LazySeq<Tuple2<K,V>> bucket;
        @Override
        public Node<K, V> plus(int bitShiftDepth, int hash, K key, V value) {
-           LazyList<Tuple2<K, V>> filtered = bucket.filter(t -> !Objects.equals(key, t.v1));
+           LazySeq<Tuple2<K, V>> filtered = bucket.filter(t -> !Objects.equals(key, t.v1));
            Node<K,V> newNode = filtered.size()==0 ?  new ValueNode<>(hash,key,value) : new CollisionNode<>(hash,filtered.prepend(Tuple.tuple(key,value)));
            if(this.hash==hash){
                return newNode;
@@ -224,7 +220,7 @@ public class HAMT<K, V>  {
         }
 
         @Override
-        public LazyList<Tuple2<K, V>> lazyList() {
+        public LazySeq<Tuple2<K, V>> lazyList() {
             return bucket;
         }
 
@@ -311,8 +307,8 @@ public class HAMT<K, V>  {
         }
 
         @Override
-        public LazyList<Tuple2<K, V>> lazyList() {
-            return LazyList.fromStream(stream());
+        public LazySeq<Tuple2<K, V>> lazyList() {
+            return LazySeq.fromStream(stream());
         }
         @Override
         public ReactiveSeq<Tuple2<K, V>> stream() {

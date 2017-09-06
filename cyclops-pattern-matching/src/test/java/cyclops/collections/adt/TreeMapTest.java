@@ -12,7 +12,7 @@ public class TreeMapTest {
 
     @Test
     public void put(){
-        ImmutableTreeMap<Integer,String> map = ImmutableTreeMap.fromMap(Comparator.naturalOrder(), PersistentMapXs.of(1,"hello",2,"world"));
+        TreeMap<Integer,String> map = TreeMap.fromMap(Comparator.naturalOrder(), PersistentMapXs.of(1,"hello",2,"world"));
 
         map.stream().printOut();
 

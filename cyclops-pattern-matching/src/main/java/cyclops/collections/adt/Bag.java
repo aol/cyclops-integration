@@ -6,11 +6,11 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Bag<T> {
 
-    private final ImmutableHashMap<T,Integer> map;
+    private final HashMap<T,Integer> map;
     private final int size;
 
     public static <T> Bag<T> empty() {
-        return new Bag<>(ImmutableHashMap.empty(), 0);
+        return new Bag<>(HashMap.empty(), 0);
     }
 
 

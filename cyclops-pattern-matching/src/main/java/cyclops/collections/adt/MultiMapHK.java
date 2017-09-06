@@ -14,12 +14,12 @@ import java.util.function.Function;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MultiMapHK<W,K,V> {
-    private final ImmutableHashMap<K,Higher<W,V>> multiMap;
+    private final HashMap<K,Higher<W,V>> multiMap;
     private final Appender<W,V> appender;
     private final Pure<W> pure;
 
     public static <W,K,V> MultiMapHK<W,K,V> empty(Appender<W,V> appender, Pure<W> pure){
-        return new MultiMapHK<>(ImmutableHashMap.empty(),appender,pure);
+        return new MultiMapHK<>(HashMap.empty(),appender,pure);
     }
 
     public MultiMapHK<W,K, V> put(K key, V value) {

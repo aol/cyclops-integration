@@ -15,14 +15,14 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
-public class ImmutableHashMap<K,V> implements ImmutableMap<K,V>{
+public class HashMap<K,V> implements ImmutableMap<K,V>{
     HAMT.Node<K,V> map;
 
-    public static <K,V> ImmutableHashMap<K,V> empty(){
-        return new ImmutableHashMap<>(HAMT.empty());
+    public static <K,V> HashMap<K,V> empty(){
+        return new HashMap<>(HAMT.empty());
     }
 
-    public static <K,V> ImmutableHashMap<K,V> fromStream(ReactiveSeq<Tuple2<K,V>> stream){
+    public static <K,V> HashMap<K,V> fromStream(ReactiveSeq<Tuple2<K,V>> stream){
         return stream.foldLeft(empty(),(m,t2)->m.put(t2.v1,t2.v2));
     }
 
@@ -101,8 +101,8 @@ public class ImmutableHashMap<K,V> implements ImmutableMap<K,V>{
         return stream().to().persistentMapX(t->t.v1,t->t.v2);
     }
 
-    public ImmutableHashMap<K,V> put(K key, V value){
-        return new ImmutableHashMap<K,V>(map.plus(0,key.hashCode(),key,value));
+    public HashMap<K,V> put(K key, V value){
+        return new HashMap<K,V>(map.plus(0,key.hashCode(),key,value));
     }
 
     @Override
@@ -117,7 +117,7 @@ public class ImmutableHashMap<K,V> implements ImmutableMap<K,V>{
 
     @Override
     public ImmutableMap<K, V> remove(K key) {
-        return new ImmutableHashMap<>(map.minus(0,key.hashCode(),key));
+        return new HashMap<>(map.minus(0,key.hashCode(),key));
     }
 
 
@@ -127,7 +127,7 @@ public class ImmutableHashMap<K,V> implements ImmutableMap<K,V>{
         for(K key : keys){
             cur = map.minus(0,key.hashCode(),key);
         }
-        return new ImmutableHashMap<>(cur);
+        return new HashMap<>(cur);
     }
 
 
@@ -158,8 +158,8 @@ public class ImmutableHashMap<K,V> implements ImmutableMap<K,V>{
         return map.getOrElseGet(0,key.hashCode(),key,alt);
     }
 
-    public ImmutableHashMap<K,V> minus(K key){
-        return new ImmutableHashMap<K,V>(map.minus(0,key.hashCode(),key));
+    public HashMap<K,V> minus(K key){
+        return new HashMap<K,V>(map.minus(0,key.hashCode(),key));
     }
 
     @Override

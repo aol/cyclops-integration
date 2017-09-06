@@ -2,12 +2,6 @@ package cyclops.collections.adt;
 
 
 import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.internal.stream.spliterators.FillSpliterator;
-import com.aol.cyclops2.internal.stream.spliterators.IteratePredicateSpliterator;
-import com.aol.cyclops2.internal.stream.spliterators.IterateSpliterator;
-import com.aol.cyclops2.internal.stream.spliterators.UnfoldSpliterator;
-import com.aol.cyclops2.internal.stream.spliterators.ints.ReversingRangeIntSpliterator;
-import com.aol.cyclops2.internal.stream.spliterators.longs.ReversingRangeLongSpliterator;
 import com.aol.cyclops2.types.Filters;
 import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
@@ -15,7 +9,6 @@ import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
-import cyclops.companion.Streams;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.control.Xor;
@@ -23,7 +16,6 @@ import cyclops.patterns.CaseClass2;
 import cyclops.patterns.Sealed2;
 import cyclops.stream.Generator;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Enumeration;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.jooq.lambda.tuple.Tuple;
@@ -37,22 +29,22 @@ import java.util.function.*;
 import java.util.stream.Stream;
 
 //safe LazyList (Stream) that does not support exceptional states
-public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
+public interface LazySeq<T> extends  ImmutableList<T>,
                                         Folds<T>,
                                         Filters<T>,
                                         Transformable<T>,
-                                        To<LazyList<T>>,
+                                        To<LazySeq<T>>,
                                         Higher<DataWitness.lazyList,T> {
 
     default ReactiveSeq<T> stream(){
-        return ReactiveSeq.fromIterable(iterable());
+        return ReactiveSeq.fromIterable(this);
     }
     default LinkedListX<T> linkedListX(){
-        return LinkedListX.fromIterable(iterable());
+        return LinkedListX.fromIterable(this);
     }
 
-    static  <T,R> LazyList<R> tailRec(T initial, Function<? super T, ? extends LazyList<? extends Xor<T, R>>> fn) {
-        LazyList<Xor<T, R>> next = LazyList.of(Xor.secondary(initial));
+    static  <T,R> LazySeq<R> tailRec(T initial, Function<? super T, ? extends LazySeq<? extends Xor<T, R>>> fn) {
+        LazySeq<Xor<T, R>> next = LazySeq.of(Xor.secondary(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -62,59 +54,59 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
                         return fromStream(fn.apply(s).stream()); },
                     p -> {
                         newValue[0]=false;
-                        return LazyList.of(e);
+                        return LazySeq.of(e);
                     }));
             if(!newValue[0])
                 break;
 
         }
         ListX<R> x = Xor.sequencePrimary(next.stream().to().listX(Evaluation.LAZY)).get();
-        return LazyList.fromIterator(x.iterator());
+        return LazySeq.fromIterator(x.iterator());
     }
-    static <T> LazyList<T> fill(T t){
-        return LazyList.fromStream(ReactiveSeq.fill(t));
+    static <T> LazySeq<T> fill(T t){
+        return LazySeq.fromStream(ReactiveSeq.fill(t));
     }
-    static <U, T> LazyList<T> unfold(final U seed, final Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
+    static <U, T> LazySeq<T> unfold(final U seed, final Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
         return fromStream(ReactiveSeq.unfold(seed,unfolder));
     }
-    static <T> LazyList<T> iterate(final T seed, final UnaryOperator<T> f) {
+    static <T> LazySeq<T> iterate(final T seed, final UnaryOperator<T> f) {
         return fromStream(ReactiveSeq.iterate(seed,f));
 
     }
-    static <T> LazyList<T> iterate(final T seed, Predicate<? super T> pred, final UnaryOperator<T> f) {
+    static <T> LazySeq<T> iterate(final T seed, Predicate<? super T> pred, final UnaryOperator<T> f) {
         return fromStream(ReactiveSeq.iterate(seed,pred,f));
 
     }
-    static <T> LazyList<T> deferred(Supplier<? extends Iterable<? extends T>> lazy){
+    static <T> LazySeq<T> deferred(Supplier<? extends Iterable<? extends T>> lazy){
         return fromStream(ReactiveSeq.of(1).flatMapI(i->lazy.get()));
     }
-    static <T, U> Tuple2<LazyList<T>, LazyList<U>> unzip(final LazyList<Tuple2<T, U>> sequence) {
+    static <T, U> Tuple2<LazySeq<T>, LazySeq<U>> unzip(final LazySeq<Tuple2<T, U>> sequence) {
        return ReactiveSeq.unzip(sequence.stream()).map((a,b)->Tuple.tuple(fromStream(a),fromStream(b)));
     }
-    static <T> LazyList<T> generate(Supplier<T> s){
+    static <T> LazySeq<T> generate(Supplier<T> s){
         return fromStream(ReactiveSeq.generate(s));
     }
-    static <T> LazyList<T> generate(Generator<T> s){
+    static <T> LazySeq<T> generate(Generator<T> s){
         return fromStream(ReactiveSeq.generate(s));
     }
-     static LazyList<Integer> range(final int start, final int end) {
-        return LazyList.fromStream(ReactiveSeq.range(start,end));
+     static LazySeq<Integer> range(final int start, final int end) {
+        return LazySeq.fromStream(ReactiveSeq.range(start,end));
 
     }
-    static LazyList<Integer> range(final int start, final  int step,final int end) {
-       return LazyList.fromStream(ReactiveSeq.range(start,step,end));
+    static LazySeq<Integer> range(final int start, final  int step, final int end) {
+       return LazySeq.fromStream(ReactiveSeq.range(start,step,end));
 
     }
-    static LazyList<Long> rangeLong(final long start, final  long step,final long end) {
-        return LazyList.fromStream(ReactiveSeq.rangeLong(start,step,end));
+    static LazySeq<Long> rangeLong(final long start, final  long step, final long end) {
+        return LazySeq.fromStream(ReactiveSeq.rangeLong(start,step,end));
     }
 
 
-    static LazyList<Long> rangeLong(final long start, final long end) {
-        return LazyList.fromStream(ReactiveSeq.rangeLong(start,end));
+    static LazySeq<Long> rangeLong(final long start, final long end) {
+        return LazySeq.fromStream(ReactiveSeq.rangeLong(start,end));
 
     }
-    LazyList<T> append(Supplier<LazyList<T>> list);
+    LazySeq<T> append(Supplier<LazySeq<T>> list);
     /**
      *
      * Stream over the values of an enum
@@ -137,8 +129,8 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
      * @param <E> Enum type
      * @return Stream over enum
      */
-    static <E extends Enum<E>> LazyList<E> enums(Class<E> c){
-        return LazyList.fromStream(ReactiveSeq.enums(c));
+    static <E extends Enum<E>> LazySeq<E> enums(Class<E> c){
+        return LazySeq.fromStream(ReactiveSeq.enums(c));
     }
 
     /**
@@ -161,8 +153,8 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
      * @param <E> Enum type
      * @return Stream over enum
      */
-    static <E extends Enum<E>> LazyList<E> enums(Class<E> c,E start){
-        return LazyList.fromStream(ReactiveSeq.enums(c,start));
+    static <E extends Enum<E>> LazySeq<E> enums(Class<E> c, E start){
+        return LazySeq.fromStream(ReactiveSeq.enums(c,start));
     }
     /**
      *
@@ -183,8 +175,8 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
      * @param <E> Enum type
      * @return Stream over enum
      */
-    static <E extends Enum<E>> LazyList<E> enumsFromTo(Class<E> c,E start,E end){
-       return LazyList.fromStream(ReactiveSeq.enumsFromTo(c,start,end));
+    static <E extends Enum<E>> LazySeq<E> enumsFromTo(Class<E> c, E start, E end){
+       return LazySeq.fromStream(ReactiveSeq.enumsFromTo(c,start,end));
     }
     /**
      *
@@ -205,99 +197,103 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
      * @param <E> Enum type
      * @return Stream over enum
      */
-    static <E extends Enum<E>> LazyList<E> enums(Class<E> c,E start,E step,E end){
-       return LazyList.fromStream(ReactiveSeq.enums(c,start,step,end));
+    static <E extends Enum<E>> LazySeq<E> enums(Class<E> c, E start, E step, E end){
+       return LazySeq.fromStream(ReactiveSeq.enums(c,start,step,end));
 
     }
-
-    static <T> LazyList<T> fromIterator(Iterator<T> it){
+    static <T> LazySeq<T> fromIterable(Iterable<T> it){
+        if(it instanceof LazySeq)
+            return (LazySeq<T>)it;
+        return fromIterator(it.iterator());
+    }
+    static <T> LazySeq<T> fromIterator(Iterator<T> it){
         return it.hasNext() ? cons(it.next(), () -> fromIterator(it)) : empty();
     }
-    static <T> LazyList<T> fromStream(Stream<T> stream){
+    static <T> LazySeq<T> fromStream(Stream<T> stream){
         Iterator<T> t = stream.iterator();
         return t.hasNext() ? cons(t.next(),()->fromIterator(t)) : empty();
     }
-    static <T> LazyList<T> of(T... value){
-        LazyList<T> result = empty();
+    static <T> LazySeq<T> of(T... value){
+        LazySeq<T> result = empty();
         for(int i=value.length;i>0;i--){
             result = result.prepend(value[i-1]);
         }
         return result;
     }
-    static <T> LazyList<T> empty(){
+    static <T> LazySeq<T> empty(){
         return Nil.Instance;
     }
 
-    default Tuple2<LazyList<T>, LazyList<T>> span(Predicate<? super T> pred) {
+    default Tuple2<LazySeq<T>, LazySeq<T>> span(Predicate<? super T> pred) {
         return Tuple.tuple(takeWhile(pred), dropWhile(pred));
     }
-    default Tuple2<LazyList<T>,LazyList<T>> splitBy(Predicate<? super T> test) {
+    default Tuple2<LazySeq<T>,LazySeq<T>> splitBy(Predicate<? super T> test) {
         return span(test.negate());
     }
-    default LazyList<LazyList<T>> split(Predicate<? super T> test) {
-        LazyList<T> next = dropWhile(test);
-        Tuple2<LazyList<T>, LazyList<T>> split = next.splitBy(test);
-        return next.match(c->cons(split.v1,()->split.v2.split(test)),n->n);
+    default LazySeq<LazySeq<T>> split(Predicate<? super T> test) {
+        LazySeq<T> next = dropWhile(test);
+        Tuple2<LazySeq<T>, LazySeq<T>> split = next.splitBy(test);
+        return next.visit(c->cons(split.v1,()->split.v2.split(test)),n->n);
     }
-    default LazyList<T> take(final int n) {
+    default LazySeq<T> take(final int n) {
         if( n <= 0)
-            return LazyList.Nil.Instance;
+            return LazySeq.Nil.Instance;
         if(n<1000) {
-            return this.match(cons -> cons(cons.head, ()->cons.take(n - 1)), nil -> nil);
+            return this.visit(cons -> cons(cons.head, ()->cons.take(n - 1)), nil -> nil);
         }
-        return fromStream(ReactiveSeq.fromIterable(this.iterable()).take(n));
+        return fromStream(ReactiveSeq.fromIterable(this).take(n));
 
     }
-    default LazyList<T> takeWhile(Predicate<? super T> p) {
-        return match(c->{
-            if(p.test(c.head)){
+    default LazySeq<T> takeWhile(Predicate<? super T> p) {
+        return visit(c->{
+            if(p.test(c.head())){
                 return cons(c.head,()->c.tail.get().takeWhile(p));
             }else{
                 return empty();
             }
         },n->this);
     }
-    default LazyList<T> dropWhile(Predicate<? super T> p) {
-        LazyList<T> current = this;
+    default LazySeq<T> dropWhile(Predicate<? super T> p) {
+        LazySeq<T> current = this;
         while(true && !current.isEmpty()){
-            current =  current.match(c->{
+            current =  current.visit(c->{
                 if(!p.test(c.head)){
-                    return LazyList.empty();
+                    return LazySeq.empty();
                 }
                 return c.tail.get();
             },empty->empty);
         }
         return current;
     }
-    default LazyList<T> drop(final int num) {
-        LazyList<T> current = this;
+    default LazySeq<T> drop(final int num) {
+        LazySeq<T> current = this;
         int pos = num;
         while (pos-- > 0 && !current.isEmpty()) {
-            current = current.match(c->c.tail.get(),nil->nil);
+            current = current.visit(c->c.tail.get(),nil->nil);
         }
         return current;
     }
-    default LazyList<T> reverse() {
-        LazyList<T> res = empty();
-        for (T a : iterable()) {
+    default LazySeq<T> reverse() {
+        LazySeq<T> res = empty();
+        for (T a : this) {
             res = res.prepend(a);
         }
         return res;
     }
-    default Tuple2<LazyList<T>,LazyList<T>> duplicate(){
+    default Tuple2<LazySeq<T>,LazySeq<T>> duplicate(){
         return Tuple.tuple(this,this);
     }
-    default <R1, R2> Tuple2<LazyList<R1>, LazyList<R2>> unzip(Function<? super T, Tuple2<? extends R1, ? extends R2>> fn) {
-        Tuple2<LazyList<R1>, LazyList<Tuple2<? extends R1, ? extends R2>>> x = map(fn).duplicate().map1(s -> s.map(Tuple2::v1));
+    default <R1, R2> Tuple2<LazySeq<R1>, LazySeq<R2>> unzip(Function<? super T, Tuple2<? extends R1, ? extends R2>> fn) {
+        Tuple2<LazySeq<R1>, LazySeq<Tuple2<? extends R1, ? extends R2>>> x = map(fn).duplicate().map1(s -> s.map(Tuple2::v1));
         return x.map2(s -> s.map(Tuple2::v2));
     }
-    default LazyList<T> replace(T currentElement, T newElement) {
-        LazyList<T> preceding = empty();
-        LazyList<T> tail = this;
+    default LazySeq<T> replace(T currentElement, T newElement) {
+        LazySeq<T> preceding = empty();
+        LazySeq<T> tail = this;
         while(!tail.isEmpty()){
-            LazyList<T> ref=  preceding;
-            LazyList<T> tailRef = tail;
-            Tuple3<LazyList<T>, LazyList<T>, Boolean> t3 = tail.match(c -> {
+            LazySeq<T> ref=  preceding;
+            LazySeq<T> tailRef = tail;
+            Tuple3<LazySeq<T>, LazySeq<T>, Boolean> t3 = tail.visit(c -> {
                 if (Objects.equals(c.head, currentElement))
                     return Tuple.tuple(ref, tailRef, true);
                 return Tuple.tuple(ref.prepend(c.head), c.tail.get(), false);
@@ -310,70 +306,67 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
 
         }
 
-        LazyList<T> start = preceding;
-        return tail.match(cons->cons.tail.get().prepend(newElement).prependAll(start),nil->this);
+        LazySeq<T> start = preceding;
+        return tail.visit(cons->cons.tail.get().prepend(newElement).prependAll(start),nil->this);
 
     }
 
 
-    default Optional<T> get(int pos){
+    default Maybe<T> get(int pos){
         T result = null;
-        LazyList<T> l = this;
+        ImmutableList<T> l = this;
         for(int i=0;i<pos;i++){
-           l = l.match(c->c.tail.get(),n->n);
+           l = l.match(c->c.tail(),n->n);
            if(l instanceof Nil){ //short circuit
-               return Optional.empty();
+               return Maybe.none();
            }
         }
-        return Optional.ofNullable(l.match(c->c.head,n->null));
-    }
-    default Tuple2<LazyList<T>, LazyList<T>> splitAt(int n) {
-        return Tuple.tuple(take(n), drop(n));
+        return Maybe.ofNullable(l.match(c->c.head(),n->null));
     }
 
-    default Zipper<T> focusAt(int pos, T alt){
-        Tuple2<LazyList<T>, LazyList<T>> t2 = splitAt(pos);
-        T value = t2.v2.match(c -> c.head, n -> alt);
-        LazyList<T> right= t2.v2.match(c->c.tail.get(),n->null);
-        return Zipper.of(t2.v1,value, right);
-    }
-    default Maybe<Zipper<T>> focusAt(int pos){
-        Tuple2<LazyList<T>, LazyList<T>> t2 = splitAt(pos);
-        Maybe<T> value = t2.v2.match(c -> Maybe.just(c.head), n -> Maybe.none());
-        return value.map(l-> {
-            LazyList<T> right = t2.v2.match(c -> c.tail.get(), n -> null);
-            return Zipper.of(t2.v1, l, right);
-        });
-    }
 
     default T getOrElse(int pos, T alt){
         T result = null;
-        LazyList<T> l = this;
+        LazySeq<T> l = this;
         for(int i=0;i<pos;i++){
-            l = l.match(c->c.tail.get(),n->n);
+            l = l.visit(c->c.tail.get(),n->n);
             if(l instanceof Nil){ //short circuit
                 return alt;
             }
         }
-        return l.match(c->c.head,n->null);
+        return l.visit(c->c.head,n->null);
     }
-    default LazyList<T> prepend(T value){
+    default T getOrElseGet(int pos, Supplier<T> alt){
+        T result = null;
+        LazySeq<T> l = this;
+        for(int i=0;i<pos;i++){
+            l = l.visit(c->c.tail.get(),n->n);
+            if(l instanceof Nil){ //short circuit
+                return alt.get();
+            }
+        }
+        return l.visit(c->c.head,n->null);
+    }
+    default LazySeq<T> prepend(T value){
         return cons(value,()->this);
     }
-    default LazyList<T> prependAll(LazyList<T> value){
+
+    default LazySeq<T> prependAll(Iterable<T> it){
+        LazySeq<T> value = fromIterable(it);
         return value.match(cons->
                         cons.foldRight(this,(a,b)->b.prepend(a))
                 ,nil->this);
     }
-    default LazyList<T> append(T append) {
-        return appendAll(LazyList.of(append));
+    default LazySeq<T> append(T append) {
+        return appendAll(LazySeq.of(append));
 
     }
 
 
-    default LazyList<T> appendAll(LazyList<T> append) {
-        return this.match(cons->{
-            return append.match(c2->{
+    default LazySeq<T> appendAll(Iterable<T> it) {
+        LazySeq<T> append = fromIterable(it);
+        return this.visit(cons->{
+            return append.visit(c2->{
                 return cons(cons.head,()->cons.tail.get().appendAll(append));
             },n2->this);
         },nil->append);
@@ -381,7 +374,7 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
     }
     default <R> R foldLeft(R zero, BiFunction<R, ? super T,  R> f){
         R acc= zero;
-        for(T next : iterable()){
+        for(T next : this){
             acc= f.apply(acc,next);
         }
         return acc;
@@ -391,26 +384,9 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
         return stream().join(",","[","]");
     }
 
-    default Iterable<T> iterable(){
-        return ()->new Iterator<T>() {
-            LazyList<T> current= LazyList.this;
-            @Override
-            public boolean hasNext() {
-                return current.match(c->true,n->false);
-            }
-
-            @Override
-            public T next() {
-                return current.match(c->{
-                    current = c.tail.get();
-                    return c.head;
-                },n->null);
-            }
-        };
-    }
     <R> R foldRight(R zero, BiFunction<? super T, ? super R, ? extends R> f);
 
-    default LazyList<T> filter(Predicate<? super T> pred){
+    default LazySeq<T> filter(Predicate<? super T> pred){
         return foldRight(empty(),(a,l)->{
             if(pred.test(a)){
                 return l.prepend(a);
@@ -418,39 +394,39 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
             return l;
         });
     }
-    default <R> LazyList<R> map(Function<? super T, ? extends R> fn) {
+    default <R> LazySeq<R> map(Function<? super T, ? extends R> fn) {
         return foldRight(empty(), (a, l) -> l.prepend(fn.apply(a)));
     }
 
-    default <R> LazyList<R> flatMap(Function<? super T, ? extends LazyList<? extends R>> fn) {
-        return this.match(cons->{
-            LazyList<R> l1 = (LazyList<R>)fn.apply(cons.head);
+    default <R> LazySeq<R> flatMap(Function<? super T, ? extends LazySeq<? extends R>> fn) {
+        return this.visit(cons->{
+            LazySeq<R> l1 = (LazySeq<R>)fn.apply(cons.head);
             return l1.appendAll(cons.tail.get().flatMap(a -> fn.apply(a)));
         },nil->empty());
     }
-
-    LazyList<T> cycle();
+    <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2);
+    LazySeq<T> cycle();
     int size();
 
     boolean isEmpty();
 
-    static <T> LazyList<T> cons(T head, Supplier<LazyList<T>> tail) {
+    static <T> LazySeq<T> cons(T head, Supplier<LazySeq<T>> tail) {
         return Cons.cons(head,tail);
     }
 
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Cons<T> implements CaseClass2<T,LazyList<T>>, LazyList<T> {
+    public static class Cons<T>  implements LazySeq<T>, ImmutableList.Some<T> {
 
         public final T head;
-        public final Supplier<LazyList<T>> tail;
+        public final Supplier<LazySeq<T>> tail;
 
-        public static <T> Cons<T> cons(T value, Supplier<LazyList<T>> tail){
+        public static <T> Cons<T> cons(T value, Supplier<LazySeq<T>> tail){
             return new Cons<>(value,tail);
         }
 
         @Override
-        public Tuple2<T, LazyList<T>> unapply() {
+        public Tuple2<T, ImmutableList<T>> unapply() {
             return Tuple.tuple(head,tail.get());
         }
         public boolean isEmpty(){
@@ -459,9 +435,9 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
 
         public <R> R foldRight(R zero,BiFunction<? super T, ? super R, ? extends R> f) {
             class Step{
-                public Trampoline<R> loop(LazyList<T> s, Function<? super R, ? extends Trampoline<R>> fn){
+                public Trampoline<R> loop(ImmutableList<T> s, Function<? super R, ? extends Trampoline<R>> fn){
 
-                    return s.match(c-> Trampoline.more(()->loop(c.tail.get(), rem -> Trampoline.more(() -> fn.apply(f.apply(c.head, rem))))), n->fn.apply(zero));
+                    return s.match(c-> Trampoline.more(()->loop(c.tail(), rem -> Trampoline.more(() -> fn.apply(f.apply(c.head(), rem))))), n->fn.apply(zero));
 
                 }
             }
@@ -474,9 +450,15 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
         }
 
 
+        public LazySeq<T> tail(){
+            return tail.get();
+        }
+        public T head(){
+            return head;
+        }
         public int size(){
             int result =1;
-            LazyList<T> current[] = new LazyList[1];
+            ImmutableList<T> current[] = new LazySeq[1];
             current[0]=tail.get();
             while(true){
                int toAdd =current[0].match(c->{
@@ -490,13 +472,13 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
             return result;
         }
         @Override
-        public Cons<T> append(Supplier<LazyList<T>> list) {
+        public Cons<T> append(Supplier<LazySeq<T>> list) {
             return cons(head,()->tail.get().append(list));
         }
 
         @Override
         public Cons<T> reverse() {
-            return (Cons<T>)LazyList.super.reverse();
+            return (Cons<T>)LazySeq.super.reverse();
         }
 
 
@@ -508,13 +490,16 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
 
         @Override
         public boolean equals(Object obj) {
-            if(obj instanceof LazyList)
-                return linkedListX().equals(((LazyList)obj).linkedListX());
+            if(obj instanceof LazySeq)
+                return linkedListX().equals(((LazySeq)obj).linkedListX());
             return false;
         }
 
         @Override
-        public <R> R match(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
+        public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None, ? extends R> fn2) {
+            return fn1.apply(this);
+        }
+        public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
             return fn1.apply(this);
         }
         public String toString(){
@@ -522,11 +507,11 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
         }
     }
 
-    public class Nil<T> implements LazyList<T> {
+    public class Nil<T> implements LazySeq<T>, ImmutableList.None<T> {
         static Nil Instance = new Nil();
 
         @Override
-        public LazyList<T> append(Supplier<LazyList<T>> list) {
+        public LazySeq<T> append(Supplier<LazySeq<T>> list) {
             return list.get();
         }
 
@@ -546,7 +531,10 @@ public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
         }
 
         @Override
-        public <R> R match(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
+        public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None, ? extends R> fn2) {
+            return fn2.apply(this);
+        }
+        public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
             return fn2.apply(this);
         }
         public String toString(){
