@@ -408,6 +408,129 @@ public class BAMT<T> {
 
 
             }
+            return Five.five(new Object[][][][][]{array,new Object[][][][]{new Object[][][]{new Object[][]{tail.array}}}});
+        }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return ReactiveSeq.iterate(0,i->i+1)
+                    .take(array.length)
+                    .map(indx->array[indx])
+                    .flatMap(a->{
+                        return ReactiveSeq.iterate(0,i->i+1)
+                                .take(a.length)
+                                .map(indx->a[indx])
+                                .flatMap(a2->{
+                                    return ReactiveSeq.iterate(0,i->i+1)
+                                            .take(a2.length)
+                                            .map(indx->a2[indx])
+                                            .flatMap(a3->ReactiveSeq.of((T[])a3));
+                                });
+                    });
+        }
+    }
+    @AllArgsConstructor
+    public static class Five<T> implements PopulatedArray<T>{
+        public static final int bitShiftDepth = 20;
+        private final Object[][][][][] array;
+
+        public static <T> Five<T> five(Object[][][][][] array){
+            return new Five<T>(array);
+        }
+
+        @Override
+        public PopulatedArray<T> set(int pos, T t) {
+            Object[][][][][] n1 = Arrays.copyOf(array, array.length);
+            int indx = NestedArray.mask(pos,bitShiftDepth);
+            Object[][][][] n2 = n1[indx];
+            Object[][][][] newNode = Arrays.copyOf(n2,n2.length);
+            n1[indx] = newNode;
+            int indx2 = NestedArray.mask(pos,Four.bitShiftDepth);
+            Object[][][] n3 = n2[indx2];
+            Object[][][] newNode2 = Arrays.copyOf(n3,n3.length);
+            int indx3 = NestedArray.mask(pos,Three.bitShiftDepth);
+            Object[][] n4 = n3[indx3];
+            Object[][] newNode3 = Arrays.copyOf(n3,n3.length);
+            int indx4 = NestedArray.mask(pos,Two.bitShiftDepth);
+            Object[] n5 = n4[indx4];
+            Object[] newNode4 = Arrays.copyOf(n4,n4.length);
+            newNode3[indx4]=n4;
+            n5[NestedArray.mask(pos)]=t;
+            return five(n1);
+
+        }
+
+        @Override
+        public Optional<T> get(int pos) {
+            T[] local = getNestedArrayAt(pos);
+            int resolved = NestedArray.bitpos(pos,bitShiftDepth);
+            int indx = pos & 0x01f;
+            if(indx<local.length){
+                return Optional.of(local[indx]);
+            }
+            return Optional.empty();
+        }
+
+        @Override
+        public T[] getNestedArrayAt(int pos) {
+
+
+            int indx = NestedArray.mask(pos, bitShiftDepth);
+            if(indx<array.length){
+                Object[][][][] twoArray = array[indx];
+                int indx2 = NestedArray.mask(pos,Four.bitShiftDepth);
+                if(indx2<twoArray.length){
+                    int indx3 = NestedArray.mask(pos,Three.bitShiftDepth);
+                    Object[][][] threeArray = twoArray[indx2];
+                    if(indx3<threeArray.length){
+                        int indx4 = NestedArray.mask(pos,Two.bitShiftDepth);
+                        Object[][] fourArray = threeArray[indx3];
+                        if(indx4<fourArray.length) {
+                            return (T[]) fourArray[indx4];
+                        }
+                    }
+                }
+            }
+
+            return (T[])new Object[0];
+
+
+        }
+
+
+        @Override
+        public NestedArray<T> append(ActiveTail<T> tail) {
+            if(last(last(last(array))).length<32){
+                Object[][][][][] updatedNodes = Arrays.copyOf(array, array.length,Object[][][][][].class);
+                updatedNodes[updatedNodes.length-1]=Arrays.copyOf(last(updatedNodes), last(updatedNodes).length,Object[][][][].class);
+                last(updatedNodes)[last(updatedNodes).length-1]=Arrays.copyOf(last(last(updatedNodes)), last(last(updatedNodes)).length,Object[][][].class);
+                last(last(updatedNodes))[last(last(updatedNodes)).length-1]=Arrays.copyOf(last(last(last(updatedNodes))), last(last(last(updatedNodes))).length+1,Object[][].class);
+                last(last(last(updatedNodes)))[last(last(last(array))).length] = tail.array;
+                return five(updatedNodes);
+
+
+
+            }
+            if(last(last(array)).length<32){
+                Object[][][][][] updatedNodes = Arrays.copyOf(array, array.length,Object[][][][][].class);
+                updatedNodes[updatedNodes.length-1]=Arrays.copyOf(last(updatedNodes), last(updatedNodes).length,Object[][][][].class);
+                last(updatedNodes)[last(updatedNodes).length-1]=Arrays.copyOf(last(last(updatedNodes)), last(last(updatedNodes)).length+1,Object[][][].class);
+                last(last(last(updatedNodes)))[last(last(last(array))).length] = tail.array;
+                return five(updatedNodes);
+
+            }
+            if(last(array).length<32){
+                Object[][][][][] updatedNodes = Arrays.copyOf(array, array.length,Object[][][][][].class);
+                updatedNodes[updatedNodes.length-1]=Arrays.copyOf(last(updatedNodes), last(updatedNodes).length+1,Object[][][][].class);
+                last(last(updatedNodes))[last(last(array)).length] = new Object[][][]{new Object[][]{tail.array}};
+                return five(updatedNodes);
+
+            }
+            if(array.length<32){
+                Object[][][][][] updatedNodes = Arrays.copyOf(array, array.length+1,Object[][][][][].class);
+                updatedNodes[array.length] = new Object[][][][]{new Object[][][]{new Object[][]{tail.array}}};
+                return five(updatedNodes);
+            }
             return null;
         }
 
@@ -424,7 +547,12 @@ public class BAMT<T> {
                                     return ReactiveSeq.iterate(0,i->i+1)
                                             .take(a2.length)
                                             .map(indx->a2[indx])
-                                            .flatMap(a3->ReactiveSeq.of((T[])a2));
+                                            .flatMap(a3->{
+                                                return ReactiveSeq.iterate(0,i->i+1)
+                                                .take(a3.length)
+                                                .map(indx->a3[indx])
+                                                .flatMap(a4->ReactiveSeq.of((T[])a4));
+                                            });
                                 });
                     });
         }

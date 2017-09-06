@@ -99,6 +99,39 @@ public class VectorTest {
         }
 
     }
+    @Test
+    public void test5Pow(){
+        Vector<Integer> ints = Vector.<Integer>empty();
+
+        int p  = Double.valueOf(Math.pow(2,25)).intValue();
+        for(int i=0;i<p;i++){
+            ints = ints.plus(i);
+        }
+        for(int i=0;i<p;i++){
+            assertThat(ints.get(i),equalTo(Optional.of(i)));
+        }
+
+
+    }
+
+    @Test
+    public void test5PowSet(){
+        Vector<Integer> ints = Vector.<Integer>empty();
+
+        int p  = Double.valueOf(Math.pow(2,25)).intValue();
+        for(int i=0;i<p;i++){
+
+
+            ints = ints.plus(i);
+        }
+        for(int i=0;i<p;i++){
+            ints = ints.set(i,i*2);
+        }
+        for(int i=0;i<p;i++){
+            assertThat(ints.get(i),equalTo(Optional.of(i*2)));
+        }
+
+    }
 
 
 }

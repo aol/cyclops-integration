@@ -1,15 +1,26 @@
 package cyclops.collections.adt;
 
 
+import com.aol.cyclops2.internal.stream.spliterators.IteratePredicateSpliterator;
+import com.aol.cyclops2.internal.stream.spliterators.IterateSpliterator;
+import com.aol.cyclops2.internal.stream.spliterators.UnfoldSpliterator;
+import com.aol.cyclops2.internal.stream.spliterators.ints.ReversingRangeIntSpliterator;
+import com.aol.cyclops2.internal.stream.spliterators.longs.ReversingRangeLongSpliterator;
 import com.aol.cyclops2.types.Filters;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
 import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.collections.immutable.LinkedListX;
+import cyclops.collections.mutable.ListX;
+import cyclops.companion.Streams;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
+import cyclops.control.Xor;
 import cyclops.patterns.CaseClass2;
 import cyclops.patterns.Sealed2;
+import cyclops.stream.Generator;
 import cyclops.stream.ReactiveSeq;
+import cyclops.typeclasses.Enumeration;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.jooq.lambda.tuple.Tuple;
@@ -19,10 +30,7 @@ import org.jooq.lambda.tuple.Tuple3;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 //safe LazyList (Stream) that does not support exceptional states
@@ -35,6 +43,160 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         return LinkedListX.fromIterable(iterable());
     }
 
+    static  <T,R> LazyList<R> tailRec(T initial, Function<? super T, ? extends LazyList<? extends Xor<T, R>>> fn) {
+        LazyList<Xor<T, R>> next = LazyList.of(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fromStream(fn.apply(s).stream()); },
+                    p -> {
+                        newValue[0]=false;
+                        return LazyList.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+        ListX<R> x = Xor.sequencePrimary(next.stream().to().listX(Evaluation.LAZY)).get();
+        return LazyList.fromIterator(x.iterator());
+    }
+    static <U, T> LazyList<T> unfold(final U seed, final Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
+        return fromStream(ReactiveSeq.unfold(seed,unfolder));
+    }
+    static <T> LazyList<T> iterate(final T seed, final UnaryOperator<T> f) {
+        return fromStream(ReactiveSeq.iterate(seed,f));
+
+    }
+    static <T> LazyList<T> iterate(final T seed, Predicate<? super T> pred, final UnaryOperator<T> f) {
+        return fromStream(ReactiveSeq.iterate(seed,pred,f));
+
+    }
+    static <T> LazyList<T> deferred(Supplier<? extends Iterable<? extends T>> lazy){
+        return fromStream(ReactiveSeq.of(1).flatMapI(i->lazy.get()));
+    }
+    static <T, U> Tuple2<LazyList<T>, LazyList<U>> unzip(final LazyList<Tuple2<T, U>> sequence) {
+       return ReactiveSeq.unzip(sequence.stream()).map((a,b)->Tuple.tuple(fromStream(a),fromStream(b)));
+    }
+    static <T> LazyList<T> generate(Supplier<T> s){
+        return fromStream(ReactiveSeq.generate(s));
+    }
+    static <T> LazyList<T> generate(Generator<T> s){
+        return fromStream(ReactiveSeq.generate(s));
+    }
+     static LazyList<Integer> range(final int start, final int end) {
+        return LazyList.fromStream(ReactiveSeq.range(start,end));
+
+    }
+    static LazyList<Integer> range(final int start, final  int step,final int end) {
+       return LazyList.fromStream(ReactiveSeq.range(start,step,end));
+
+    }
+    static LazyList<Long> rangeLong(final long start, final  long step,final long end) {
+        return LazyList.fromStream(ReactiveSeq.rangeLong(start,step,end));
+    }
+
+
+    static LazyList<Long> rangeLong(final long start, final long end) {
+        return LazyList.fromStream(ReactiveSeq.rangeLong(start,end));
+
+    }
+    /**
+     *
+     * Stream over the values of an enum
+     * <pre>
+     *     {@code
+     *     LazyList.enums(Days.class)
+    .printOut();
+     *     }
+     *
+     *     Monday
+     *     Tuesday
+     *     Wednesday
+     *     Thursday
+     *     Friday
+     *     Saturday
+     *     Sunday
+     * </pre>
+     *
+     * @param c Enum to process
+     * @param <E> Enum type
+     * @return Stream over enum
+     */
+    static <E extends Enum<E>> LazyList<E> enums(Class<E> c){
+        return LazyList.fromStream(ReactiveSeq.enums(c));
+    }
+
+    /**
+     *
+     * Stream over the values of an enum
+     * <pre>
+     *     {@code
+     *     LazyList.enums(Days.class,Days.Wednesday)
+    .printOut();
+     *     }
+     *
+     *     Wednesday
+     *     Thursday
+     *     Friday
+     *     Saturday
+     *     Sunday
+     * </pre>
+     * @param c Enum to process
+     * @param start Start value
+     * @param <E> Enum type
+     * @return Stream over enum
+     */
+    static <E extends Enum<E>> LazyList<E> enums(Class<E> c,E start){
+        return LazyList.fromStream(ReactiveSeq.enums(c,start));
+    }
+    /**
+     *
+     * Stream over the values of an enum
+     * <pre>
+     *     {@code
+     *     LazyList.enums(Days.class,Days.Wednesday,Days.Friday)
+    .printOut();
+     *     }
+     *
+     *     Wednesday
+     *     Thursday
+     *     Friday
+     * </pre>
+     * @param c Enum to process
+     * @param start Start value
+     * @param end End value
+     * @param <E> Enum type
+     * @return Stream over enum
+     */
+    static <E extends Enum<E>> LazyList<E> enumsFromTo(Class<E> c,E start,E end){
+       return LazyList.fromStream(ReactiveSeq.enumsFromTo(c,start,end));
+    }
+    /**
+     *
+     * Stream over the values of an enum
+     * <pre>
+     *     {@code
+     *     LazyList.enums(Days.class,Days.Monday,Days.Wednesday,Days.Friday)
+    .printOut();
+     *     }
+     *     Monday
+     *     Wednesday
+     *     Friday
+     * </pre>
+     * @param c Enum to process
+     * @param start Start value
+     * @param step Values for which the Distance from start in terms of the enum ordinal determines the stepping function
+     * @param end End value
+     * @param <E> Enum type
+     * @return Stream over enum
+     */
+    static <E extends Enum<E>> LazyList<E> enums(Class<E> c,E start,E step,E end){
+       return LazyList.fromStream(ReactiveSeq.enums(c,start,step,end));
+
+    }
 
     static <T> LazyList<T> fromIterator(Iterator<T> it){
         return it.hasNext() ? cons(it.next(), () -> fromIterator(it)) : empty();
@@ -110,7 +272,13 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         }
         return res;
     }
-
+    default Tuple2<LazyList<T>,LazyList<T>> duplicate(){
+        return Tuple.tuple(this,this);
+    }
+    default <R1, R2> Tuple2<LazyList<R1>, LazyList<R2>> unzip(Function<? super T, Tuple2<? extends R1, ? extends R2>> fn) {
+        Tuple2<LazyList<R1>, LazyList<Tuple2<? extends R1, ? extends R2>>> x = map(fn).duplicate().map1(s -> s.map(Tuple2::v1));
+        return x.map2(s -> s.map(Tuple2::v2));
+    }
     default LazyList<T> replace(T currentElement, T newElement) {
         LazyList<T> preceding = empty();
         LazyList<T> tail = this;
@@ -189,6 +357,8 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         return appendAll(LazyList.of(append));
 
     }
+
+
     default LazyList<T> appendAll(LazyList<T> append) {
         return this.match(cons->{
             return append.match(c2->{
@@ -306,6 +476,8 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
             return (Cons<T>)LazyList.super.reverse();
         }
 
+
+
         @Override
         public int hashCode() {
             return linkedListX().hashCode();
@@ -329,6 +501,7 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
 
     public class Nil<T> implements LazyList<T> {
         static Nil Instance = new Nil();
+
         @Override
         public <R> R foldRight(R zero, BiFunction<? super T, ? super R, ? extends R> f) {
             return zero;
