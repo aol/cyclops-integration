@@ -2,6 +2,7 @@ package cyclops.collections.adt;
 
 
 import com.aol.cyclops2.types.Filters;
+import cyclops.control.Maybe;
 import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
@@ -10,9 +11,10 @@ import lombok.AllArgsConstructor;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class LazyString implements Sealed2<LazySeq.Cons<Character>,LazySeq.Nil>,Filters<Character> {
+public final class LazyString implements ImmutableList<Character> {
     private final LazySeq<Character> string;
 
     private static final LazyString Nil = fromLazyList(LazySeq.empty());
@@ -49,16 +51,37 @@ public final class LazyString implements Sealed2<LazySeq.Cons<Character>,LazySeq
     public LazySeq<LazyString> lines() {
         return string.split(t -> t.equals('\n')).map(l->fromLazyList(l));
     }
-    public LazyString map(Function<Character,Character> fn){
+    public LazyString mapChar(Function<Character,Character> fn){
         return fromLazyList(string.map(fn));
     }
-    public LazyString flatMap(Function<Character,LazyString> fn){
+    public LazyString flatMapChar(Function<Character,LazyString> fn){
         return fromLazyList(string.flatMap(fn.andThen(s->s.string)));
     }
     @Override
     public LazyString filter(Predicate<? super Character> predicate) {
         return fromLazyList(string.filter(predicate));
     }
+
+    @Override
+    public <R> ImmutableList<R> map(Function<? super Character, ? extends R> fn) {
+        return string.map(fn);
+    }
+
+    @Override
+    public <R> ImmutableList<R> flatMap(Function<? super Character, ? extends ImmutableList<? extends R>> fn) {
+        return  string.flatMap(fn);
+    }
+
+    @Override
+    public <R> ImmutableList<R> flatMapI(Function<? super Character, ? extends Iterable<? extends R>> fn) {
+        return  string.flatMapI(fn);
+    }
+
+    @Override
+    public <R> R match(Function<? super Some<Character>, ? extends R> fn1, Function<? super None<Character>, ? extends R> fn2) {
+        return string.match(fn1,fn2);
+    }
+
     public ReactiveSeq<Character> stream(){
         return string.stream();
     }
@@ -72,12 +95,39 @@ public final class LazyString implements Sealed2<LazySeq.Cons<Character>,LazySeq
     public LazyString  reverse() {
         return fromLazyList(string.reverse());
     }
-    public Optional<Character> get(int pos){
+    public Maybe<Character> get(int pos){
         return string.get(pos);
     }
+
+    @Override
+    public Character getOrElse(int pos, Character alt) {
+        return string.getOrElse(pos,alt);
+    }
+
+    @Override
+    public Character getOrElseGet(int pos, Supplier<Character> alt) {
+        return string.getOrElseGet(pos,alt);
+    }
+
     public LazyString prepend(Character value){
         return fromLazyList(string.prepend(value));
     }
+
+    @Override
+    public LazyString prependAll(Iterable<Character> value) {
+        return fromLazyList(string.prependAll(value)) ;
+    }
+
+    @Override
+    public LazyString append(Character value) {
+        return fromLazyList(string.append(value)) ;
+    }
+
+    @Override
+    public LazyString appendAll(Iterable<Character> value) {
+        return fromLazyList(string.appendAll(value)) ;
+    }
+
     public LazyString prependAll(LazyString value){
         return fromLazyList(string.prependAll(value.string));
     }
@@ -87,14 +137,17 @@ public final class LazyString implements Sealed2<LazySeq.Cons<Character>,LazySeq
     public int size(){
         return length();
     }
+
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
     public int length(){
         return string.size();
     }
     public String toString(){
         return string.stream().join("");
     }
-    @Override
-    public <R> R match(Function<? super LazySeq.Cons<Character>, ? extends R> fn1, Function<? super LazySeq.Nil, ? extends R> fn2) {
-        return string.match(fn1,fn2);
-    }
+
 }

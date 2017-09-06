@@ -12,8 +12,6 @@ import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.control.Xor;
-import cyclops.patterns.CaseClass2;
-import cyclops.patterns.Sealed2;
 import cyclops.stream.Generator;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
@@ -398,10 +396,16 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         return foldRight(empty(), (a, l) -> l.prepend(fn.apply(a)));
     }
 
-    default <R> LazySeq<R> flatMap(Function<? super T, ? extends LazySeq<? extends R>> fn) {
+    default <R> LazySeq<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn) {
         return this.visit(cons->{
             LazySeq<R> l1 = (LazySeq<R>)fn.apply(cons.head);
             return l1.appendAll(cons.tail.get().flatMap(a -> fn.apply(a)));
+        },nil->empty());
+    }
+    default <R> LazySeq<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+        return this.visit(cons->{
+            LazySeq<R> l1 = (LazySeq<R>)fn.apply(cons.head);
+            return l1.appendAll(cons.tail.get().flatMap(a -> fromIterable(fn.apply(a))));
         },nil->empty());
     }
     <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2);
@@ -409,7 +413,9 @@ public interface LazySeq<T> extends  ImmutableList<T>,
     int size();
 
     boolean isEmpty();
-
+    static <T> LazySeq<T> lazy(T head, Supplier<ImmutableList<T>> tail) {
+        return Cons.cons(head,()->tail.get().lazySeq());
+    }
     static <T> LazySeq<T> cons(T head, Supplier<LazySeq<T>> tail) {
         return Cons.cons(head,tail);
     }
@@ -496,7 +502,7 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         }
 
         @Override
-        public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None, ? extends R> fn2) {
+        public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2) {
             return fn1.apply(this);
         }
         public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
@@ -531,7 +537,7 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         }
 
         @Override
-        public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None, ? extends R> fn2) {
+        public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2) {
             return fn2.apply(this);
         }
         public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {

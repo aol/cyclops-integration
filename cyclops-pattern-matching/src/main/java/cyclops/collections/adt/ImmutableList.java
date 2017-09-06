@@ -1,15 +1,10 @@
 package cyclops.collections.adt;
 
-import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Filters;
 import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
-import com.aol.cyclops2.types.foldable.To;
-import com.aol.cyclops2.types.functor.FilterableTransformable;
 import com.aol.cyclops2.types.functor.Transformable;
-import com.aol.cyclops2.types.traversable.Traversable;
 import cyclops.collections.immutable.LinkedListX;
-import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.patterns.CaseClass2;
 import cyclops.patterns.Sealed2;
@@ -24,7 +19,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
-public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,ImmutableList.None>,
+public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,ImmutableList.None<T>>,
                                            Folds<T>,
                                            Filters<T>,
                                            Transformable<T>,
@@ -33,6 +28,21 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
 
     default LinkedListX<T> linkdedListX(){
         return stream().to().linkedListX(Evaluation.LAZY);
+    }
+    default LazySeq<T> lazySeq(){
+        if(this instanceof LazySeq){
+            return (LazySeq<T>)this;
+        }
+        return match(c->LazySeq.lazy(c.head(),()->c.tail().lazySeq()), nil->LazySeq.empty());
+    }
+    default Seq<T> seq(){
+        if(this instanceof Seq){
+            return (Seq<T>)this;
+        }
+        return match(c->Seq.cons(c.head(),c.tail().seq()),nil->Seq.empty());
+    }
+    default Maybe<NonEmptyList<T>> nonEmptyList(){
+        return Maybe.ofNullable(match(c->NonEmptyList.cons(c.head(),c.tail()),nil->null));
     }
 
 
@@ -77,6 +87,21 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
     boolean isEmpty();
 
     @Override
+    default <U> ImmutableList<U> ofType(Class<? extends U> type) {
+        return (ImmutableList<U>)Filters.super.ofType(type);
+    }
+
+    @Override
+    default ImmutableList<T> filterNot(Predicate<? super T> predicate) {
+        return (ImmutableList<T>)Filters.super.filterNot(predicate);
+    }
+
+    @Override
+    default ImmutableList<T> notNull() {
+        return (ImmutableList<T>)Filters.super.notNull();
+    }
+
+    @Override
     ReactiveSeq<T> stream();
 
 
@@ -84,10 +109,12 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
     ImmutableList<T> filter(Predicate<? super T> fn);
 
     @Override
-     <R> ImmutableList<R> map(Function<? super T, ? extends R> fn);
+    <R> ImmutableList<R> map(Function<? super T, ? extends R> fn);
+    <R> ImmutableList<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn);
+    <R> ImmutableList<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn);
 
     @Override
-    <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None, ? extends R> fn2);
+    <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2);
     @Override
     default Iterator<T> iterator() {
         return new Iterator<T>() {
@@ -112,13 +139,13 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
         T head();
         Some<T> reverse();
         @Override
-        default <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None, ? extends R> fn2){
+        default <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2){
             return fn1.apply(this);
         }
     }
     public interface None<T> extends ImmutableList<T> {
         @Override
-        default <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None, ? extends R> fn2){
+        default <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2){
             return fn2.apply(this);
         }
 

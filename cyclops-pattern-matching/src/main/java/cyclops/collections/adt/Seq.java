@@ -255,11 +255,17 @@ public interface Seq<T> extends ImmutableList<T>,
     default <R> Seq<R> map(Function<? super T, ? extends R> fn) {
         return foldRight(empty(), (a, l) -> l.prepend(fn.apply(a)));
     }
-    default <R> Seq<R> flatMap(Function<? super T, ? extends Seq<? extends R>> fn) {
+    default <R> Seq<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn) {
          return foldRight(empty(), (a, l) -> {
-             Seq<R> b = narrow(fn.apply(a));
+             Seq<R> b = narrow(fn.apply(a).seq());
              return b.prependAll(l);
          });
+    }
+    default <R> Seq<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+        return foldRight(empty(), (a, l) -> {
+            Seq<R> b = narrow(fromIterable(fn.apply(a)));
+            return b.prependAll(l);
+        });
     }
 
     static <T> Seq<T> narrow(Seq<? extends T> list){
@@ -270,9 +276,7 @@ public interface Seq<T> extends ImmutableList<T>,
 
     boolean isEmpty();
 
-    default Optional<NonEmptyList<T>> asNonEmptyList(){
-        return visit(c->Optional.of(NonEmptyList.cons(c.head,c.tail)), n->Optional.empty());
-    }
+
     <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2);
 
     static <T> Seq<T> cons(T head, Seq<T> tail) {
