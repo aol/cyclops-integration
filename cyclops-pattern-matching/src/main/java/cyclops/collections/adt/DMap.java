@@ -16,7 +16,7 @@ public interface DMap{
 
 
     public static <K1,V1,K2,V2> Two<K1,V1,K2,V2> twoEmpty(){
-        return new DMap2<>(ImmutableHashMap.empty());
+        return new DMap2<>(ImmutableHashMap.empty(),ImmutableHashMap.empty());
     }
     public static <K1,V1,K2,V2,K3,V3> Three<K1,V1,K2,V2,K3,V3> threeEmpty(){
         return new DMap3<>(ImmutableHashMap.empty(),ImmutableHashMap.empty(),ImmutableHashMap.empty());
@@ -90,7 +90,7 @@ public interface DMap{
 
 
         @Override
-        public ReactiveSeq<Either<Tuple2<K1, V1>, Tuple2<K2, V2>> stream() {
+        public ReactiveSeq<Either<Tuple2<K1, V1>, Tuple2<K2, V2>>> stream() {
             ReactiveSeq<Either<Tuple2<K1, V1>, Tuple2<K2, V2>>> x = map1.stream().map(Either::left);
             return x.mergeP(map2.stream().map(Either::right));
         }

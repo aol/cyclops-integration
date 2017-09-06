@@ -14,6 +14,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static java.util.Arrays.copyOf;
 
@@ -34,6 +35,8 @@ public class HAMT<K, V>  {
 
        public Node<K,V> plus(int bitShiftDepth,int hash,K key, V value);
        public Optional<V> get(int bitShiftDepth,int hash,K key);
+       public V getOrElse(int bitShiftDepth,int hash,K key,V alt);
+       public V getOrElseGet(int bitShiftDepth,int hash,K key,Supplier<V> alt);
        public Node<K,V> minus(int bitShiftDepth,int hash,K key);
        int size();
        LazyList<Tuple2<K,V>> lazyList();
@@ -50,6 +53,16 @@ public class HAMT<K, V>  {
        @Override
        public Optional<V> get(int bitShiftDepth, int hash, K key) {
            return Optional.empty();
+       }
+
+       @Override
+       public V getOrElse(int bitShiftDepth, int hash, K key, V alt) {
+           return alt;
+       }
+
+       @Override
+       public V getOrElseGet(int bitShiftDepth, int hash, K key, Supplier<V> alt) {
+           return alt.get();
        }
 
        @Override
@@ -103,7 +116,17 @@ public class HAMT<K, V>  {
 
        @Override
        public Optional<V> get(int bitShiftDepth, int hash, K key) {
-           return isMatch(hash, key) ? Optional.ofNullable(value) : Optional.empty();
+           return isMatch(hash, key) ? Optional.of(value) : Optional.empty();
+       }
+
+       @Override
+       public V getOrElse(int bitShiftDepth, int hash, K key, V alt) {
+           return isMatch(hash, key) ? value : alt;
+       }
+
+       @Override
+       public V getOrElseGet(int bitShiftDepth, int hash, K key, Supplier<V> alt) {
+           return isMatch(hash, key) ? value : alt.get();
        }
 
        private boolean isMatch(int hash, K key) {
@@ -177,7 +200,17 @@ public class HAMT<K, V>  {
            return Optional.empty();
        }
 
-       @Override
+        @Override
+        public V getOrElse(int bitShiftDepth, int hash, K key, V alt) {
+            return get(bitShiftDepth,hash,key).orElse(alt);
+        }
+
+        @Override
+        public V getOrElseGet(int bitShiftDepth, int hash, K key, Supplier<V> alt) {
+            return get(bitShiftDepth,hash,key).orElseGet(alt);
+        }
+
+        @Override
        public Node<K, V> minus(int bitShiftDepth,int hash, K key) {
            if(this.hash==hash){
                return new CollisionNode<>(hash,bucket.filter(t->!Objects.equals(key,t.v1)));
@@ -232,10 +265,27 @@ public class HAMT<K, V>  {
             return absent(pos)? Optional.empty() : find(bitShiftDepth,pos,hash,key);
         }
 
+        @Override
+        public V getOrElse(int bitShiftDepth, int hash, K key, V alt) {
+            int pos = bitpos(hash, bitShiftDepth);
+            return absent(pos)? alt : find(bitShiftDepth,pos,hash,key,alt);
+        }
+
+        @Override
+        public V getOrElseGet(int bitShiftDepth, int hash, K key, Supplier<V> alt) {
+            int pos = bitpos(hash, bitShiftDepth);
+            return absent(pos)? alt.get() : findOrGet(bitShiftDepth,pos,hash,key,alt);
+        }
+
         public boolean absent(int pos){
             return (bitset & pos)==0;
         }
-
+        private V findOrGet(int shift,int pos, int hash, K key,Supplier<V> alt) {
+            return nodes[index(pos)].getOrElse(shift+BITS_IN_INDEX,hash,key,alt.get());
+        }
+        private V find(int shift,int pos, int hash, K key,V alt) {
+            return nodes[index(pos)].getOrElse(shift+BITS_IN_INDEX,hash,key,alt);
+        }
         private Optional<V> find(int shift,int pos, int hash, K key) {
             return nodes[index(pos)].get(shift+BITS_IN_INDEX,hash,key);
         }

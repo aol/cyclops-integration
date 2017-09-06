@@ -5,8 +5,6 @@ import org.junit.Test;
 
 import java.util.Comparator;
 
-import static org.testng.Assert.*;
-
 /**
  * Created by johnmcclean on 02/09/2017.
  */
@@ -14,7 +12,7 @@ public class TreeMapTest {
 
     @Test
     public void put(){
-        TreeMap<Integer,String> map = TreeMap.fromMap(Comparator.naturalOrder(), PersistentMapXs.of(1,"hello",2,"world"));
+        ImmutableTreeMap<Integer,String> map = ImmutableTreeMap.fromMap(Comparator.naturalOrder(), PersistentMapXs.of(1,"hello",2,"world"));
 
         map.stream().printOut();
 
