@@ -505,6 +505,27 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2) {
             return fn1.apply(this);
         }
+
+        @Override
+        public Cons<T> onEmpty(ImmutableList<T> value) {
+            return this;
+        }
+
+        @Override
+        public Cons<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
+            return this;
+        }
+
+        @Override
+        public <X extends Throwable> Cons<T> onEmptyThrow(Supplier<? extends X> supplier) {
+            return this;
+        }
+
+        @Override
+        public Cons<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
+            return this;
+        }
+
         public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
             return fn1.apply(this);
         }
@@ -540,6 +561,27 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2) {
             return fn2.apply(this);
         }
+
+        @Override
+        public ImmutableList<T> onEmpty(ImmutableList<T> value) {
+            return value;
+        }
+
+        @Override
+        public ImmutableList<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
+            return supplier.get();
+        }
+
+        @Override
+        public <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier) {
+            throw supplier.get();
+        }
+
+        @Override
+        public ImmutableList<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
+            return supplier.get();
+        }
+
         public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
             return fn2.apply(this);
         }

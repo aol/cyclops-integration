@@ -82,6 +82,26 @@ public final class LazyString implements ImmutableList<Character> {
         return string.match(fn1,fn2);
     }
 
+    @Override
+    public ImmutableList<Character> onEmpty(ImmutableList<Character> value) {
+        return string.onEmpty(value);
+    }
+
+    @Override
+    public ImmutableList<Character> onEmptyGet(Supplier<? extends ImmutableList<Character>> supplier) {
+        return string.onEmptyGet(supplier);
+    }
+
+    @Override
+    public <X extends Throwable> ImmutableList<Character> onEmptyThrow(Supplier<? extends X> supplier) {
+        return string.onEmptyThrow(supplier);
+    }
+
+    @Override
+    public ImmutableList<Character> onEmptySwitch(Supplier<? extends ImmutableList<Character>> supplier) {
+        return string.onEmptySwitch(supplier);
+    }
+
     public ReactiveSeq<Character> stream(){
         return string.stream();
     }

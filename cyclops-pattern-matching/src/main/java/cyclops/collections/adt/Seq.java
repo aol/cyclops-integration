@@ -7,6 +7,8 @@ import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
 import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
+import com.aol.cyclops2.types.recoverable.OnEmpty;
+import com.aol.cyclops2.types.recoverable.OnEmptySwitch;
 import cyclops.collections.adt.DataWitness.immutableList;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
@@ -364,6 +366,28 @@ public interface Seq<T> extends ImmutableList<T>,
         public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
             return fn1.apply(this);
         }
+
+        @Override
+        public Cons<T> onEmpty(ImmutableList<T> value) {
+            return this;
+        }
+
+        @Override
+        public Cons<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
+            return this;
+        }
+
+        @Override
+        public <X extends Throwable> Cons<T> onEmptyThrow(Supplier<? extends X> supplier) {
+            return this;
+        }
+
+        @Override
+        public Cons<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
+            return this;
+        }
+
+
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -382,6 +406,26 @@ public interface Seq<T> extends ImmutableList<T>,
         @Override
         public boolean isEmpty() {
             return true;
+        }
+
+        @Override
+        public ImmutableList<T> onEmpty(ImmutableList<T> value) {
+            return value;
+        }
+
+        @Override
+        public ImmutableList<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
+            return supplier.get();
+        }
+
+        @Override
+        public <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier) {
+            throw supplier.get();
+        }
+
+        @Override
+        public ImmutableList<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
+            return supplier.get();
         }
 
         @Override

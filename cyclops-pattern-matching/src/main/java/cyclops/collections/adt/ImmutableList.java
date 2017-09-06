@@ -4,6 +4,8 @@ import com.aol.cyclops2.types.Filters;
 import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
 import com.aol.cyclops2.types.functor.Transformable;
+import com.aol.cyclops2.types.recoverable.OnEmpty;
+import com.aol.cyclops2.types.recoverable.OnEmptySwitch;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.control.Maybe;
 import cyclops.patterns.CaseClass2;
@@ -23,6 +25,8 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
                                            Folds<T>,
                                            Filters<T>,
                                            Transformable<T>,
+                                           OnEmpty<ImmutableList<T>>,
+                                            OnEmptySwitch<ImmutableList<T>,ImmutableList<T>>,
                                            Iterable<T> {
 
 
@@ -133,6 +137,18 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
             }
         };
     }
+
+    @Override
+    ImmutableList<T> onEmpty(ImmutableList<T> value);
+
+    @Override
+    ImmutableList<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier);
+
+    @Override
+    <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier);
+
+    @Override
+    ImmutableList<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier);
 
     public static interface Some<T> extends CaseClass2<T,ImmutableList<T>>, ImmutableList<T> {
         ImmutableList<T> tail();
