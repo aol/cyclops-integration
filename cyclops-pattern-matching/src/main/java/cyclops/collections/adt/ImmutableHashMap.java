@@ -1,7 +1,9 @@
 package cyclops.collections.adt;
 
+import cyclops.collections.immutable.PersistentMapX;
 import cyclops.stream.ReactiveSeq;
 import lombok.AllArgsConstructor;
+import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Iterator;
@@ -82,6 +84,21 @@ public class ImmutableHashMap<K,V> implements ImmutableMap<K,V>{
     @Override
     public ImmutableMap<K, V> filterValues(Predicate<? super V> predicate) {
         return fromStream(stream().filter(t->predicate.test(t.v2)));
+    }
+
+    @Override
+    public <R> ImmutableMap<K, R> map(Function<? super V, ? extends R> fn) {
+        return fromStream(stream().map(t-> Tuple.tuple(t.v1,fn.apply(t.v2))));
+    }
+
+    @Override
+    public <R1, R2> ImmutableMap<R1, R2> bimap(Function<? super K, ? extends R1> fn1, Function<? super V, ? extends R2> fn2) {
+        return fromStream(stream().map(t-> Tuple.tuple(fn1.apply(t.v1),fn2.apply(t.v2))));
+    }
+
+    @Override
+    public PersistentMapX<K, V> persistentMapX() {
+        return stream().to().persistentMapX(t->t.v1,t->t.v2);
     }
 
     public ImmutableHashMap<K,V> put(K key, V value){
