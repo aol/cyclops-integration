@@ -507,22 +507,19 @@ public class BAMT<T> {
                 last(last(updatedNodes))[last(last(updatedNodes)).length-1]=Arrays.copyOf(last(last(last(updatedNodes))), last(last(last(updatedNodes))).length+1,Object[][].class);
                 last(last(last(updatedNodes)))[last(last(last(array))).length] = tail.array;
                 return five(updatedNodes);
-
-
-
             }
             if(last(last(array)).length<32){
                 Object[][][][][] updatedNodes = Arrays.copyOf(array, array.length,Object[][][][][].class);
                 updatedNodes[updatedNodes.length-1]=Arrays.copyOf(last(updatedNodes), last(updatedNodes).length,Object[][][][].class);
                 last(updatedNodes)[last(updatedNodes).length-1]=Arrays.copyOf(last(last(updatedNodes)), last(last(updatedNodes)).length+1,Object[][][].class);
-                last(last(last(updatedNodes)))[last(last(last(array))).length] = tail.array;
+                last(last(updatedNodes))[last(last(array)).length] = new Object[][]{tail.array};
                 return five(updatedNodes);
 
             }
             if(last(array).length<32){
                 Object[][][][][] updatedNodes = Arrays.copyOf(array, array.length,Object[][][][][].class);
                 updatedNodes[updatedNodes.length-1]=Arrays.copyOf(last(updatedNodes), last(updatedNodes).length+1,Object[][][][].class);
-                last(last(updatedNodes))[last(last(array)).length] = new Object[][][]{new Object[][]{tail.array}};
+                last(updatedNodes)[last(array).length] = new Object[][][]{new Object[][]{tail.array}};
                 return five(updatedNodes);
 
             }
