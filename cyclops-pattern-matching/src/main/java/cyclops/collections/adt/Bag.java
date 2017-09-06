@@ -4,13 +4,13 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MapBag<T> {
+public class Bag<T> {
 
     private final TrieMap<T,Integer> map;
     private final int size;
 
-    public static <T> MapBag<T> empty() {
-        return new MapBag<>(TrieMap.empty(), 0);
+    public static <T> Bag<T> empty() {
+        return new Bag<>(TrieMap.empty(), 0);
     }
 
 
@@ -23,19 +23,19 @@ public class MapBag<T> {
         return map.get(e).isPresent();
     }
 
-    public MapBag<T> plus(final T value) {
-        return new MapBag<>(map.plus(value, map.get(value).orElse(0)+1), size+1);
+    public Bag<T> plus(final T value) {
+        return new Bag<>(map.plus(value, map.get(value).orElse(0)+1), size+1);
     }
 
 
-    public MapBag<T> minus(final T value) {
+    public Bag<T> minus(final T value) {
         int n = map.get(value).orElse(0);
         if(n==0)
             return this;
         if(n==1)
-            return new MapBag<>(map.minus(value), size-1);
+            return new Bag<>(map.minus(value), size-1);
 
-        return new MapBag<>(map.plus(value, n-1), size-1);
+        return new Bag<>(map.plus(value, n-1), size-1);
     }
 
 

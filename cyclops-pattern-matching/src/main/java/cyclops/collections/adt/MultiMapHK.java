@@ -13,18 +13,18 @@ import java.util.function.Function;
  Higher kinded multimap
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MultiMap<W,K,V> {
+public class MultiMapHK<W,K,V> {
     private final ImmutableHashMap<K,Higher<W,V>> multiMap;
     private final Appender<W,V> appender;
     private final Pure<W> pure;
 
-    public static <W,K,V> MultiMap<W,K,V> empty(Appender<W,V> appender, Pure<W> pure){
-        return new MultiMap<>(ImmutableHashMap.empty(),appender,pure);
+    public static <W,K,V> MultiMapHK<W,K,V> empty(Appender<W,V> appender, Pure<W> pure){
+        return new MultiMapHK<>(ImmutableHashMap.empty(),appender,pure);
     }
 
-    public MultiMap<W,K, V> put(K key, V value) {
+    public MultiMapHK<W,K, V> put(K key, V value) {
         Higher<W,V> hkt = multiMap.get(key).map(v->appender.append(v,value)).orElseGet(()->pure.unit(value));
-        return new MultiMap<>(multiMap.put(key,hkt),appender,pure);
+        return new MultiMapHK<>(multiMap.put(key,hkt),appender,pure);
     }
     public <R> Optional<R> get(K key,Function<? super Higher<W,V>,? extends R> decoder){
         return multiMap.get(key).map(decoder);

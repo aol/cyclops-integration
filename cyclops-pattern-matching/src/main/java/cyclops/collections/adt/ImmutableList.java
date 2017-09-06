@@ -1,14 +1,21 @@
 package cyclops.collections.adt;
 
 
+import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Filters;
+import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
+import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
+import cyclops.collections.adt.DataWitness.immutableList;
 import cyclops.collections.immutable.LinkedListX;
+import cyclops.collections.mutable.ListX;
 import cyclops.control.Trampoline;
+import cyclops.control.Xor;
 import cyclops.function.Monoid;
 import cyclops.patterns.CaseClass2;
 import cyclops.patterns.Sealed2;
+import cyclops.stream.Generator;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -20,14 +27,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 //safe list implementation that does not support exceptional states
-public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Folds<T>, Filters<T>, Transformable<T> {
+public interface ImmutableList<T> extends Sealed2<ImmutableList.Cons<T>,ImmutableList.Nil>,
+                                            Folds<T>,
+                                            Filters<T>,
+                                            Transformable<T>,
+                                            Higher<immutableList,T>,
+                                            To<ImmutableList<T>> {
 
     default ReactiveSeq<T> stream(){
         return ReactiveSeq.fromIterable(iterable());
@@ -36,35 +45,96 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
         return LinkedListX.fromIterable(iterable());
     }
 
-    static <T> SafeList<T> of(T... value){
-        SafeList<T> result = empty();
+
+      static  <T,R> ImmutableList<R> tailRec(T initial, Function<? super T, ? extends ImmutableList<? extends Xor<T, R>>> fn) {
+          ImmutableList<Xor<T, R>> next = ImmutableList.of(Xor.secondary(initial));
+
+        boolean newValue[] = {true};
+        for(;;){
+
+            next = next.flatMap(e -> e.visit(s -> {
+                        newValue[0]=true;
+                        return fromStream(fn.apply(s).stream());
+                        },
+                    p -> {
+                        newValue[0]=false;
+                        return ImmutableList.of(e);
+                    }));
+            if(!newValue[0])
+                break;
+
+        }
+        ListX<R> x = Xor.sequencePrimary(next.stream().to().listX(Evaluation.LAZY)).get();
+        return ImmutableList.fromIterator(x.iterator());
+    }
+    static <T> ImmutableList<T> fill(T t,int max){
+        return ImmutableList.fromStream(ReactiveSeq.fill(t).take(max));
+    }
+    static <U, T> ImmutableList<T> unfold(final U seed, final Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
+        return fromStream(ReactiveSeq.unfold(seed,unfolder));
+    }
+
+    static <T> ImmutableList<T> iterate(final T seed, Predicate<? super T> pred, final UnaryOperator<T> f) {
+        return fromStream(ReactiveSeq.iterate(seed,pred,f));
+
+    }
+
+    static <T, U> Tuple2<ImmutableList<T>, ImmutableList<U>> unzip(final LazyList<Tuple2<T, U>> sequence) {
+        return ReactiveSeq.unzip(sequence.stream()).map((a,b)->Tuple.tuple(fromStream(a),fromStream(b)));
+    }
+    static <T> ImmutableList<T> generate(Supplier<T> s,int max){
+        return fromStream(ReactiveSeq.generate(s));
+    }
+    static <T> ImmutableList<T> generate(Generator<T> s){
+        return fromStream(ReactiveSeq.generate(s));
+    }
+    static ImmutableList<Integer> range(final int start, final int end) {
+        return ImmutableList.fromStream(ReactiveSeq.range(start,end));
+
+    }
+    static ImmutableList<Integer> range(final int start, final  int step,final int end) {
+        return ImmutableList.fromStream(ReactiveSeq.range(start,step,end));
+
+    }
+    static ImmutableList<Long> rangeLong(final long start, final  long step,final long end) {
+        return ImmutableList.fromStream(ReactiveSeq.rangeLong(start,step,end));
+    }
+
+
+    static ImmutableList<Long> rangeLong(final long start, final long end) {
+        return ImmutableList.fromStream(ReactiveSeq.rangeLong(start,end));
+
+    }
+
+    static <T> ImmutableList<T> of(T... value){
+        ImmutableList<T> result = empty();
         for(int i=value.length;i>0;i--){
             result = result.prepend(value[i-1]);
         }
         return result;
     }
-    static <T> SafeList<T> fromIterator(Iterator<T> it){
+    static <T> ImmutableList<T> fromIterator(Iterator<T> it){
         List<T> values = new ArrayList<>();
         while(it.hasNext()){
           values.add(it.next());
         }
-        SafeList<T> result = empty();
+        ImmutableList<T> result = empty();
         for(int i=values.size();i>0;i--){
             result = result.prepend(values.get(i-1));
         }
         return result;
     }
-    static <T> SafeList<T> fromStream(Stream<T> stream){
+    static <T> ImmutableList<T> fromStream(Stream<T> stream){
         Iterator<T> t = stream.iterator();
        return t.hasNext() ? cons(t.next(),fromIterator(t)) : empty();
     }
-    static <T> SafeList<T> empty(){
+    static <T> ImmutableList<T> empty(){
         return Nil.Instance;
     }
 
     default Optional<T> get(final int pos){
         T result = null;
-        SafeList<T> l = this;
+        ImmutableList<T> l = this;
         for(int i=0;i<pos;i++){
            l = l.match(c->c.tail,n->n);
            if(l instanceof Nil){ //short circuit
@@ -73,16 +143,16 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
         }
         return Optional.ofNullable(l.match(c->c.head,n->null));
     }
-    default SafeList<T> prepend(T value){
+    default ImmutableList<T> prepend(T value){
         return cons(value,this);
     }
-    default SafeList<T> prependAll(SafeList<T> value){
+    default ImmutableList<T> prependAll(ImmutableList<T> value){
         return value.match(cons->
                         cons.foldRight(this,(a,b)->b.prepend(a))
                 ,nil->this);
     }
 
-    default SafeList<T> take(final int num) {
+    default ImmutableList<T> take(final int num) {
         if( num <= 0)
            return Nil.Instance;
         if(num<1000) {
@@ -91,16 +161,16 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
         return fromStream(ReactiveSeq.fromIterable(this.iterable()).take(num));
 
     }
-    default SafeList<T> drop(final int num) {
-        SafeList<T> current = this;
+    default ImmutableList<T> drop(final int num) {
+        ImmutableList<T> current = this;
         int pos = num;
         while (pos-- > 0 && !current.isEmpty()) {
             current = current.match(c->c.tail,nil->nil);
         }
         return current;
     }
-    default SafeList<T> reverse() {
-        SafeList<T> res = empty();
+    default ImmutableList<T> reverse() {
+        ImmutableList<T> res = empty();
         for (T a : iterable()) {
             res = res.prepend(a);
         }
@@ -108,7 +178,7 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
     }
     default Iterable<T> iterable(){
         return ()->new Iterator<T>() {
-            SafeList<T> current= SafeList.this;
+            ImmutableList<T> current= ImmutableList.this;
             @Override
             public boolean hasNext() {
                 return current.match(c->true,n->false);
@@ -138,7 +208,7 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
         }
         return acc;
     }
-    default SafeList<T> filter(Predicate<? super T> pred){
+    default ImmutableList<T> filter(Predicate<? super T> pred){
         return foldRight(empty(),(a,l)->{
             if(pred.test(a)){
                 return l.prepend(a);
@@ -146,13 +216,19 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
             return l;
         });
     }
-    default <R> SafeList<R> map(Function<? super T, ? extends R> fn) {
+    default <R> ImmutableList<R> map(Function<? super T, ? extends R> fn) {
         return foldRight(empty(), (a, l) -> l.prepend(fn.apply(a)));
     }
-    default <R> SafeList<R> flatMap(Function<? super T, ? extends SafeList<R>> fn) {
-        return foldRight(empty(), (a, l) -> fn.apply(a).prependAll(l));
+    default <R> ImmutableList<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn) {
+         return foldRight(empty(), (a, l) -> {
+             ImmutableList<R> b = narrow(fn.apply(a));
+             return b.prependAll(l);
+         });
     }
 
+    static <T> ImmutableList<T> narrow(ImmutableList<? extends T> list){
+        return (ImmutableList<T>)list;
+    }
 
     int size();
 
@@ -162,24 +238,24 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
         return match(c->Optional.of(NonEmptyList.cons(c.head,c.tail)), n->Optional.empty());
     }
 
-    static <T> SafeList<T> cons(T head, SafeList<T> tail) {
+    static <T> ImmutableList<T> cons(T head, ImmutableList<T> tail) {
         return Cons.cons(head,tail);
     }
 
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(of={"head,tail"})
-    public static class Cons<T> implements CaseClass2<T,SafeList<T>>, SafeList<T> {
+    public static class Cons<T> implements CaseClass2<T,ImmutableList<T>>, ImmutableList<T> {
 
         public final T head;
-        public final SafeList<T> tail;
+        public final ImmutableList<T> tail;
 
-        public static <T> Cons<T> cons(T value, SafeList<T> tail){
+        public static <T> Cons<T> cons(T value, ImmutableList<T> tail){
             return new Cons<>(value,tail);
         }
 
         @Override
-        public Tuple2<T, SafeList<T>> unapply() {
+        public Tuple2<T, ImmutableList<T>> unapply() {
             return Tuple.tuple(head,tail);
         }
         public boolean isEmpty(){
@@ -193,7 +269,7 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
 
         public <R> R foldRight(R zero, BiFunction<? super T, ? super R, ? extends R> f) {
             class Step{
-                public Trampoline<R> loop(SafeList<T> s, Function<? super R, ? extends Trampoline<R>> fn){
+                public Trampoline<R> loop(ImmutableList<T> s, Function<? super R, ? extends Trampoline<R>> fn){
 
                     return s.match(c-> Trampoline.more(()->loop(c.tail, rem -> Trampoline.more(() -> fn.apply(f.apply(c.head, rem))))), n->fn.apply(zero));
 
@@ -205,7 +281,7 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
 
         public int size(){
             int result =1;
-            SafeList<T> current[] = new SafeList[0];
+            ImmutableList<T> current[] = new ImmutableList[0];
             current[0]=tail;
             while(true){
                int toAdd =current[0].match(c->{
@@ -237,7 +313,7 @@ public interface SafeList<T> extends Sealed2<SafeList.Cons<T>,SafeList.Nil>, Fol
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public class Nil<T> implements SafeList<T> {
+    public class Nil<T> implements ImmutableList<T> {
         static Nil Instance = new Nil();
         @Override
         public <R> R foldRight(R zero, BiFunction<? super T, ? super R, ? extends R> f) {

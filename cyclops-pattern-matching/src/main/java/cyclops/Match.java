@@ -7,7 +7,7 @@ import cyclops.async.Future;
 import cyclops.async.adapters.Adapter;
 import cyclops.async.adapters.Queue;
 import cyclops.async.adapters.Topic;
-import cyclops.collections.adt.SafeList;
+import cyclops.collections.adt.ImmutableList;
 import cyclops.control.Maybe;
 import cyclops.control.Try;
 import cyclops.control.Xor;
@@ -127,8 +127,8 @@ public interface Match {
             }
         };
     }
-    public static <X extends Throwable> CaseClass4<Class, String, Throwable, SafeList<StackTraceElement>> throwable(final X t) {
-        return () -> Tuple.tuple(t.getClass(), t.getMessage(), t.getCause(), SafeList.of(t.getStackTrace()));
+    public static <X extends Throwable> CaseClass4<Class, String, Throwable, ImmutableList<StackTraceElement>> throwable(final X t) {
+        return () -> Tuple.tuple(t.getClass(), t.getMessage(), t.getCause(), ImmutableList.of(t.getStackTrace()));
     }
 
     public static <W extends WitnessType<W>,T> Sealed2<AnyMValue<W,T>, AnyMSeq<W,T>> anyM(final AnyM<W,T> anyM) {
@@ -143,17 +143,17 @@ public interface Match {
     public static CaseClass5<String, String, Integer, String, String> url(final URL url) {
         return ()->Tuple.tuple(url.getProtocol(), url.getHost(),  url.getPort(),  url.getPath(), url.getQuery());
     }
-    public static SafeList<String> words(final CharSequence seq) {
-        return SafeList.of(seq.toString()
+    public static ImmutableList<String> words(final CharSequence seq) {
+        return ImmutableList.of(seq.toString()
                 .split(" "));
     }
 
-    public static SafeList<Character> chars(final CharSequence chars) {
+    public static ImmutableList<Character> chars(final CharSequence chars) {
         final Iterable<Character> it = () -> chars.chars()
                 .boxed()
                 .map(i -> Character.toChars(i)[0])
                 .iterator();
-        return SafeList.fromIterator(it.iterator());
+        return ImmutableList.fromIterator(it.iterator());
     }
 
 

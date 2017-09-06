@@ -8,7 +8,8 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public interface ImmutableMap<K,V> {
+public interface ImmutableMap<K,V>{
+
     ImmutableMap<K,V> put(K key, V value);
     ImmutableMap<K,V> putAll(ImmutableMap<K,V> map);
 
