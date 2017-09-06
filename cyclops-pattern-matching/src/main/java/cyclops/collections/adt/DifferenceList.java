@@ -3,11 +3,9 @@ package cyclops.collections.adt;
 
 import com.aol.cyclops2.types.foldable.Folds;
 import com.aol.cyclops2.types.functor.Transformable;
-import cyclops.collections.adt.Witness.lazylist;
 import cyclops.function.Fn0;
 import cyclops.monads.Witness.supplier;
 import cyclops.stream.ReactiveSeq;
-import cyclops.typeclasses.Kleisli;
 import cyclops.typeclasses.free.Free;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @AllArgsConstructor
 public class Vector<T> {
@@ -32,9 +33,15 @@ public class Vector<T> {
     public ReactiveSeq<T> stream(){
         return ReactiveSeq.concat(root.stream(),tail.stream());
     }
+
+    public Vector<T> filter(Predicate<? super T> pred){
+        return fromIterable(stream().filter(pred));
+    }
+
     public <R> Vector<R> map(Function<? super T, ? extends R> fn){
         return fromIterable(stream().map(fn));
     }
+
     public <R> Vector<R> flatMap(Function<? super T, ? extends Vector<? extends R>> fn){
         return fromIterable(stream().flatMap(fn.andThen(Vector::stream)));
     }
@@ -50,6 +57,9 @@ public class Vector<T> {
         return new Vector<>(root.match(z->z,p->p.set(pos,value)),tail,size);
     }
 
+    public int size(){
+        return size;
+    }
     public Vector<T> plus(T t){
         if(tail.size()<32) {
             return new Vector<T>(root,tail.append(t),size+1);

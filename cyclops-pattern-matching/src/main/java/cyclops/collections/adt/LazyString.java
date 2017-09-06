@@ -30,6 +30,10 @@ public final class LazyString implements Sealed2<LazyList.Cons<Character>,LazyLi
         return Nil;
     }
 
+    public LazyString op(Function<? super LazyList<Character>, ? extends LazyList<Character>> custom){
+        return fromLazyList(custom.apply(string));
+    }
+
     public LazyString substring(int start){
         return drop(start);
     }

@@ -46,6 +46,11 @@ public class VectorTest {
         }
 
 
+        final Vector<Integer> finalRef = ints;
+        ints.stream().forEach(next-> {
+                    assertThat(finalRef.get(next), equalTo(Optional.of(next)));
+                }
+        );
     }
 
     @Test
@@ -78,7 +83,11 @@ public class VectorTest {
             assertThat(ints.get(i),equalTo(Optional.of(i)));
         }
 
-
+        final Vector<Integer> finalRef = ints;
+        ints.stream().forEach(next-> {
+                    assertThat(finalRef.get(next), equalTo(Optional.of(next)));
+                }
+        );
     }
 
     @Test
@@ -111,7 +120,11 @@ public class VectorTest {
             assertThat(ints.get(i),equalTo(Optional.of(i)));
         }
 
-
+        final Vector<Integer> finalRef = ints;
+        ints.stream().forEach(next-> {
+                    assertThat(finalRef.get(next), equalTo(Optional.of(next)));
+                }
+        );
     }
 
     @Test
@@ -119,6 +132,43 @@ public class VectorTest {
         Vector<Integer> ints = Vector.<Integer>empty();
 
         int p  = Double.valueOf(Math.pow(2,25)).intValue();
+        for(int i=0;i<p;i++){
+
+
+            ints = ints.plus(i);
+        }
+        for(int i=0;i<p;i++){
+            ints = ints.set(i,i*2);
+        }
+        for(int i=0;i<p;i++){
+            assertThat(ints.get(i),equalTo(Optional.of(i*2)));
+        }
+
+    }
+    @Test
+    public void test6Pow(){
+        Vector<Integer> ints = Vector.<Integer>empty();
+
+        int p  = Double.valueOf(Math.pow(2,30)).intValue();
+        for(int i=0;i<p;i++){
+            ints = ints.plus(i);
+        }
+        for(int i=0;i<p;i++){
+            assertThat(ints.get(i),equalTo(Optional.of(i)));
+        }
+
+        final Vector<Integer> finalRef = ints;
+        ints.stream().forEach(next-> {
+                    assertThat(finalRef.get(next), equalTo(Optional.of(next)));
+                }
+        );
+    }
+
+    @Test
+    public void test6PowSet(){
+        Vector<Integer> ints = Vector.<Integer>empty();
+
+        int p  = Double.valueOf(Math.pow(2,30)).intValue();
         for(int i=0;i<p;i++){
 
 

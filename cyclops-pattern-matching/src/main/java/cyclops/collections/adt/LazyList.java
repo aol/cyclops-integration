@@ -1,6 +1,8 @@
 package cyclops.collections.adt;
 
 
+import com.aol.cyclops2.hkt.Higher;
+import com.aol.cyclops2.internal.stream.spliterators.FillSpliterator;
 import com.aol.cyclops2.internal.stream.spliterators.IteratePredicateSpliterator;
 import com.aol.cyclops2.internal.stream.spliterators.IterateSpliterator;
 import com.aol.cyclops2.internal.stream.spliterators.UnfoldSpliterator;
@@ -9,6 +11,7 @@ import com.aol.cyclops2.internal.stream.spliterators.longs.ReversingRangeLongSpl
 import com.aol.cyclops2.types.Filters;
 import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
+import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
@@ -34,7 +37,12 @@ import java.util.function.*;
 import java.util.stream.Stream;
 
 //safe LazyList (Stream) that does not support exceptional states
-public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Folds<T>, Filters<T>,Transformable<T> {
+public interface LazyList<T> extends  Sealed2<LazyList.Cons<T>,LazyList.Nil>,
+                                        Folds<T>,
+                                        Filters<T>,
+                                        Transformable<T>,
+                                        To<LazyList<T>>,
+                                        Higher<DataWitness.lazyList,T> {
 
     default ReactiveSeq<T> stream(){
         return ReactiveSeq.fromIterable(iterable());
@@ -62,6 +70,9 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         }
         ListX<R> x = Xor.sequencePrimary(next.stream().to().listX(Evaluation.LAZY)).get();
         return LazyList.fromIterator(x.iterator());
+    }
+    static <T> LazyList<T> fill(T t){
+        return LazyList.fromStream(ReactiveSeq.fill(t));
     }
     static <U, T> LazyList<T> unfold(final U seed, final Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
         return fromStream(ReactiveSeq.unfold(seed,unfolder));
@@ -103,6 +114,7 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         return LazyList.fromStream(ReactiveSeq.rangeLong(start,end));
 
     }
+    LazyList<T> append(Supplier<LazyList<T>> list);
     /**
      *
      * Stream over the values of an enum
@@ -416,6 +428,8 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
             return l1.appendAll(cons.tail.get().flatMap(a -> fn.apply(a)));
         },nil->empty());
     }
+
+    LazyList<T> cycle();
     int size();
 
     boolean isEmpty();
@@ -454,6 +468,11 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
             return new Step().loop(this,i-> Trampoline.done(i)).result();
         }
 
+        @Override
+        public Cons<T> cycle() {
+            return append(()->this);
+        }
+
 
         public int size(){
             int result =1;
@@ -469,6 +488,10 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
                     break;
             }
             return result;
+        }
+        @Override
+        public Cons<T> append(Supplier<LazyList<T>> list) {
+            return cons(head,()->tail.get().append(list));
         }
 
         @Override
@@ -503,6 +526,11 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         static Nil Instance = new Nil();
 
         @Override
+        public LazyList<T> append(Supplier<LazyList<T>> list) {
+            return list.get();
+        }
+
+        @Override
         public <R> R foldRight(R zero, BiFunction<? super T, ? super R, ? extends R> f) {
             return zero;
         }
@@ -526,6 +554,9 @@ public interface LazyList<T> extends Sealed2<LazyList.Cons<T>,LazyList.Nil>, Fol
         }
 
 
+        public Nil<T> cycle(){
+            return this;
+        }
     }
 
 }
