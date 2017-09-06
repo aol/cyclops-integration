@@ -1,5 +1,6 @@
 package cyclops.collections.adt;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -145,7 +146,7 @@ public class VectorTest {
         }
 
     }
-    @Test
+    @Test @Ignore
     public void test6Pow(){
         Vector<Integer> ints = Vector.<Integer>empty();
 
@@ -164,11 +165,11 @@ public class VectorTest {
         );
     }
 
-    @Test
+    @Test @Ignore
     public void test6PowSet(){
         Vector<Integer> ints = Vector.<Integer>empty();
 
-        int p  = Double.valueOf(Math.pow(2,30)).intValue();
+        int p  = Double.valueOf(Math.pow(2,30)).intValue()/2;
         for(int i=0;i<p;i++){
 
 

@@ -10,6 +10,7 @@ import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @AllArgsConstructor
 @Getter
@@ -131,6 +132,21 @@ public class Zipper<T> {
                 n->left.match(c->Maybe.just(of(c.tail.get(),c.head,right)),n2->Maybe.none()));
     }
 
+
+
+    public Zipper<T> filterLeft(Predicate<? super T> predicate) {
+        return of(left.filter(predicate),point,right);
+    }
+
+
+    public Zipper<T> filterRight(Predicate<? super T> predicate) {
+        return of(left,point,right.filter(predicate));
+    }
+
+
+    public Tuple2<LazyList<T>, LazyList<T>> split() {
+        return Tuple.tuple(left, right);
+    }
     public LazyList<T> lazyList(){
         return right.prepend(point).prependAll(left);
     }
