@@ -9,7 +9,10 @@ import com.aol.cyclops2.types.recoverable.OnEmpty;
 import com.aol.cyclops2.types.recoverable.OnEmptySwitch;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.control.Trampoline;
+import cyclops.function.Fn3;
+import cyclops.function.Fn4;
 import cyclops.stream.ReactiveSeq;
+import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
 
@@ -51,6 +54,7 @@ public interface ImmutableMap<K,V> extends Iterable<Tuple2<K,V>>,
     <R> ImmutableMap<K,R> mapValues(Function<? super V,? extends R> map);
     <R> ImmutableMap<R,V> mapKeys(Function<? super K,? extends R> map);
     <R1,R2> ImmutableMap<R1,R2> bimap(BiFunction<? super K,? super V,? extends Tuple2<R1,R2>> map);
+
     <K2, V2> ImmutableMap<K2, V2> flatMap(BiFunction<? super K, ? super V, ? extends ImmutableMap<K2, V2>> mapper);
     <K2, V2> ImmutableMap<K2, V2> flatMapI(BiFunction<? super K, ? super V, ? extends Iterable<Tuple2<K2, V2>>> mapper);
 
@@ -140,5 +144,109 @@ public interface ImmutableMap<K,V> extends Iterable<Tuple2<K,V>>,
             return supplier.get();
         }
         return this;
+    }
+
+    default <K1,K2,K3,K4,R1, R2, R3, R> ImmutableMap<K4,R> forEach4(Function<? super Tuple2<K,V>, ? extends Iterable<Tuple2<K1,R1>>> iterable1,
+                                                     BiFunction<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? extends Iterable<Tuple2<K2,R2>>> iterable2,
+                                                     Fn3<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? super Tuple2<K2,R2>, ? extends Iterable<Tuple2<K3,R3>>> iterable3,
+                                                     Fn4<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? super Tuple2<K2,R2>, ? super Tuple2<K3,R3>, ? extends Tuple2<K4,R>> yieldingFunction) {
+
+        return this.flatMapI((a1,b1) -> {
+            Tuple2<K, V> in = Tuple.tuple(a1, b1);
+            ReactiveSeq<Tuple2<K1,R1>> a = ReactiveSeq.fromIterable(iterable1.apply(in));
+            return a.flatMap(ina -> {
+                ReactiveSeq<Tuple2<K2,R2>> b = ReactiveSeq.fromIterable(iterable2.apply(in, ina));
+                return b.flatMap(inb -> {
+                    ReactiveSeq<Tuple2<K3,R3>> c = ReactiveSeq.fromIterable(iterable3.apply(in, ina, inb));
+                    return c.map(in2 -> yieldingFunction.apply(in, ina, inb, in2));
+                });
+
+            });
+
+        });
+    }
+
+    default <K1,K2,K3,K4,R1, R2, R3, R> ImmutableMap<K4,R> forEach4(Function<? super Tuple2<K,V>, ? extends Iterable<Tuple2<K1,R1>>> iterable1,
+                                                     BiFunction<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? extends Iterable<Tuple2<K2,R2>>> iterable2,
+                                                     Fn3<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? super Tuple2<K2,R2>, ? extends Iterable<Tuple2<K3,R3>>> iterable3,
+                                                     Fn4<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? super Tuple2<K2,R2>, ? super Tuple2<K3,R3>, Boolean> filterFunction,
+                                                     Fn4<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? super Tuple2<K2,R2>, ? super Tuple2<K3,R3>, ? extends Tuple2<K4,R>> yieldingFunction) {
+
+        return this.flatMapI((a1,b1) -> {
+            Tuple2<K, V> in = Tuple.tuple(a1, b1);
+            ReactiveSeq<Tuple2<K1,R1>> a = ReactiveSeq.fromIterable(iterable1.apply(in));
+            return a.flatMap(ina -> {
+                ReactiveSeq<Tuple2<K2,R2>> b = ReactiveSeq.fromIterable(iterable2.apply(in, ina));
+                return b.flatMap(inb -> {
+                    ReactiveSeq<Tuple2<K3,R3>> c = ReactiveSeq.fromIterable(iterable3.apply(in, ina, inb));
+                    return c.filter(in2 -> filterFunction.apply(in, ina, inb, in2))
+                            .map(in2 -> yieldingFunction.apply(in, ina, inb, in2));
+                });
+
+            });
+
+        });
+    }
+
+    default <K1,K2,K3,R1, R2, R> ImmutableMap<K3,R> forEach3(Function<? super Tuple2<K,V>, ? extends Iterable<Tuple2<K1,R1>>> iterable1,
+                                                 BiFunction<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? extends Iterable<Tuple2<K2,R2>>> iterable2,
+                                                 Fn3<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? super Tuple2<K2,R2>, ? extends Tuple2<K3,R>> yieldingFunction) {
+
+        return this.flatMapI((a1,b1) -> {
+            Tuple2<K, V> in = Tuple.tuple(a1, b1);
+
+            Iterable<Tuple2<K1,R1>> a = iterable1.apply(in);
+            return ReactiveSeq.fromIterable(a)
+                    .flatMap(ina -> {
+                        ReactiveSeq<Tuple2<K2,R2>> b = ReactiveSeq.fromIterable(iterable2.apply(in, ina));
+                        return b.map(in2 -> yieldingFunction.apply(in, ina, in2));
+                    });
+
+        });
+    }
+
+
+    default <K1,K2,K3,R1, R2, R> ImmutableMap<K3,R> forEach3(Function<? super Tuple2<K,V>, ? extends Iterable<Tuple2<K1,R1>>> iterable1,
+                                                 BiFunction<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? extends Iterable<Tuple2<K2,R2>>> iterable2,
+                                                 Fn3<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? super Tuple2<K2,R2>, Boolean> filterFunction,
+                                                 Fn3<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? super Tuple2<K2,R2>, ? extends Tuple2<K3,R>> yieldingFunction) {
+
+        return this.flatMapI((a1,b1) -> {
+            Tuple2<K, V> in = Tuple.tuple(a1, b1);
+            Iterable<Tuple2<K1,R1>> a = iterable1.apply(in);
+            return ReactiveSeq.fromIterable(a)
+                    .flatMap(ina -> {
+                        ReactiveSeq<Tuple2<K2,R2>> b = ReactiveSeq.fromIterable(iterable2.apply(in, ina));
+                        return b.filter(in2 -> filterFunction.apply(in, ina, in2))
+                                .map(in2 -> yieldingFunction.apply(in, ina, in2));
+                    });
+
+        });
+    }
+
+
+    default <K1,K2,R1, R> ImmutableMap<K2,R> forEach2(Function<? super Tuple2<K,V>, ? extends Iterable<Tuple2<K1,R1>>> iterable1,
+                                             BiFunction<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? extends Tuple2<K2,R>> yieldingFunction) {
+
+        return this.flatMapI((a1,b1) -> {
+            Tuple2<K, V> in = Tuple.tuple(a1, b1);
+            Iterable<Tuple2<K1,R1>> b = iterable1.apply(in);
+            return ReactiveSeq.fromIterable(b)
+                    .map(in2->yieldingFunction.apply(in, in2));
+        });
+    }
+
+
+    default <K1,K2,R1, R> ImmutableMap<K2,R> forEach2(Function<? super Tuple2<K,V>, ? extends Iterable<Tuple2<K1,R1>>> iterable1,
+                                             BiFunction<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, Boolean> filterFunction,
+                                             BiFunction<? super Tuple2<K,V>, ? super Tuple2<K1,R1>, ? extends Tuple2<K2,R>> yieldingFunction) {
+
+        return this.flatMapI((a1,b1) -> {
+            Tuple2<K, V> in = Tuple.tuple(a1, b1);
+            Iterable<? extends Tuple2<K1,R1>> b = iterable1.apply(in);
+            return ReactiveSeq.fromIterable(b)
+                    .filter(in2-> filterFunction.apply(in,in2))
+                    .map(in2->yieldingFunction.apply(in, in2));
+        });
     }
 }

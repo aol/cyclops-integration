@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 public interface DMap{
 
@@ -34,6 +35,11 @@ public interface DMap{
         ReactiveSeq<Either<V1, V2>> streamValues();
         ReactiveSeq<Either<K1, K2>> streamKeys();
 
+         <KR1,VR1,KR2,VR2> Two<KR1,VR1,KR2,VR2> map(Function<? super K1,? extends KR1> keyMapper1,
+                                                    Function<? super V1,? extends VR1> valueMapper1,
+                                                    Function<? super K2,? extends KR2> keyMapper2,
+                                                    Function<? super V2,? extends VR2> valueMapper2);
+
     }
     static interface Three<K1,V1,K2,V2,K3,V3> extends DMap, To<Three<K1,V1,K2,V2,K3,V3>>{
 
@@ -47,6 +53,13 @@ public interface DMap{
         ReactiveSeq<Either3<Tuple2<K1,V1>,Tuple2<K2,V2>,Tuple2<K3,V3>>> stream();
         ReactiveSeq<Either3<K1, K2, K3>> streamKeys();
         ReactiveSeq<Either3<V1, V2, V3>> streamValues();
+
+        <KR1,VR1,KR2,VR2,KR3,VR3> Three<KR1,VR1,KR2,VR2,KR3,VR3> map(Function<? super K1,? extends KR1> keyMapper1,
+                                                                     Function<? super V1,? extends VR1> valueMapper1,
+                                                                     Function<? super K2,? extends KR2> keyMapper2,
+                                                                     Function<? super V2,? extends VR2> valueMapper2,
+                                                                     Function<? super K3,? extends KR3> keyMapper3,
+                                                                     Function<? super V3,? extends VR3> valueMapper3);
     }
 
     @AllArgsConstructor
@@ -98,11 +111,18 @@ public interface DMap{
             ReactiveSeq<Either<K1, K2>> x = map1.stream().map(t->t.v1).map(Either::left);
             return x.mergeP(map2.stream().map(t->t.v1).map(Either::right));
         }
+
+        @Override
+        public <KR1, VR1, KR2, VR2> Two<KR1, VR1, KR2, VR2> map(Function<? super K1, ? extends KR1> keyMapper1, Function<? super V1, ? extends VR1> valueMapper1, Function<? super K2, ? extends KR2> keyMapper2, Function<? super V2, ? extends VR2> valueMapper2) {
+            return new DMap2<>(map1.bimap(keyMapper1,valueMapper1),map2.bimap(keyMapper2,valueMapper2));
+        }
+
         @Override
         public ReactiveSeq<Either<V1, V2>> streamValues() {
             ReactiveSeq<Either<V1, V2>> x = map1.stream().map(t->t.v2).map(Either::left);
             return x.mergeP(map2.stream().map(t->t.v2).map(Either::right));
         }
+
     }
     @AllArgsConstructor
     static class DMap3<K1,V1,K2,V2,K3,V3> implements Three<K1,V1,K2,V2,K3,V3> {
@@ -161,6 +181,11 @@ public interface DMap{
         public ReactiveSeq<Either3<V1, V2, V3>> streamValues() {
             ReactiveSeq<Either3<V1, V2, V3>> x = map1.stream().map(t->t.v2).map(Either3::left1);
             return x.mergeP(map2.stream().map(t->t.v2).map(Either3::left2), map3.stream().map(t->t.v2).map(Either3::right));
+        }
+
+        @Override
+        public <KR1, VR1, KR2, VR2, KR3, VR3> Three<KR1, VR1, KR2, VR2, KR3, VR3> map(Function<? super K1, ? extends KR1> keyMapper1, Function<? super V1, ? extends VR1> valueMapper1, Function<? super K2, ? extends KR2> keyMapper2, Function<? super V2, ? extends VR2> valueMapper2, Function<? super K3, ? extends KR3> keyMapper3, Function<? super V3, ? extends VR3> valueMapper3) {
+            return new DMap3<>(map1.bimap(keyMapper1,valueMapper1),map2.bimap(keyMapper2,valueMapper2),map3.bimap(keyMapper3,valueMapper3));
         }
     }
 
