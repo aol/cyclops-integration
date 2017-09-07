@@ -1,6 +1,7 @@
 package cyclops.collections.adt;
 
 
+import cyclops.control.Maybe;
 import cyclops.patterns.CaseClass5;
 import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
@@ -14,6 +15,7 @@ import org.jooq.lambda.tuple.Tuple5;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 
@@ -34,11 +36,14 @@ public interface RedBlackTree {
 
         boolean isEmpty();
         boolean isBlack();
-        Optional<V> get(K key);
+        Maybe<V> get(K key);
+        V getOrElse(K key,V alt);
+        V getOrElseGet(K key,Supplier<V> alt);
         Tree<K,V> plus(K key, V value);
         Tree<K,V> minus(K key);
         Comparator<K> comparator();
         ReactiveSeq<Tuple2<K,V>> stream();
+        int size();
 
 
 
@@ -103,6 +108,7 @@ public interface RedBlackTree {
         private final Comparator<K> comp;
 
 
+
         public Tree<K, V> left() {
             return left;
         }
@@ -123,13 +129,33 @@ public interface RedBlackTree {
         }
 
         @Override
-        public Optional<V> get(K key) {
+        public Maybe<V> get(K key) {
             int compRes = comp.compare(this.key,key);
             if (compRes>0)
                 return left.get(key);
             else if (compRes==0)
-                return Optional.of(value);
+                return Maybe.of(value);
             return right.get(key);
+        }
+
+        @Override
+        public V getOrElse(K key, V alt) {
+            int compRes = comp.compare(this.key,key);
+            if (compRes>0)
+                return left.getOrElse(key,alt);
+            else if (compRes==0)
+                return value;
+            return right.getOrElse(key,alt);
+        }
+
+        @Override
+        public V getOrElseGet(K key,Supplier<V> alt) {
+            int compRes = comp.compare(this.key,key);
+            if (compRes>0)
+                return left.getOrElseGet(key,alt);
+            else if (compRes==0)
+                return value;
+            return right.getOrElseGet(key,alt);
         }
 
         @Override
@@ -188,6 +214,11 @@ public interface RedBlackTree {
             ReactiveSeq<Tuple2<K, V>> current = ReactiveSeq.of(Tuple.tuple(key, value));
             return ReactiveSeq.concat(left.stream(),current,right.stream());
         }
+
+        @Override
+        public int size() {
+            return left.size() +right.size() +1;
+        }
     }
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Leaf<K,V> implements Tree<K,V> {
@@ -203,8 +234,18 @@ public interface RedBlackTree {
         }
 
         @Override
-        public Optional<V> get(K key) {
-            return Optional.empty();
+        public Maybe<V> get(K key) {
+            return Maybe.none();
+        }
+
+        @Override
+        public V getOrElse(K key, V alt) {
+            return alt;
+        }
+
+        @Override
+        public V getOrElseGet(K key, Supplier<V> alt) {
+            return alt.get();
         }
 
         @Override
@@ -225,6 +266,11 @@ public interface RedBlackTree {
         @Override
         public ReactiveSeq<Tuple2<K, V>> stream() {
             return ReactiveSeq.empty();
+        }
+
+        @Override
+        public int size() {
+            return 0;
         }
 
         @Override

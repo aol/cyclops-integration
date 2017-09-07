@@ -1,6 +1,7 @@
 package cyclops.collections.adt;
 
 import cyclops.collections.immutable.PersistentMapX;
+import cyclops.control.Maybe;
 import cyclops.stream.ReactiveSeq;
 import lombok.AllArgsConstructor;
 import org.jooq.lambda.tuple.Tuple;
@@ -16,7 +17,7 @@ import java.util.function.Supplier;
 
 @AllArgsConstructor
 public class HashMap<K,V> implements ImmutableMap<K,V>{
-    HAMT.Node<K,V> map;
+    private final HAMT.Node<K,V> map;
 
     public static <K,V> HashMap<K,V> empty(){
         return new HashMap<>(HAMT.empty());
@@ -33,12 +34,12 @@ public class HashMap<K,V> implements ImmutableMap<K,V>{
 
     @Override
     public <K2, V2> DMap.Two<K, V, K2, V2> merge(ImmutableMap<K2, V2> one) {
-        return null;
+        return DMap.two(this,one);
     }
 
     @Override
     public <K2, V2, K3, V3> DMap.Three<K, V, K2, V2, K3, V3> merge(DMap.Two<K2, V2, K3, V3> two) {
-        return null;
+        return DMap.three(this,two.map1(),two.map2());
     }
 
     public ReactiveSeq<Tuple2<K,V>> stream(){
@@ -46,53 +47,53 @@ public class HashMap<K,V> implements ImmutableMap<K,V>{
     }
 
     @Override
-    public <R> ImmutableMap<K, R> mapValues(Function<? super V, ? extends R> map) {
+    public <R> HashMap<K, R> mapValues(Function<? super V, ? extends R> map) {
         return fromStream(stream().map(t->t.map2(map)));
     }
 
     @Override
-    public <R> ImmutableMap<R, V> mapKeys(Function<? super K, ? extends R> map) {
+    public <R> HashMap<R, V> mapKeys(Function<? super K, ? extends R> map) {
         return fromStream(stream().map(t->t.map1(map)));
 
     }
 
     @Override
-    public <R1, R2> ImmutableMap<R1, R2> bimap(BiFunction<? super K, ? super V, ? extends Tuple2<R1, R2>> map) {
+    public <R1, R2> HashMap<R1, R2> bimap(BiFunction<? super K, ? super V, ? extends Tuple2<R1, R2>> map) {
         return fromStream(stream().map(t->t.map(map)));
     }
 
     @Override
-    public <K2, V2> ImmutableMap<K2, V2> flatMap(BiFunction<? super K, ? super V, ? extends ImmutableMap<K2, V2>> mapper) {
+    public <K2, V2> HashMap<K2, V2> flatMap(BiFunction<? super K, ? super V, ? extends ImmutableMap<K2, V2>> mapper) {
         return fromStream(stream().flatMapI(t->t.map(mapper)));
     }
 
     @Override
-    public <K2, V2> ImmutableMap<K2, V2> flatMapI(BiFunction<? super K, ? super V, ? extends Iterable<Tuple2<K2, V2>>> mapper) {
+    public <K2, V2> HashMap<K2, V2> flatMapI(BiFunction<? super K, ? super V, ? extends Iterable<Tuple2<K2, V2>>> mapper) {
         return fromStream(stream().flatMapI(t->t.map(mapper)));
     }
 
     @Override
-    public ImmutableMap<K, V> filter(Predicate<? super Tuple2<K, V>> predicate) {
+    public HashMap<K, V> filter(Predicate<? super Tuple2<K, V>> predicate) {
         return fromStream(stream().filter(predicate));
     }
 
     @Override
-    public ImmutableMap<K, V> filterKeys(Predicate<? super K> predicate) {
+    public HashMap<K, V> filterKeys(Predicate<? super K> predicate) {
         return fromStream(stream().filter(t->predicate.test(t.v1)));
     }
 
     @Override
-    public ImmutableMap<K, V> filterValues(Predicate<? super V> predicate) {
+    public HashMap<K, V> filterValues(Predicate<? super V> predicate) {
         return fromStream(stream().filter(t->predicate.test(t.v2)));
     }
 
     @Override
-    public <R> ImmutableMap<K, R> map(Function<? super V, ? extends R> fn) {
+    public <R> HashMap<K, R> map(Function<? super V, ? extends R> fn) {
         return fromStream(stream().map(t-> Tuple.tuple(t.v1,fn.apply(t.v2))));
     }
 
     @Override
-    public <R1, R2> ImmutableMap<R1, R2> bimap(Function<? super K, ? extends R1> fn1, Function<? super V, ? extends R2> fn2) {
+    public <R1, R2> HashMap<R1, R2> bimap(Function<? super K, ? extends R1> fn1, Function<? super V, ? extends R2> fn2) {
         return fromStream(stream().map(t-> Tuple.tuple(fn1.apply(t.v1),fn2.apply(t.v2))));
     }
 
@@ -106,23 +107,23 @@ public class HashMap<K,V> implements ImmutableMap<K,V>{
     }
 
     @Override
-    public ImmutableMap<K, V> put(Tuple2<K, V> keyAndValue) {
+    public HashMap<K, V> put(Tuple2<K, V> keyAndValue) {
         return put(keyAndValue.v1,keyAndValue.v2);
     }
 
     @Override
-    public ImmutableMap<K, V> putAll(ImmutableMap<K, V> map) {
+    public HashMap<K, V> putAll(ImmutableMap<K, V> map) {
        return map.stream().foldLeft(this,(m,next)->m.put(next.v1,next.v2));
     }
 
     @Override
-    public ImmutableMap<K, V> remove(K key) {
+    public HashMap<K, V> remove(K key) {
         return new HashMap<>(map.minus(0,key.hashCode(),key));
     }
 
 
     @Override
-    public ImmutableMap<K, V> removeAll(K... keys) {
+    public HashMap<K, V> removeAll(K... keys) {
         HAMT.Node<K,V> cur = map;
         for(K key : keys){
             cur = map.minus(0,key.hashCode(),key);
@@ -144,7 +145,7 @@ public class HashMap<K,V> implements ImmutableMap<K,V>{
         return get(t.v1).filter(v-> Objects.equals(v,t.v2)).isPresent();
     }
 
-    public Optional<V> get(K key){
+    public Maybe<V> get(K key){
         return map.get(0,key.hashCode(),key);
     }
 

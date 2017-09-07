@@ -8,6 +8,7 @@ import com.aol.cyclops2.types.functor.Transformable;
 import com.aol.cyclops2.types.recoverable.OnEmpty;
 import com.aol.cyclops2.types.recoverable.OnEmptySwitch;
 import cyclops.collections.immutable.PersistentMapX;
+import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
@@ -40,7 +41,7 @@ public interface ImmutableMap<K,V> extends Iterable<Tuple2<K,V>>,
     boolean containsKey(K key);
 
     boolean contains(Tuple2<K,V> t);
-    Optional<V> get(K key);
+    Maybe<V> get(K key);
     V getOrElse(K key,V alt);
     V getOrElseGet(K key,Supplier<V> alt);
 
@@ -66,15 +67,15 @@ public interface ImmutableMap<K,V> extends Iterable<Tuple2<K,V>>,
 
     @Override
     default <U> ImmutableMap<K,U> cast(Class<? extends U> type) {
-        return (ImmutableMap<K,U>)Transformable.super.cast(type);
+        return (HashMap<K,U>)Transformable.super.cast(type);
     }
     @Override
     default ImmutableMap<K,V> filterNot(Predicate<? super Tuple2<K, V>> predicate){
-        return (ImmutableMap<K,V>)Filters.super.filterNot(predicate);
+        return (HashMap<K,V>)Filters.super.filterNot(predicate);
     }
     @Override
     default ImmutableMap<K,V> notNull(){
-        return (ImmutableMap<K,V>)Filters.super.notNull();
+        return (HashMap<K,V>)Filters.super.notNull();
     }
 
     @Override
@@ -82,7 +83,7 @@ public interface ImmutableMap<K,V> extends Iterable<Tuple2<K,V>>,
 
     @Override
     default ImmutableMap<K,V> peek(Consumer<? super V> c) {
-        return (ImmutableMap<K,V>)Transformable.super.peek(c);
+        return (HashMap<K,V>)Transformable.super.peek(c);
     }
 
     @Override
