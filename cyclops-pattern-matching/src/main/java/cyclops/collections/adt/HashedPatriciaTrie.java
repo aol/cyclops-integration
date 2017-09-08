@@ -1,5 +1,6 @@
 package cyclops.collections.adt;
 
+import cyclops.control.Maybe;
 import cyclops.patterns.CaseClass1;
 import cyclops.patterns.CaseClass2;
 import cyclops.patterns.Sealed4;
@@ -13,6 +14,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface HashedPatriciaTrie<K, V>  {
 
@@ -45,8 +47,9 @@ public interface HashedPatriciaTrie<K, V>  {
 
         Node<K, V> put(int hash, K key, V value);
 
-        Optional<V> get(int hash, K key);
+        Maybe<V> get(int hash, K key);
         V getOrElse(int hash, K key,V alt);
+        V getOrElseGet(int hash, K key,Supplier<V> alt);
 
         Node<K, V> minus(int hash, K key);
         ReactiveSeq<Tuple2<K,V>> stream();
@@ -88,13 +91,17 @@ public interface HashedPatriciaTrie<K, V>  {
         }
 
         @Override
-        public Optional<V> get(int hash, K key) {
-            return Optional.empty();
+        public Maybe<V> get(int hash, K key) {
+            return Maybe.none();
         }
 
         @Override
         public V getOrElse(int hash, K key, V alt) {
             return alt;
+        }
+        @Override
+        public V getOrElseGet(int hash, K key, Supplier<V> alt) {
+            return alt.get();
         }
 
         @Override
@@ -161,10 +168,10 @@ public interface HashedPatriciaTrie<K, V>  {
         }
 
         @Override
-        public Optional<V> get(int hash, K key) {
+        public Maybe<V> get(int hash, K key) {
             if(hash==0 && this.key.equals(key))
-                return Optional.of(value);
-            return Optional.empty();
+                return Maybe.of(value);
+            return Maybe.none();
 
         }
 
@@ -173,6 +180,13 @@ public interface HashedPatriciaTrie<K, V>  {
             if(hash==0 && this.key.equals(key))
                 return value;
             return alt;
+        }
+
+        @Override
+        public V getOrElseGet(int hash, K key, Supplier<V> alt) {
+            if(hash==0 && this.key.equals(key))
+                return value;
+            return alt.get();
         }
 
 
@@ -231,7 +245,7 @@ public interface HashedPatriciaTrie<K, V>  {
                     if (index != 0) {
                         nodes[0] = this;
                     } else {
-                        bucket.iterable().forEach(t2 -> nodes[0] = nodes[0].put(0, t2.v1(), t2.v2()));
+                        bucket.forEach(t2 -> nodes[0] = nodes[0].put(0, t2.v1(), t2.v2()));
                     }
                 }
                 return new ArrayNode<>(nodes);
@@ -239,10 +253,10 @@ public interface HashedPatriciaTrie<K, V>  {
         }
 
         @Override
-        public Optional<V> get(int hash, K key) {
+        public Maybe<V> get(int hash, K key) {
             return (hash == 0)
                     ? bucket.filter(t2 -> t2.v1.equals(key)).get(0).map(Tuple2::v2)
-                    : Optional.empty();
+                    : Maybe.none();
         }
 
         @Override
@@ -250,6 +264,13 @@ public interface HashedPatriciaTrie<K, V>  {
             return (hash == 0)
                     ? bucket.filter(t2 -> t2.v1.equals(key)).map(t->t.v2).getOrElse(0,alt)
                     : alt;
+        }
+
+        @Override
+        public V getOrElseGet(int hash, K key, Supplier<V> alt) {
+            return (hash == 0)
+                    ? bucket.filter(t2 -> t2.v1.equals(key)).map(t->t.v2).getOrElseGet(0,alt)
+                    : alt.get();
         }
 
 
@@ -264,7 +285,7 @@ public interface HashedPatriciaTrie<K, V>  {
 
         @Override
         public ReactiveSeq<Tuple2<K, V>> stream() {
-            return ReactiveSeq.fromIterable(bucket.iterable());
+            return ReactiveSeq.fromIterable(bucket);
         }
 
 
@@ -296,7 +317,7 @@ public interface HashedPatriciaTrie<K, V>  {
         }
 
         @Override
-        public Optional<V> get(int hash, K key) {
+        public Maybe<V> get(int hash, K key) {
             int newHash = hash >>> BITS;
             int index = hash & MASK;
             return nodes[index].get(newHash, key);
@@ -307,6 +328,13 @@ public interface HashedPatriciaTrie<K, V>  {
             int newHash = hash >>> BITS;
             int index = hash & MASK;
             return nodes[index].getOrElse(newHash, key,alt);
+        }
+
+        @Override
+        public V getOrElseGet(int hash, K key, Supplier<V> alt) {
+            int newHash = hash >>> BITS;
+            int index = hash & MASK;
+            return nodes[index].getOrElseGet(newHash, key,alt);
         }
 
         @Override
