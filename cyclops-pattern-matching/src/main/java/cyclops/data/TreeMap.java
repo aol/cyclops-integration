@@ -46,24 +46,24 @@ public class TreeMap<K,V> implements ImmutableMap<K,V> {
         });
 
 
-        TreeMap<R, V> x = fromStream(s, cyclops.data.Comparators.identityComparator());
+        TreeMap<R, V> x = fromStream(s, cyclops.data.Comparators.naturalOrderIdentityComparator());
         return x;
     }
 
 
     @Override
     public <R1, R2> TreeMap<R1, R2> bimap(BiFunction<? super K, ? super V, ? extends Tuple2<R1, R2>> map) {
-        return fromStream(stream().map(t->t.map(map)), cyclops.data.Comparators.identityComparator());
+        return fromStream(stream().map(t->t.map(map)), cyclops.data.Comparators.naturalOrderIdentityComparator());
     }
 
     @Override
     public <K2, V2> TreeMap<K2, V2> flatMap(BiFunction<? super K, ? super V, ? extends ImmutableMap<K2, V2>> mapper) {
-        return fromStream(stream().flatMapI(t->t.map(mapper)), cyclops.data.Comparators.identityComparator());
+        return fromStream(stream().flatMapI(t->t.map(mapper)), cyclops.data.Comparators.naturalOrderIdentityComparator());
     }
 
     @Override
     public <K2, V2> TreeMap<K2, V2> flatMapI(BiFunction<? super K, ? super V, ? extends Iterable<Tuple2<K2, V2>>> mapper) {
-        return fromStream(stream().flatMapI(t->t.map(mapper)), cyclops.data.Comparators.identityComparator());
+        return fromStream(stream().flatMapI(t->t.map(mapper)), cyclops.data.Comparators.naturalOrderIdentityComparator());
     }
 
 
@@ -117,11 +117,11 @@ public class TreeMap<K,V> implements ImmutableMap<K,V> {
 
     @Override
     public <R1, R2> TreeMap<R1, R2> bimap(Function<? super K, ? extends R1> fn1, Function<? super V, ? extends R2> fn2) {
-        return fromStream(stream().map(t-> Tuple.tuple(fn1.apply(t.v1),fn2.apply(t.v2))), cyclops.data.Comparators.identityComparator());
+        return fromStream(stream().map(t-> Tuple.tuple(fn1.apply(t.v1),fn2.apply(t.v2))), cyclops.data.Comparators.naturalOrderIdentityComparator());
     }
 
     public <R1, R2> TreeMap<R1, R2> bimap(Function<? super K, ? extends R1> fn1, Function<? super V, ? extends R2> fn2,Comparator<K> comp) {
-        return fromStream(stream().map(t-> Tuple.tuple(fn1.apply(t.v1),fn2.apply(t.v2))), cyclops.data.Comparators.identityComparator());
+        return fromStream(stream().map(t-> Tuple.tuple(fn1.apply(t.v1),fn2.apply(t.v2))), cyclops.data.Comparators.naturalOrderIdentityComparator());
     }
 
     public static <K,V> TreeMap<K,V> fromMap(Comparator<K> comp, Map<K,V> map){

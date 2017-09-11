@@ -29,7 +29,7 @@ public interface RedBlackTree {
         });
         return tree[0];
     }
-    public static <K,V> Tree<K,V> empty(Comparator<K> comp){
+    public static <K,V> Tree<K,V> empty(Comparator<? super K> comp){
         return new Leaf<K,V>(comp);
     }
     public static interface Tree<K,V> extends Sealed2<Node<K,V>,Leaf<K,V>> {
@@ -41,7 +41,7 @@ public interface RedBlackTree {
         V getOrElseGet(K key,Supplier<V> alt);
         Tree<K,V> plus(K key, V value);
         Tree<K,V> minus(K key);
-        Comparator<K> comparator();
+        Comparator<? super K> comparator();
         ReactiveSeq<Tuple2<K,V>> stream();
         int size();
 
@@ -222,7 +222,7 @@ public interface RedBlackTree {
     }
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Leaf<K,V> implements Tree<K,V> {
-        private final Comparator<K> comp;
+        private final Comparator<? super K> comp;
         @Override
         public boolean isEmpty() {
             return true;
@@ -259,7 +259,7 @@ public interface RedBlackTree {
         }
 
         @Override
-        public Comparator<K> comparator() {
+        public Comparator<? super K> comparator() {
             return comp;
         }
 

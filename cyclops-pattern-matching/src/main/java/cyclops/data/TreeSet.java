@@ -10,6 +10,7 @@ import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -21,7 +22,7 @@ public class TreeSet<T> implements ImmutableSortedSet<T>{
     private final Comparator<? super T> comp;
 
     public static <T> TreeSet<T> empty(Comparator<? super T> comp){
-        return new TreeSet<>( RedBlackTree.empty(comp),comp);
+        return new TreeSet<T>( RedBlackTree.empty(comp),comp);
     }
     public static <T> TreeSet<T> fromStream(ReactiveSeq<T> stream,Comparator<? super T> comp){
         return stream.foldLeft(empty(comp),(m,t2)->m.plus(t2));
@@ -69,22 +70,32 @@ public class TreeSet<T> implements ImmutableSortedSet<T>{
 
     @Override
     public <R> TreeSet<R> map(Function<? super T, ? extends R> fn) {
-        return null;
+        return fromStream(stream().map(fn), Comparators.naturalOrderIdentityComparator());
+    }
+
+    public <R> TreeSet<R> map(Function<? super T, ? extends R> fn, Comparator<? super R> comp) {
+        return fromStream(stream().map(fn), comp);
     }
 
     @Override
     public <R> TreeSet<R> flatMap(Function<? super T, ? extends ImmutableSet<? extends R>> fn) {
-        return null;
+        return fromStream(stream().flatMapI(fn), Comparators.naturalOrderIdentityComparator());
+    }
+    public <R> TreeSet<R> flatMap(Function<? super T, ? extends ImmutableSet<? extends R>> fn,Comparator<? super R> comp) {
+        return fromStream(stream().flatMapI(fn), comp);
     }
 
     @Override
     public <R> TreeSet<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
-        return null;
+        return fromStream(stream().flatMapI(fn), Comparators.naturalOrderIdentityComparator());
+    }
+    public <R> TreeSet<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn,Comparator<? super R> comp) {
+        return fromStream(stream().flatMapI(fn), comp);
     }
 
     @Override
     public TreeSet<T> filter(Predicate<? super T> predicate) {
-        return null;
+        return fromStream(stream().filter(predicate), Comparators.naturalOrderIdentityComparator());
     }
 
     public TreeSet<T> plus(T value){
@@ -108,36 +119,30 @@ public class TreeSet<T> implements ImmutableSortedSet<T>{
 
     @Override
     public ImmutableSortedSet<T> subSet(T fromElement, T toElement) {
-        return null;
+
+       return fromStream(stream().dropWhile(e-> !Objects.equals(e,fromElement))
+                                 .takeUntil(e->Objects.equals(e,toElement)),comp);
+
     }
 
-    @Override
-    public ImmutableSortedSet<T> headSet(T toElement) {
-        return null;
-    }
-
-    @Override
-    public ImmutableSortedSet<T> tailSet(T fromElement) {
-        return null;
-    }
 
     @Override
     public Maybe<T> first() {
-        return null;
+        return Maybe.fromIterable(this);
     }
 
     @Override
     public Maybe<T> last() {
-        return null;
+        return stream().limitLast(1).findOne();
     }
 
     @Override
-    public ImmutableList<T> drop(int num) {
-        return null;
+    public ImmutableSortedSet<T> drop(int num) {
+        return fromStream(stream().drop(num),comp);
     }
 
     @Override
-    public ImmutableList<T> take(int num) {
-        return null;
+    public ImmutableSortedSet<T> take(int num) {
+        return fromStream(stream().take(num),comp);
     }
 }

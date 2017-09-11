@@ -84,7 +84,7 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
             });
             return null;
         }
-        
+
 
         public boolean isEmpty(){
             return false;

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 
 import cyclops.collections.vavr.VavrTreeSetX;
+import io.vavr.collection.TreeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.HashTreePSet;

@@ -14,11 +14,10 @@ public interface ImmutableSortedSet<T> extends ImmutableSet<T> {
     }
     Comparator<? super T> comparator();
     ImmutableSortedSet<T> subSet(T fromElement, T toElement);
-    ImmutableSortedSet<T> headSet(T toElement);
-    ImmutableSortedSet<T> tailSet(T fromElement);
+
     Maybe<T> first();
     Maybe<T> last();
 
-    ImmutableList<T> drop(int num);
-    ImmutableList<T> take(int num);
+    ImmutableSortedSet<T> drop(int num);
+    ImmutableSortedSet<T> take(int num);
 }

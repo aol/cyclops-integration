@@ -10,4 +10,12 @@ public class Comparators {
     public static <T> Comparator<T> identityComparator(){
         return IDENTITY_COMPARATOR_INSTANCE;
     }
+    public static <T> Comparator<T> naturalOrderIdentityComparator(){
+        return (a,b)-> {
+            if (a instanceof Comparable) {
+                return Comparator.<Comparable>naturalOrder().compare((Comparable)a,(Comparable)b);
+            }
+            return identityComparator().compare(a,b);
+        };
+    }
 }
