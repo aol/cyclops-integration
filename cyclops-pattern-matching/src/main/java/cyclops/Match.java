@@ -7,7 +7,7 @@ import cyclops.async.Future;
 import cyclops.async.adapters.Adapter;
 import cyclops.async.adapters.Queue;
 import cyclops.async.adapters.Topic;
-import cyclops.collections.adt.Seq;
+import cyclops.data.Seq;
 import cyclops.control.Maybe;
 import cyclops.control.Try;
 import cyclops.control.Xor;
