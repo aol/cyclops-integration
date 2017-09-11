@@ -17,8 +17,8 @@ import static org.jooq.lambda.tuple.Tuple.tuple;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Range<T> {
-    private final T start;
-    private final T end;
+    public final T start;
+    public final T end;
     private final Enumeration<T> enm;
     private final Ordering<? super T> comp;
 
@@ -27,6 +27,23 @@ public class Range<T> {
     }
     public static <T extends Comparable<T>> Range<T> range(T start, T end, Enumeration<T> enm){
         return new Range<>(start,end,enm, Ordering.of(Comparator.naturalOrder()));
+    }
+
+    public static Range<Integer> range(int start,int end){
+        return range(start, end, new Enumeration<Integer>() {
+            @Override
+            public Maybe<Integer> toEnum(int e) {
+                return Maybe.just(e);
+            }
+
+            @Override
+            public int fromEnum(Integer a) {
+                return a;
+            }
+        });
+    }
+    public Ordering<? super T> ordering(){
+        return comp;
     }
     public Range<T> reverse(){
         return range(end,start,enm,comp);
