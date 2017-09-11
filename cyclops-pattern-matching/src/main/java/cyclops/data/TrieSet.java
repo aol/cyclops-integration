@@ -1,13 +1,21 @@
 package cyclops.data;
 
 
+import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class TrieSet<T> {
-    private final HashedPatriciaTrie.Node<T,T> map;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class TrieSet<T> implements ImmutableSet<T> {
+    private final HashedPatriciaTrie.Node<T,T> map;
+    public static <T> TrieSet<T> empty(){
+        return new TrieSet<T>( HashedPatriciaTrie.empty());
+    }
 
     public static <T> TrieSet<T> of(T... values){
         HashedPatriciaTrie.Node<T, T> tree = HashedPatriciaTrie.empty();
@@ -16,15 +24,68 @@ public class TrieSet<T> {
         }
         return new TrieSet<>(tree);
     }
-
+    public static <T> TrieSet<T> fromStream(ReactiveSeq<T> stream){
+        return stream.foldLeft(empty(),(m,t2)->m.plus(t2));
+    }
 
     public boolean contains(T value){
         return map.get(value.hashCode(),value).isPresent();
     }
+
+    @Override
+    public int size() {
+        return map.size();
+    }
+
+    @Override
+    public TrieSet<T> add(T value) {
+        return null;
+    }
+
+    @Override
+    public TrieSet<T> remove(T value) {
+        return null;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+
+    @Override
+    public <R> TrieSet<R> map(Function<? super T, ? extends R> fn) {
+        return fromStream(stream().map(fn));
+    }
+
+    @Override
+    public <R> TrieSet<R> flatMap(Function<? super T, ? extends ImmutableSet<? extends R>> fn) {
+        return fromStream(stream().flatMapI(fn));
+    }
+
+    @Override
+    public <R> TrieSet<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+        return fromStream(stream().flatMapI(fn));
+    }
+
+    @Override
+    public TrieSet<T> filter(Predicate<? super T> predicate) {
+        return fromStream(stream().filter(predicate));
+    }
+
     public TrieSet<T> plus(T value){
         return new TrieSet<>(map.put(value.hashCode(),value,value));
     }
     public TrieSet<T> minus(T value){
         return new TrieSet<>(map.minus(value.hashCode(),value));
+    }
+
+    @Override
+    public ReactiveSeq<T> stream() {
+        return map.stream().map(t->t.v1);
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return stream().iterator();
     }
 }
