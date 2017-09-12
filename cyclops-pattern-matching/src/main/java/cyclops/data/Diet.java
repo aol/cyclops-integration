@@ -71,16 +71,34 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
                 return left.containsRec(range);
             return right.containsRec(range);
         }
+        private Trampoline<Tuple2<Diet<T>,T>> findRightAndEndingPoint(T value){
+            //            value
+            //                    start         (This is right Diet, end at old start)
+            if(focus.ordering().isLessThan(value,focus.start)) {
+                return done(tuple(this, value));
+            }
+            //            value
+            //                   end
+            //    start                 (right is right diet, end new at old end)
+            if(focus.ordering().isLessThanOrEqual(value,focus.end))
+                return done(tuple(right,focus.end));
+            //             value
+            //                                  end
+            //                    start              (split rightwad diet recursively)
+            return left.match(p->p.findRightAndEndingPoint(value),leftNil->done(tuple(leftNil,value)));
+
+
+        }
 
         private Trampoline<Tuple2<Diet<T>,T>> findLeftAndStartingPoint(T value){
                //            value
-               //       end         (This is leftward Diet, start at end)
+               //       end         (This is leftward Diet, start new at end)
                if(focus.ordering().isGreaterThan(value,focus.end)) {
                    return done(tuple(this, value));
                }
                //                        value
                //                                 end
-               //<-- left  -->    start                 (Left is leftward diet, start at start)
+               //<-- left  -->    start                 (Left is leftward diet, start new at start)
                if(focus.ordering().isGreaterThanOrEqual(value,focus.start))
                    return done(tuple(left,focus.start));
                //             value
@@ -93,14 +111,15 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
         @Override
         public Diet<T> add(Range<T> range) {
             Tuple2<Range<T>, Maybe<Range<T>>> t = focus.plusAll(range);
-            t.v2.visit(s-> t.v1==focus? cons(left,focus,right.add(s)) : cons(left.add(s),focus,right),()->{
-
+            return t.v2.visit(s-> t.v1==focus? cons(left,focus,right.add(s)) : cons(left.add(s),focus,right),()->{
 
                 //create new expanded range and rebalance the trees
-                Tuple2<Diet<T>,T> leftAndStart = findLeftAndStartingPoint(t.v1.start).get();
-                               return null;
+                Tuple2<Diet<T>,T> leftAndStart = left.match(l->l.findLeftAndStartingPoint(t.v1.start).get(),n->tuple(n,t.v1.start));
+                Tuple2<Diet<T>,T> rightAndEnd = right.match(l->l.findRightAndEndingPoint(t.v1.end).get(),n->tuple(n,t.v1.start));
+
+                return cons(leftAndStart.v1, Range.range(leftAndStart.v2, rightAndEnd.v2, focus.enumeration(), focus.ordering()), rightAndEnd.v1);
+
             });
-            return null;
         }
 
 

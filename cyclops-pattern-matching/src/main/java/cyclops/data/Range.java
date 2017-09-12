@@ -42,6 +42,9 @@ public class Range<T> {
             }
         });
     }
+    public Enumeration<T> enumeration(){
+        return enm;
+    }
     public Ordering<? super T> ordering(){
         return comp;
     }
