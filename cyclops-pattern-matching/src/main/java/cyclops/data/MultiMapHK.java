@@ -2,9 +2,11 @@ package cyclops.data;
 
 
 import com.aol.cyclops2.hkt.Higher;
+import cyclops.control.Maybe;
 import cyclops.typeclasses.Pure;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -26,11 +28,19 @@ public class MultiMapHK<W,K,V> {
         Higher<W,V> hkt = multiMap.get(key).map(v->appender.append(v,value)).orElseGet(()->pure.unit(value));
         return new MultiMapHK<>(multiMap.put(key,hkt),appender,pure);
     }
-    public <R> Optional<R> get(K key,Function<? super Higher<W,V>,? extends R> decoder){
+    public <R> Maybe<R> get(K key, Function<? super Higher<W,V>,? extends R> decoder){
         return multiMap.get(key).map(decoder);
     }
-    public Optional<Higher<W,V>> get(K key){
+    public Maybe<Higher<W,V>> get(K key){
         return multiMap.get(key);
+    }
+
+    public boolean containsKey(K key){
+        return multiMap.containsKey(key);
+    }
+
+    public boolean contains(Tuple2<K,Higher<W,V>>  keyAndValue){
+        return multiMap.contains(keyAndValue);
     }
     @FunctionalInterface
     public interface Appender<W,V>{

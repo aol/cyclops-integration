@@ -1,5 +1,6 @@
 package cyclops.data;
 
+import cyclops.control.Maybe;
 import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
@@ -7,7 +8,6 @@ import lombok.AllArgsConstructor;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -27,19 +27,22 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
     <R> BankersQueue<R> map(Function<? super T, ? extends R> map);
     <R> BankersQueue<R> flatMap(Function<? super T, ? extends BankersQueue<? extends R>> fn);
 
-    default Optional<T> get(int n){
-        return Optional.empty();
+    default Maybe<T> get(int n){
+        return Maybe.none();
     }
 
     default ReactiveSeq<T> stream(){
-        return ReactiveSeq.fromIterable(lazyList().iterable());
+        return ReactiveSeq.fromIterable(lazySeq());
     }
 
     BankersQueue<T> replace(T currentElement, T newElement);
     public static <T> BankersQueue<T> cons(T value){
         return new Cons<>(1, LazySeq.cons(value,()-> LazySeq.empty()),0, LazySeq.empty());
     }
-     LazySeq<T> lazyList();
+    public static <T> BankersQueue<T> ofAll(ImmutableList<T> list){
+        return new Cons<>(list.size(), list,0, list.emptyUnit());
+    }
+     LazySeq<T> lazySeq();
 
     static <T> BankersQueue<T> of(T... values) {
         BankersQueue<T> result = empty();
@@ -52,11 +55,11 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Cons<T> implements  BankersQueue<T> {
         private final int sizeFront;
-        private final LazySeq<T> front;
+        private final ImmutableList<T> front;
         private final int sizeBack;
-        private final LazySeq<T> back;
+        private final ImmutableList<T> back;
 
-        private Cons(LazySeq<T> front, LazySeq<T> back){
+        private Cons(ImmutableList<T> front, ImmutableList<T> back){
             this.sizeFront = front.size();
             this.sizeBack=back.size();
             this.front = front;
@@ -97,7 +100,7 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
 
         @Override
         public <R> BankersQueue<R> flatMap(Function<? super T, ? extends BankersQueue<? extends R>> fn) {
-            return check(new Cons(sizeFront,front.flatMap(fn.andThen(q->q.lazyList())),sizeBack,back.flatMap(fn.andThen(q->q.lazyList()))));
+            return check(new Cons(sizeFront,front.flatMap(fn.andThen(q->q.lazySeq())),sizeBack,back.flatMap(fn.andThen(q->q.lazySeq()))));
         }
 
         public Tuple2<T,BankersQueue<T>> dequeue() {
@@ -107,27 +110,27 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
 
         }
         public BankersQueue<T> replace(T currentElement, T newElement) {
-            LazySeq<T> replaceF = front.replace(currentElement, newElement);
-            LazySeq<T> replaceB = back.replace(currentElement, newElement);
+            ImmutableList<T> replaceF = front.replace(currentElement, newElement);
+            ImmutableList<T> replaceB = back.replace(currentElement, newElement);
             return  front==replaceF && back==replaceB ? this : new Cons<>(replaceF, replaceB);
         }
-       public Optional<T> get(int n) {
+       public Maybe<T> get(int n) {
            if (n < sizeFront)
                return front.get(sizeFront-n-1);
            else if (n < sizeFront + sizeBack) {
                int pos = n-sizeFront;
                return  back.get(sizeBack-pos-1);
            }
-           return Optional.empty();
+           return Maybe.none();
 
        }
         @Override
-        public LazySeq<T> lazyList() {
-            return front.appendAll(back.reverse());
+        public LazySeq<T> lazySeq() {
+            return front.appendAll(back.reverse()).lazySeq();
         }
 
         public String toString(){
-           return lazyList().toString();
+           return lazySeq().toString();
         }
 
     }
@@ -171,7 +174,7 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
 
 
         @Override
-        public LazySeq<T> lazyList() {
+        public LazySeq<T> lazySeq() {
             return LazySeq.empty();
         }
 

@@ -6,8 +6,10 @@ import com.aol.cyclops2.types.foldable.Folds;
 import com.aol.cyclops2.types.functor.Transformable;
 import com.aol.cyclops2.types.recoverable.OnEmpty;
 import com.aol.cyclops2.types.recoverable.OnEmptySwitch;
+import com.aol.cyclops2.types.traversable.Traversable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.control.Maybe;
+import cyclops.control.Trampoline;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.patterns.CaseClass2;
@@ -15,13 +17,12 @@ import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
+import org.jooq.lambda.tuple.Tuple3;
 
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.concurrent.TimeUnit;
+import java.util.function.*;
 
 
 public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,ImmutableList.None<T>>,
@@ -29,10 +30,55 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
                                            Filters<T>,
                                            Transformable<T>,
                                            OnEmpty<ImmutableList<T>>,
-                                            OnEmptySwitch<ImmutableList<T>,ImmutableList<T>>,
+                                           OnEmptySwitch<ImmutableList<T>,ImmutableList<T>>,
                                            Iterable<T> {
 
 
+    ImmutableList<T> emptyUnit();
+
+    default ImmutableList<T> replace(T currentElement, T newElement){
+        ImmutableList<T> preceding = emptyUnit();
+        ImmutableList<T> tail = this;
+        while(!tail.isEmpty()){
+            ImmutableList<T> ref=  preceding;
+            ImmutableList<T> tailRef = tail;
+            Tuple3<ImmutableList<T>, ImmutableList<T>, Boolean> t3 = tail.match(c -> {
+                if (Objects.equals(c.head(), currentElement))
+                    return Tuple.tuple(ref, tailRef, true);
+                return Tuple.tuple(ref.prepend(c.head()), c.tail(), false);
+            }, nil -> Tuple.tuple(ref, tailRef, true));
+
+            preceding = t3.v1;
+            tail = t3.v2;
+            if(t3.v3)
+                break;
+
+        }
+
+        ImmutableList<T> start = preceding;
+        return tail.match(cons->cons.tail().prepend(newElement).prependAll(start),nil->this);
+    }
+    default ImmutableList<T> removeFirst(Predicate<? super T> pred){
+        ImmutableList<T> res[] = new ImmutableList[]{emptyUnit()};
+        ImmutableList<T> rem = this;
+        boolean[] found = {false};
+        do {
+            rem = rem.match(s -> {
+                return s.match((head, tail2) -> {
+                    found[0] = pred.test(head);
+                    if(!found[0]) {
+                        res[0] = res[0].prepend(head);
+                        return tail2;
+                    }
+                    return tail2;
+                });
+            }, n -> n);
+        }while(!rem.isEmpty() && !found[0]);
+
+        ImmutableList<T> ar = rem.match(s -> s.match((h, t) -> t), n -> n);
+        return res[0].foldLeft(ar, (a,b)->a.prepend(b));
+
+    }
     default LinkedListX<T> linkdedListX(){
         return stream().to().linkedListX(Evaluation.LAZY);
     }
@@ -120,7 +166,33 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
     ImmutableList<T> filter(Predicate<? super T> fn);
 
     @Override
+    default <U> ImmutableList<U> cast(Class<? extends U> type) {
+        return null;
+    }
+
+    @Override
     <R> ImmutableList<R> map(Function<? super T, ? extends R> fn);
+
+    @Override
+    default ImmutableList<T> peek(Consumer<? super T> c) {
+        return (ImmutableList<T>)Transformable.super.peek(c);
+    }
+
+    @Override
+    default <R> ImmutableList<R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
+        return (ImmutableList<R>)Transformable.super.trampoline(mapper);
+    }
+
+    @Override
+    default <R> ImmutableList<R> retry(Function<? super T, ? extends R> fn) {
+        return (ImmutableList<R>)Transformable.super.retry(fn);
+    }
+
+    @Override
+    default <R> ImmutableList<R> retry(Function<? super T, ? extends R> fn, int retries, long delay, TimeUnit timeUnit) {
+        return (ImmutableList<R>)Transformable.super.retry(fn,retries,delay,timeUnit);
+    }
+
     <R> ImmutableList<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn);
     <R> ImmutableList<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn);
 

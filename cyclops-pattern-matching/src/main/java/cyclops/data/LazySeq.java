@@ -285,6 +285,12 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         Tuple2<LazySeq<R1>, LazySeq<Tuple2<? extends R1, ? extends R2>>> x = map(fn).duplicate().map1(s -> s.map(Tuple2::v1));
         return x.map2(s -> s.map(Tuple2::v2));
     }
+
+    @Override
+    default ImmutableList<T> emptyUnit(){
+        return empty();
+    }
+
     default LazySeq<T> replace(T currentElement, T newElement) {
         LazySeq<T> preceding = empty();
         LazySeq<T> tail = this;

@@ -280,7 +280,10 @@ public interface Seq<T> extends ImmutableList<T>,
     static <T> Seq<T> cons(T head, Seq<T> tail) {
         return Cons.cons(head,tail);
     }
-
+    @Override
+    default Seq<T> emptyUnit() {
+        return empty();
+    }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(of={"head,tail"})
@@ -326,6 +329,8 @@ public interface Seq<T> extends ImmutableList<T>,
         public T head() {
             return head;
         }
+
+
 
         @Override
         public Cons<T> reverse() {

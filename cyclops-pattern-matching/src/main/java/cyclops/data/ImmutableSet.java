@@ -8,14 +8,13 @@ import com.aol.cyclops2.types.functor.Transformable;
 import com.aol.cyclops2.types.recoverable.OnEmpty;
 import com.aol.cyclops2.types.recoverable.OnEmptySwitch;
 import cyclops.collections.immutable.PersistentSetX;
+import cyclops.control.Trampoline;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.stream.ReactiveSeq;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.concurrent.TimeUnit;
+import java.util.function.*;
 
 public interface ImmutableSet<T> extends Folds<T>,
                                          Filters<T>,
@@ -23,6 +22,45 @@ public interface ImmutableSet<T> extends Folds<T>,
                                          OnEmpty<T>,
                                          OnEmptySwitch<ImmutableSet<T>,ImmutableSet<T>>,
                                          Iterable<T> {
+    @Override
+    default <U> ImmutableSet<U> ofType(Class<? extends U> type) {
+        return (ImmutableSet<U>)Filters.super.ofType(type);
+    }
+
+    @Override
+    default ImmutableSet<T> filterNot(Predicate<? super T> predicate) {
+        return (ImmutableSet<T>)Filters.super.filterNot(predicate);
+    }
+
+    @Override
+    default ImmutableSet<T> notNull() {
+        return (ImmutableSet<T>)Filters.super.notNull();
+    }
+
+    @Override
+    default <U> ImmutableSet<U> cast(Class<? extends U> type) {
+        return (ImmutableSet<U>)Transformable.super.cast(type);
+    }
+
+    @Override
+    default ImmutableSet<T> peek(Consumer<? super T> c) {
+        return (ImmutableSet<T>)Transformable.super.peek(c);
+    }
+
+    @Override
+    default <R> ImmutableSet<R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
+        return (ImmutableSet<R>)Transformable.super.trampoline(mapper);
+    }
+
+    @Override
+    default <R> ImmutableSet<R> retry(Function<? super T, ? extends R> fn) {
+        return (ImmutableSet<R>)Transformable.super.retry(fn);
+    }
+
+    @Override
+    default <R> ImmutableSet<R> retry(Function<? super T, ? extends R> fn, int retries, long delay, TimeUnit timeUnit) {
+        return (ImmutableSet<R>)Transformable.super.retry(fn,retries,delay,timeUnit);
+    }
 
     default PersistentSetX<T> persistentSetX(){
         return stream().to().persistentSetX(Evaluation.LAZY);

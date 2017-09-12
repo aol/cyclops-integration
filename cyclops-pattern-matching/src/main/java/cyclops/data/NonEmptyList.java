@@ -29,10 +29,18 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>>, Immutabl
         return LinkedListX.fromIterable(this);
     }
     public static <T> NonEmptyList<T> of(T head, T... value){
-        Seq<T> list = Seq.of(value);
+        LazySeq<T> list = LazySeq.of(value);
         return cons(head,list);
     }
     public static <T> NonEmptyList<T> of(T head){
+        LazySeq<T> list = LazySeq.empty();
+        return cons(head,list);
+    }
+    public static <T> NonEmptyList<T> eager(T head, T... value){
+        Seq<T> list = Seq.of(value);
+        return cons(head,list);
+    }
+    public static <T> NonEmptyList<T> eager(T head){
         Seq<T> list = Seq.empty();
         return cons(head,list);
     }
@@ -60,6 +68,11 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>>, Immutabl
 
     public LazySeq<T> asList(){
         return LazySeq.lazy(head,()->tail);
+    }
+
+    @Override
+    public ImmutableList<T> emptyUnit() {
+        return Seq.empty();
     }
 
     @Override
@@ -153,10 +166,43 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>>, Immutabl
         return fn1.apply(this);
     }
 
-    public <R> NonEmptyList<R> flatMap(Function<? super T, ? extends NonEmptyList<R>> fn) {
-        ImmutableList<R> l = asList().flatMap(fn.andThen(a -> a.asList()));
+    @Override
+    public NonEmptyList<T> onEmpty(ImmutableList<T> value) {
+        return this;
+    }
+
+    @Override
+    public NonEmptyList<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
+        return this;
+    }
+
+    @Override
+    public <X extends Throwable> NonEmptyList<T> onEmptyThrow(Supplier<? extends X> supplier) {
+        return this;
+    }
+
+    @Override
+    public NonEmptyList<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
+        return this;
+    }
+
+
+    @Override
+    public <R> ImmutableList<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn) {
+        return asList().flatMap(fn);
+    }
+
+    @Override
+    public <R> ImmutableList<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+        return asList().flatMapI(fn);
+    }
+
+    public <R> NonEmptyList<R> flatMapNel(Function<? super T, ? extends NonEmptyList<R>> fn) {
+        ImmutableList<R> l = asList().flatMap(fn.andThen(a -> a));
         return l.nonEmptyList().get();
     }
+
+
 
     public <R> R foldRight(R zero,BiFunction<? super T, ? super R, ? extends R> f) {
         return asList().foldRight(zero,f);

@@ -79,6 +79,6 @@ public class DifferenceList<T> implements Folds<T>, Transformable<T> {
 
     @Override
     public ReactiveSeq<T> stream() {
-        return ReactiveSeq.fromIterable(run().iterable());
+        return ReactiveSeq.fromIterable(run());
     }
 }

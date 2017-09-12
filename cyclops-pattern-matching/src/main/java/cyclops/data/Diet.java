@@ -16,6 +16,8 @@ import java.util.Comparator;
 import java.util.function.Function;
 
 import static cyclops.control.Trampoline.done;
+import static cyclops.control.Trampoline.more;
+import static org.jooq.lambda.tuple.Tuple.tuple;
 
 //Discrete Interval Encoded Tree
 public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
@@ -70,17 +72,33 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
             return right.containsRec(range);
         }
 
+        private Trampoline<Tuple2<Diet<T>,T>> findLeftAndStartingPoint(T value){
+               //            value
+               //       end         (This is leftward Diet, start at end)
+               if(focus.ordering().isGreaterThan(value,focus.end)) {
+                   return done(tuple(this, value));
+               }
+               //                        value
+               //                                 end
+               //<-- left  -->    start                 (Left is leftward diet, start at start)
+               if(focus.ordering().isGreaterThanOrEqual(value,focus.start))
+                   return done(tuple(left,focus.start));
+               //             value
+               //                                  end
+               //   <--     left         --> start               (split leftward diet recursively)
+               return left.match(p->p.findLeftAndStartingPoint(value),leftNil->done(tuple(leftNil,value)));
+
+
+        }
         @Override
         public Diet<T> add(Range<T> range) {
             Tuple2<Range<T>, Maybe<Range<T>>> t = focus.plusAll(range);
             t.v2.visit(s-> t.v1==focus? cons(left,focus,right.add(s)) : cons(left.add(s),focus,right),()->{
 
-                //create new expanded range and rebalance the trees
-                T v1 = t.v1.start;
-                if(focus.ordering().isGreaterThan(v1,focus.start)){
 
-                }
-                return null;
+                //create new expanded range and rebalance the trees
+                Tuple2<Diet<T>,T> leftAndStart = findLeftAndStartingPoint(t.v1.start).get();
+                               return null;
             });
             return null;
         }
@@ -97,7 +115,7 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
 
         @Override
         public Tuple3<Diet<T>, Range<T>, Diet<T>> unapply() {
-            return Tuple.tuple(left,focus,right);
+            return tuple(left,focus,right);
         }
     }
     @AllArgsConstructor(access = AccessLevel.PRIVATE)

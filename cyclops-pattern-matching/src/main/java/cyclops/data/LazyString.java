@@ -106,6 +106,12 @@ public final class LazyString implements ImmutableList<Character> {
         return fromLazyList(string.take(n));
 
     }
+
+    @Override
+    public LazyString emptyUnit() {
+        return empty();
+    }
+
     public LazyString  drop(final int num) {
         return fromLazyList(string.drop(num));
     }
