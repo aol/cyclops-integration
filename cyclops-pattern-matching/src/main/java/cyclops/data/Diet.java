@@ -43,7 +43,13 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
     Trampoline<Boolean> containsRec(T value);
     Trampoline<Boolean> containsRec(Range<T> range);
 
+
     Diet<T> add(Range<T> range);
+    Diet<T> merge(Diet<T> merge);
+    Diet<T> remove(Range<T> range);
+
+    <R> Diet<R> map(Function<? super T, ? extends R> fn,Enumeration<R> enm, Comparator<? super R> comp);
+
 
 
     boolean isEmpty();
@@ -70,6 +76,9 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
             if(focus.ordering().isLessThan(range.start,focus.start))
                 return left.containsRec(range);
             return right.containsRec(range);
+        }
+        private Tuple2<Range<T>,Diet<T>> max(){
+           return right.match(s->s.max().map((r,d)->tuple(r,cons(left,focus,d))),n->tuple(focus,left));
         }
         private Trampoline<Tuple2<Diet<T>,T>> findRightAndEndingPoint(T value){
             //            value
@@ -122,6 +131,32 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
             });
         }
 
+        @Override
+        public Diet<T> merge(Diet<T> merge) {
+            return merge.match(s-> {
+                        Diet<T> x = max().map((r, d) -> cons(d, r, right));
+                        return x;
+                    }
+            ,n->this);
+        }
+
+        @Override
+        public Diet<T> remove(Range<T> range) {
+
+            focus.minusAll(range).visit(s->s.map((r, mr) ->  mr.visit(sr -> cons(left, r, empty()).merge(cons(empty(), sr, right)), () ->
+                    cons(focus.startsBefore(range) ? left.remove(range) : left, r, focus.endsAfter(range) ? right.remove(range) : right))),()->left.merge(right));
+            return null;
+        }
+
+        @Override
+        public <R> Diet<R> map(Function<? super T, ? extends R> fn, Enumeration<R> enm, Comparator<? super R> comp) {
+            Range<R> r = focus.map(fn,enm,comp);
+            Diet<R> l2 = left.map(fn,enm,comp);
+            return l2.add(r).merge(right.map(fn,enm,comp));
+
+        }
+
+
 
         public boolean isEmpty(){
             return false;
@@ -156,6 +191,21 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
         @Override
         public Diet<T> add(Range<T> range) {
             return Diet.cons(range);
+        }
+
+        @Override
+        public Diet<T> merge(Diet<T> merge) {
+            return merge;
+        }
+
+        @Override
+        public Diet<T> remove(Range<T> range) {
+            return this;
+        }
+
+        @Override
+        public <R> Diet<R> map(Function<? super T, ? extends R> fn,Enumeration<R> enm, Comparator<? super R> comp) {
+            return INSTANCE;
         }
 
         @Override

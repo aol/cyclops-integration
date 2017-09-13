@@ -12,6 +12,7 @@ import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.Comparator;
+import java.util.function.Function;
 
 import static org.jooq.lambda.tuple.Tuple.tuple;
 
@@ -44,6 +45,18 @@ public class Range<T> {
     }
     public Enumeration<T> enumeration(){
         return enm;
+    }
+    public boolean startsBefore(Range<T> r){
+        return comp.isLessThan(start,r.start);
+    }
+    public boolean endsAfter(Range<T> r){
+        return comp.isGreaterThan(end,r.end);
+    }
+    public <R> Range<R> map(Function<? super T,? extends R> fn,Enumeration<R> enm, Comparator<? super R> comp){
+        R s2 = fn.apply(start);
+        R e2 = fn.apply(end);
+
+        return Ordering.of(comp).isLessThanOrEqual(s2,e2)? range( s2,e2,enm,comp) : range(e2,s2,enm,comp);
     }
     public Ordering<? super T> ordering(){
         return comp;

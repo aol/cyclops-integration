@@ -31,7 +31,7 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
                                            Transformable<T>,
                                            OnEmpty<ImmutableList<T>>,
                                            OnEmptySwitch<ImmutableList<T>,ImmutableList<T>>,
-                                           Iterable<T> {
+                                           Iterable<T>{
 
 
     ImmutableList<T> emptyUnit();
