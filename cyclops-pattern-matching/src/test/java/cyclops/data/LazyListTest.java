@@ -14,6 +14,11 @@ public class LazyListTest {
         assertThat(LazySeq.of(1,2,3).prependAll(LazySeq.of(4,5,6)),equalTo(LazySeq.of(4,5,6,1,2,3)));
     }
 
+    @Test
+    public void scanRight(){
+        LazySeq.of(1,2,3).scanRight(0,(a,b)->a+b).printOut();
+    }
+
 
 
 

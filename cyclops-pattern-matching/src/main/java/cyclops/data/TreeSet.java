@@ -1,6 +1,7 @@
 package cyclops.data;
 
 
+import com.aol.cyclops2.types.traversable.Traversable;
 import cyclops.control.Maybe;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
@@ -26,6 +27,9 @@ public class TreeSet<T> implements ImmutableSortedSet<T>{
     }
     public static <T> TreeSet<T> fromStream(ReactiveSeq<T> stream,Comparator<? super T> comp){
         return stream.foldLeft(empty(comp),(m,t2)->m.plus(t2));
+    }
+    public static <T> TreeSet<T> fromIterable(Iterable<T> it,Comparator<? super T> comp){
+        return ReactiveSeq.fromIterable(it).foldLeft(empty(comp),(m,t2)->m.plus(t2));
     }
 
     public ReactiveSeq<T> stream(){
@@ -97,6 +101,8 @@ public class TreeSet<T> implements ImmutableSortedSet<T>{
     public TreeSet<T> filter(Predicate<? super T> predicate) {
         return fromStream(stream().filter(predicate), Comparators.naturalOrderIdentityComparator());
     }
+
+
 
     public TreeSet<T> plus(T value){
         return new TreeSet<>(map.plus(value,value),comp);

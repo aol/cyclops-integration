@@ -460,6 +460,17 @@ public interface LazySeq<T> extends  ImmutableList<T>,
             }
             return new Step().loop(this,i-> Trampoline.done(i)).result();
         }
+        public <R> LazySeq<R> scanRight(R zero,BiFunction<? super T, ? super R, ? extends R> f) {
+
+            class Step{
+                public Trampoline<LazySeq<R>> loop(ImmutableList<T> s, BiFunction<? super R,? super LazySeq<R> ,? extends Trampoline<LazySeq<R>>> fn){
+
+                    return s.match(c-> Trampoline.more(()->loop(c.tail(), (rem,res) -> Trampoline.more(() -> fn.apply(f.apply(c.head(), rem),res)))), n->fn.apply(zero,empty()));
+
+                }
+            }
+            return new Step().loop(this,(i,res)-> Trampoline.done(LazySeq.cons(i,()->res))).result();
+        }
 
         @Override
         public Cons<T> cycle() {

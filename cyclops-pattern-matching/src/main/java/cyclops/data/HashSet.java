@@ -1,6 +1,7 @@
 package cyclops.data;
 
 
+import com.aol.cyclops2.types.traversable.Traversable;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.AllArgsConstructor;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class HashSet<T> implements  ImmutableSet<T>{
@@ -25,6 +27,9 @@ public class HashSet<T> implements  ImmutableSet<T>{
     }
     public static <T> HashSet<T> fromStream(ReactiveSeq<T> stream){
         return stream.foldLeft(empty(),(m,t2)->m.plus(t2));
+    }
+    public static <T> HashSet<T> fromIterable(Iterable<T> it){
+        return ReactiveSeq.fromIterable(it).foldLeft(empty(),(m,t2)->m.plus(t2));
     }
 
 
@@ -70,6 +75,16 @@ public class HashSet<T> implements  ImmutableSet<T>{
     @Override
     public HashSet<T> filter(Predicate<? super T> predicate) {
         return fromStream(stream().filter(predicate));
+    }
+
+    @Override
+    public <R> HashSet<R> unitStream(Stream<R> stream) {
+        return HashSet.fromStream(ReactiveSeq.fromStream(stream));
+    }
+
+    @Override
+    public <U> HashSet<U> unitIterator(Iterator<U> it) {
+        return HashSet.fromIterable(()->it);
     }
 
     public HashSet<T> plus(T value){

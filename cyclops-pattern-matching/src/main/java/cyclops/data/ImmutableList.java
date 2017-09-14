@@ -583,7 +583,7 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
 
     @Override
     default ImmutableList<T> scanLeft(Monoid<T> monoid) {
-        return unitStream(stream().scanLeft(monoid));
+        return scanLeft(monoid.zero(),monoid);
     }
 
     @Override
@@ -593,7 +593,7 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
 
     @Override
     default ImmutableList<T> scanRight(Monoid<T> monoid) {
-        return unitStream(stream().scanRight(monoid));
+        return scanRight(monoid.zero(),monoid);
     }
 
     @Override

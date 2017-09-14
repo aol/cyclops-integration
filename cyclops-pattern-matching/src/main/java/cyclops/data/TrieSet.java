@@ -1,6 +1,7 @@
 package cyclops.data;
 
 
+import com.aol.cyclops2.types.traversable.Traversable;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TrieSet<T> implements ImmutableSet<T> {
@@ -26,6 +28,9 @@ public class TrieSet<T> implements ImmutableSet<T> {
     }
     public static <T> TrieSet<T> fromStream(ReactiveSeq<T> stream){
         return stream.foldLeft(empty(),(m,t2)->m.plus(t2));
+    }
+    public static <T> TrieSet<T> fromIterable(Iterable<T> it){
+        return ReactiveSeq.fromIterable(it).foldLeft(empty(),(m,t2)->m.plus(t2));
     }
 
     public boolean contains(T value){
@@ -70,6 +75,16 @@ public class TrieSet<T> implements ImmutableSet<T> {
     @Override
     public TrieSet<T> filter(Predicate<? super T> predicate) {
         return fromStream(stream().filter(predicate));
+    }
+
+    @Override
+    public <R> ImmutableSet<R> unitStream(Stream<R> stream) {
+        return fromStream(ReactiveSeq.fromStream(stream));
+    }
+
+    @Override
+    public <U> Traversable<U> unitIterator(Iterator<U> it) {
+        return fromIterable(()->it);
     }
 
     public TrieSet<T> plus(T value){
