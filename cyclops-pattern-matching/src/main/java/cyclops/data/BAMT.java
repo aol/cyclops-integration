@@ -51,6 +51,12 @@ public class BAMT<T> {
             newArray[array.length] = value;
             return newArray;
         }
+        public static <T> T[] drop(T[] array,int num) {
+            T[] newArray = (T[])new Object[array.length -num];
+            System.arraycopy(array, 0, newArray, 0, array.length-num);
+
+            return newArray;
+        }
         public static Object[] append2(Object[][] array, Object value) {
             Object[] newArray = new Object[array.length + 1];
             System.arraycopy(array, 0, newArray, 0, array.length);
@@ -82,6 +88,21 @@ public class BAMT<T> {
                 return  tail(ArrayUtils.append(array,t));
             }
             return this;
+        }
+        public ActiveTail<T> drop(int num){
+            T[] newArray = (T[])new Object[array.length-num];
+            System.arraycopy(array, num, newArray, 0, newArray.length);
+
+            return tail(newArray);
+        }
+        public ActiveTail<T> dropRight(int num){
+            return tail(ArrayUtils.drop(array,num));
+        }
+        public ActiveTail<T> takeRight(int num){
+            T[] newArray = (T[])new Object[Math.max(num,array.length)];
+            System.arraycopy(array, array.length-newArray.length, newArray, 0, num);
+
+            return tail(newArray);
         }
 
         @Override

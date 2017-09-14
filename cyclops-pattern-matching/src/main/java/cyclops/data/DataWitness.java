@@ -3,7 +3,8 @@ package cyclops.data;
 
 public interface DataWitness {
 
-    public static enum lazyList{}
+    public static
+    public static enum lazySeq{}
     public static enum nonEmptyList{}
     public static enum immutableList{}
     public static enum lazyString{}

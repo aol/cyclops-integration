@@ -17,6 +17,7 @@ public class IntMap<T> {
     private final int size;
 
 
+
     public static <T> IntMap<T> of(T... values){
         IntPatriciaTrie.Node<T> tree = IntPatriciaTrie.empty();
         for(int i=0;i<values.length;i++){
@@ -48,6 +49,8 @@ public class IntMap<T> {
     public ReactiveSeq<T> stream(){
         return intMap.stream();
     }
+
+
 
 }
 

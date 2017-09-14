@@ -12,6 +12,7 @@ import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.control.Xor;
+import cyclops.data.DataWitness.lazySeq;
 import cyclops.stream.Generator;
 import cyclops.stream.ReactiveSeq;
 import lombok.AccessLevel;
@@ -31,8 +32,7 @@ public interface LazySeq<T> extends  ImmutableList<T>,
                                         Folds<T>,
                                         Filters<T>,
                                         Transformable<T>,
-                                        To<LazySeq<T>>,
-                                        Higher<DataWitness.lazyList,T> {
+                                        Higher<lazySeq,T> {
 
     default ReactiveSeq<T> stream(){
         return ReactiveSeq.fromIterable(this);

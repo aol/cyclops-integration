@@ -255,7 +255,7 @@ public interface Seq<T> extends ImmutableList<T>,
     }
     default <R> Seq<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn) {
          return foldRight(empty(), (a, l) -> {
-             Seq<R> b = narrow(fn.apply(a).seq());
+             Seq<R> b = narrow(fn.apply(a).imSeq());
              return b.prependAll(l);
          });
     }

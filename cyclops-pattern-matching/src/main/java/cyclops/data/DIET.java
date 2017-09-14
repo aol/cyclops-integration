@@ -1,34 +1,35 @@
 package cyclops.data;
 
+import com.aol.cyclops2.types.foldable.Folds;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.patterns.CaseClass3;
 import cyclops.patterns.Sealed2;
+import cyclops.stream.ReactiveSeq;
 import cyclops.typeclasses.Enumeration;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.function.Function;
 
 import static cyclops.control.Trampoline.done;
-import static cyclops.control.Trampoline.more;
 import static org.jooq.lambda.tuple.Tuple.tuple;
 
 //Discrete Interval Encoded Tree
-public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
+public interface DIET<T> extends Sealed2<DIET.Node<T>,DIET.Nil<T>>, Iterable<T>, Folds<T> {
 
-    public static <T> Diet<T> empty(){
+    public static <T> DIET<T> empty(){
         return Nil.INSTANCE;
     }
-    public static <T> Diet<T> cons(Range<T> focus){
+    public static <T> DIET<T> cons(Range<T> focus){
         return cons(empty(),focus,empty());
     }
-    public static <T> Diet<T> cons(Diet<T> left,Range<T> focus,Diet<T> right){
+    public static <T> DIET<T> cons(DIET<T> left, Range<T> focus, DIET<T> right){
         return new Node(left,focus,right);
     }
     default boolean contains(T value){
@@ -37,27 +38,35 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
     default boolean contains(Range<T> range){
         return containsRec(range).result();
     }
-    default Diet<T> add(T value, Enumeration<T> enm, Comparator<? super T> comp){
+    default DIET<T> add(T value, Enumeration<T> enm, Comparator<? super T> comp){
         return add(Range.range(value,enm.succ(value).get(),enm,comp));
     }
     Trampoline<Boolean> containsRec(T value);
     Trampoline<Boolean> containsRec(Range<T> range);
 
 
-    Diet<T> add(Range<T> range);
-    Diet<T> merge(Diet<T> merge);
-    Diet<T> remove(Range<T> range);
+    DIET<T> add(Range<T> range);
+    DIET<T> merge(DIET<T> merge);
+    default DIET<T> remove(T value, Enumeration<T> enm, Comparator<? super T> comp){
+        return remove(Range.range(value,enm.succ(value).get(),enm,comp));
+    }
+    DIET<T> remove(Range<T> range);
 
-    <R> Diet<R> map(Function<? super T, ? extends R> fn,Enumeration<R> enm, Comparator<? super R> comp);
+    <R> DIET<R> map(Function<? super T, ? extends R> fn, Enumeration<R> enm, Comparator<? super R> comp);
 
+    LazySeq<T> lazySeq();
+    ReactiveSeq<T> stream();
+    default Iterator<T> iterator(){
+        return stream().iterator();
+    }
 
 
     boolean isEmpty();
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Node<T> implements Diet<T>,CaseClass3<Diet<T>,Range<T>,Diet<T>>{
-        private final Diet<T> left;
+    public static class Node<T> implements DIET<T>,CaseClass3<DIET<T>,Range<T>,DIET<T>>{
+        private final DIET<T> left;
         private final Range<T> focus;
-        private final Diet<T> right;
+        private final DIET<T> right;
 
         @Override
         public Trampoline<Boolean> containsRec(T value) {
@@ -77,10 +86,10 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
                 return left.containsRec(range);
             return right.containsRec(range);
         }
-        private Tuple2<Range<T>,Diet<T>> max(){
+        private Tuple2<Range<T>,DIET<T>> max(){
            return right.match(s->s.max().map((r,d)->tuple(r,cons(left,focus,d))),n->tuple(focus,left));
         }
-        private Trampoline<Tuple2<Diet<T>,T>> findRightAndEndingPoint(T value){
+        private Trampoline<Tuple2<DIET<T>,T>> findRightAndEndingPoint(T value){
             //            value
             //                    start         (This is right Diet, end at old start)
             if(focus.ordering().isLessThan(value,focus.start)) {
@@ -99,7 +108,7 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
 
         }
 
-        private Trampoline<Tuple2<Diet<T>,T>> findLeftAndStartingPoint(T value){
+        private Trampoline<Tuple2<DIET<T>,T>> findLeftAndStartingPoint(T value){
                //            value
                //       end         (This is leftward Diet, start new at end)
                if(focus.ordering().isGreaterThan(value,focus.end)) {
@@ -118,13 +127,13 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
 
         }
         @Override
-        public Diet<T> add(Range<T> range) {
+        public DIET<T> add(Range<T> range) {
             Tuple2<Range<T>, Maybe<Range<T>>> t = focus.plusAll(range);
             return t.v2.visit(s-> t.v1==focus? cons(left,focus,right.add(s)) : cons(left.add(s),focus,right),()->{
 
                 //create new expanded range and rebalance the trees
-                Tuple2<Diet<T>,T> leftAndStart = left.match(l->l.findLeftAndStartingPoint(t.v1.start).get(),n->tuple(n,t.v1.start));
-                Tuple2<Diet<T>,T> rightAndEnd = right.match(l->l.findRightAndEndingPoint(t.v1.end).get(),n->tuple(n,t.v1.start));
+                Tuple2<DIET<T>,T> leftAndStart = left.match(l->l.findLeftAndStartingPoint(t.v1.start).get(), n->tuple(n,t.v1.start));
+                Tuple2<DIET<T>,T> rightAndEnd = right.match(l->l.findRightAndEndingPoint(t.v1.end).get(), n->tuple(n,t.v1.start));
 
                 return cons(leftAndStart.v1, Range.range(leftAndStart.v2, rightAndEnd.v2, focus.enumeration(), focus.ordering()), rightAndEnd.v1);
 
@@ -132,16 +141,16 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
         }
 
         @Override
-        public Diet<T> merge(Diet<T> merge) {
+        public DIET<T> merge(DIET<T> merge) {
             return merge.match(s-> {
-                        Diet<T> x = max().map((r, d) -> cons(d, r, right));
+                        DIET<T> x = max().map((r, d) -> cons(d, r, right));
                         return x;
                     }
             ,n->this);
         }
 
         @Override
-        public Diet<T> remove(Range<T> range) {
+        public DIET<T> remove(Range<T> range) {
 
             focus.minusAll(range).visit(s->s.map((r, mr) ->  mr.visit(sr -> cons(left, r, empty()).merge(cons(empty(), sr, right)), () ->
                     cons(focus.startsBefore(range) ? left.remove(range) : left, r, focus.endsAfter(range) ? right.remove(range) : right))),()->left.merge(right));
@@ -149,13 +158,22 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
         }
 
         @Override
-        public <R> Diet<R> map(Function<? super T, ? extends R> fn, Enumeration<R> enm, Comparator<? super R> comp) {
+        public <R> DIET<R> map(Function<? super T, ? extends R> fn, Enumeration<R> enm, Comparator<? super R> comp) {
             Range<R> r = focus.map(fn,enm,comp);
-            Diet<R> l2 = left.map(fn,enm,comp);
+            DIET<R> l2 = left.map(fn,enm,comp);
             return l2.add(r).merge(right.map(fn,enm,comp));
 
         }
 
+        @Override
+        public LazySeq<T> lazySeq() {
+            return left.lazySeq().append(()->focus.lazySeq()).append(()->right.lazySeq());
+        }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return left.stream().appendS(focus.stream()).appendS(right.stream());
+        }
 
 
         public boolean isEmpty(){
@@ -168,12 +186,12 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
         }
 
         @Override
-        public Tuple3<Diet<T>, Range<T>, Diet<T>> unapply() {
+        public Tuple3<DIET<T>, Range<T>, DIET<T>> unapply() {
             return tuple(left,focus,right);
         }
     }
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Nil<T> implements Diet<T>{
+    public static class Nil<T> implements DIET<T> {
         public final static Nil INSTANCE = new Nil();
 
 
@@ -189,23 +207,33 @@ public interface Diet<T> extends Sealed2<Diet.Node<T>,Diet.Nil<T>> {
         }
 
         @Override
-        public Diet<T> add(Range<T> range) {
-            return Diet.cons(range);
+        public DIET<T> add(Range<T> range) {
+            return DIET.cons(range);
         }
 
         @Override
-        public Diet<T> merge(Diet<T> merge) {
+        public DIET<T> merge(DIET<T> merge) {
             return merge;
         }
 
         @Override
-        public Diet<T> remove(Range<T> range) {
+        public DIET<T> remove(Range<T> range) {
             return this;
         }
 
         @Override
-        public <R> Diet<R> map(Function<? super T, ? extends R> fn,Enumeration<R> enm, Comparator<? super R> comp) {
+        public <R> DIET<R> map(Function<? super T, ? extends R> fn, Enumeration<R> enm, Comparator<? super R> comp) {
             return INSTANCE;
+        }
+
+        @Override
+        public LazySeq<T> lazySeq() {
+            return LazySeq.empty();
+        }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return ReactiveSeq.empty();
         }
 
         @Override

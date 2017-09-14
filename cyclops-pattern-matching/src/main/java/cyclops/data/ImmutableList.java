@@ -1,37 +1,48 @@
 package cyclops.data;
 
 import com.aol.cyclops2.types.Filters;
+import com.aol.cyclops2.types.Zippable;
 import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
+import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
-import com.aol.cyclops2.types.recoverable.OnEmpty;
 import com.aol.cyclops2.types.recoverable.OnEmptySwitch;
+import com.aol.cyclops2.types.traversable.FoldableTraversable;
 import com.aol.cyclops2.types.traversable.Traversable;
 import cyclops.collections.immutable.LinkedListX;
+import cyclops.collections.immutable.VectorX;
+import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
+import cyclops.function.Monoid;
 import cyclops.patterns.CaseClass2;
 import cyclops.patterns.Sealed2;
 import cyclops.stream.ReactiveSeq;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
+import org.jooq.lambda.tuple.Tuple4;
+import org.reactivestreams.Publisher;
 
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 
 public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,ImmutableList.None<T>>,
                                            Folds<T>,
                                            Filters<T>,
                                            Transformable<T>,
-                                           OnEmpty<ImmutableList<T>>,
                                            OnEmptySwitch<ImmutableList<T>,ImmutableList<T>>,
-                                           Iterable<T>{
+                                           Iterable<T>,
+                                             FoldableTraversable<T>,
+                                           To<ImmutableList<T>> {
+
+    <R> ImmutableList<R> unitStream(Stream<R> stream);
 
 
     ImmutableList<T> emptyUnit();
@@ -92,11 +103,11 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
         }
         return match(c->LazySeq.lazy(c.head(),()->c.tail().lazySeq()), nil->LazySeq.empty());
     }
-    default Seq<T> seq(){
+    default Seq<T> imSeq(){
         if(this instanceof Seq){
             return (Seq<T>)this;
         }
-        return match(c->Seq.cons(c.head(),c.tail().seq()),nil->Seq.empty());
+        return match(c->Seq.cons(c.head(),c.tail().imSeq()), nil->Seq.empty());
     }
     default Maybe<NonEmptyList<T>> nonEmptyList(){
         return Maybe.ofNullable(match(c->NonEmptyList.cons(c.head(),c.tail()),nil->null));
@@ -122,8 +133,8 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
         });
     }
 
-    ImmutableList<T> drop(int num);
-    ImmutableList<T> take(int num);
+    ImmutableList<T> drop(long num);
+    ImmutableList<T> take(long num);
 
 
     ImmutableList<T> prepend(T value);
@@ -145,17 +156,17 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
 
     @Override
     default <U> ImmutableList<U> ofType(Class<? extends U> type) {
-        return (ImmutableList<U>)Filters.super.ofType(type);
+        return (ImmutableList<U>)FoldableTraversable.super.ofType(type);
     }
 
     @Override
     default ImmutableList<T> filterNot(Predicate<? super T> predicate) {
-        return (ImmutableList<T>)Filters.super.filterNot(predicate);
+        return (ImmutableList<T>)FoldableTraversable.super.filterNot(predicate);
     }
 
     @Override
     default ImmutableList<T> notNull() {
-        return (ImmutableList<T>)Filters.super.notNull();
+        return (ImmutableList<T>)FoldableTraversable.super.notNull();
     }
 
     @Override
@@ -175,22 +186,22 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
 
     @Override
     default ImmutableList<T> peek(Consumer<? super T> c) {
-        return (ImmutableList<T>)Transformable.super.peek(c);
+        return (ImmutableList<T>)FoldableTraversable.super.peek(c);
     }
 
     @Override
     default <R> ImmutableList<R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
-        return (ImmutableList<R>)Transformable.super.trampoline(mapper);
+        return (ImmutableList<R>)FoldableTraversable.super.trampoline(mapper);
     }
 
     @Override
     default <R> ImmutableList<R> retry(Function<? super T, ? extends R> fn) {
-        return (ImmutableList<R>)Transformable.super.retry(fn);
+        return (ImmutableList<R>)FoldableTraversable.super.retry(fn);
     }
 
     @Override
     default <R> ImmutableList<R> retry(Function<? super T, ? extends R> fn, int retries, long delay, TimeUnit timeUnit) {
-        return (ImmutableList<R>)Transformable.super.retry(fn,retries,delay,timeUnit);
+        return (ImmutableList<R>)FoldableTraversable.super.retry(fn,retries,delay,timeUnit);
     }
 
     <R> ImmutableList<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn);
@@ -218,10 +229,10 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
     }
 
     @Override
-    ImmutableList<T> onEmpty(ImmutableList<T> value);
+    ImmutableList<T> onEmpty(T value);
 
     @Override
-    ImmutableList<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier);
+    ImmutableList<T> onEmptyGet(Supplier<? extends T> supplier);
 
     @Override
     <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier);
@@ -352,5 +363,403 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
         });
     }
 
+    @Override
+    default ImmutableList<T> removeAllS(Stream<? extends T> stream) {
+        return unitStream(stream().removeAllS(stream));
+    }
 
+    @Override
+    default ImmutableList<T> removeAllI(Iterable<? extends T> it) {
+        return unitStream(stream().removeAllI(it));
+    }
+
+    @Override
+    default ImmutableList<T> removeAll(T... values) {
+        return unitStream(stream().removeAll(values));
+    }
+
+    @Override
+    default ImmutableList<T> retainAllI(Iterable<? extends T> it) {
+        return unitStream(stream().removeAllI(it));
+    }
+
+    @Override
+    default ImmutableList<T> retainAllS(Stream<? extends T> stream) {
+        return unitStream(stream().retainAllS(stream));
+    }
+
+    @Override
+    default Filters<T> retainAll(T... values) {
+        return unitStream(stream().retainAll(values));
+    }
+
+
+
+    @Override
+    default ImmutableList<ReactiveSeq<T>> permutations() {
+        return unitStream(stream().permutations());
+    }
+
+    @Override
+    default ImmutableList<ReactiveSeq<T>> combinations(int size) {
+        return unitStream(stream().combinations(size));
+    }
+
+    @Override
+    default ImmutableList<ReactiveSeq<T>> combinations() {
+        return unitStream(stream().combinations());
+    }
+
+    @Override
+    default ImmutableList<T> zip(BinaryOperator<Zippable<T>> combiner, Zippable<T> app) {
+        return unitStream(stream().zip(combiner,app));
+    }
+
+    @Override
+    default <R> ImmutableList<R> zipWith(Iterable<Function<? super T, ? extends R>> fn) {
+        return unitStream(stream().zipWith(fn));
+    }
+
+    @Override
+    default <R> ImmutableList<R> zipWithS(Stream<Function<? super T, ? extends R>> fn) {
+        return unitStream(stream().zipWithS(fn));
+    }
+
+    @Override
+    default <R> ImmutableList<R> zipWithP(Publisher<Function<? super T, ? extends R>> fn) {
+        return unitStream(stream().zipWithP(fn));
+    }
+
+    @Override
+    default <T2, R> ImmutableList<R> zipP(Publisher<? extends T2> publisher, BiFunction<? super T, ? super T2, ? extends R> fn) {
+        return unitStream(stream().zipP(publisher,fn));
+    }
+
+    @Override
+    default <U, R> ImmutableList<R> zipS(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+        return unitStream(stream().zipS(other,zipper));
+    }
+
+    @Override
+    default <U> ImmutableList<Tuple2<T, U>> zipP(Publisher<? extends U> other) {
+        return unitStream(stream().zipP(other));
+    }
+
+    @Override
+    default <U> ImmutableList<Tuple2<T, U>> zip(Iterable<? extends U> other) {
+        return unitStream(stream().zip(other));
+    }
+
+    @Override
+    default <S, U, R> ImmutableList<R> zip3(Iterable<? extends S> second, Iterable<? extends U> third, Fn3<? super T, ? super S, ? super U, ? extends R> fn3) {
+        return unitStream(stream().zip3(second,third,fn3));
+    }
+
+    @Override
+    default <T2, T3, T4, R> ImmutableList<R> zip4(Iterable<? extends T2> second, Iterable<? extends T3> third, Iterable<? extends T4> fourth, Fn4<? super T, ? super T2, ? super T3, ? super T4, ? extends R> fn) {
+        return unitStream(stream().zip4(second,third,fourth,fn));
+    }
+
+    @Override
+    default <U> ImmutableList<U> unitIterator(Iterator<U> it){
+        return unitStream(ReactiveSeq.fromIterator(it));
+    }
+
+
+    @Override
+    default ImmutableList<T> combine(BiPredicate<? super T, ? super T> predicate, BinaryOperator<T> op) {
+        return unitStream(stream().combine(predicate,op));
+    }
+
+    @Override
+    default ImmutableList<T> combine(Monoid<T> op, BiPredicate<? super T, ? super T> predicate) {
+        return unitStream(stream().combine(op,predicate));
+    }
+
+    @Override
+    default ImmutableList<T> cycle(long times) {
+        return unitStream(stream().cycle(times));
+    }
+
+    @Override
+    default ImmutableList<T> cycle(Monoid<T> m, long times) {
+        return unitStream(stream().cycle(m,times));
+    }
+
+    @Override
+    default ImmutableList<T> cycleWhile(Predicate<? super T> predicate) {
+        return unitStream(stream().cycleWhile(predicate));
+    }
+
+    @Override
+    default ImmutableList<T> cycleUntil(Predicate<? super T> predicate) {
+        return unitStream(stream().cycleUntil(predicate));
+    }
+
+    @Override
+    default <U, R> ImmutableList<R> zip(Iterable<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+        return unitStream(stream().zip(other,zipper));
+    }
+
+    @Override
+    default <S, U> ImmutableList<Tuple3<T, S, U>> zip3(Iterable<? extends S> second, Iterable<? extends U> third) {
+        return unitStream(stream().zip3(second,third));
+    }
+
+    @Override
+    default <T2, T3, T4> ImmutableList<Tuple4<T, T2, T3, T4>> zip4(Iterable<? extends T2> second, Iterable<? extends T3> third, Iterable<? extends T4> fourth) {
+        return unitStream(stream().zip4(second,third,fourth));
+    }
+
+    @Override
+    default ImmutableList<Tuple2<T, Long>> zipWithIndex() {
+        return unitStream(stream().zipWithIndex());
+    }
+
+    @Override
+    default ImmutableList<VectorX<T>> sliding(int windowSize) {
+        return unitStream(stream().sliding(windowSize));
+    }
+
+    @Override
+    default ImmutableList<VectorX<T>> sliding(int windowSize, int increment) {
+        return unitStream(stream().sliding(windowSize,increment));
+    }
+
+    @Override
+    default <C extends Collection<? super T>> ImmutableList<C> grouped(int size, Supplier<C> supplier) {
+        return unitStream(stream().grouped(size,supplier));
+    }
+
+    @Override
+    default ImmutableList<ListX<T>> groupedUntil(Predicate<? super T> predicate) {
+        return unitStream(stream().groupedUntil(predicate));
+    }
+
+    @Override
+    default ImmutableList<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
+        return unitStream(stream().groupedStatefullyUntil(predicate));
+    }
+
+    @Override
+    default <U> ImmutableList<Tuple2<T, U>> zipS(Stream<? extends U> other) {
+        return unitStream(stream().zipS(other));
+    }
+
+    @Override
+    default ImmutableList<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
+        return unitStream(stream().groupedWhile(predicate));
+    }
+
+    @Override
+    default <C extends Collection<? super T>> ImmutableList<C> groupedWhile(Predicate<? super T> predicate, Supplier<C> factory) {
+        return unitStream(stream().groupedWhile(predicate,factory));
+    }
+
+    @Override
+    default <C extends Collection<? super T>> ImmutableList<C> groupedUntil(Predicate<? super T> predicate, Supplier<C> factory) {
+        return unitStream(stream().groupedUntil(predicate,factory));
+    }
+
+    @Override
+    default ImmutableList<ListX<T>> grouped(int groupSize) {
+        return unitStream(stream().grouped(groupSize));
+    }
+
+    @Override
+    default <K, A, D> ImmutableList<Tuple2<K, D>> grouped(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
+        return unitStream(stream().grouped(classifier, downstream));
+    }
+
+    @Override
+    default <K> ImmutableList<Tuple2<K, ReactiveSeq<T>>> grouped(Function<? super T, ? extends K> classifier) {
+        return unitStream(stream().grouped(classifier));
+    }
+
+    @Override
+    default ImmutableList<T> distinct() {
+        return unitStream(stream().distinct());
+    }
+
+    @Override
+    default ImmutableList<T> scanLeft(Monoid<T> monoid) {
+        return unitStream(stream().scanLeft(monoid));
+    }
+
+    @Override
+    default <U> ImmutableList<U> scanLeft(U seed, BiFunction<? super U, ? super T, ? extends U> function) {
+        return unitStream(stream().scanLeft(seed,function));
+    }
+
+    @Override
+    default ImmutableList<T> scanRight(Monoid<T> monoid) {
+        return unitStream(stream().scanRight(monoid));
+    }
+
+    @Override
+    default <U> ImmutableList<U> scanRight(U identity, BiFunction<? super T, ? super U, ? extends U> combiner) {
+        return unitStream(stream().scanRight(identity,combiner));
+    }
+
+    @Override
+    default ImmutableList<T> sorted() {
+        return unitStream(stream().sorted());
+    }
+
+    @Override
+    default ImmutableList<T> sorted(Comparator<? super T> c) {
+        return unitStream(stream().sorted(c));
+    }
+
+    @Override
+    default ImmutableList<T> takeWhile(Predicate<? super T> p) {
+        return unitStream(stream().takeWhile(p));
+    }
+
+    @Override
+    default ImmutableList<T> dropWhile(Predicate<? super T> p) {
+        return unitStream(stream().dropWhile(p));
+    }
+
+    @Override
+    default ImmutableList<T> takeUntil(Predicate<? super T> p) {
+        return unitStream(stream().takeUntil(p));
+    }
+
+    @Override
+    default ImmutableList<T> dropUntil(Predicate<? super T> p) {
+        return unitStream(stream().dropUntil(p));
+    }
+
+    @Override
+    default ImmutableList<T> dropRight(int num) {
+        return unitStream(stream().dropRight(num));
+    }
+
+    @Override
+    default ImmutableList<T> takeRight(int num) {
+        return unitStream(stream().takeRight(num));
+    }
+
+
+
+    @Override
+    default ImmutableList<T> skip(long num) {
+        return unitStream(stream().skip(num));
+    }
+
+    @Override
+    default ImmutableList<T> skipWhile(Predicate<? super T> p) {
+        return unitStream(stream().skipWhile(p));
+    }
+
+    @Override
+    default ImmutableList<T> skipUntil(Predicate<? super T> p) {
+        return unitStream(stream().skipUntil(p));
+    }
+
+
+
+    @Override
+    default ImmutableList<T> limit(long num) {
+        return unitStream(stream().limit(num));
+    }
+
+    @Override
+    default ImmutableList<T> limitWhile(Predicate<? super T> p) {
+        return unitStream(stream().limitWhile(p));
+    }
+
+    @Override
+    default ImmutableList<T> limitUntil(Predicate<? super T> p) {
+        return unitStream(stream().limitUntil(p));
+    }
+
+    @Override
+    default ImmutableList<T> intersperse(T value) {
+        return unitStream(stream().intersperse(value));
+    }
+
+    @Override
+    default ImmutableList<T> shuffle() {
+        return unitStream(stream().shuffle());
+    }
+
+    @Override
+    default ImmutableList<T> skipLast(int num) {
+        return unitStream(stream().skipLast(num));
+    }
+
+    @Override
+    default ImmutableList<T> limitLast(int num) {
+        return unitStream(stream().limitLast(num));
+    }
+
+    @Override
+    default ImmutableList<T> shuffle(Random random) {
+        return unitStream(stream().shuffle(random));
+    }
+
+    @Override
+    default ImmutableList<T> slice(long from, long to) {
+        return unitStream(stream().slice(from,to));
+    }
+
+    @Override
+    default <U extends Comparable<? super U>> ImmutableList<T> sorted(Function<? super T, ? extends U> function) {
+        return unitStream(stream().sorted(function));
+    }
+
+    @Override
+    default Traversable<T> traversable() {
+        return stream();
+    }
+
+    @Override
+    default ImmutableList<T> prependS(Stream<? extends T> stream) {
+        return unitStream(stream().prependS(stream));
+    }
+
+    @Override
+    default ImmutableList<T> append(T... values) {
+        ImmutableList<T> res = this;
+        for(T t : values){
+            res = res.append(t);
+        }
+        return res;
+    }
+
+    @Override
+    default ImmutableList<T> prepend(T... values) {
+        ImmutableList<T> res = this;
+        for(T t : values){
+            res = res.prepend(t);
+        }
+        return res;
+    }
+
+    @Override
+    default ImmutableList<T> insertAt(int pos, T... values) {
+        return unitStream(stream().insertAt(pos,values));
+    }
+
+    @Override
+    default ImmutableList<T> deleteBetween(int start, int end) {
+        return unitStream(stream().deleteBetween(start,end));
+    }
+
+    @Override
+    default ImmutableList<T> insertAtS(int pos, Stream<T> stream) {
+        return unitStream(stream().insertAtS(pos,stream));
+    }
+
+    @Override
+    default ImmutableList<T> recover(Function<? super Throwable, ? extends T> fn) {
+        return unitStream(stream().recover(fn));
+    }
+
+    @Override
+    default <EX extends Throwable> ImmutableList<T> recover(Class<EX> exceptionClass, Function<? super EX, ? extends T> fn) {
+        return unitStream(stream().recover(exceptionClass,fn));
+    }
 }
