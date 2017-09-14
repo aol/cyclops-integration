@@ -7,6 +7,7 @@ import com.aol.cyclops2.types.foldable.Folds;
 import com.aol.cyclops2.types.functor.Transformable;
 import com.aol.cyclops2.types.recoverable.OnEmpty;
 import com.aol.cyclops2.types.recoverable.OnEmptySwitch;
+import com.aol.cyclops2.util.ExceptionSoftener;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.control.Trampoline;
 import cyclops.function.Fn3;
@@ -196,7 +197,7 @@ public interface ImmutableSet<T> extends Folds<T>,
     @Override
     default <X extends Throwable> ImmutableSet<T> onEmptyThrow(Supplier<? extends X> supplier){
         if(size()==0)
-            throw supplier.get();
+            throw ExceptionSoftener.throwSoftenedException(supplier.get());
         return this;
     }
 

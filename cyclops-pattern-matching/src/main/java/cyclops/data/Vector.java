@@ -2,10 +2,14 @@ package cyclops.data;
 
 
 import com.aol.cyclops2.types.foldable.Evaluation;
+import com.aol.cyclops2.util.ExceptionSoftener;
 import cyclops.collections.immutable.VectorX;
 import cyclops.control.Maybe;
 import cyclops.stream.ReactiveSeq;
 import lombok.AllArgsConstructor;
+import org.jooq.lambda.tuple.Tuple;
+import org.jooq.lambda.tuple.Tuple2;
+import sun.jvm.hotspot.oops.Instance;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -55,27 +59,31 @@ public class Vector<T> implements ImmutableList<T>{
 
     @Override
     public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2) {
-        return size()==0? fn2.apply(VectorNone.Instance) : fn1.apply(this.new VectorSome<>());
+        return size()==0? fn2.apply(VectorNone.empty()) : fn1.apply(this.new VectorSome(this));
     }
 
     @Override
-    public ImmutableList<T> onEmpty(T value) {
-        return null;
+    public Vector<T> onEmpty(T value) {
+        return size()==0? Vector.of(value) : this;
     }
 
     @Override
-    public ImmutableList<T> onEmptyGet(Supplier<? extends T> supplier) {
-        return null;
+    public Vector<T> onEmptyGet(Supplier<? extends T> supplier) {
+        return size()==0? Vector.of(supplier.get()) : this;
     }
 
     @Override
-    public <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier) {
-        return null;
+    public <X extends Throwable> Vector<T> onEmptyThrow(Supplier<? extends X> supplier) {
+        if(size()!=0)
+            return this;
+        throw ExceptionSoftener.throwSoftenedException(supplier.get());
     }
 
     @Override
     public ImmutableList<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
-        return null;
+        if(size()!=0)
+            return this;
+        return supplier.get();
     }
 
     public <R> Vector<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn){
@@ -150,7 +158,7 @@ public class Vector<T> implements ImmutableList<T>{
         if(tail.size()>0){
             return new Vector<>(this.root,tail.dropRight(num),size()-(Math.max(tail.size(),num))).dropRight(num-tail.size());
         }
-        return ImmutableList.super.dropRight(num);
+        return unitStream(stream().dropRight(num));
     }
     @Override
     public Vector<T> drop(long num) {
@@ -161,7 +169,7 @@ public class Vector<T> implements ImmutableList<T>{
         if(size()<32){
             return new Vector<>(this.root,tail.drop((int)num),size()-1);
         }
-        return (Vector<T>)ImmutableList.super.drop(num);
+        return unitStream(stream().drop(num));
     }
 
     @Override
@@ -173,7 +181,7 @@ public class Vector<T> implements ImmutableList<T>{
         if(size()<32){
             return new Vector<T>(this.root,tail.dropRight(Math.max(32-(int)num,0)),(int)num);
         }
-        return ImmutableList.super.take(num);
+        return unitStream(stream().take(num));
     }
 
     @Override
@@ -220,21 +228,64 @@ public class Vector<T> implements ImmutableList<T>{
 
     @Override
     public T getOrElse(int pos, T alt) {
-        return null;
+        if(pos<0||pos>=size){
+            return alt;
+        }
+        int tailStart = size-tail.size();
+        if(pos>=tailStart){
+            return tail.getOrElse(pos-tailStart,alt);
+        }
+        return ((BAMT.PopulatedArray<T>)root).getOrElse(pos,alt);
     }
 
     @Override
     public T getOrElseGet(int pos, Supplier<T> alt) {
-        return null;
+        if(pos<0||pos>=size){
+            return alt.get();
+        }
+        int tailStart = size-tail.size();
+        if(pos>=tailStart){
+            return tail.getOrElse(pos-tailStart,alt.get());
+        }
+        return ((BAMT.PopulatedArray<T>)root).getOrElse(pos,alt.get());
     }
 
-    class VectorSome<T> implements ImmutableList.Some<T>{
+    class VectorSome extends Vector<T> implements ImmutableList.Some<T>{
 
+        public VectorSome(Vector<T> vec) {
+            super(vec.root, vec.tail, vec.size);
+        }
+
+        @Override
+        public ImmutableList<T> tail() {
+
+            return drop(1);
+        }
+
+        @Override
+        public T head() {
+            return getOrElse(0,null);
+        }
+
+        @Override
+        public Some<T> reverse() {
+            ImmutableList<T> vec = Vector.this.reverse();
+            Vector<T> rev = (Vector<T>)vec;
+            return rev.new VectorSome(rev);
+        }
+
+        @Override
+        public Tuple2<T, ImmutableList<T>> unapply() {
+            return Tuple.tuple(head(),tail());
+        }
     }
 
     static class VectorNone<T> implements ImmutableList.None<T>{
         static VectorNone Instance = new VectorNone();
 
+        public static <T> VectorNone<T> empty(){
+            return Instance;
+        }
         @Override
         public <R> ImmutableList<R> unitStream(Stream<R> stream) {
             return empty();
@@ -342,12 +393,12 @@ public class Vector<T> implements ImmutableList<T>{
 
         @Override
         public <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier) {
-             throw supplier.get();
+             throw ExceptionSoftener.throwSoftenedException(supplier.get());
         }
 
         @Override
         public ImmutableList<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
-            return return supplier.get();
+            return supplier.get();
         }
     }
 

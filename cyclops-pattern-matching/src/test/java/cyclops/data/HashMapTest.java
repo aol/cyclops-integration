@@ -13,7 +13,7 @@ public class HashMapTest {
 
     @Test
     public void plusSize(){
-        assertThat(TrieMap.empty().plus("hello","world").size(),equalTo(1));
+        assertThat(TrieMap.empty().put("hello","world").size(),equalTo(1));
     }
     @Test
     public void add10000(){
@@ -21,7 +21,7 @@ public class HashMapTest {
         long start = System.currentTimeMillis();
         TrieMap<Integer,Integer> v = TrieMap.empty();
         for(int i=0;i<100_000_00;i++){
-            v =v.plus(i,i);
+            v =v.put(i,i);
         }
         System.out.println(System.currentTimeMillis()-start);
         System.out.println(v.size());
@@ -32,12 +32,12 @@ public class HashMapTest {
 
         TrieMap<Integer,Integer> v = TrieMap.empty();
         for(int i=0;i<100_000_00;i++){
-            v =v.plus(i,i);
+            v =v.put(i,i);
         }
         ArrayList<Integer> al = new ArrayList(v.size());
         long start = System.currentTimeMillis();
         for(int i=0;i<100_000_00;i++){
-            al.add(v.get(i).get());
+            al.add(v.getOrElse(i,null));
         }
 
         System.out.println(System.currentTimeMillis()-start);

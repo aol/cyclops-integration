@@ -7,6 +7,7 @@ import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
 import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
+import com.aol.cyclops2.util.ExceptionSoftener;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
@@ -33,6 +34,10 @@ public interface LazySeq<T> extends  ImmutableList<T>,
                                         Filters<T>,
                                         Transformable<T>,
                                         Higher<lazySeq,T> {
+
+    default <R> LazySeq<R> unitStream(Stream<R> stream){
+        return fromIterable(ReactiveSeq.fromStream(stream));
+    }
 
     default ReactiveSeq<T> stream(){
         return ReactiveSeq.fromIterable(this);
@@ -233,7 +238,7 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         Tuple2<LazySeq<T>, LazySeq<T>> split = next.splitBy(test);
         return next.visit(c->cons(split.v1,()->split.v2.split(test)),n->n);
     }
-    default LazySeq<T> take(final int n) {
+    default LazySeq<T> take(final long n) {
         if( n <= 0)
             return LazySeq.Nil.Instance;
         if(n<1000) {
@@ -263,9 +268,9 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         }
         return current;
     }
-    default LazySeq<T> drop(final int num) {
+    default LazySeq<T> drop(final long num) {
         LazySeq<T> current = this;
-        int pos = num;
+        long pos = num;
         while (pos-- > 0 && !current.isEmpty()) {
             current = current.visit(c->c.tail.get(),nil->nil);
         }
@@ -513,12 +518,12 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         }
 
         @Override
-        public Cons<T> onEmpty(ImmutableList<T> value) {
+        public Cons<T> onEmpty(T value) {
             return this;
         }
 
         @Override
-        public Cons<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
+        public Cons<T> onEmptyGet(Supplier<? extends T> supplier) {
             return this;
         }
 
@@ -569,18 +574,18 @@ public interface LazySeq<T> extends  ImmutableList<T>,
         }
 
         @Override
-        public ImmutableList<T> onEmpty(ImmutableList<T> value) {
-            return value;
+        public ImmutableList<T> onEmpty(T value) {
+            return LazySeq.of(value);
         }
 
         @Override
-        public ImmutableList<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
-            return supplier.get();
+        public ImmutableList<T> onEmptyGet(Supplier<? extends T> supplier) {
+            return LazySeq.of(supplier.get());
         }
 
         @Override
         public <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier) {
-            throw supplier.get();
+            throw ExceptionSoftener.throwSoftenedException(supplier.get());
         }
 
         @Override

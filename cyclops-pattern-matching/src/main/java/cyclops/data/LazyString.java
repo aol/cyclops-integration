@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LazyString implements ImmutableList<Character> {
@@ -80,12 +81,12 @@ public final class LazyString implements ImmutableList<Character> {
     }
 
     @Override
-    public ImmutableList<Character> onEmpty(ImmutableList<Character> value) {
+    public ImmutableList<Character> onEmpty(Character value) {
         return string.onEmpty(value);
     }
 
     @Override
-    public ImmutableList<Character> onEmptyGet(Supplier<? extends ImmutableList<Character>> supplier) {
+    public ImmutableList<Character> onEmptyGet(Supplier<? extends Character> supplier) {
         return string.onEmptyGet(supplier);
     }
 
@@ -102,9 +103,14 @@ public final class LazyString implements ImmutableList<Character> {
     public ReactiveSeq<Character> stream(){
         return string.stream();
     }
-    public LazyString take(final int n) {
+    public LazyString take(final long n) {
         return fromLazyList(string.take(n));
 
+    }
+
+    @Override
+    public <R> ImmutableList<R> unitStream(Stream<R> stream) {
+        return LazySeq.fromStream(stream);
     }
 
     @Override
@@ -112,7 +118,7 @@ public final class LazyString implements ImmutableList<Character> {
         return empty();
     }
 
-    public LazyString  drop(final int num) {
+    public LazyString  drop(final long num) {
         return fromLazyList(string.drop(num));
     }
     public LazyString  reverse() {

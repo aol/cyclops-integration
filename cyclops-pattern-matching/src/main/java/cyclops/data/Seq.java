@@ -5,9 +5,9 @@ import com.aol.cyclops2.hkt.Higher;
 import com.aol.cyclops2.types.Filters;
 import com.aol.cyclops2.types.foldable.Evaluation;
 import com.aol.cyclops2.types.foldable.Folds;
-import com.aol.cyclops2.types.foldable.To;
 import com.aol.cyclops2.types.functor.Transformable;
-import cyclops.data.DataWitness.immutableList;
+import com.aol.cyclops2.util.ExceptionSoftener;
+import cyclops.data.DataWitness.seq;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
@@ -22,6 +22,7 @@ import lombok.EqualsAndHashCode;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,8 +35,29 @@ public interface Seq<T> extends ImmutableList<T>,
                                             Folds<T>,
                                             Filters<T>,
                                             Transformable<T>,
-                                            Higher<immutableList,T>,
-                                            To<Seq<T>> {
+                                            Higher<seq,T> {
+
+    @Override
+    default <R> Seq<R> unitStream(Stream<R> stream){
+        return fromStream(stream);
+    }
+
+    public static <R> Seq<R> fromStreamLazily(Stream<R> stream) {
+        Iterator<R> it = stream.iterator();
+        return fromIteratorLazily(it);
+    }
+    public static <R> Seq<R> fromIterableLazily(Iterable<R> it) {
+        return fromIteratorLazily(it.iterator());
+    }
+
+    public static <R> Seq<R> fromIteratorLazily(Iterator<R> it) {
+        if(it.hasNext()){
+            return cons(it.next(),(Seq<R>) Proxy.newProxyInstance(ImmutableList.class.getClassLoader(),
+                    new Class<?>[] { Seq.class },
+                    (p, m, a) -> m.invoke(fromIteratorLazily(it), a)));
+        }
+        return Seq.empty();
+    }
 
     default ReactiveSeq<T> stream(){
         return ReactiveSeq.fromIterable(iterable());
@@ -185,7 +207,7 @@ public interface Seq<T> extends ImmutableList<T>,
                 ,nil->this);
     }
 
-    default Seq<T> take(final int num) {
+    default Seq<T> take(final long num) {
         if( num <= 0)
            return Nil.Instance;
         if(num<1000) {
@@ -194,9 +216,9 @@ public interface Seq<T> extends ImmutableList<T>,
         return fromStream(ReactiveSeq.fromIterable(this.iterable()).take(num));
 
     }
-    default Seq<T> drop(final int num) {
+    default Seq<T> drop(final long num) {
         Seq<T> current = this;
-        int pos = num;
+        long pos = num;
         while (pos-- > 0 && !current.isEmpty()) {
             current = current.visit(c->c.tail,nil->nil);
         }
@@ -369,12 +391,12 @@ public interface Seq<T> extends ImmutableList<T>,
         }
 
         @Override
-        public Cons<T> onEmpty(ImmutableList<T> value) {
+        public Cons<T> onEmpty(T value) {
             return this;
         }
 
         @Override
-        public Cons<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
+        public Cons<T> onEmptyGet(Supplier<? extends T> supplier) {
             return this;
         }
 
@@ -410,18 +432,18 @@ public interface Seq<T> extends ImmutableList<T>,
         }
 
         @Override
-        public ImmutableList<T> onEmpty(ImmutableList<T> value) {
-            return value;
+        public ImmutableList<T> onEmpty(T value) {
+            return Seq.of(value);
         }
 
         @Override
-        public ImmutableList<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
-            return supplier.get();
+        public ImmutableList<T> onEmptyGet(Supplier<? extends T> supplier) {
+            return Seq.of(supplier.get());
         }
 
         @Override
         public <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier) {
-            throw supplier.get();
+            throw ExceptionSoftener.throwSoftenedException(supplier.get());
         }
 
         @Override

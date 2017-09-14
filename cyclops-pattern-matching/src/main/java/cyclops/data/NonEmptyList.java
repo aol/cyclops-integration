@@ -12,8 +12,12 @@ import lombok.EqualsAndHashCode;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
+import java.util.stream.Stream;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of={"head,tail"})
@@ -36,6 +40,7 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>>, Immutabl
         LazySeq<T> list = LazySeq.empty();
         return cons(head,list);
     }
+
     public static <T> NonEmptyList<T> eager(T head, T... value){
         Seq<T> list = Seq.of(value);
         return cons(head,list);
@@ -71,17 +76,32 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>>, Immutabl
     }
 
     @Override
+    public <R> ImmutableList<R> unitStream(Stream<R> stream) {
+        Iterator<R> it = stream.iterator();
+        return unitIterator(it);
+    }
+    @Override
+    public <R> ImmutableList<R> unitIterator(Iterator<R> it) {
+        if(it.hasNext()){
+            return cons(it.next(),(ImmutableList<R>)Proxy.newProxyInstance(ImmutableList.class.getClassLoader(),
+                                    new Class<?>[] { ImmutableList.class },
+                                    (p, m, a) -> m.invoke(unitIterator(it), a)));
+        }
+        return LazySeq.empty();
+    }
+
+    @Override
     public ImmutableList<T> emptyUnit() {
         return Seq.empty();
     }
 
     @Override
-    public ImmutableList<T> drop(int num) {
+    public ImmutableList<T> drop(long num) {
         return tail.match(s ->  of(s.head(), s.tail()), n -> n);
     }
 
     @Override
-    public ImmutableList<T> take(int num) {
+    public ImmutableList<T> take(long num) {
         if(num==0){
             return LazySeq.empty();
         }
@@ -167,12 +187,12 @@ public class NonEmptyList<T> implements CaseClass2<T,ImmutableList<T>>, Immutabl
     }
 
     @Override
-    public NonEmptyList<T> onEmpty(ImmutableList<T> value) {
+    public NonEmptyList<T> onEmpty(T value) {
         return this;
     }
 
     @Override
-    public NonEmptyList<T> onEmptyGet(Supplier<? extends ImmutableList<T>> supplier) {
+    public NonEmptyList<T> onEmptyGet(Supplier<? extends T> supplier) {
         return this;
     }
 

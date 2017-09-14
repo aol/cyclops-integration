@@ -39,7 +39,7 @@ public interface ImmutableList<T> extends Sealed2<ImmutableList.Some<T>,Immutabl
                                            Transformable<T>,
                                            OnEmptySwitch<ImmutableList<T>,ImmutableList<T>>,
                                            Iterable<T>,
-                                             FoldableTraversable<T>,
+                                           FoldableTraversable<T>,
                                            To<ImmutableList<T>> {
 
     <R> ImmutableList<R> unitStream(Stream<R> stream);

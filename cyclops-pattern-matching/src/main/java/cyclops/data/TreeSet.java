@@ -54,7 +54,7 @@ public class TreeSet<T> implements ImmutableSortedSet<T>{
     }
 
     @Override
-    public ImmutableSet<T> add(T value) {
+    public ImmutableSortedSet<T> add(T value) {
         return new TreeSet<>(map.plus(value,value),comp);
     }
 

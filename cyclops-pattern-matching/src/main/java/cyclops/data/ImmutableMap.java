@@ -7,6 +7,7 @@ import com.aol.cyclops2.types.functor.BiTransformable;
 import com.aol.cyclops2.types.functor.Transformable;
 import com.aol.cyclops2.types.recoverable.OnEmpty;
 import com.aol.cyclops2.types.recoverable.OnEmptySwitch;
+import com.aol.cyclops2.util.ExceptionSoftener;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
@@ -134,7 +135,7 @@ public interface ImmutableMap<K,V> extends Iterable<Tuple2<K,V>>,
     @Override
     default <X extends Throwable> ImmutableMap<K, V> onEmptyThrow(Supplier<? extends X> supplier){
         if(size()==0)
-            throw supplier.get();
+            throw ExceptionSoftener.throwSoftenedException(supplier.get());
         return this;
     }
 
