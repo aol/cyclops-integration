@@ -1,5 +1,6 @@
 package cyclops.data;
 
+import cyclops.control.Maybe;
 import cyclops.patterns.CaseClass1;
 import cyclops.patterns.Sealed3;
 import cyclops.stream.ReactiveSeq;
@@ -43,7 +44,7 @@ public interface IntPatriciaTrie<V>  {
 
         Node<V> put(int hash,int pos, V value);
 
-        Optional<V> get(int hash, int pos);
+        Maybe<V> get(int hash, int pos);
         V getOrElse(int hash, int pos,V value);
 
         Node<V> minus(int hash, int pos);
@@ -88,8 +89,8 @@ public interface IntPatriciaTrie<V>  {
         }
 
         @Override
-        public Optional<V> get(int hash, int pos) {
-            return Optional.empty();
+        public Maybe<V> get(int hash, int pos) {
+            return Maybe.none();
         }
 
         @Override
@@ -156,10 +157,10 @@ public interface IntPatriciaTrie<V>  {
         }
 
         @Override
-        public Optional<V> get(int hash, int key) {
+        public Maybe<V> get(int hash, int key) {
             if(hash==0)
-                return Optional.of(value);
-            return Optional.empty();
+                return Maybe.just(value);
+            return Maybe.none();
 
         }
 
@@ -210,7 +211,7 @@ public interface IntPatriciaTrie<V>  {
         }
 
         @Override
-        public Optional<V> get(int hash, int key) {
+        public Maybe<V> get(int hash, int key) {
             int newHash = hash >>> BITS;
             int index = hash & MASK;
             return nodes[index].get(newHash, key);

@@ -102,6 +102,20 @@ public class TreeSet<T> implements ImmutableSortedSet<T>{
         return fromStream(stream().filter(predicate), Comparators.naturalOrderIdentityComparator());
     }
 
+    @Override
+    public <R> TreeSet<R> unitStream(Stream<R> stream) {
+        return fromStream(ReactiveSeq.fromStream(stream),Comparators.naturalOrderIdentityComparator());
+    }
+
+    @Override
+    public ImmutableSortedSet<T> unitStream(Stream<T> stream, Comparator<? super T> comp) {
+        return fromStream(ReactiveSeq.fromStream(stream),comp);
+    }
+
+    @Override
+    public <U> Traversable<U> unitIterator(Iterator<U> it) {
+        return fromStream(ReactiveSeq.fromIterator(it),Comparators.naturalOrderIdentityComparator());
+    }
 
 
     public TreeSet<T> plus(T value){
