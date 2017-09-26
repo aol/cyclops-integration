@@ -131,7 +131,7 @@ public class IntMap<T> implements ImmutableList<T>{
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return size==0;
     }
 
     public VectorX<T> vectorX(){
@@ -142,48 +142,61 @@ public class IntMap<T> implements ImmutableList<T>{
     }
 
     @Override
-    public ImmutableList<T> filter(Predicate<? super T> fn) {
-        return null;
+    public IntMap<T> filter(Predicate<? super T> fn) {
+        return unitStream(stream().filter(fn));
     }
 
     @Override
-    public <R> ImmutableList<R> map(Function<? super T, ? extends R> fn) {
-        return null;
+    public <R> IntMap<R> map(Function<? super T, ? extends R> fn) {
+        return unitStream(stream().map(fn));
     }
 
     @Override
-    public <R> ImmutableList<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn) {
-        return null;
+    public <R> IntMap<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn) {
+        return unitStream(stream().flatMapI(fn));
     }
 
     @Override
-    public <R> ImmutableList<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
-        return null;
+    public <R> IntMap<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+        return unitStream(stream().flatMapI(fn));
     }
 
     @Override
     public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2) {
-        return null;
+        return isEmpty() ? fn2.apply(IntMapNone.empty()) :  fn1.apply(new IntMapSome(this));
     }
 
     @Override
-    public ImmutableList<T> onEmpty(T value) {
-        return null;
+    public IntMap<T> onEmpty(T value) {
+        if(isEmpty()){
+            return of(value);
+        }
+        return this;
+
     }
 
     @Override
-    public ImmutableList<T> onEmptyGet(Supplier<? extends T> supplier) {
-        return null;
+    public IntMap<T> onEmptyGet(Supplier<? extends T> supplier) {
+        if(isEmpty()){
+            return of(supplier.get());
+        }
+        return this;
     }
 
     @Override
     public <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier) {
-        return null;
+        if(isEmpty()){
+            throw supplier.get();
+        }
+        return this;
     }
 
     @Override
     public ImmutableList<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
-        return null;
+        if(isEmpty()){
+            return supplier.get();
+        }
+        return this;
     }
 
     class IntMapSome extends IntMap<T> implements ImmutableList.Some<T>{
