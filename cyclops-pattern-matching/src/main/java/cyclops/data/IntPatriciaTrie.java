@@ -12,6 +12,7 @@ import org.jooq.lambda.tuple.Tuple1;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface IntPatriciaTrie<V>  {
 
@@ -46,6 +47,7 @@ public interface IntPatriciaTrie<V>  {
 
         Maybe<V> get(int hash, int pos);
         V getOrElse(int hash, int pos,V value);
+        V getOrElseGet(int hash, int pos,Supplier<V> value);
 
         Node<V> minus(int hash, int pos);
 
@@ -96,6 +98,11 @@ public interface IntPatriciaTrie<V>  {
         @Override
         public V getOrElse(int hash, int pos, V value) {
             return value;
+        }
+
+        @Override
+        public V getOrElseGet(int hash, int pos, Supplier<V> value) {
+            return value.get();
         }
 
         @Override
@@ -171,6 +178,11 @@ public interface IntPatriciaTrie<V>  {
             return value;
         }
 
+        @Override
+        public V getOrElseGet(int hash, int pos, Supplier<V> value) {
+            return value.get();
+        }
+
 
         @Override
         public Node<V> minus(int hash, int key) {
@@ -222,6 +234,11 @@ public interface IntPatriciaTrie<V>  {
             int newHash = hash >>> BITS;
             int index = hash & MASK;
             return nodes[index].getOrElse(newHash, pos,value);
+        }
+
+        @Override
+        public V getOrElseGet(int hash, int pos, Supplier<V> value) {
+            return value.get();
         }
 
         @Override

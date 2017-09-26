@@ -2,6 +2,7 @@ package cyclops.data;
 
 
 import com.aol.cyclops2.types.foldable.Evaluation;
+import com.aol.cyclops2.util.ExceptionSoftener;
 import cyclops.collections.immutable.VectorX;
 import cyclops.control.Maybe;
 import cyclops.stream.ReactiveSeq;
@@ -10,7 +11,12 @@ import lombok.AllArgsConstructor;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class IntMap<T> implements ImmutableList<T>{
@@ -19,7 +25,26 @@ public class IntMap<T> implements ImmutableList<T>{
     private final IntPatriciaTrie.Node<T> intMap;
     private final int size;
 
+    public static <T> IntMap<T> fromStream(Stream<T> seq){
+        return fromIterable(ReactiveSeq.fromStream(seq));
+    }
 
+    public static <T> IntMap<T> fromIterable(Iterable<T> iterable){
+        Iterator<T> it = iterable.iterator();
+        IntPatriciaTrie.Node<T> tree = IntPatriciaTrie.empty();
+        int count = 0;
+        while(it.hasNext()){
+            T next = it.next();
+            tree.put(count,count,next);
+            count++;
+        }
+        return new IntMap<T>(tree,count);
+    }
+    public static <T> IntMap<T> empty(){
+        IntPatriciaTrie.Node<T> tree = IntPatriciaTrie.empty();
+
+        return new IntMap<T>(tree,0);
+    }
 
     public static <T> IntMap<T> of(T... values){
         IntPatriciaTrie.Node<T> tree = IntPatriciaTrie.empty();
@@ -32,11 +57,69 @@ public class IntMap<T> implements ImmutableList<T>{
         return new IntMap<>(intMap.put(size,size,value),size+1);
     }
 
+    @Override
+    public <R> IntMap<R> unitStream(Stream<R> stream) {
+        return fromStream(stream);
+    }
+
+    @Override
+    public IntMap<T> emptyUnit() {
+        return empty();
+    }
+
+    @Override
+    public IntMap<T> drop(long num) {
+        return unitStream(stream().drop(num));
+    }
+
+    @Override
+    public IntMap<T> take(long num) {
+        return unitStream(stream().take(num));
+    }
+
+    @Override
+    public IntMap<T> prepend(T value) {
+        return unitStream(stream().prepend(value));
+    }
+
+    @Override
+    public IntMap<T> prependAll(Iterable<T> value) {
+        return unitStream(stream().prepend(value));
+    }
+
+    @Override
+    public IntMap<T> append(T value) {
+        return this.plus(value);
+    }
+
+    @Override
+    public IntMap<T> appendAll(Iterable<T> value) {
+        Iterator<T> it = value.iterator();
+        IntPatriciaTrie.Node<T> tree = this.intMap;
+        int count = 0;
+        while(it.hasNext()){
+            T next = it.next();
+            tree.put(count,count,next);
+            count++;
+        }
+        return new IntMap<T>(tree,count+size);
+    }
+
+    @Override
+    public IntMap<T> reverse() {
+        return unitStream(stream().reverse());
+    }
+
     public Maybe<T> get(int index){
         return intMap.get(index,index);
     }
     public T getOrElse(int index,T value){
         return intMap.getOrElse(index,index,value);
+    }
+
+    @Override
+    public T getOrElseGet(int pos, Supplier<T> alt) {
+        return intMap.getOrElseGet(pos,pos,alt);
     }
 
     int calcSize(){
@@ -46,11 +129,61 @@ public class IntMap<T> implements ImmutableList<T>{
         return size;
     }
 
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
     public VectorX<T> vectorX(){
         return stream().to().vectorX(Evaluation.LAZY);
     }
     public ReactiveSeq<T> stream(){
         return intMap.stream();
+    }
+
+    @Override
+    public ImmutableList<T> filter(Predicate<? super T> fn) {
+        return null;
+    }
+
+    @Override
+    public <R> ImmutableList<R> map(Function<? super T, ? extends R> fn) {
+        return null;
+    }
+
+    @Override
+    public <R> ImmutableList<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn) {
+        return null;
+    }
+
+    @Override
+    public <R> ImmutableList<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+        return null;
+    }
+
+    @Override
+    public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2) {
+        return null;
+    }
+
+    @Override
+    public ImmutableList<T> onEmpty(T value) {
+        return null;
+    }
+
+    @Override
+    public ImmutableList<T> onEmptyGet(Supplier<? extends T> supplier) {
+        return null;
+    }
+
+    @Override
+    public <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier) {
+        return null;
+    }
+
+    @Override
+    public ImmutableList<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
+        return null;
     }
 
     class IntMapSome extends IntMap<T> implements ImmutableList.Some<T>{
@@ -71,15 +204,137 @@ public class IntMap<T> implements ImmutableList<T>{
         }
 
         @Override
-        public Some<T> reverse() {
+        public IntMapSome reverse() {
             ImmutableList<T> vec = IntMap.this.reverse();
-            Vector<T> rev = (Vector<T>)vec;
-            return rev.new VectorSome(rev);
+            IntMap rev = (IntMap)vec;
+            return rev.new IntMapSome(rev);
         }
 
         @Override
         public Tuple2<T, ImmutableList<T>> unapply() {
             return Tuple.tuple(head(),tail());
+        }
+    }
+
+    static class IntMapNone<T> implements ImmutableList.None<T>{
+        static IntMap.IntMapNone Instance = new IntMap.IntMapNone();
+
+        public static <T> IntMap.IntMapNone<T> empty(){
+            return Instance;
+        }
+        @Override
+        public <R> ImmutableList<R> unitStream(Stream<R> stream) {
+            return empty();
+        }
+
+        @Override
+        public ImmutableList<T> emptyUnit() {
+            return empty();
+        }
+
+        @Override
+        public ImmutableList<T> drop(long num) {
+            return empty();
+        }
+
+        @Override
+        public ImmutableList<T> take(long num) {
+            return empty();
+        }
+
+        @Override
+        public ImmutableList<T> prepend(T value) {
+            return empty();
+        }
+
+        @Override
+        public ImmutableList<T> prependAll(Iterable<T> value) {
+            return empty();
+        }
+
+        @Override
+        public ImmutableList<T> append(T value) {
+            return empty();
+        }
+
+        @Override
+        public ImmutableList<T> appendAll(Iterable<T> value) {
+            return empty();
+        }
+
+        @Override
+        public ImmutableList<T> reverse() {
+            return empty();
+        }
+
+        @Override
+        public Maybe<T> get(int pos) {
+            return Maybe.none();
+        }
+
+        @Override
+        public T getOrElse(int pos, T alt) {
+            return alt;
+        }
+
+        @Override
+        public T getOrElseGet(int pos, Supplier<T> alt) {
+            return alt.get();
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return true;
+        }
+
+        @Override
+        public ReactiveSeq<T> stream() {
+            return ReactiveSeq.empty();
+        }
+
+        @Override
+        public ImmutableList<T> filter(Predicate<? super T> fn) {
+            return empty();
+        }
+
+        @Override
+        public <R> ImmutableList<R> map(Function<? super T, ? extends R> fn) {
+            return empty();
+        }
+
+        @Override
+        public <R> ImmutableList<R> flatMap(Function<? super T, ? extends ImmutableList<? extends R>> fn) {
+            return empty();
+        }
+
+        @Override
+        public <R> ImmutableList<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+            return empty();
+        }
+
+        @Override
+        public ImmutableList<T> onEmpty(T value) {
+            return IntMap.of(value);
+        }
+
+        @Override
+        public ImmutableList<T> onEmptyGet(Supplier<? extends T> supplier) {
+            return IntMap.of(supplier.get());
+        }
+
+        @Override
+        public <X extends Throwable> ImmutableList<T> onEmptyThrow(Supplier<? extends X> supplier) {
+            throw ExceptionSoftener.throwSoftenedException(supplier.get());
+        }
+
+        @Override
+        public ImmutableList<T> onEmptySwitch(Supplier<? extends ImmutableList<T>> supplier) {
+            return supplier.get();
         }
     }
 
