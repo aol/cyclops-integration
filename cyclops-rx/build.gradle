@@ -4,104 +4,105 @@ apply plugin: 'com.bmuschko.nexus'
 apply plugin: 'maven-publish'
 
 buildscript {
-	repositories {
-		jcenter()
-	}
+  repositories {
+    jcenter()
+  }
 
-	dependencies {
-		classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-		
-	}
+  dependencies {
+    classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+
+  }
 }
 
 sourceCompatibility = 1.8
 
 jar {
-    manifest {
-        attributes 'Implementation-Title': 'Cyclops Rx', 'Implementation-Version': version
-    }
+  manifest {
+    attributes 'Implementation-Title': 'Cyclops Rx', 'Implementation-Version': version
+  }
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 
 }
+
 configurations {
-	provided
+  provided
 }
+
 dependencies {
-    
+  compile 'io.reactivex:rxjava:' + rxJavaVersion
+  compile group: 'com.aol.simplereact', name: 'cyclops-react', version: cyclopsReactVersion
+  compile 'io.reactivex:rxjava-reactive-streams:1.0.1'
+  provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
+  testCompile 'io.projectreactor:reactor-core:' + reactorVersion
 
-	compile 'io.reactivex:rxjava:'+rxJavaVersion
-	compile group: 'com.aol.simplereact', name:'cyclops-react', version:cyclopsReactVersion
-	compile 'io.reactivex:rxjava-reactive-streams:1.0.1'
-	provided group: 'org.projectlombok', name: 'lombok', version:lombokVersion
-	testCompile 'io.projectreactor:reactor-core:'+reactorVersion
-	
-	testCompile 'commons-io:commons-io:2.4'
-	testCompile group: 'junit', name: 'junit', version: '4.12'
-	testCompile group: 'junit', name: 'junit', version: '4.12'
-	testCompile  group: 'org.hamcrest', name: 'hamcrest-all', version:'1.3'
-	testCompile group: 'org.mockito', name: 'mockito-all', version:'1.9.5'
-	testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0'
-	testCompile 'org.assertj:assertj-core:3.2.0'
-	testCompile 'com.github.stefanbirkner:system-rules:1.10.0'
+  testCompile 'commons-io:commons-io:2.4'
+  testCompile group: 'junit', name: 'junit', version: '4.12'
+  testCompile group: 'junit', name: 'junit', version: '4.12'
+  testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+  testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
+  testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0'
+  testCompile 'org.assertj:assertj-core:3.2.0'
+  testCompile 'com.github.stefanbirkner:system-rules:1.10.0'
 }
+
 sourceSets {
-	main.compileClasspath += [configurations.provided]
-	test.compileClasspath += [configurations.provided]
-	test.runtimeClasspath += [configurations.provided]
+  main.compileClasspath += [configurations.provided]
+  test.compileClasspath += [configurations.provided]
+  test.runtimeClasspath += [configurations.provided]
 }
+
 eclipse.classpath.plusConfigurations += [configurations.provided]  // Eclipse users only
+
 test {
-    systemProperties 'property': 'value'
+  systemProperties 'property': 'value'
 }
-
-
 
 modifyPom {
-	project {
-		name 'cyclops-rx'
-		description 'Converters and Comprehenders for RxJava'
-		url 'https://github.com/aol/cyclops'
-		inceptionYear '2016'
+  project {
+    name 'cyclops-rx'
+    description 'Converters and Comprehenders for RxJava'
+    url 'https://github.com/aol/cyclops'
+    inceptionYear '2016'
 
-		groupId 'com.aol.cyclops'
-		artifactId 'cyclops-rx'
-		version "$version"
-		
-		scm {
-			url 'ssh://git@github.com:aol/cyclops.git'
-			connection 'ssh://git@github.com:aol/cyclops.git'
-			developerConnection 'ssh://git@github.com:aol/cyclops.git'
-		}
+    groupId 'com.aol.cyclops'
+    artifactId 'cyclops-rx'
+    version "$version"
 
-		licenses {
-			license {
-				name 'The MIT License (MIT)'
-				url 'https://github.com/aol/cyclops/blob/master/licence.txt'
-				distribution 'repo'
-			}
-		}
+    scm {
+      url 'ssh://git@github.com:aol/cyclops.git'
+      connection 'ssh://git@github.com:aol/cyclops.git'
+      developerConnection 'ssh://git@github.com:aol/cyclops.git'
+    }
 
-		developers {
-			developer {
-				id 'johnmcclean-aol'
-				name 'John McClean'
-				email 'john.mcclean@teamaol.com'
-			}
-		}
-	}
+    licenses {
+      license {
+        name 'The MIT License (MIT)'
+        url 'https://github.com/aol/cyclops/blob/master/licence.txt'
+        distribution 'repo'
+      }
+    }
+
+    developers {
+      developer {
+        id 'johnmcclean-aol'
+        name 'John McClean'
+        email 'john.mcclean@teamaol.com'
+      }
+    }
+  }
 }
 
 extraArchive {
-        sources = true
-        tests = true
-        javadoc = true
+  sources = true
+  tests = true
+  javadoc = true
 }
 
 nexus {
-       sign = true
-        repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
-        snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots'	
+  sign = true
+  repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
+  snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots'
 }
