@@ -8,15 +8,31 @@ import lombok.AllArgsConstructor;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
+import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 
-public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQueue.Nil> {
+public interface BankersQueue<T> extends ImmutableQueue<T> {
 
-
+    static <T> BankersQueue<T> fromStream(Stream<T> stream){
+        return fromIterable(ReactiveSeq.fromStream(stream));
+    }
+    static <T> BankersQueue<T> fromIterable(Iterable<T> iterable){
+        if(iterable instanceof BankersQueue)
+            return (BankersQueue<T>)iterable;
+        Iterator<T> it = iterable.iterator();
+        BankersQueue<T> res = empty();
+        while(it.hasNext()){
+            res = res.enqueue(it.next());
+        }
+        return res;
+    }
     default Tuple2<T,BankersQueue<T>> dequeue(T defaultValue){
-        return match(c->c.dequeue(),n->Tuple.tuple(defaultValue,this));
+        return visit(c->c.dequeue(),n->Tuple.tuple(defaultValue,this));
     }
     public static <T> BankersQueue<T> empty(){
         return Nil.Instance;
@@ -25,7 +41,7 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
     boolean isEmpty();
     BankersQueue<T> enqueue(T value);
     <R> BankersQueue<R> map(Function<? super T, ? extends R> map);
-    <R> BankersQueue<R> flatMap(Function<? super T, ? extends BankersQueue<? extends R>> fn);
+    <R> BankersQueue<R> flatMap(Function<? super T, ? extends ImmutableQueue<? extends R>> fn);
 
     default Maybe<T> get(int n){
         return Maybe.none();
@@ -35,7 +51,23 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         return ReactiveSeq.fromIterable(lazySeq());
     }
 
+    @Override
+    default BankersQueue<T> emptyUnit(){
+        return empty();
+    }
+
+    @Override
+    default <R> BankersQueue<R> unitStream(Stream<R> stream){
+        return fromStream(stream);
+    }
+
     BankersQueue<T> replace(T currentElement, T newElement);
+
+    @Override
+    default BankersQueue<T> removeFirst(Predicate<? super T> pred) {
+        return fromStream(stream().filter(pred));
+    }
+
     public static <T> BankersQueue<T> cons(T value){
         return new Cons<>(1, LazySeq.cons(value,()-> LazySeq.empty()),0, LazySeq.empty());
     }
@@ -44,6 +76,7 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
     }
      LazySeq<T> lazySeq();
 
+
     static <T> BankersQueue<T> of(T... values) {
         BankersQueue<T> result = empty();
         for(T next : values){
@@ -51,9 +84,64 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         }
         return result;
     }
+     <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil<T>, ? extends R> fn2);
+
+    default BankersQueue<T> tail(){
+        return visit(cons-> cons,nil->nil);
+    }
+    @Override
+    default BankersQueue<T> drop(long num) {
+        BankersQueue<T> res= this;
+        for(long i=0;i<num;i++){
+            res = res.visit(c->c.tail(),nil->nil);
+
+        }
+        return  res;
+    }
+
+    @Override
+    default BankersQueue<T> take(long num) {
+        return unitStream(stream().take(num));
+    }
+
+    @Override
+    default BankersQueue<T> prepend(T value) {
+        return enqueue(value);;
+    }
+
+    @Override
+    default BankersQueue<T> prependAll(Iterable<T> value) {
+        Iterator<T> it = value.iterator();
+        BankersQueue<T> res= this;
+        while(it.hasNext()){
+            res = res.enqueue(it.next());
+        }
+        return res;
+    }
+
+    @Override
+    default BankersQueue<T> append(T value) {
+        return null;
+    }
+
+    @Override
+    default BankersQueue<T> appendAll(Iterable<T> value) {
+
+
+    }
+
+    @Override
+    default BankersQueue<T> reverse() {
+        return unitStream(stream().reverse());
+    }
+
+    @Override
+    default BankersQueue<T> filter(Predicate<? super T> fn) {
+        return unitStream(stream().filter(fn));
+    }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Cons<T> implements  BankersQueue<T> {
+    public static class Cons<T> implements  BankersQueue<T>, ImmutableQueue.Some<T> {
         private final int sizeFront;
         private final ImmutableList<T> front;
         private final int sizeBack;
@@ -74,11 +162,6 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         }
 
         @Override
-        public <R> R match(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
-            return fn1.apply(this);
-        }
-
-        @Override
         public int size() {
             return sizeFront + sizeBack;
         }
@@ -87,6 +170,8 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         public boolean isEmpty() {
             return size()>0;
         }
+
+
 
         @Override
         public BankersQueue<T> enqueue(T value) {
@@ -99,14 +184,61 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         }
 
         @Override
-        public <R> BankersQueue<R> flatMap(Function<? super T, ? extends BankersQueue<? extends R>> fn) {
+        public <R> BankersQueue<R> flatMap(Function<? super T, ? extends ImmutableQueue<? extends R>> fn) {
             return check(new Cons(sizeFront,front.flatMap(fn.andThen(q->q.lazySeq())),sizeBack,back.flatMap(fn.andThen(q->q.lazySeq()))));
+        }
+
+        @Override
+        public <R> ImmutableQueue<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+            return check(new Cons(sizeFront,front.flatMapI(fn),sizeBack,back.flatMapI(fn)));
+
+        }
+
+        @Override
+        public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2) {
+            return fn1.apply(this);
+        }
+        @Override
+        public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil<T>, ? extends R> fn2) {
+            return fn1.apply(this);
+        }
+
+        @Override
+        public ImmutableQueue<T> onEmpty(T value) {
+            return this;
+        }
+
+        @Override
+        public ImmutableQueue<T> onEmptyGet(Supplier<? extends T> supplier) {
+            return this;
+        }
+
+        @Override
+        public <X extends Throwable> ImmutableQueue<T> onEmptyThrow(Supplier<? extends X> supplier) {
+            return this;
+        }
+
+        @Override
+        public ImmutableQueue<T> onEmptySwitch(Supplier<? extends ImmutableQueue<T>> supplier) {
+            return this;
         }
 
         public Tuple2<T,BankersQueue<T>> dequeue() {
 
             return front.match(cons->cons.match((head,tail)->Tuple.tuple(head,tail.match(c->check(new Cons<>(sizeFront-1,tail,sizeBack,back)),n->Nil.Instance)))
                                  ,nil->{throw new RuntimeException("Unreachable!");});
+
+        }
+        public BankersQueue<T> tail() {
+            if(sizeFront==0){
+                return BankersQueue.ofAll(back.match(s->s.match((h,t)->t),n->n));
+            }
+            if(sizeFront==1){
+                return ofAll(back);
+            }
+            return new BankersQueue.Cons<>(sizeFront-1,front.match(s->s.match((h,t)->t),n->n),sizeBack,back);
+
+
 
         }
         public BankersQueue<T> replace(T currentElement, T newElement) {
@@ -124,18 +256,47 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
            return Maybe.none();
 
        }
+
+        @Override
+        public T getOrElse(int n, T alt) {
+            if (n < sizeFront)
+                return front.getOrElse(sizeFront-n-1,alt);
+            else if (n < sizeFront + sizeBack) {
+                int pos = n-sizeFront;
+                return  back.getOrElse(sizeBack-pos-1,alt);
+            }
+            return alt;
+        }
+
+        @Override
+        public T getOrElseGet(int n, Supplier<T> alt) {
+            if (n < sizeFront)
+                return front.getOrElse(sizeFront-n-1,alt.get());
+            else if (n < sizeFront + sizeBack) {
+                int pos = n-sizeFront;
+                return  back.getOrElse(sizeBack-pos-1,alt.get());
+            }
+            return alt.get();
+        }
+
         @Override
         public LazySeq<T> lazySeq() {
             return front.appendAll(back.reverse()).lazySeq();
         }
 
+
         public String toString(){
            return lazySeq().toString();
         }
 
+        @Override
+        public Tuple2<T, ImmutableQueue<T>> unapply() {
+            Tuple2<T, ImmutableQueue<T>> x = (Tuple2)dequeue();
+            return x;
+        }
     }
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public class Nil<T> implements BankersQueue<T> {
+    public class Nil<T> implements BankersQueue<T>,ImmutableQueue.None<T> {
         static Nil Instance = new Nil();
 
         public <R> R foldRight(R zero, BiFunction<? super T, ? super R, ? extends R> f) {
@@ -163,8 +324,41 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         }
 
         @Override
-        public <R> BankersQueue<R> flatMap(Function<? super T, ? extends BankersQueue<? extends R>> fn) {
+        public <R> BankersQueue<R> flatMap(Function<? super T, ? extends ImmutableQueue<? extends R>> fn) {
             return Instance;
+        }
+
+        @Override
+        public <R> ImmutableQueue<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+            return null;
+        }
+        @Override
+        public <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2) {
+            return fn2.apply(this);
+        }
+        @Override
+        public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil<T>, ? extends R> fn2) {
+            return fn2.apply(this);
+        }
+
+        @Override
+        public ImmutableQueue<T> onEmpty(T value) {
+            return of(value);
+        }
+
+        @Override
+        public ImmutableQueue<T> onEmptyGet(Supplier<? extends T> supplier) {
+            return of(supplier.get());
+        }
+
+        @Override
+        public <X extends Throwable> ImmutableQueue<T> onEmptyThrow(Supplier<? extends X> supplier) {
+            throw supplier.get();
+        }
+
+        @Override
+        public ImmutableQueue<T> onEmptySwitch(Supplier<? extends ImmutableQueue<T>> supplier) {
+            return supplier.get();
         }
 
         @Override
@@ -179,9 +373,15 @@ public interface BankersQueue<T> extends Sealed2<BankersQueue.Cons<T>,BankersQue
         }
 
         @Override
-        public <R> R match(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil, ? extends R> fn2) {
-            return fn2.apply(this);
+        public T getOrElse(int pos, T alt) {
+            return alt;
         }
+
+        @Override
+        public T getOrElseGet(int pos, Supplier<T> alt) {
+            return alt.get();
+        }
+
     }
 
 }
