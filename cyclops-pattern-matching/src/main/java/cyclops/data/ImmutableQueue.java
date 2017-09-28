@@ -239,7 +239,8 @@ public interface ImmutableQueue<T> extends Sealed2<ImmutableQueue.Some<T>,Immuta
     ImmutableQueue<T> onEmptySwitch(Supplier<? extends ImmutableQueue<T>> supplier);
 
     public static interface Some<T> extends CaseClass2<T,ImmutableQueue<T>>, ImmutableQueue<T> {
-
+        T head();
+        ImmutableQueue<T> tail();
         @Override
         default <R> R match(Function<? super Some<T>, ? extends R> fn1, Function<? super None<T>, ? extends R> fn2){
             return fn1.apply(this);

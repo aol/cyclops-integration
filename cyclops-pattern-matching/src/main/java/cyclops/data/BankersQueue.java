@@ -116,7 +116,7 @@ public interface BankersQueue<T> extends ImmutableQueue<T> {
                 res = res.prepend(it.next());
             }
             return res;
-        
+
     }
     @Override
     default BankersQueue<T> append(T value) {
@@ -232,6 +232,9 @@ public interface BankersQueue<T> extends ImmutableQueue<T> {
             return front.match(cons->cons.match((head,tail)->Tuple.tuple(head,tail.match(c->check(new Cons<>(sizeFront-1,tail,sizeBack,back)),n->Nil.Instance)))
                                  ,nil->{throw new RuntimeException("Unreachable!");});
 
+        }
+        public T head(){
+            return front.match(s->s.match((h,t)->h),n->back.match(s2->s2.match( (h2,t2) ->h2),nil->{throw new RuntimeException("Unreachable!");}));
         }
         public BankersQueue<T> tail() {
             if(sizeFront==0){
