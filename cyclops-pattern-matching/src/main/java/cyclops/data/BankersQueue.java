@@ -104,30 +104,34 @@ public interface BankersQueue<T> extends ImmutableQueue<T> {
         return unitStream(stream().take(num));
     }
 
+
     @Override
-    default BankersQueue<T> prepend(T value) {
-        return enqueue(value);;
+    BankersQueue<T> prepend(T value);
+    @Override
+    default BankersQueue<T> prependAll(Iterable<T> value){
+
+            Iterator<T> it = value.iterator();
+            BankersQueue<T> res= this;
+            while(it.hasNext()){
+                res = res.prepend(it.next());
+            }
+            return res;
+        
+    }
+    @Override
+    default BankersQueue<T> append(T value) {
+        return enqueue(value);
     }
 
     @Override
-    default BankersQueue<T> prependAll(Iterable<T> value) {
+    default BankersQueue<T> appendAll(Iterable<T> value) {
+
         Iterator<T> it = value.iterator();
         BankersQueue<T> res= this;
         while(it.hasNext()){
             res = res.enqueue(it.next());
         }
         return res;
-    }
-
-    @Override
-    default BankersQueue<T> append(T value) {
-        return null;
-    }
-
-    @Override
-    default BankersQueue<T> appendAll(Iterable<T> value) {
-
-
     }
 
     @Override
@@ -284,6 +288,13 @@ public interface BankersQueue<T> extends ImmutableQueue<T> {
             return front.appendAll(back.reverse()).lazySeq();
         }
 
+        @Override
+        public BankersQueue<T> prepend(T value) {
+            return new Cons<>(sizeFront+1,front.prepend(value),sizeBack,back);
+        }
+
+
+
 
         public String toString(){
            return lazySeq().toString();
@@ -339,6 +350,11 @@ public interface BankersQueue<T> extends ImmutableQueue<T> {
         @Override
         public <R> R visit(Function<? super Cons<T>, ? extends R> fn1, Function<? super Nil<T>, ? extends R> fn2) {
             return fn2.apply(this);
+        }
+
+        @Override
+        public BankersQueue<T> prepend(T value) {
+            return enqueue(value);
         }
 
         @Override
