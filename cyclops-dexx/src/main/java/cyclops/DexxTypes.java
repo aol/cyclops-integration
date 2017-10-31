@@ -27,7 +27,7 @@ public class DexxTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Dexx List that implements PersistentList interface
      */
-    public static <T> Reducer<PersistentList<T>> list() {
+    public static <T> Reducer<PersistentList<T>,T> list() {
         return DexxListX.toPersistentList();
     }
     /**
@@ -45,7 +45,7 @@ public class DexxTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Dexx Vector that implements PersistentList interface
      */
-    public static <T> Reducer<PersistentList<T>> vector() {
+    public static <T> Reducer<PersistentList<T>,T> vector() {
         return DexxVectorX.toPersistentList();
     }
 

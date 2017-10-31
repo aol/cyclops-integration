@@ -24,7 +24,7 @@ public class VavrTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Vavr List that implements PersistentList interface
      */
-    public static <T> Reducer<PersistentList<T>> list() {
+    public static <T> Reducer<PersistentList<T>,T> list() {
         return VavrListX.toPersistentList();
     }
     /**
@@ -42,7 +42,7 @@ public class VavrTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Vavr Vector that implements PersistentList interface
      */
-    public static <T> Reducer<PersistentList<T>> vector() {
+    public static <T> Reducer<PersistentList<T>,T> vector() {
         return VavrVectorX.toPersistentList();
     }
 

@@ -91,7 +91,7 @@ public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest  {
     }
 
     @Override
-    public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
+    public <U, T> FluentCollectionX<T> unfold(U seed, Function<? super U, Option<Tuple2<T, U>>> unfolder) {
         return (FluentCollectionX) DexxTreeSetX.unfold(seed, (Function)unfolder);
     }
 }

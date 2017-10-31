@@ -25,7 +25,7 @@ public class ClojureTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Clojure List that implements PersistentList interface
      */
-    public static <T> Reducer<PersistentList<T>> list() {
+    public static <T> Reducer<PersistentList<T>,T> list() {
         return ClojureListX.toPersistentList();
     }
     /**
@@ -43,7 +43,7 @@ public class ClojureTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Clojure Vector that implements PersistentList interface
      */
-    public static <T> Reducer<PersistentList<T>> vector() {
+    public static <T> Reducer<PersistentList<T>,T> vector() {
         return ClojureVectorX.toPersistentList();
     }
 
