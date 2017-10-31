@@ -8,7 +8,7 @@ import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.list;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.ListT;
-import cyclops.monads.transformers.XorT;
+import cyclops.monads.transformers.EitherT;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;

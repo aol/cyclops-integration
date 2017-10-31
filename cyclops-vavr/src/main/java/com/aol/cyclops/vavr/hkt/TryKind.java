@@ -11,7 +11,7 @@ import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.tryType;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.FutureT;
-import cyclops.monads.transformers.XorT;
+import cyclops.monads.transformers.EitherT;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -50,8 +50,8 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
     default <W2,R> Nested<tryType,W2,R> mapM(Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
         return Trys.mapM(this,fn,defs);
     }
-    default <W extends WitnessType<W>> XorT<W,Throwable, T> liftM(W witness) {
-        return XorT.of(witness.adapter().unit(ToCyclopsReact.toTry(this).asXor()));
+    default <W extends WitnessType<W>> EitherT<W,Throwable, T> liftM(W witness) {
+        return EitherT.of(witness.adapter().unit(ToCyclopsReact.toTry(this).asEither()));
     }
     default <R> TryKind<R> fold(Function<? super Try<? super T>,? extends Try<R>> op){
         return widen(op.apply(this));

@@ -7,15 +7,15 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.conversion.vavr.FromJooqLambda;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import cyclops.collections.vavr.VavrListX;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.VavrWitness.either;
 import cyclops.monads.VavrWitness.future;
@@ -84,8 +84,8 @@ public class Lists {
 
         return next.filter(Either::isRight).map(Either::get);
     }
-    public static  <T,R> List<R> tailRecXor(T initial, Function<? super T, ? extends List<? extends Xor<T, R>>> fn) {
-        List<Xor<T, R>> next = List.of(Xor.secondary(initial));
+    public static  <T,R> List<R> tailRecEither(T initial, Function<? super T, ? extends List<? extends Either<T, R>>> fn) {
+        List<Either<T, R>> next = List.of(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -102,7 +102,7 @@ public class Lists {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(Either::isPrimary).map(Either::get);
     }
     /**
      * Perform a For Comprehension over a List, accepting 3 generating functions.
@@ -132,8 +132,8 @@ public class Lists {
     public static <T1, T2, T3, R1, R2, R3, R> List<R> forEach4(List<? extends T1> value1,
                                                                Function<? super T1, ? extends List<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends List<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends List<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends List<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -181,9 +181,9 @@ public class Lists {
     public static <T1, T2, T3, R1, R2, R3, R> List<R> forEach4(List<? extends T1> value1,
                                                                  Function<? super T1, ? extends List<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends List<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends List<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends List<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -229,7 +229,7 @@ public class Lists {
     public static <T1, T2, R1, R2, R> List<R> forEach3(List<? extends T1> value1,
                                                          Function<? super T1, ? extends List<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends List<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -272,8 +272,8 @@ public class Lists {
     public static <T1, T2, R1, R2, R> List<R> forEach3(List<? extends T1> value1,
                                                          Function<? super T1, ? extends List<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends List<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -444,7 +444,7 @@ public class Lists {
 
                 @Override
                 public <T> Maybe<Comonad<list>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -618,8 +618,8 @@ public class Lists {
         public static <T> MonadRec<list> monadRec(){
             return new MonadRec<list>() {
                 @Override
-                public <T, R> Higher<list, R> tailRec(T initial, Function<? super T, ? extends Higher<list, ? extends Xor<T, R>>> fn) {
-                    return widen(Lists.tailRecXor(initial, fn.andThen(l -> narrowK(l))));
+                public <T, R> Higher<list, R> tailRec(T initial, Function<? super T, ? extends Higher<list, ? extends Either<T, R>>> fn) {
+                    return widen(Lists.tailRecEither(initial, fn.andThen(l -> narrowK(l))));
                 }
             };
         }
@@ -736,10 +736,10 @@ public class Lists {
     }
 
     public static  <W1,T> Coproduct<W1,list,T> coproduct(List<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(ListKind.widen(list)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(ListKind.widen(list)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,list,T> coproduct(InstanceDefinitions<W1> def1,T... values){
-        return Coproduct.of(Xor.primary(ListKind.just(values)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(ListKind.just(values)),def1, Instances.definitions());
     }
 
     public static interface ListNested{
@@ -800,10 +800,10 @@ public class Lists {
             ListKind<Higher<Witness.future,T>> y = (ListKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<list,Higher<xor,S>, P> xor(List<Xor<S, P>> nested){
-            ListKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<list,Higher<xor,S>, P> xor(List<Either<S, P>> nested){
+            ListKind<Either<S, P>> x = widen(nested);
             ListKind<Higher<Higher<xor,S>, P>> y = (ListKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<list,Higher<reader,S>, T> reader(List<Reader<S, T>> nested,S defaultValue){
             ListKind<Reader<S, T>> x = widen(nested);
@@ -856,10 +856,10 @@ public class Lists {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,list, P> xor(Xor<S, List<P>> nested){
-            Xor<S, Higher<list,P>> x = nested.map(ListKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,list, P> xor(Either<S, List<P>> nested){
+            Either<S, Higher<list,P>> x = nested.map(ListKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,list, T> reader(Reader<S, List<T>> nested,S defaultValue){
 

@@ -11,15 +11,15 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.oath.cyclops.data.collections.extensions.CollectionX;
-import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentSortedSetX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
+import com.oath.cyclops.types.persistent.PersistentSortedSet;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
-import org.pcollections.PersistentSortedSet;
+
 
 
 import io.vavr.collection.SortedSet;
@@ -30,7 +30,7 @@ import lombok.experimental.Wither;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrTreeSetX<T> extends AbstractSet<T>implements PersistentSortedSet<T>, Unwrapable {
+public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
 
     public static <T> OrderedSetX<T> treeSetX(ReactiveSeq<T> stream, Comparator<? super T> c){
         return fromStream(stream,c);

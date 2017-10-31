@@ -10,7 +10,7 @@ import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.either;
 import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.monads.AnyM;
 import io.vavr.control.Either;
 import lombok.AllArgsConstructor;
@@ -66,7 +66,7 @@ public class EitherAdapter<L> implements ValueAdapter<either> {
     @Override
     public <T> AnyM<either, T> unitIterable(Iterable<T> it)  {
 
-        return Vavr.either(FromCyclopsReact.either(Xor.fromIterable(it)));
+        return Vavr.either(FromCyclopsReact.either(Either.fromIterable(it)));
     }
 
     @Override

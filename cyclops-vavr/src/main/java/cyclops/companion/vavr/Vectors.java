@@ -3,7 +3,7 @@ package cyclops.companion.vavr;
 import com.aol.cyclops.vavr.hkt.ListKind;
 import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.vector;
@@ -11,8 +11,8 @@ import cyclops.collections.vavr.VavrVectorX;
 import com.aol.cyclops.vavr.hkt.VectorKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
@@ -71,8 +71,8 @@ public class Vectors {
 
         return next.filter(Either::isRight).map(Either::get);
     }
-    public static  <T,R> Vector<R> tailRecXor(T initial, Function<? super T, ? extends Vector<? extends Xor<T, R>>> fn) {
-        Vector<Xor<T, R>> next = Vector.of(Xor.secondary(initial));
+    public static  <T,R> Vector<R> tailRecEither(T initial, Function<? super T, ? extends Vector<? extends Either<T, R>>> fn) {
+        Vector<Either<T, R>> next = Vector.of(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -89,7 +89,7 @@ public class Vectors {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(Either::isPrimary).map(Either::get);
     }
 
     /**
@@ -120,8 +120,8 @@ public class Vectors {
     public static <T1, T2, T3, R1, R2, R3, R> Vector<R> forEach4(Vector<? extends T1> value1,
                                                                Function<? super T1, ? extends Vector<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends Vector<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends Vector<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends Vector<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -169,9 +169,9 @@ public class Vectors {
     public static <T1, T2, T3, R1, R2, R3, R> Vector<R> forEach4(Vector<? extends T1> value1,
                                                                  Function<? super T1, ? extends Vector<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Vector<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Vector<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Vector<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -217,7 +217,7 @@ public class Vectors {
     public static <T1, T2, R1, R2, R> Vector<R> forEach3(Vector<? extends T1> value1,
                                                          Function<? super T1, ? extends Vector<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Vector<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -260,8 +260,8 @@ public class Vectors {
     public static <T1, T2, R1, R2, R> Vector<R> forEach3(Vector<? extends T1> value1,
                                                          Function<? super T1, ? extends Vector<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Vector<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -431,7 +431,7 @@ public class Vectors {
 
                 @Override
                 public <T> Maybe<Comonad<vector>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -628,8 +628,8 @@ public class Vectors {
             return new MonadRec<vector>(){
 
                 @Override
-                public <T, R> Higher<vector, R> tailRec(T initial, Function<? super T, ? extends Higher<vector, ? extends Xor<T, R>>> fn) {
-                    return widen(tailRecXor(initial,fn.andThen(VectorKind::narrowK).andThen(v->v.narrow())));
+                public <T, R> Higher<vector, R> tailRec(T initial, Function<? super T, ? extends Higher<vector, ? extends Either<T, R>>> fn) {
+                    return widen(tailRecEither(initial,fn.andThen(VectorKind::narrowK).andThen(v->v.narrow())));
                 }
             };
         }

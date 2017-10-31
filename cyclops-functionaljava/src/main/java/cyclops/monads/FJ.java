@@ -24,7 +24,7 @@ public interface FJ {
 
 
     public static <T> Maybe<T> maybe(Option<T> opt){
-        return opt.isNone() ? Maybe.none() : Maybe.just(opt.some());
+        return opt.isNone() ? Maybe.nothing() : Maybe.just(opt.some());
     }
     /**
      * Methods for making working with FJ's Trampoline a little more Java8 friendly

@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 import com.oath.cyclops.types.MonadicValue;
 import com.oath.cyclops.types.Value;
 import cyclops.control.Eval;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import io.vavr.Lazy;
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
@@ -48,12 +48,12 @@ public class FromCyclopsReact {
      }
 
 
-    public static <L, R> Either<L, R> either(Xor<L, R> value) {
-        Xor<L, R> xor = (Xor) value.toXor();
+    public static <L, R> Either<L, R> either(Either<L, R> value) {
+        Either<L, R> xor = (Either) value.toEither();
         return xor.visit(l -> Either.left(l), r -> Either.right(r));
     }
 
-    public static <L, R> Validation<L, R> validation(Xor<L, R> value) {
+    public static <L, R> Validation<L, R> validation(Either<L, R> value) {
         return Validation.fromEither(either(value));
     }
 

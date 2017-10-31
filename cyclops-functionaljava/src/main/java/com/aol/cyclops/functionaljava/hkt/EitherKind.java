@@ -1,17 +1,18 @@
 package com.aol.cyclops.functionaljava.hkt;
 
 
+import fj.data.Either;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.hkt.Higher2;
 import com.oath.cyclops.types.foldable.To;
 import cyclops.companion.functionaljava.Eithers;
-import cyclops.control.Xor;
+
 import cyclops.conversion.functionaljava.ToCyclopsReact;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.either;
 import cyclops.monads.Witness;
 import cyclops.monads.WitnessType;
-import cyclops.monads.transformers.XorT;
+import cyclops.monads.transformers.EitherT;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -55,8 +56,8 @@ public class EitherKind<L,R> implements To<EitherKind<L,R>>,
     public <W2,R2> Nested<Higher<either,L>,W2,R2> mapM(Function<? super R,? extends Higher<W2,R2>> fn, InstanceDefinitions<W2> defs){
         return Nested.of(widen(bimap(l->l,r->fn.apply(r))), Eithers.Instances.definitions(), defs);
     }
-    public <W extends WitnessType<W>> XorT<W, L,R> liftM(W witness) {
-        return XorT.of(witness.adapter().unit(ToCyclopsReact.xor(boxed)));
+    public <W extends WitnessType<W>> EitherT<W, L,R> liftM(W witness) {
+        return EitherT.of(witness.adapter().unit(ToCyclopsReact.xor(boxed)));
     }
 
     public Either.LeftProjection<L, R> left() {

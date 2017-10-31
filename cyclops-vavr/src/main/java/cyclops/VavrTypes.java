@@ -101,7 +101,7 @@ public class VavrTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Vavr Set that implements PSet interface
      */
-    public static <T> Reducer<PersistentSet<T>> hashSet() {
+    public static <T> Reducer<PersistentSet<T>,T> hashSet() {
         return VavrHashSetX.toPSet();
     }
 

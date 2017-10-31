@@ -20,7 +20,7 @@ import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.control.lazy.Either;
 import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
@@ -30,8 +30,8 @@ import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.Value;
 import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.async.Future;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.StreamT;
@@ -65,7 +65,7 @@ import static cyclops.companion.Streams.StreamKind.*;
 public class Monos {
 
     public static  <W1,T> Coproduct<W1,mono,T> coproduct(Mono<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(MonoKind.widen(list)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(MonoKind.widen(list)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,mono,T> coproduct(T value,InstanceDefinitions<W1> def1){
         return coproduct(Mono.just(value),def1);
@@ -78,9 +78,9 @@ public class Monos {
         return ReactorWitness.mono(anyM);
     }
 
-    public static <T, R> Mono< R> tailRec(T initial, Function<? super T, ? extends Mono<? extends Xor<T, R>>> fn) {
-        Mono<? extends Xor<T, R>> next[] = new Mono[1];
-        next[0] = Mono.just(Xor.secondary(initial));
+    public static <T, R> Mono< R> tailRec(T initial, Function<? super T, ? extends Mono<? extends Either<T, R>>> fn) {
+        Mono<? extends Either<T, R>> next[] = new Mono[1];
+        next[0] = Mono.just(Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -88,7 +88,7 @@ public class Monos {
                 return true;
             }, pr -> false)).block();
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(Either::get);
     }
     public static <W extends WitnessType<W>,T> MonoT<W,T> liftM(AnyM<W,Mono<T>> nested){
         return MonoT.of(nested);
@@ -275,8 +275,8 @@ public class Monos {
     public static <T1, T2, T3, R1, R2, R3, R> Mono<R> forEach4(Mono<? extends T1> value1,
             Function<? super T1, ? extends Mono<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Mono<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends Mono<R3>> value4,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends Mono<R3>> value4,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         Future<? extends R> res = Future.fromPublisher(value1).flatMap(in -> {
@@ -322,7 +322,7 @@ public class Monos {
     public static <T1, T2, R1, R2, R> Mono<R> forEach3(Mono<? extends T1> value1,
             Function<? super T1, ? extends Mono<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Mono<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         Future<? extends R> res = Future.fromPublisher(value1).flatMap(in -> {
 
@@ -550,7 +550,7 @@ public class Monos {
 
                 @Override
                 public <T> Maybe<Unfoldable<mono>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -743,7 +743,7 @@ public class Monos {
         public static <T> MonadRec<mono> monadRec(){
             return new MonadRec<mono>() {
                 @Override
-                public <T, R> Higher<mono, R> tailRec(T initial, Function<? super T, ? extends Higher<mono, ? extends Xor<T, R>>> fn) {
+                public <T, R> Higher<mono, R> tailRec(T initial, Function<? super T, ? extends Higher<mono, ? extends Either<T, R>>> fn) {
                     return widen(Monos.tailRec(initial,fn.andThen(MonoKind::narrow)));
                 }
             };
@@ -861,10 +861,10 @@ public class Monos {
             MonoKind<Higher<Witness.future,T>> y = (MonoKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<mono,Higher<xor,S>, P> xor(Mono<Xor<S, P>> nested){
-            MonoKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<mono,Higher<xor,S>, P> xor(Mono<Either<S, P>> nested){
+            MonoKind<Either<S, P>> x = widen(nested);
             MonoKind<Higher<Higher<xor,S>, P>> y = (MonoKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<mono,Higher<reader,S>, T> reader(Mono<Reader<S, T>> nested, S defaultValue){
             MonoKind<Reader<S, T>> x = widen(nested);
@@ -923,10 +923,10 @@ public class Monos {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,mono, P> xor(Xor<S, Mono<P>> nested){
-            Xor<S, Higher<mono,P>> x = nested.map(MonoKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,mono, P> xor(Either<S, Mono<P>> nested){
+            Either<S, Higher<mono,P>> x = nested.map(MonoKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,mono, T> reader(Reader<S, Mono<T>> nested, S defaultValue){
 

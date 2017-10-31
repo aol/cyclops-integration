@@ -15,8 +15,8 @@ import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
@@ -52,7 +52,7 @@ import static com.aol.cyclops.vavr.hkt.StreamKind.widen;
 
 public class Streams {
     public static  <W1,T> Coproduct<W1,stream,T> coproduct(Stream<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,stream,T> coproduct(InstanceDefinitions<W1> def1,T... values){
         return coproduct(Stream.of(values),def1);
@@ -91,15 +91,15 @@ public class Streams {
 
         return next.filter(Either::isRight).map(Either::get);
     }
-    public static  <T,R> Stream<R> tailRecXor(T initial, Function<? super T, ? extends Stream<? extends Xor<T, R>>> fn) {
-        Stream<Xor<T, R>> next = Stream.of(Xor.secondary(initial));
+    public static  <T,R> Stream<R> tailRecEither(T initial, Function<? super T, ? extends Stream<? extends Either<T, R>>> fn) {
+        Stream<Either<T, R>> next = Stream.of(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
 
-            Stream<Xor<T, R>> rebuild = Stream.of();
-            for(Xor<T,R> e : next){
-                Stream<? extends Xor<T, R>> r = e.visit(s -> {
+            Stream<Either<T, R>> rebuild = Stream.of();
+            for(Either<T,R> e : next){
+                Stream<? extends Either<T, R>> r = e.visit(s -> {
                             newValue[0] = true;
 
                             return fn.apply(s);
@@ -117,7 +117,7 @@ public class Streams {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(Either::isPrimary).map(Either::get);
     }
     //not tail-recursive, may blow stack, but have better performance
     public static <T,R> R foldRightUnsafe(Stream<T> stream,R identity, BiFunction<? super T, ? super R, ? extends R> fn){
@@ -172,8 +172,8 @@ public class Streams {
     public static <T1, T2, T3, R1, R2, R3, R> Stream<R> forEach4(Stream<? extends T1> value1,
                                                                Function<? super T1, ? extends Stream<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends Stream<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends Stream<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends Stream<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -221,9 +221,9 @@ public class Streams {
     public static <T1, T2, T3, R1, R2, R3, R> Stream<R> forEach4(Stream<? extends T1> value1,
                                                                  Function<? super T1, ? extends Stream<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Stream<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Stream<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Stream<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -269,7 +269,7 @@ public class Streams {
     public static <T1, T2, R1, R2, R> Stream<R> forEach3(Stream<? extends T1> value1,
                                                          Function<? super T1, ? extends Stream<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Stream<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -312,8 +312,8 @@ public class Streams {
     public static <T1, T2, R1, R2, R> Stream<R> forEach3(Stream<? extends T1> value1,
                                                          Function<? super T1, ? extends Stream<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Stream<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -484,7 +484,7 @@ public class Streams {
 
                 @Override
                 public <T> Maybe<Comonad<stream>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -742,8 +742,8 @@ public class Streams {
             return new MonadRec<stream>(){
 
                 @Override
-                public <T, R> Higher<stream, R> tailRec(T initial, Function<? super T, ? extends Higher<stream, ? extends Xor<T, R>>> fn) {
-                    return widen(Streams.tailRecXor(initial,fn.andThen(StreamKind::narrowK)));
+                public <T, R> Higher<stream, R> tailRec(T initial, Function<? super T, ? extends Higher<stream, ? extends Either<T, R>>> fn) {
+                    return widen(Streams.tailRecEither(initial,fn.andThen(StreamKind::narrowK)));
                 }
             };
         }
@@ -829,10 +829,10 @@ public class Streams {
             StreamKind<Higher<Witness.future,T>> y = (StreamKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<stream,Higher<xor,S>, P> xor(Stream<Xor<S, P>> nested){
-            StreamKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<stream,Higher<xor,S>, P> xor(Stream<Either<S, P>> nested){
+            StreamKind<Either<S, P>> x = widen(nested);
             StreamKind<Higher<Higher<xor,S>, P>> y = (StreamKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<stream,Higher<reader,S>, T> reader(Stream<Reader<S, T>> nested, S defaultValue){
             StreamKind<Reader<S, T>> x = widen(nested);
@@ -886,10 +886,10 @@ public class Streams {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,stream, P> xor(Xor<S, Stream<P>> nested){
-            Xor<S, Higher<stream,P>> x = nested.map(StreamKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,stream, P> xor(Either<S, Stream<P>> nested){
+            Either<S, Higher<stream,P>> x = nested.map(StreamKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,stream, T> reader(Reader<S, Stream<T>> nested, S defaultValue){
 

@@ -12,13 +12,13 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
@@ -72,7 +72,7 @@ public class Futures {
 
 
     public static  <W1,T> Coproduct<W1,future,T> coproduct(Future<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,future,T> xorM(Future<T> type){
         return XorM.right(anyM(type));
@@ -107,9 +107,9 @@ public class Futures {
         } while (cont);
         return next[0].map(Either::get);
     }
-    public static <L, T, R> Future< R> tailRecXor(T initial, Function<? super T, ? extends Future< ? extends Xor<T, R>>> fn) {
-        Future<? extends Xor<T, R>> next[] = new Future[1];
-        next[0] = Future.of(()->Xor.secondary(initial));
+    public static <L, T, R> Future< R> tailRecEither(T initial, Function<? super T, ? extends Future< ? extends Either<T, R>>> fn) {
+        Future<? extends Either<T, R>> next[] = new Future[1];
+        next[0] = Future.of(()->Either.left(initial));
         boolean cont = true;
         do {
 
@@ -125,7 +125,7 @@ public class Futures {
                 }, pr -> false);
             }
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(Either::get);
     }
 
     /**
@@ -270,8 +270,8 @@ public class Futures {
     public static <T1, T2, T3, R1, R2, R3, R> Future<R> forEach4(Future<? extends T1> value1,
                                                                  Function<? super T1, ? extends Future<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Future<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Future<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Future<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -320,9 +320,9 @@ public class Futures {
     public static <T1, T2, T3, R1, R2, R3, R> Future<R> forEach4(Future<? extends T1> value1,
                                                                  Function<? super T1, ? extends Future<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Future<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Future<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Future<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -367,7 +367,7 @@ public class Futures {
     public static <T1, T2, R1, R2, R> Future<R> forEach3(Future<? extends T1> value1,
                                                          Function<? super T1, ? extends Future<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Future<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -411,8 +411,8 @@ public class Futures {
     public static <T1, T2, R1, R2, R> Future<R> forEach3(Future<? extends T1> value1,
                                                          Function<? super T1, ? extends Future<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Future<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -837,7 +837,7 @@ public class Futures {
 
                 @Override
                 public <T> Maybe<Unfoldable<future>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -966,8 +966,8 @@ public class Futures {
         public static <T,R> MonadRec<future> monadRec(){
             return new MonadRec<future>() {
                 @Override
-                public <T, R> Higher<future, R> tailRec(T initial, Function<? super T, ? extends Higher<future, ? extends Xor<T, R>>> fn) {
-                    return widen(Futures.tailRecXor(initial,fn.andThen(FutureKind::narrowK)));
+                public <T, R> Higher<future, R> tailRec(T initial, Function<? super T, ? extends Higher<future, ? extends Either<T, R>>> fn) {
+                    return widen(Futures.tailRecEither(initial,fn.andThen(FutureKind::narrowK)));
                 }
             };
         }
@@ -1166,10 +1166,10 @@ public class Futures {
             FutureKind<Higher<Witness.future,T>> y = (FutureKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<future,Higher<xor,S>, P> xor(Future<Xor<S, P>> nested){
-            FutureKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<future,Higher<xor,S>, P> xor(Future<Either<S, P>> nested){
+            FutureKind<Either<S, P>> x = widen(nested);
             FutureKind<Higher<Higher<xor,S>, P>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<future,Higher<reader,S>, T> reader(Future<Reader<S, T>> nested,S defaultValue){
             FutureKind<Reader<S, T>> x = widen(nested);
@@ -1222,10 +1222,10 @@ public class Futures {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,future, P> xor(Xor<S, Future<P>> nested){
-            Xor<S, Higher<future,P>> x = nested.map(FutureKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,future, P> xor(Either<S, Future<P>> nested){
+            Either<S, Higher<future,P>> x = nested.map(FutureKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,future, T> reader(Reader<S, Future<T>> nested,S defaultValue){
 

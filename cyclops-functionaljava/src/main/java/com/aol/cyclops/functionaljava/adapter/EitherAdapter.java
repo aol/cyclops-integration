@@ -5,13 +5,14 @@ package com.aol.cyclops.functionaljava.adapter;
 import com.oath.cyclops.types.anyM.AnyMValue;
 import com.oath.cyclops.types.extensability.ValueAdapter;
 import cyclops.companion.functionaljava.Eithers;
+import cyclops.control.Option;
 import cyclops.monads.FJ;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.either;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
 import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
-import cyclops.control.Xor;
+
 import cyclops.monads.AnyM;
 
 import fj.data.Either;
@@ -23,8 +24,8 @@ import java.util.function.Predicate;
 
 @AllArgsConstructor
 public class EitherAdapter<L> implements ValueAdapter<either> {
-    public <T> T get(AnyMValue<either,T> t){
-        return either(t).right().value();
+    public <T> Option<T> get(AnyMValue<either,T> t){
+        return either(t).either(l->Option.none(),Option::some);
     }
 
 
@@ -37,7 +38,7 @@ public class EitherAdapter<L> implements ValueAdapter<either> {
     public <T, R> AnyM<either, R> ap(AnyM<either,? extends Function<? super T,? extends R>> fn, AnyM<either, T> apply) {
         Either<L,T> f = either(apply);
         Either<L,? extends Function<? super T, ? extends R>> fnF = either(fn);
-        Either<L,R> res = FromCyclopsReact.either(ToCyclopsReact.xor(fnF).combine(ToCyclopsReact.xor(f), (a, b) -> a.apply(b)));
+        Either<L,R> res = FromCyclopsReact.either(ToCyclopsReact.xor(fnF).zip(ToCyclopsReact.xor(f), (a, b) -> a.apply(b)));
         return FJ.either(res);
 
     }
@@ -68,7 +69,7 @@ public class EitherAdapter<L> implements ValueAdapter<either> {
     @Override
     public <T> AnyM<either, T> unitIterable(Iterable<T> it)  {
 
-        return FJ.either(FromCyclopsReact.either(Xor.fromIterable(it)));
+        return FJ.either(FromCyclopsReact.either(cyclops.control.Either.fromIterable(it)));
     }
 
     @Override

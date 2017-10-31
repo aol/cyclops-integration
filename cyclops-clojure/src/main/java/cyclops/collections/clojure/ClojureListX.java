@@ -16,8 +16,7 @@ import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
-import org.pcollections.ConsPersistentList;
-import org.pcollections.PersistentList;
+
 
 
 import clojure.lang.IPersistentList;
@@ -28,7 +27,7 @@ import lombok.experimental.Wither;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClojureListX<T> extends AbstractList<T>implements PersistentList<T>, Unwrapable {
+public class ClojureListX<T> implements PersistentList<T>, Unwrapable {
 
     static final FoldToList gen = (it, i)-> ClojureListX.from(from(it,i));
 
@@ -295,7 +294,7 @@ public class ClojureListX<T> extends AbstractList<T>implements PersistentList<T>
     }
 
     @Override
-    public ClojureListX<T> minusAll(Collection<?> l) {
+    public ClojureListX<T> removeAll(Iterable<? extends T> l) {
         if (size() == 0)
             return this;
         PersistentList nel = (PersistentList) list;

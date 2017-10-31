@@ -1,5 +1,6 @@
 package cyclops.companion.functionaljava;
 
+import fj.data.Either;
 import com.aol.cyclops.functionaljava.hkt.*;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
@@ -10,7 +11,6 @@ import cyclops.companion.functionaljava.functionaljava.NonEmptyListSupplier;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
 import cyclops.conversion.functionaljava.FromJDK;
 import cyclops.conversion.functionaljava.FromJooqLambda;
 import cyclops.monads.*;
@@ -18,8 +18,8 @@ import cyclops.monads.FJWitness.list;
 import cyclops.monads.FJWitness.nonEmptyList;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.FJWitness.option;
 import cyclops.monads.Witness.*;
@@ -56,7 +56,7 @@ import static javafx.scene.input.KeyCode.G;
 public class NonEmptyLists {
 
     public static  <W1,T> Coproduct<W1,nonEmptyList,T> coproduct(NonEmptyList<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(list)),def1, Instances.definitions());
+        return Coproduct.of(cyclops.control.Either.right(widen(list)),def1, Instances.definitions());
     }
 
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,nonEmptyList,T> xorM(NonEmptyList<T> type){
@@ -89,8 +89,8 @@ public class NonEmptyLists {
                 .iterator()
                 .next())).orSome(defaultValue);
     }
-    public static  <T,R> NonEmptyList<R> tailRecXor(NonEmptyList<R> defaultValue, T initial, Function<? super T, ? extends NonEmptyList<? extends Xor<T, R>>> fn) {
-        NonEmptyList<Xor<T, R>> next = NonEmptyList.nel(Xor.secondary(initial));
+    public static  <T,R> NonEmptyList<R> tailRecEither(NonEmptyList<R> defaultValue, T initial, Function<? super T, ? extends NonEmptyList<? extends cyclops.control.Either<T, R>>> fn) {
+        NonEmptyList<cyclops.control.Either<T, R>> next = NonEmptyList.nel(cyclops.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -98,12 +98,12 @@ public class NonEmptyLists {
             next = next.bind(e -> e.visit(s -> {
 
                         newValue[0]=true;
-                        return (NonEmptyList<Xor<T,R>>)fn.apply(s);
+                        return (NonEmptyList<cyclops.control.Either<T,R>>)fn.apply(s);
 
 
                     },
                     p -> {
-                        Xor<T, R> x = e;
+                      cyclops.control.Either<T, R> x = e;
                         newValue[0]=false;
                         return NonEmptyList.nel(x);
                     }));
@@ -112,7 +112,7 @@ public class NonEmptyLists {
 
         }
 
-        return  NonEmptyList.fromList(next.toList().filter(Xor::isPrimary).map(Xor::get)).orSome(defaultValue);
+        return  NonEmptyList.fromList(next.toList().filter(cyclops.control.Either::isRight).map(e->e.orElse(null))).orSome(defaultValue);
     }
     /**
      * Perform a For Comprehension over a NonEmptyList, accepting 3 generating functions.
@@ -142,8 +142,8 @@ public class NonEmptyLists {
     public static <T1, T2, T3, R1, R2, R3, R> NonEmptyList<R> forEach4(NonEmptyList<? extends T1> value1,
                                                                Function<? super T1, ? extends NonEmptyList<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends NonEmptyList<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends NonEmptyList<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends NonEmptyList<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.bind(in -> {
@@ -191,7 +191,7 @@ public class NonEmptyLists {
     public static <T1, T2, R1, R2, R> NonEmptyList<R> forEach3(NonEmptyList<? extends T1> value1,
                                                          Function<? super T1, ? extends NonEmptyList<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends NonEmptyList<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.bind(in -> {
 
@@ -288,12 +288,12 @@ public class NonEmptyLists {
 
                 @Override
                 public <T, R> Maybe<MonadZero<nonEmptyList>> monadZero() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
                 public <T> Maybe<MonadPlus<nonEmptyList>> monadPlus() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -303,7 +303,7 @@ public class NonEmptyLists {
 
                 @Override
                 public <T> Maybe<MonadPlus<nonEmptyList>> monadPlus(Monoid<Higher<nonEmptyList, T>> m) {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -318,12 +318,12 @@ public class NonEmptyLists {
 
                 @Override
                 public <T> Maybe<Comonad<nonEmptyList>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
                 public <T> Maybe<Unfoldable<nonEmptyList>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -456,10 +456,10 @@ public class NonEmptyLists {
         public static <T> MonadRec<nonEmptyList> monadRec(){
             return new MonadRec<nonEmptyList>() {
                 @Override
-                public <T, R> Higher<nonEmptyList, R> tailRec(T initial, Function<? super T, ? extends Higher<nonEmptyList, ? extends Xor<T, R>>> fn) {
-                    return widen(NonEmptyLists.tailRecXor(null, initial, a->{
-                        Higher<nonEmptyList, ? extends Xor<T, R>> r = fn.apply(a);
-                        NonEmptyList<? extends Xor<T, R>> x = r.convert(NonEmptyListKind::narrowK).narrow();
+                public <T, R> Higher<nonEmptyList, R> tailRec(T initial, Function<? super T, ? extends Higher<nonEmptyList, ? extends Either<T, R>>> fn) {
+                    return widen(NonEmptyLists.tailRecEither(null, initial, a->{
+                        Higher<nonEmptyList, ? extends Either<T, R>> r = fn.apply(a);
+                        NonEmptyList<? extends Either<T, R>> x = r.convert(NonEmptyListKind::narrowK).narrow();
                         return x;
                     }));
 
@@ -609,10 +609,10 @@ public class NonEmptyLists {
             NonEmptyListKind<Higher<Witness.future,T>> y = (NonEmptyListKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<nonEmptyList,Higher<xor,S>, P> xor(NonEmptyList<Xor<S, P>> nested){
-            NonEmptyListKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<nonEmptyList,Higher<xor,S>, P> xor(NonEmptyList<Either<S, P>> nested){
+            NonEmptyListKind<Either<S, P>> x = widen(nested);
             NonEmptyListKind<Higher<Higher<xor,S>, P>> y = (NonEmptyListKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<nonEmptyList,Higher<reader,S>, T> reader(NonEmptyList<Reader<S, T>> nested, S defaultValue){
             NonEmptyListKind<Reader<S, T>> x = widen(nested);
@@ -667,10 +667,10 @@ public class NonEmptyLists {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,nonEmptyList, P> xor(Xor<S, NonEmptyList<P>> nested){
-            Xor<S, Higher<nonEmptyList,P>> x = nested.map(NonEmptyListKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,nonEmptyList, P> xor(Either<S, NonEmptyList<P>> nested){
+            Either<S, Higher<nonEmptyList,P>> x = nested.map(NonEmptyListKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,nonEmptyList, T> reader(Reader<S, NonEmptyList<T>> nested,S defaultValue){
 

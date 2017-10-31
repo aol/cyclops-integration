@@ -11,7 +11,7 @@ import cyclops.companion.Streams;
 
 import cyclops.control.Trampoline;
 import cyclops.control.Try;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.monads.Witness;
@@ -68,7 +68,7 @@ public class MaybeTTest implements Printable {
     }
 	@Test
     public void testFilteringNoValue(){
-        assertThat(ReactiveSeq.of(1,1).filter(Xor.primary(1))
+        assertThat(ReactiveSeq.of(1,1).filter(Either.right(1))
                     .toListX(),equalTo(ListX.of(1,1)));
     }
     /**

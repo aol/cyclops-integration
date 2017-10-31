@@ -12,13 +12,13 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
@@ -72,7 +72,7 @@ public class Trys {
         return xorM(Try.success(type));
     }
     public static  <W1,T> Coproduct<W1,tryType,T> coproduct(Try<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,tryType,T> coproductSuccess(T type, InstanceDefinitions<W1> def1){
         return coproduct(Try.success(type),def1);
@@ -95,9 +95,9 @@ public class Trys {
         } while (cont);
         return next[0].map(Either::get);
     }
-    public static <T, R> Try< R> tailRecXor(T initial, Function<? super T, ? extends Try<? extends Xor<T, R>>> fn) {
-        Try<? extends Xor<T, R>> next[] = new Try[1];
-        next[0] = Try.success(Xor.secondary(initial));
+    public static <T, R> Try< R> tailRecEither(T initial, Function<? super T, ? extends Try<? extends Either<T, R>>> fn) {
+        Try<? extends Either<T, R>> next[] = new Try[1];
+        next[0] = Try.success(Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -105,7 +105,7 @@ public class Trys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(Either::get);
     }
     /**
      * Perform a For Comprehension over a Try, accepting 3 generating function.
@@ -135,8 +135,8 @@ public class Trys {
     public static <T1, T2, T3, R1, R2, R3, R> Try<R> forEach4(Try<? extends T1> value1,
                                                                  Function<? super T1, ? extends Try<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Try<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Try<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Try<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -185,9 +185,9 @@ public class Trys {
     public static <T1, T2, T3, R1, R2, R3, R> Try<R> forEach4(Try<? extends T1> value1,
                                                                  Function<? super T1, ? extends Try<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Try<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Try<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Try<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -232,7 +232,7 @@ public class Trys {
     public static <T1, T2, R1, R2, R> Try<R> forEach3(Try<? extends T1> value1,
                                                          Function<? super T1, ? extends Try<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Try<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -276,8 +276,8 @@ public class Trys {
     public static <T1, T2, R1, R2, R> Try<R> forEach3(Try<? extends T1> value1,
                                                          Function<? super T1, ? extends Try<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Try<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -700,7 +700,7 @@ public class Trys {
 
                 @Override
                 public <T> Maybe<Unfoldable<tryType>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -829,8 +829,8 @@ public class Trys {
         public static <T,R> MonadRec<tryType> monadRec() {
             return new MonadRec<tryType>() {
                 @Override
-                public <T, R> Higher<tryType, R> tailRec(T initial, Function<? super T, ? extends Higher<tryType, ? extends Xor<T, R>>> fn) {
-                    return widen(Trys.tailRecXor(initial,fn.andThen(TryKind::narrowK)));
+                public <T, R> Higher<tryType, R> tailRec(T initial, Function<? super T, ? extends Higher<tryType, ? extends Either<T, R>>> fn) {
+                    return widen(Trys.tailRecEither(initial,fn.andThen(TryKind::narrowK)));
                 }
             };
         }
@@ -1021,10 +1021,10 @@ public class Trys {
             TryKind<Higher<Witness.future,T>> y = (TryKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<tryType,Higher<xor,S>, P> xor(Try<Xor<S, P>> nested){
-            TryKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<tryType,Higher<xor,S>, P> xor(Try<Either<S, P>> nested){
+            TryKind<Either<S, P>> x = widen(nested);
             TryKind<Higher<Higher<xor,S>, P>> y = (TryKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<tryType,Higher<reader,S>, T> reader(Try<Reader<S, T>> nested, S defaultValue){
             TryKind<Reader<S, T>> x = widen(nested);
@@ -1076,10 +1076,10 @@ public class Trys {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,tryType, P> xor(Xor<S, Try<P>> nested){
-            Xor<S, Higher<tryType,P>> x = nested.map(TryKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,tryType, P> xor(Either<S, Try<P>> nested){
+            Either<S, Higher<tryType,P>> x = nested.map(TryKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,tryType, T> reader(Reader<S, Try<T>> nested, S defaultValue){
 

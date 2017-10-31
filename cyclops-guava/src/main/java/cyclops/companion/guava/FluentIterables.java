@@ -8,15 +8,15 @@ import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.monads.*;
 import cyclops.monads.GuavaWitness.fluentIterable;
 import com.aol.cyclops.guava.hkt.FluentIterableKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
 import com.google.common.collect.FluentIterable;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.ListT;
@@ -42,7 +42,7 @@ import static com.aol.cyclops.guava.hkt.FluentIterableKind.widen;
 public class FluentIterables {
 
     public static  <W1,T> Coproduct<W1,fluentIterable,T> coproduct(FluentIterable<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,fluentIterable,T> coproduct(InstanceDefinitions<W1> def1,T... values){
         return coproduct(FluentIterable.of(values),def1);
@@ -56,8 +56,8 @@ public class FluentIterables {
     public static <T,W extends WitnessType<W>> StreamT<W, T> liftM(FluentIterable<T> opt, W witness) {
         return StreamT.of(witness.adapter().unit(ReactiveSeq.fromIterable(opt)));
     }
-    public static  <T,R> FluentIterable<R> tailRec(T initial, Function<? super T, ? extends FluentIterable<? extends Xor<T, R>>> fn) {
-        FluentIterable<Xor<T, R>> next = FluentIterable.of(Xor.secondary(initial));
+    public static  <T,R> FluentIterable<R> tailRec(T initial, Function<? super T, ? extends FluentIterable<? extends Either<T, R>>> fn) {
+        FluentIterable<Either<T, R>> next = FluentIterable.of(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -74,7 +74,7 @@ public class FluentIterables {
 
         }
 
-        return next.filter(Xor::isPrimary).transform(Xor::get);
+        return next.filter(Either::isPrimary).transform(Either::get);
     }
 
     /**
@@ -124,8 +124,8 @@ public class FluentIterables {
     public static <T1, T2, T3, R1, R2, R3, R> FluentIterable<R> forEach4(FluentIterable<? extends T1> value1,
                                                                          Function<? super T1, ? extends FluentIterable<R1>> value2,
                                                                          BiFunction<? super T1, ? super R1, ? extends FluentIterable<R2>> value3,
-                                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends FluentIterable<R3>> value4,
-                                                                         Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                         Function3<? super T1, ? super R1, ? super R2, ? extends FluentIterable<R3>> value4,
+                                                                         Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.transformAndConcat(in -> {
@@ -173,9 +173,9 @@ public class FluentIterables {
     public static <T1, T2, T3, R1, R2, R3, R> FluentIterable<R> forEach4(FluentIterable<? extends T1> value1,
                                                                          Function<? super T1, ? extends FluentIterable<R1>> value2,
                                                                          BiFunction<? super T1, ? super R1, ? extends FluentIterable<R2>> value3,
-                                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends FluentIterable<R3>> value4,
-                                                                         Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                         Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                         Function3<? super T1, ? super R1, ? super R2, ? extends FluentIterable<R3>> value4,
+                                                                         Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                         Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.transformAndConcat(in -> {
@@ -221,7 +221,7 @@ public class FluentIterables {
     public static <T1, T2, R1, R2, R> FluentIterable<R> forEach3(FluentIterable<? extends T1> value1,
                                                                  Function<? super T1, ? extends FluentIterable<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends FluentIterable<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.transformAndConcat(in -> {
 
@@ -264,8 +264,8 @@ public class FluentIterables {
     public static <T1, T2, R1, R2, R> FluentIterable<R> forEach3(FluentIterable<? extends T1> value1,
                                                                  Function<? super T1, ? extends FluentIterable<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends FluentIterable<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         return value1.transformAndConcat(in -> {
@@ -435,7 +435,7 @@ public class FluentIterables {
 
                 @Override
                 public <T> Maybe<Comonad<fluentIterable>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -591,7 +591,7 @@ public class FluentIterables {
         public static <T> MonadRec<fluentIterable> monadRec(){
             return new MonadRec<fluentIterable>() {
                 @Override
-                public <T, R> Higher<fluentIterable, R> tailRec(T initial, Function<? super T, ? extends Higher<fluentIterable, ? extends Xor<T, R>>> fn) {
+                public <T, R> Higher<fluentIterable, R> tailRec(T initial, Function<? super T, ? extends Higher<fluentIterable, ? extends Either<T, R>>> fn) {
                     return widen(FluentIterables.tailRec(initial,fn.andThen(FluentIterableKind::narrow)));
                 }
             };
@@ -765,10 +765,10 @@ public class FluentIterables {
             FluentIterableKind<Higher<Witness.future,T>> y = (FluentIterableKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<fluentIterable,Higher<xor,S>, P> xor(FluentIterable<Xor<S, P>> nested){
-            FluentIterableKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<fluentIterable,Higher<xor,S>, P> xor(FluentIterable<Either<S, P>> nested){
+            FluentIterableKind<Either<S, P>> x = widen(nested);
             FluentIterableKind<Higher<Higher<xor,S>, P>> y = (FluentIterableKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<fluentIterable,Higher<reader,S>, T> reader(FluentIterable<Reader<S, T>> nested, S defaultValue){
             FluentIterableKind<Reader<S, T>> x = widen(nested);
@@ -827,10 +827,10 @@ public class FluentIterables {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,fluentIterable, P> xor(Xor<S, FluentIterable<P>> nested){
-            Xor<S, Higher<fluentIterable,P>> x = nested.map(FluentIterableKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,fluentIterable, P> xor(Either<S, FluentIterable<P>> nested){
+            Either<S, Higher<fluentIterable,P>> x = nested.map(FluentIterableKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,fluentIterable, T> reader(Reader<S, FluentIterable<T>> nested,S defaultValue){
 

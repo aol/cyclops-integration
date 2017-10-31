@@ -12,14 +12,14 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
@@ -55,7 +55,7 @@ import static com.aol.cyclops.vavr.hkt.QueueKind.widen;
 public class Queues {
 
     public static  <W1,T> Coproduct<W1,queue,T> coproduct(Queue<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,queue,T> coproduct(InstanceDefinitions<W1> def1,T... values){
         return  coproduct(Queue.of(values),def1);
@@ -91,8 +91,8 @@ public class Queues {
 
         return next.filter(Either::isRight).map(Either::get);
     }
-    public static  <T,R> Queue<R> tailRecXor(T initial, Function<? super T, ? extends Queue<? extends Xor<T, R>>> fn) {
-        Queue<Xor<T, R>> next = Queue.of(Xor.secondary(initial));
+    public static  <T,R> Queue<R> tailRecEither(T initial, Function<? super T, ? extends Queue<? extends Either<T, R>>> fn) {
+        Queue<Either<T, R>> next = Queue.of(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -109,7 +109,7 @@ public class Queues {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(Either::isPrimary).map(Either::get);
     }
 
 
@@ -141,8 +141,8 @@ public class Queues {
     public static <T1, T2, T3, R1, R2, R3, R> Queue<R> forEach4(Queue<? extends T1> value1,
                                                                Function<? super T1, ? extends Queue<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends Queue<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends Queue<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends Queue<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -190,9 +190,9 @@ public class Queues {
     public static <T1, T2, T3, R1, R2, R3, R> Queue<R> forEach4(Queue<? extends T1> value1,
                                                                  Function<? super T1, ? extends Queue<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Queue<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Queue<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Queue<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -238,7 +238,7 @@ public class Queues {
     public static <T1, T2, R1, R2, R> Queue<R> forEach3(Queue<? extends T1> value1,
                                                          Function<? super T1, ? extends Queue<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Queue<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -281,8 +281,8 @@ public class Queues {
     public static <T1, T2, R1, R2, R> Queue<R> forEach3(Queue<? extends T1> value1,
                                                          Function<? super T1, ? extends Queue<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Queue<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -451,7 +451,7 @@ public class Queues {
 
                 @Override
                 public <T> Maybe<Comonad<queue>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -587,8 +587,8 @@ public class Queues {
             return new MonadRec<queue>(){
 
                 @Override
-                public <T, R> Higher<queue, R> tailRec(T initial, Function<? super T, ? extends Higher<queue, ? extends Xor<T, R>>> fn) {
-                    return widen(tailRecXor(initial,fn.andThen(QueueKind::narrowK).andThen(q->q.narrow())));
+                public <T, R> Higher<queue, R> tailRec(T initial, Function<? super T, ? extends Higher<queue, ? extends Either<T, R>>> fn) {
+                    return widen(tailRecEither(initial,fn.andThen(QueueKind::narrowK).andThen(q->q.narrow())));
                 }
             };
         }
@@ -797,10 +797,10 @@ public class Queues {
             QueueKind<Higher<Witness.future,T>> y = (QueueKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<queue,Higher<xor,S>, P> xor(Queue<Xor<S, P>> nested){
-            QueueKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<queue,Higher<xor,S>, P> xor(Queue<Either<S, P>> nested){
+            QueueKind<Either<S, P>> x = widen(nested);
             QueueKind<Higher<Higher<xor,S>, P>> y = (QueueKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<queue,Higher<reader,S>, T> reader(Queue<Reader<S, T>> nested, S defaultValue){
             QueueKind<Reader<S, T>> x = widen(nested);
@@ -853,10 +853,10 @@ public class Queues {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,queue, P> xor(Xor<S, Queue<P>> nested){
-            Xor<S, Higher<queue,P>> x = nested.map(QueueKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,queue, P> xor(Either<S, Queue<P>> nested){
+            Either<S, Higher<queue,P>> x = nested.map(QueueKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,queue, T> reader(Reader<S, Queue<T>> nested,S defaultValue){
 

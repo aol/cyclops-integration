@@ -1,7 +1,7 @@
 package cyclops.companion.functionaljava;
 
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import fj.data.Reader;
 import lombok.experimental.UtilityClass;
 
@@ -45,8 +45,8 @@ public class Readers {
     public static <T,T1, T2, T3, R1, R2, R3, R> Reader<T,R> forEach4(Reader<T,? extends T1> value1,
                                                                      Function<? super T1, ? extends Reader<T,R1>> value2,
                                                                      BiFunction<? super T1, ? super R1, ? extends Reader<T,R2>> value3,
-                                                                     Fn3<? super T1, ? super R1, ? super R2, ? extends Reader<T,R3>> value4,
-                                                                     Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                     Function3<? super T1, ? super R1, ? super R2, ? extends Reader<T,R3>> value4,
+                                                                     Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.bind(in -> {
 
@@ -91,7 +91,7 @@ public class Readers {
     public static <T,T1, T2, R1, R2, R> Reader<T,R> forEach3(Reader<T,? extends T1> value1,
                                                          Function<? super T1, ? extends Reader<T,R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Reader<T,R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.bind(in -> {
 

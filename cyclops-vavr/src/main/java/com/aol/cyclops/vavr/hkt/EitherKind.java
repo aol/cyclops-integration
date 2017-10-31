@@ -8,7 +8,7 @@ import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.either;
 import cyclops.monads.WitnessType;
-import cyclops.monads.transformers.XorT;
+import cyclops.monads.transformers.EitherT;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -75,8 +75,8 @@ public interface EitherKind<L,R> extends Either<L,R>,To<EitherKind<L,R>>,
     default <W2,R2> Nested<Higher<either,L>,W2,R2> mapM(Function<? super R,? extends Higher<W2,R2>> fn, InstanceDefinitions<W2> defs){
         return Nested.of(widen(bimap(l->l,r->fn.apply(r))), Eithers.Instances.definitions(), defs);
     }
-    default <W extends WitnessType<W>> XorT<W, L,R> liftM(W witness) {
-        return XorT.of(witness.adapter().unit(ToCyclopsReact.xor(this)));
+    default <W extends WitnessType<W>> EitherT<W, L,R> liftM(W witness) {
+        return EitherT.of(witness.adapter().unit(ToCyclopsReact.xor(this)));
     }
     public static <L1, R1> Either<L1, R1> right(R1 right) {
         return Either.right(right);

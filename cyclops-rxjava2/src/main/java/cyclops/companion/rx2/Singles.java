@@ -18,10 +18,10 @@ import cyclops.companion.Streams;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.control.lazy.Either;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.*;
 
@@ -68,7 +68,7 @@ import static com.aol.cyclops.rx2.hkt.SingleKind.widen;
 public class Singles {
 
     public static  <W1,T> Coproduct<W1,single,T> coproduct(Single<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(SingleKind.widen(list)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(SingleKind.widen(list)),def1, Instances.definitions());
     }
 
     public static  <W1,T> Coproduct<W1,single,T> coproduct(T value,InstanceDefinitions<W1> def1){
@@ -88,9 +88,9 @@ public class Singles {
     public static <W extends WitnessType<W>,T> SingleT<W,T> liftM(AnyM<W,Single<T>> nested){
         return SingleT.of(nested);
     }
-    public static <T, R> Single< R> tailRec(T initial, Function<? super T, ? extends Single<? extends Xor<T, R>>> fn) {
-        Single<? extends Xor<T, R>> next[] = new Single[1];
-        next[0] = Single.just(Xor.secondary(initial));
+    public static <T, R> Single< R> tailRec(T initial, Function<? super T, ? extends Single<? extends Either<T, R>>> fn) {
+        Single<? extends Either<T, R>> next[] = new Single[1];
+        next[0] = Single.just(Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -98,7 +98,7 @@ public class Singles {
                 return true;
             }, pr -> false)).blockingGet();
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(Either::get);
     }
 
     public static <T> Future[] futures(Single<T>... futures){
@@ -279,8 +279,8 @@ public class Singles {
     public static <T1, T2, T3, R1, R2, R3, R> Single<R> forEach4(Single<? extends T1> value1,
             Function<? super T1, ? extends Single<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Single<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends Single<R3>> value4,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends Single<R3>> value4,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         Single<? extends R> res = value1.flatMap(in -> {
@@ -326,7 +326,7 @@ public class Singles {
     public static <T1, T2, R1, R2, R> Single<R> forEach3(Single<? extends T1> value1,
             Function<? super T1, ? extends Single<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Single<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         Single<? extends R> res = value1.flatMap(in -> {
@@ -556,7 +556,7 @@ public class Singles {
 
                 @Override
                 public <T> cyclops.control.Maybe<Unfoldable<single>> unfoldable() {
-                    return cyclops.control.Maybe.none();
+                    return cyclops.control.Maybe.nothing();
                 }
             };
         }
@@ -707,7 +707,7 @@ public class Singles {
         public static <T,R> MonadRec<single> monadRec(){
             return new MonadRec<single>() {
                 @Override
-                public <T, R> Higher<single, R> tailRec(T initial, Function<? super T, ? extends Higher<single, ? extends Xor<T, R>>> fn) {
+                public <T, R> Higher<single, R> tailRec(T initial, Function<? super T, ? extends Higher<single, ? extends Either<T, R>>> fn) {
                     return widen(Singles.tailRec(initial,fn.andThen(SingleKind::narrowK).andThen(a->a.narrow())));
                 }
             };
@@ -879,10 +879,10 @@ public class Singles {
             SingleKind<Higher<future,T>> y = (SingleKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<single,Higher<xor,S>, P> xor(Single<Xor<S, P>> nested){
-            SingleKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<single,Higher<xor,S>, P> xor(Single<Either<S, P>> nested){
+            SingleKind<Either<S, P>> x = widen(nested);
             SingleKind<Higher<Higher<xor,S>, P>> y = (SingleKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<single,Higher<reader,S>, T> reader(Single<Reader<S, T>> nested, S defaultValue){
             SingleKind<Reader<S, T>> x = widen(nested);
@@ -937,10 +937,10 @@ public class Singles {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,single, P> xor(Xor<S, Single<P>> nested){
-            Xor<S, Higher<single,P>> x = nested.map(SingleKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,single, P> xor(Either<S, Single<P>> nested){
+            Either<S, Higher<single,P>> x = nested.map(SingleKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,single, T> reader(Reader<S, Single<T>> nested, S defaultValue){
 

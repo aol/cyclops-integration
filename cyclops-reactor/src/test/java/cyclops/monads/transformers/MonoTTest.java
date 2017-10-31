@@ -12,7 +12,7 @@ import cyclops.companion.Streams;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.control.Try;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.monads.Witness;
@@ -63,12 +63,12 @@ public class MonoTTest implements Printable {
 
 	@Test
 	public void testFiltering(){
-	    assertThat(ReactiveSeq.of(Maybe.just(1), Try.success(1)).filter(Xor.primary(1))
+	    assertThat(ReactiveSeq.of(Maybe.just(1), Try.success(1)).filter(Either.right(1))
 	                .toListX(),equalTo(ListX.of(Maybe.just(1), Try.success(1))));
 	}
 	@Test
     public void testFilteringNoValue(){
-        assertThat(ReactiveSeq.of(1,1).filter(Xor.primary(1))
+        assertThat(ReactiveSeq.of(1,1).filter(Either.right(1))
                     .toListX(),equalTo(ListX.of(1,1)));
     }
     /**

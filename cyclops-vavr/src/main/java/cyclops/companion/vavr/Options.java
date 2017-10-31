@@ -10,13 +10,13 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
@@ -68,7 +68,7 @@ import static com.aol.cyclops.vavr.hkt.OptionKind.widen;
 @UtilityClass
 public class Options {
     public static  <W1,T> Coproduct<W1,option,T> coproduct(Option<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,option,T> coproduct(T value, InstanceDefinitions<W1> def1){
         return coproduct(Option.some(value),def1);
@@ -103,9 +103,9 @@ public class Options {
         } while (cont);
         return next[0].map(Either::get);
     }
-    public static <T, R> Option< R> tailRecXor(T initial, Function<? super T, ? extends Option<? extends Xor<T, R>>> fn) {
-        Option<? extends Xor<T, R>> next[] = new Option[1];
-        next[0] = Option.some(Xor.secondary(initial));
+    public static <T, R> Option< R> tailRecEither(T initial, Function<? super T, ? extends Option<? extends Either<T, R>>> fn) {
+        Option<? extends Either<T, R>> next[] = new Option[1];
+        next[0] = Option.some(Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -113,7 +113,7 @@ public class Options {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(Either::get);
     }
 
     /**
@@ -144,8 +144,8 @@ public class Options {
     public static <T1, T2, T3, R1, R2, R3, R> Option<R> forEach4(Option<? extends T1> value1,
                                                                  Function<? super T1, ? extends Option<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Option<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Option<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Option<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -194,9 +194,9 @@ public class Options {
     public static <T1, T2, T3, R1, R2, R3, R> Option<R> forEach4(Option<? extends T1> value1,
                                                                  Function<? super T1, ? extends Option<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Option<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Option<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Option<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -241,7 +241,7 @@ public class Options {
     public static <T1, T2, R1, R2, R> Option<R> forEach3(Option<? extends T1> value1,
                                                          Function<? super T1, ? extends Option<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Option<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -285,8 +285,8 @@ public class Options {
     public static <T1, T2, R1, R2, R> Option<R> forEach3(Option<? extends T1> value1,
                                                          Function<? super T1, ? extends Option<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Option<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -719,7 +719,7 @@ public class Options {
 
                 @Override
                 public <T> Maybe<Unfoldable<option>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -848,8 +848,8 @@ public class Options {
         public static <T,R> MonadRec<option> monadRec(){
             return new MonadRec<option>() {
                 @Override
-                public <T, R> Higher<option, R> tailRec(T initial, Function<? super T, ? extends Higher<option, ? extends Xor<T, R>>> fn) {
-                    return widen(Options.tailRecXor(initial,fn.andThen(OptionKind::narrowK)));
+                public <T, R> Higher<option, R> tailRec(T initial, Function<? super T, ? extends Higher<option, ? extends Either<T, R>>> fn) {
+                    return widen(Options.tailRecEither(initial,fn.andThen(OptionKind::narrowK)));
                 }
             };
         }
@@ -1047,10 +1047,10 @@ public class Options {
             OptionKind<Higher<Witness.future,T>> y = (OptionKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<option,Higher<xor,S>, P> xor(Option<Xor<S, P>> nested){
-            OptionKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<option,Higher<xor,S>, P> xor(Option<Either<S, P>> nested){
+            OptionKind<Either<S, P>> x = widen(nested);
             OptionKind<Higher<Higher<xor,S>, P>> y = (OptionKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<option,Higher<reader,S>, T> reader(Option<Reader<S, T>> nested,S defaultValue){
             OptionKind<Reader<S, T>> x = widen(nested);
@@ -1101,10 +1101,10 @@ public class Options {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,option, P> xor(Xor<S, Option<P>> nested){
-            Xor<S, Higher<option,P>> x = nested.map(OptionKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,option, P> xor(Either<S, Option<P>> nested){
+            Either<S, Higher<option,P>> x = nested.map(OptionKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,option, T> reader(Reader<S, Option<T>> nested,S defaultValue){
 

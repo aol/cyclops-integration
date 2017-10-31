@@ -11,14 +11,14 @@ import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.ReactorWitness.mono;
 import cyclops.monads.Witness.*;
@@ -54,7 +54,7 @@ import static com.aol.cyclops.reactor.hkt.FluxKind.widen;
 @UtilityClass
 public class Fluxs {
     public static  <W1,T> Coproduct<W1,flux,T> coproduct(Flux<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(FluxKind.widen(list)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(FluxKind.widen(list)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,flux,T> coproduct(InstanceDefinitions<W1> def1,T... values){
         return coproduct(Flux.fromArray(values),def1);
@@ -68,8 +68,8 @@ public class Fluxs {
     public static <T,W extends WitnessType<W>> AnyM<W,Flux<T>> fromStream(AnyM<W,Stream<T>> anyM){
         return anyM.map(s->fluxFrom(ReactiveSeq.fromStream(s)));
     }
-    public static  <T,R> Flux<R> tailRec(T initial, Function<? super T, ? extends Flux<? extends Xor<T, R>>> fn) {
-        Flux<Xor<T, R>> next = Flux.just(Xor.secondary(initial));
+    public static  <T,R> Flux<R> tailRec(T initial, Function<? super T, ? extends Flux<? extends Either<T, R>>> fn) {
+        Flux<Either<T, R>> next = Flux.just(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -86,7 +86,7 @@ public class Fluxs {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(Either::isPrimary).map(Either::get);
     }
     public static <T> Flux<T> narrow(Flux<? extends T> observable) {
         return (Flux<T>)observable;
@@ -316,8 +316,8 @@ public class Fluxs {
     public static <T1, T2, T3, R1, R2, R3, R> Flux<R> forEach4(Flux<? extends T1> value1,
                                                                Function<? super T1, ? extends Publisher<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Publisher<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends Publisher<R3>> value4,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends Publisher<R3>> value4,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -366,9 +366,9 @@ public class Fluxs {
     public static <T1, T2, T3, R1, R2, R3, R> Flux<R> forEach4(Flux<? extends T1> value1,
             Function<? super T1, ? extends Publisher<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Publisher<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends Publisher<R3>> value4,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends Publisher<R3>> value4,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -413,7 +413,7 @@ public class Fluxs {
     public static <T1, T2, R1, R2, R> Flux<R> forEach3(Flux<? extends T1> value1,
             Function<? super T1, ? extends Publisher<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Publisher<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -453,8 +453,8 @@ public class Fluxs {
     public static <T1, T2, R1, R2, R> Flux<R> forEach3(Flux<? extends T1> value1,
             Function<? super T1, ? extends Publisher<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Publisher<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+            Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -619,7 +619,7 @@ public class Fluxs {
 
                 @Override
                 public <T> Maybe<Comonad<flux>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -775,7 +775,7 @@ public class Fluxs {
         public static <T,R> MonadRec<flux> monadRec(){
             return new MonadRec<flux>() {
                 @Override
-                public <T, R> Higher<flux, R> tailRec(T initial, Function<? super T, ? extends Higher<flux, ? extends Xor<T, R>>> fn) {
+                public <T, R> Higher<flux, R> tailRec(T initial, Function<? super T, ? extends Higher<flux, ? extends Either<T, R>>> fn) {
                     return widen(Fluxs.tailRec(initial,fn.andThen(FluxKind::narrow)));
                 }
             };
@@ -948,10 +948,10 @@ public class Fluxs {
             FluxKind<Higher<Witness.future,T>> y = (FluxKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<flux,Higher<xor,S>, P> xor(Flux<Xor<S, P>> nested){
-            FluxKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<flux,Higher<xor,S>, P> xor(Flux<Either<S, P>> nested){
+            FluxKind<Either<S, P>> x = widen(nested);
             FluxKind<Higher<Higher<xor,S>, P>> y = (FluxKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<flux,Higher<reader,S>, T> reader(Flux<Reader<S, T>> nested, S defaultValue){
             FluxKind<Reader<S, T>> x = widen(nested);
@@ -1006,10 +1006,10 @@ public class Fluxs {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,flux, P> xor(Xor<S, Flux<P>> nested){
-            Xor<S, Higher<flux,P>> x = nested.map(FluxKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,flux, P> xor(Either<S, Flux<P>> nested){
+            Either<S, Higher<flux,P>> x = nested.map(FluxKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,flux, T> reader(Reader<S, Flux<T>> nested, S defaultValue){
 

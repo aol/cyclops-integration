@@ -14,8 +14,8 @@ import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
@@ -23,7 +23,7 @@ import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.HashSetKind;
 
 import cyclops.control.Maybe;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.monads.AnyM;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.hashSet;
@@ -53,10 +53,10 @@ import static com.aol.cyclops.vavr.hkt.HashSetKind.widen;
 public class HashSets {
 
     public static  <W1,T> Coproduct<W1,hashSet,T> coproduct(HashSet<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,hashSet,T> coproduct(InstanceDefinitions<W1> def1,T... values){
-        return Coproduct.of(Xor.primary(HashSetKind.just(values)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(HashSetKind.just(values)),def1, Instances.definitions());
     }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,hashSet,T> xorM(HashSet<T> type){
         return XorM.right(anyM(type));
@@ -88,8 +88,8 @@ public class HashSets {
 
         return next.filter(Either::isRight).map(Either::get);
     }
-    public static  <T,R> HashSet<R> tailRecXor(T initial, Function<? super T, ? extends HashSet<? extends Xor<T, R>>> fn) {
-        HashSet<Xor<T, R>> next = HashSet.of(Xor.secondary(initial));
+    public static  <T,R> HashSet<R> tailRecEither(T initial, Function<? super T, ? extends HashSet<? extends Either<T, R>>> fn) {
+        HashSet<Either<T, R>> next = HashSet.of(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -106,7 +106,7 @@ public class HashSets {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(Either::isPrimary).map(Either::get);
     }
 
 
@@ -138,8 +138,8 @@ public class HashSets {
     public static <T1, T2, T3, R1, R2, R3, R> Set<R> forEach4(Set<? extends T1> value1,
                                                                Function<? super T1, ? extends Set<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends Set<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends Set<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends Set<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -187,9 +187,9 @@ public class HashSets {
     public static <T1, T2, T3, R1, R2, R3, R> Set<R> forEach4(Set<? extends T1> value1,
                                                                  Function<? super T1, ? extends Set<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Set<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Set<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Set<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -235,7 +235,7 @@ public class HashSets {
     public static <T1, T2, R1, R2, R> Set<R> forEach3(Set<? extends T1> value1,
                                                          Function<? super T1, ? extends Set<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Set<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -278,8 +278,8 @@ public class HashSets {
     public static <T1, T2, R1, R2, R> Set<R> forEach3(Set<? extends T1> value1,
                                                          Function<? super T1, ? extends Set<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Set<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -450,7 +450,7 @@ public class HashSets {
 
                 @Override
                 public <T> Maybe<Comonad<hashSet>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -584,8 +584,8 @@ public class HashSets {
             return new MonadRec<hashSet>(){
 
                 @Override
-                public <T, R> Higher<hashSet, R> tailRec(T initial, Function<? super T, ? extends Higher<hashSet, ? extends Xor<T, R>>> fn) {
-                    return widen(tailRecXor(initial,fn.andThen(HashSetKind::narrowK).andThen(hs->hs.narrow())));
+                public <T, R> Higher<hashSet, R> tailRec(T initial, Function<? super T, ? extends Higher<hashSet, ? extends Either<T, R>>> fn) {
+                    return widen(tailRecEither(initial,fn.andThen(HashSetKind::narrowK).andThen(hs->hs.narrow())));
                 }
             };
         }
@@ -793,10 +793,10 @@ public class HashSets {
             HashSetKind<Higher<Witness.future,T>> y = (HashSetKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<hashSet,Higher<xor,S>, P> xor(HashSet<Xor<S, P>> nested){
-            HashSetKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<hashSet,Higher<xor,S>, P> xor(HashSet<Either<S, P>> nested){
+            HashSetKind<Either<S, P>> x = widen(nested);
             HashSetKind<Higher<Higher<xor,S>, P>> y = (HashSetKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<hashSet,Higher<reader,S>, T> reader(HashSet<Reader<S, T>> nested,S defaultValue){
             HashSetKind<Reader<S, T>> x = widen(nested);
@@ -848,10 +848,10 @@ public class HashSets {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,hashSet, P> xor(Xor<S, HashSet<P>> nested){
-            Xor<S, Higher<hashSet,P>> x = nested.map(HashSetKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,hashSet, P> xor(Either<S, HashSet<P>> nested){
+            Either<S, Higher<hashSet,P>> x = nested.map(HashSetKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,hashSet, T> reader(Reader<S, HashSet<T>> nested,S defaultValue){
 

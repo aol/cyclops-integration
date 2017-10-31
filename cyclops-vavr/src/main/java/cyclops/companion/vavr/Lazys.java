@@ -13,12 +13,12 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import com.oath.cyclops.hkt.Higher;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
@@ -56,7 +56,7 @@ import static com.aol.cyclops.vavr.hkt.LazyKind.widen;
 public class Lazys {
 
     public static  <W1,T> Coproduct<W1,lazy,T> coproduct(Lazy<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,lazy,T> coproduct(Supplier<T> type, InstanceDefinitions<W1> def1){
         return coproduct(Lazy.of(type),def1);
@@ -74,9 +74,9 @@ public class Lazys {
         } while (cont);
         return next[0].map(Either::get);
     }
-    public static <T, R> Lazy< R> tailRecXor(T initial, Function<? super T, ? extends Lazy<? extends Xor<T, R>>> fn) {
-        Lazy<? extends Xor<T, R>> next[] = new Lazy[1];
-        next[0] = Lazy.of(()->Xor.secondary(initial));
+    public static <T, R> Lazy< R> tailRecEither(T initial, Function<? super T, ? extends Lazy<? extends Either<T, R>>> fn) {
+        Lazy<? extends Either<T, R>> next[] = new Lazy[1];
+        next[0] = Lazy.of(()->Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -84,7 +84,7 @@ public class Lazys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(Either::get);
     }
 
 
@@ -124,8 +124,8 @@ public class Lazys {
     public static <T1, T2, T3, R1, R2, R3, R> Lazy<R> forEach4(Lazy<? extends T1> value1,
                                                                Function<? super T1, ? extends Lazy<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends Lazy<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends Lazy<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends Lazy<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         Eval<R> res = ToCyclopsReact.eval(value1).flatMap(in -> {
 
@@ -171,7 +171,7 @@ public class Lazys {
     public static <T1, T2, R1, R2, R> Lazy<R> forEach3(Lazy<? extends T1> value1,
                                                        Function<? super T1, ? extends Lazy<R1>> value2,
                                                        BiFunction<? super T1, ? super R1, ? extends Lazy<R2>> value3,
-                                                       Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                       Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         Eval<? extends R> res = ToCyclopsReact.eval(value1).flatMap(in -> {
 
@@ -552,7 +552,7 @@ public class Lazys {
 
                 @Override
                 public <T> Maybe<Unfoldable<lazy>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         };
@@ -787,8 +787,8 @@ public class Lazys {
         public static <T> MonadRec<lazy> monadRec(){
             return new MonadRec<lazy>() {
                 @Override
-                public <T, R> Higher<lazy, R> tailRec(T initial, Function<? super T, ? extends Higher<lazy, ? extends Xor<T, R>>> fn) {
-                    return widen(Lazys.tailRecXor(initial, fn.andThen(l ->  narrowK(l).narrow())));
+                public <T, R> Higher<lazy, R> tailRec(T initial, Function<? super T, ? extends Higher<lazy, ? extends Either<T, R>>> fn) {
+                    return widen(Lazys.tailRecEither(initial, fn.andThen(l ->  narrowK(l).narrow())));
 
                 }
             };
@@ -881,10 +881,10 @@ public class Lazys {
             LazyKind<Higher<Witness.future,T>> y = (LazyKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<lazy,Higher<xor,S>, P> xor(Lazy<Xor<S, P>> nested){
-            LazyKind<Xor<S, P>> x = widen(nested);
+        public static <S, P> Nested<lazy,Higher<xor,S>, P> xor(Lazy<Either<S, P>> nested){
+            LazyKind<Either<S, P>> x = widen(nested);
             LazyKind<Higher<Higher<xor,S>, P>> y = (LazyKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<lazy,Higher<reader,S>, T> reader(Lazy<Reader<S, T>> nested,S defaultValue){
             LazyKind<Reader<S, T>> x = widen(nested);
@@ -938,10 +938,10 @@ public class Lazys {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,lazy, P> xor(Xor<S, Lazy<P>> nested){
-            Xor<S, Higher<lazy,P>> x = nested.map(LazyKind::widenK);
+        public static <S, P> Nested<Higher<xor,S>,lazy, P> xor(Either<S, Lazy<P>> nested){
+            Either<S, Higher<lazy,P>> x = nested.map(LazyKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,lazy, T> reader(Reader<S, Lazy<T>> nested,S defaultValue){
 

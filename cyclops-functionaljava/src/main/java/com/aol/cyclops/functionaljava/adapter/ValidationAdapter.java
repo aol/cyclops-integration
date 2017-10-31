@@ -10,7 +10,7 @@ import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
 import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.monads.AnyM;
 import fj.data.Validation;
 import lombok.AllArgsConstructor;
@@ -66,7 +66,7 @@ public class ValidationAdapter<L> implements ValueAdapter<validation> {
     @Override
     public <T> AnyM<validation, T> unitIterable(Iterable<T> it)  {
 
-        return FJ.validation(FromCyclopsReact.validation(Xor.fromIterable(it)));
+        return FJ.validation(FromCyclopsReact.validation(Either.fromIterable(it)));
     }
 
     @Override

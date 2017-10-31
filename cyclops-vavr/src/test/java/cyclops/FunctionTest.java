@@ -3,7 +3,7 @@ package cyclops;
 import cyclops.collections.mutable.ListX;
 import cyclops.control.Eval;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.control.lazy.Either;
 import cyclops.function.*;
 import cyclops.monads.Witness;
@@ -90,7 +90,7 @@ public class FunctionTest {
         x.apply(10);
         //[20,100]
 
-        Fn1<Xor<Integer, String>, Xor<Integer, String>> r = add10.leftFn();
+        Fn1<Either<Integer, String>, Either<Integer, String>> r = add10.leftFn();
         r.apply(Either.left(10));
         //Secondary[20]
 
