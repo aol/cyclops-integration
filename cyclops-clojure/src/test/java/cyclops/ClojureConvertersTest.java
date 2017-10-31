@@ -26,9 +26,9 @@ public class ClojureConvertersTest {
 
     @Test
     public void listNative(){
-//materializeList makes use of ConsPStack
+//materializeList makes use of ConsPersistentList
         PersistentList list = LinkedListX.of(1,2,3)
-                                        .type(ClojureListX.toPStack())
+                                        .type(ClojureListX.toPersistentList())
                                         .map(i->i*2)
                                         .to(ClojureConverters::PersistentList);
 
@@ -36,7 +36,7 @@ public class ClojureConvertersTest {
     }
     @Test
     public void listAlien(){
-//materializeList makes use of ConsPStack
+//materializeList makes use of ConsPersistentList
         PersistentList list = LinkedListX.of(1,2,3)
                 .map(i->i*2)
                 .to(ClojureConverters::PersistentList);

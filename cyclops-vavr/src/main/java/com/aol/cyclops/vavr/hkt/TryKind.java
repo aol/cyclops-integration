@@ -1,7 +1,7 @@
 package com.aol.cyclops.vavr.hkt;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.vavr.Futures;
 import cyclops.companion.vavr.Trys;
 import cyclops.conversion.vavr.FromCyclopsReact;
@@ -29,9 +29,9 @@ import java.util.function.Function;
 
 /**
  * Simulates Higher Kinded Types for Vavr Future's
- * 
+ *
  * FutureKind is a Future and a Higher Kinded Type (future,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Future
@@ -56,13 +56,13 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
     default <R> TryKind<R> fold(Function<? super Try<? super T>,? extends Try<R>> op){
         return widen(op.apply(this));
     }
-    
+
     public static <T> TryKind<T> failed(Throwable exception){
         return widen(Try.failure(exception));
     }
     /**
      * Construct a HKT encoded completed Future
-     * 
+     *
      * @param value To encode inside a HKT encoded Future
      * @return Completed HKT encoded Future
      */
@@ -73,10 +73,10 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
     /**
      * Convert a Future to a simulated HigherKindedType that captures Future nature
      * and Future element data type separately. Recover via @see FutureKind#narrow
-     * 
+     *
      * If the supplied Future implements FutureKind it is returned already, otherwise it
      * is wrapped into a Future implementation that does implement FutureKind
-     * 
+     *
      * @param newTry Future to widen to a FutureKind
      * @return FutureKind encoding HKT info about Futures
      */
@@ -94,7 +94,7 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
 
     /**
      * Convert the raw Higher Kinded Type for FutureKind types into the FutureKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a FutureKind
      * @return FutureKind
      */
@@ -104,14 +104,14 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
 
     /**
      * Convert the HigherKindedType definition for a Future into
-     * 
+     *
      * @param newTry Type Constructor to convert back into narrowed type
      * @return Future from Higher Kinded Type
      */
     public static <T> Try<T> narrow(final Higher<tryType, T> newTry) {
         if (newTry instanceof Try) {
             return (Try)newTry;
-           
+
         }
         // this code should be unreachable due to HKT type checker
         final Box<T> type = (Box<T>) newTry;
@@ -159,5 +159,5 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
         }
     }
 
-    
+
 }

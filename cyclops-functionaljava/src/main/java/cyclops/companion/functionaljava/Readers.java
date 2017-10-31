@@ -24,7 +24,7 @@ public class Readers {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Options.forEach4;
+     *   import static com.oath.cyclops.reactor.Options.forEach4;
      *
     forEach4(Option.just(1),
     a-> Option.just(a+1),
@@ -72,7 +72,7 @@ public class Readers {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Options.forEach3;
+     *   import static com.oath.cyclops.reactor.Options.forEach3;
      *
     forEach3(Option.just(1),
     a-> Option.just(a+1),
@@ -115,7 +115,7 @@ public class Readers {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Options.forEach;
+     *   import static com.oath.cyclops.reactor.Options.forEach;
      *
     forEach(Option.just(1),
     a-> Option.just(a+1),

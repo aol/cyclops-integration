@@ -8,10 +8,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.LinkedListX;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 
@@ -20,7 +20,7 @@ import cyclops.collections.vavr.VavrListX;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyPersistentListXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
@@ -42,7 +42,7 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
@@ -52,7 +52,7 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
         return VavrListX.empty();
     }
 
-    
+
 
     @Test
     public void remove() {

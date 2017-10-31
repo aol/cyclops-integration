@@ -1,8 +1,8 @@
 package cyclops.monads;
 
 
-import com.aol.cyclops2.types.anyM.AnyMSeq;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.types.anyM.AnyMSeq;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.async.Future;
 
 import io.vavr.collection.*;
@@ -11,7 +11,7 @@ import io.vavr.control.Option;
 import io.vavr.control.Try;
 
 public class Vavr {
-    
+
 
 
 

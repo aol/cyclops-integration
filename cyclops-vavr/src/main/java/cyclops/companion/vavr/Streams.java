@@ -13,13 +13,13 @@ import cyclops.companion.Optionals;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.ListKind;
 import cyclops.monads.VavrWitness;
@@ -38,7 +38,7 @@ import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -198,7 +198,7 @@ public class Streams {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Streames.forEach4;
+     *  import static com.oath.cyclops.reactor.Streames.forEach4;
      *
      *  forEach4(IntStream.range(1,10).boxed(),
     a-> Stream.iterate(a,i->i+1).limit(10),

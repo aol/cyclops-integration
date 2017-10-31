@@ -16,10 +16,10 @@ import cyclops.monads.FJWitness.nonEmptyList;
 import cyclops.monads.FJWitness.option;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.control.Maybe;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
@@ -27,7 +27,7 @@ import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.OptionalT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -118,7 +118,7 @@ public class Options {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Options.forEach4;
+     *   import static com.oath.cyclops.reactor.Options.forEach4;
      *
     forEach4(Option.just(1),
     a-> Option.just(a+1),
@@ -166,7 +166,7 @@ public class Options {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Options.forEach4;
+     *  import static com.oath.cyclops.reactor.Options.forEach4;
      *
      *  forEach4(Option.just(1),
     a-> Option.just(a+1),
@@ -217,7 +217,7 @@ public class Options {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Options.forEach3;
+     *   import static com.oath.cyclops.reactor.Options.forEach3;
      *
     forEach3(Option.just(1),
     a-> Option.just(a+1),
@@ -259,7 +259,7 @@ public class Options {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Options.forEach3;
+     *  import static com.oath.cyclops.reactor.Options.forEach3;
      *
      *  forEach3(Option.just(1),
     a-> Option.just(a+1),
@@ -305,7 +305,7 @@ public class Options {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Options.forEach;
+     *   import static com.oath.cyclops.reactor.Options.forEach;
      *
     forEach(Option.just(1),
     a-> Option.just(a+1),
@@ -340,7 +340,7 @@ public class Options {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Options.forEach;
+     *  import static com.oath.cyclops.reactor.Options.forEach;
      *
      *  forEach(Option.just(1),
     a-> Option.just(a+1),

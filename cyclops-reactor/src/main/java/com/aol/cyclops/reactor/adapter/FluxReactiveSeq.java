@@ -1,11 +1,11 @@
 package com.aol.cyclops.reactor.adapter;
 
-import com.aol.cyclops2.internal.stream.ReactiveStreamX;
-import com.aol.cyclops2.internal.stream.spliterators.push.PublisherToOperator;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
-import com.aol.cyclops2.types.stream.HeadAndTail;
-import com.aol.cyclops2.types.traversable.FoldableTraversable;
-import com.aol.cyclops2.types.traversable.Traversable;
+import com.oath.cyclops.internal.stream.ReactiveStreamX;
+import com.oath.cyclops.internal.stream.spliterators.push.PublisherToOperator;
+import com.oath.cyclops.types.anyM.AnyMSeq;
+import com.oath.cyclops.types.stream.HeadAndTail;
+import com.oath.cyclops.types.traversable.FoldableTraversable;
+import com.oath.cyclops.types.traversable.Traversable;
 import cyclops.async.Future;
 import cyclops.async.adapters.QueueFactory;
 import cyclops.collections.immutable.VectorX;
@@ -22,15 +22,15 @@ import cyclops.monads.Witness;
 import cyclops.monads.Witness.reactiveSeq;
 import cyclops.monads.Witness.stream;
 import cyclops.monads.transformers.ListT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Spouts;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Wither;
-import org.jooq.lambda.tuple.Tuple;
-import org.jooq.lambda.tuple.Tuple2;
-import org.jooq.lambda.tuple.Tuple3;
-import org.jooq.lambda.tuple.Tuple4;
+import cyclops.data.tuple.Tuple;
+import cyclops.data.tuple.Tuple2;
+import cyclops.data.tuple.Tuple3;
+import cyclops.data.tuple.Tuple4;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -515,12 +515,12 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <R> ReactiveSeq<R> flatMapStream(Function<? super T, BaseStream<? extends R, ?>> fn) {
-        
+
         return this.<R>flux((Flux)flux.flatMap(fn.andThen(s->{
             ReactiveSeq<R> res = s instanceof ReactiveSeq ? (ReactiveSeq) s : (ReactiveSeq) ReactiveSeq.fromSpliterator(s.spliterator());
            return res;
                 }
-            
+
         )));
     }
 
@@ -566,7 +566,7 @@ public class FluxReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public void close() {
-        
+
     }
 
     @Override

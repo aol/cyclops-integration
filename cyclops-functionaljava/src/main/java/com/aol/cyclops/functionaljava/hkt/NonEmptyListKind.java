@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.functionaljava.Lists;
 import cyclops.companion.functionaljava.NonEmptyLists;
@@ -30,9 +30,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for NonEmptyList's
- * 
+ *
  * NonEmptyListKind is a NonEmptyList and a Higher Kinded Type (list,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the NonEmptyList
@@ -55,7 +55,7 @@ public  class NonEmptyListKind<T> implements Higher<nonEmptyList, T> {
         return widen(op.apply(boxed));
     }
     public static<T> NonEmptyListKind<T> of(T first, T...v){
-        
+
         return widen(NonEmptyList.fromList(List.list(v).cons(first)).some());
     }
     public static <T> Higher<nonEmptyList,T> widenK(final NonEmptyList<T> completableList) {
@@ -66,20 +66,20 @@ public  class NonEmptyListKind<T> implements Higher<nonEmptyList, T> {
     /**
      * Convert a NonEmptyList to a simulated HigherKindedType that captures NonEmptyList nature
      * and NonEmptyList element data type separately. Recover via @see NonEmptyListKind#narrow
-     * 
+     *
      * If the supplied NonEmptyList implements NonEmptyListKind it is returned already, otherwise it
      * is wrapped into a NonEmptyList implementation that does implement NonEmptyListKind
-     * 
+     *
      * @param list NonEmptyList to widen to a NonEmptyListKind
      * @return NonEmptyListKind encoding HKT info about NonEmptyLists
      */
     public static <T> NonEmptyListKind<T> widen(final NonEmptyList<T> list) {
-        
+
         return new NonEmptyListKind<>(list);
     }
     /**
      * Widen a NonEmptyListKind nested inside another HKT encoded type
-     * 
+     *
      * @param list HTK encoded type containing  a NonEmptyList to widen
      * @return HKT encoded type with a widened NonEmptyList
      */
@@ -90,7 +90,7 @@ public  class NonEmptyListKind<T> implements Higher<nonEmptyList, T> {
     }
     /**
      * Convert the raw Higher Kinded Type for NonEmptyList types into the NonEmptyListKind type definition class
-     * 
+     *
      * @param list HKT encoded list into a NonEmptyListKind
      * @return NonEmptyListKind
      */
@@ -99,13 +99,13 @@ public  class NonEmptyListKind<T> implements Higher<nonEmptyList, T> {
     }
     /**
      * Convert the HigherKindedType definition for a NonEmptyList into
-     * 
+     *
      * @param list Type Constructor to convert back into narrowed type
      * @return NonEmptyListX from Higher Kinded Type
      */
     public static <T> NonEmptyList<T> narrow(final Higher<nonEmptyList, T> list) {
         return ((NonEmptyListKind)list).narrow();
-       
+
     }
 
 
@@ -314,5 +314,5 @@ public  class NonEmptyListKind<T> implements Higher<nonEmptyList, T> {
             return boxed.toString();
         }
 
-      
+
 }

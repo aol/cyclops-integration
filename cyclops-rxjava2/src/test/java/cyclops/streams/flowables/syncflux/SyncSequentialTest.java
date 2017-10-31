@@ -5,11 +5,11 @@ import cyclops.async.adapters.Topic;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Flowables;
 import cyclops.control.Maybe;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Streamable;
 import org.hamcrest.Matchers;
-import org.jooq.lambda.tuple.Tuple2;
-import org.jooq.lambda.tuple.Tuple3;
+import cyclops.data.tuple.Tuple2;
+import cyclops.data.tuple.Tuple3;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 

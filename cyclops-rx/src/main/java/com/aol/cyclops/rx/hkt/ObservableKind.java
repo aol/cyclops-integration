@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.monads.RxWitness;
 import cyclops.monads.RxWitness.observable;
 import cyclops.monads.WitnessType;
@@ -47,9 +47,9 @@ import rx.schedulers.Timestamped;
 
 /**
  * Simulates Higher Kinded Types for Reactor Observable's
- * 
+ *
  * ObservableKind is a Observable and a Higher Kinded Type (observable,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Observable
@@ -82,7 +82,7 @@ public final class ObservableKind<T> implements Higher<observable, T>, Publisher
 
     /**
      * Construct a HKT encoded completed Observable
-     * 
+     *
      * @param value To encode inside a HKT encoded Observable
      * @return Completed HKT encoded FObservable
      */
@@ -91,7 +91,7 @@ public final class ObservableKind<T> implements Higher<observable, T>, Publisher
         return widen(Observable.just(value));
     }
     public static <T> ObservableKind<T> just(T... values) {
-        
+
         return widen(Observable.from(values));
     }
 
@@ -102,10 +102,10 @@ public final class ObservableKind<T> implements Higher<observable, T>, Publisher
     /**
      * Convert a Observable to a simulated HigherKindedType that captures Observable nature
      * and Observable element data type separately. Recover via @see ObservableKind#narrow
-     * 
+     *
      * If the supplied Observable implements ObservableKind it is returned already, otherwise it
      * is wrapped into a Observable implementation that does implement ObservableKind
-     * 
+     *
      * @param observable Observable to widen to a ObservableKind
      * @return ObservableKind encoding HKT info about Observables
      */
@@ -117,7 +117,7 @@ public final class ObservableKind<T> implements Higher<observable, T>, Publisher
 
     /**
      * Widen a ObservableKind nested inside another HKT encoded type
-     * 
+     *
      * @param flux HTK encoded type containing  a Observable to widen
      * @return HKT encoded type with a widened Observable
      */
@@ -136,7 +136,7 @@ public final class ObservableKind<T> implements Higher<observable, T>, Publisher
 
     /**
      * Convert the raw Higher Kinded Type for ObservableKind types into the ObservableKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a ObservableKind
      * @return ObservableKind
      */
@@ -146,7 +146,7 @@ public final class ObservableKind<T> implements Higher<observable, T>, Publisher
 
     /**
      * Convert the HigherKindedType definition for a Observable into
-     * 
+     *
      * @param observable Type Constructor to convert back into narrowed type
      * @return Observable from Higher Kinded Type
      */

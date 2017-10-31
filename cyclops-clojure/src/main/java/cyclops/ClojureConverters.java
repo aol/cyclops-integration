@@ -1,7 +1,7 @@
 package cyclops;
 
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.foldable.To;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.foldable.To;
 import cyclops.collections.clojure.*;
 import cyclops.collections.immutable.PersistentMapX;
 import clojure.lang.*;
@@ -77,7 +77,7 @@ public interface ClojureConverters {
                     return set.unwrap();
                 });
     }
-    
+
     public static <T> PersistentQueue PersistentQueue(CollectionX<T> vec){
         return vec.unwrapNested(PersistentQueue.class,
                 ()-> {
@@ -100,6 +100,6 @@ public interface ClojureConverters {
                     return vector.unwrap();
                 });
     }
-    
+
 
 }

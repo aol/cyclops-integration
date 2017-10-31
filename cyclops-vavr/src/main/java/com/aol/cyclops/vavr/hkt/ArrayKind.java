@@ -1,7 +1,7 @@
 package com.aol.cyclops.vavr.hkt;
 
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.Unwrapable;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.Unwrapable;
 import cyclops.companion.vavr.Arrays;
 import cyclops.companion.vavr.Lazys;
 import cyclops.monads.VavrWitness;
@@ -21,9 +21,9 @@ import java.util.function.Function;
 
 /**
  * Simulates Higher Kinded Types for Array's
- * 
+ *
  * ArrayKind is a Array and a Higher Kinded Type (array,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Array
@@ -52,7 +52,7 @@ public  class ArrayKind<T> implements Higher<array, T>{
         return  widen(Array.of(element));
     }
 
-   
+
     @SafeVarargs
     public static <T> ArrayKind<T> of(T... elements) {
         return widen(Array.of(elements));
@@ -60,20 +60,20 @@ public  class ArrayKind<T> implements Higher<array, T>{
     /**
      * Convert a Array to a simulated HigherKindedType that captures Array nature
      * and Array element data type separately. Recover via @see ArrayKind#narrow
-     * 
+     *
      * If the supplied Array implements ArrayKind it is returned already, otherwise it
      * is wrapped into a Array implementation that does implement ArrayKind
-     * 
+     *
      * @param list Array to widen to a ArrayKind
      * @return ArrayKind encoding HKT info about Arrays
      */
     public static <T> ArrayKind<T> widen(final Array<T> list) {
-        
+
         return new ArrayKind<>(list);
     }
     /**
      * Widen a ArrayKind nested inside another HKT encoded type
-     * 
+     *
      * @param list HTK encoded type containing  a Array to widen
      * @return HKT encoded type with a widened Array
      */
@@ -84,7 +84,7 @@ public  class ArrayKind<T> implements Higher<array, T>{
     }
     /**
      * Convert the raw Higher Kinded Type for Array types into the ArrayKind type definition class
-     * 
+     *
      * @param list HKT encoded list into a ArrayKind
      * @return ArrayKind
      */
@@ -93,13 +93,13 @@ public  class ArrayKind<T> implements Higher<array, T>{
     }
     /**
      * Convert the HigherKindedType definition for a Array into
-     * 
+     *
      * @param list Type Constructor to convert back into narrowed type
      * @return ArrayX from Higher Kinded Type
      */
     public static <T> Array<T> narrow(final Higher<array, T> list) {
         return ((ArrayKind)list).narrow();
-       
+
     }
 
     @Delegate

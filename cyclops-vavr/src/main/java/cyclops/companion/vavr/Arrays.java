@@ -11,8 +11,8 @@ import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
@@ -22,7 +22,7 @@ import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.list;
 import cyclops.monads.VavrWitness.tryType;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -37,7 +37,7 @@ import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -60,7 +60,7 @@ public class Arrays {
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,array,T> xorM(Array<T> type){
         return XorM.right(anyM(type));
     }
-   
+
     public static <T> AnyMSeq<array,T> anyM(Array<T> option) {
         return AnyM.ofSeq(option, array.INSTANCE);
     }
@@ -161,7 +161,7 @@ public class Arrays {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Arrayes.forEach4;
+     *  import static com.oath.cyclops.reactor.Arrayes.forEach4;
      *
      *  forEach4(IntArray.range(1,10).boxed(),
     a-> Array.iterate(a,i->i+1).limit(10),

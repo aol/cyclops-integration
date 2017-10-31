@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.collections.vavr.VavrListX;
 import cyclops.collections.vavr.VavrVectorX;
 import cyclops.companion.vavr.Lists;
@@ -38,9 +38,9 @@ import lombok.experimental.Delegate;
 
 /**
  * Simulates Higher Kinded Types for Vector's
- * 
+ *
  * VectorKind is a Vector and a Higher Kinded Type (vector,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Vector
@@ -70,7 +70,7 @@ public  class VectorKind<T> implements Higher<vector, T>{
         return  widen(Vector.of(element));
     }
 
-   
+
     @SafeVarargs
     public static <T> VectorKind<T> of(T... elements) {
         return widen(Vector.of(elements));
@@ -78,20 +78,20 @@ public  class VectorKind<T> implements Higher<vector, T>{
     /**
      * Convert a Vector to a simulated HigherKindedType that captures Vector nature
      * and Vector element data type separately. Recover via @see VectorKind#narrow
-     * 
+     *
      * If the supplied Vector implements VectorKind it is returned already, otherwise it
      * is wrapped into a Vector implementation that does implement VectorKind
-     * 
+     *
      * @param list Vector to widen to a VectorKind
      * @return VectorKind encoding HKT info about Vectors
      */
     public static <T> VectorKind<T> widen(final Vector<T> list) {
-        
+
         return new VectorKind<>(list);
     }
     /**
      * Widen a VectorKind nested inside another HKT encoded type
-     * 
+     *
      * @param list HTK encoded type containing  a Vector to widen
      * @return HKT encoded type with a widened Vector
      */
@@ -102,7 +102,7 @@ public  class VectorKind<T> implements Higher<vector, T>{
     }
     /**
      * Convert the raw Higher Kinded Type for Vector types into the VectorKind type definition class
-     * 
+     *
      * @param list HKT encoded list into a VectorKind
      * @return VectorKind
      */
@@ -111,13 +111,13 @@ public  class VectorKind<T> implements Higher<vector, T>{
     }
     /**
      * Convert the HigherKindedType definition for a Vector into
-     * 
+     *
      * @param list Type Constructor to convert back into narrowed type
      * @return VectorX from Higher Kinded Type
      */
     public static <T> Vector<T> narrow(final Higher<vector, T> list) {
         return ((VectorKind)list).narrow();
-       
+
     }
 
 
@@ -159,7 +159,7 @@ public  class VectorKind<T> implements Higher<vector, T>{
     }
 
 
-    
-    
-      
+
+
+
 }

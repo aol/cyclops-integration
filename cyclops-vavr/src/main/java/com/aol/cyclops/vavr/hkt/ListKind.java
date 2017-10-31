@@ -1,6 +1,6 @@
 package com.aol.cyclops.vavr.hkt;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.collections.vavr.VavrListX;
 import cyclops.companion.vavr.Lists;
 import cyclops.conversion.vavr.ToCyclopsReact;
@@ -9,7 +9,7 @@ import cyclops.monads.VavrWitness.list;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.ListT;
 import cyclops.monads.transformers.XorT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -29,9 +29,9 @@ import java.util.function.Function;
 
 /**
  * Simulates Higher Kinded Types for Vavr List's
- * 
+ *
  * ListKind is a List and a Higher Kinded Type (ListKind.µ,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the List
@@ -55,7 +55,7 @@ public interface ListKind<T> extends Higher<list, T>, Publisher<T>, List<T> {
     }
     /**
      * Construct a HKT encoded completed List
-     * 
+     *
      * @param value To encode inside a HKT encoded List
      * @return Completed HKT encoded FList
      */
@@ -76,10 +76,10 @@ public interface ListKind<T> extends Higher<list, T>, Publisher<T>, List<T> {
     /**
      * Convert a List to a simulated HigherKindedType that captures List nature
      * and List element data type separately. Recover via @see ListKind#narrow
-     * 
+     *
      * If the supplied List implements ListKind it is returned already, otherwise it
      * is wrapped into a List implementation that does implement ListKind
-     * 
+     *
      * @param completableList List to widen to a ListKind
      * @return ListKind encoding HKT info about Lists
      */
@@ -97,7 +97,7 @@ public interface ListKind<T> extends Higher<list, T>, Publisher<T>, List<T> {
 
     /**
      * Widen a ListKind nested inside another HKT encoded type
-     * 
+     *
      * @param flux HTK encoded type containing  a List to widen
      * @return HKT encoded type with a widened List
      */
@@ -116,7 +116,7 @@ public interface ListKind<T> extends Higher<list, T>, Publisher<T>, List<T> {
 
     /**
      * Convert the raw Higher Kinded Type for ListKind types into the ListKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a ListKind
      * @return ListKind
      */
@@ -126,7 +126,7 @@ public interface ListKind<T> extends Higher<list, T>, Publisher<T>, List<T> {
 
     /**
      * Convert the HigherKindedType definition for a List into
-     * 
+     *
      * @param list Type Constructor to convert back into narrowed type
      * @return List from Higher Kinded Type
      */

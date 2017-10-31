@@ -1,13 +1,13 @@
 package com.aol.cyclops.rx2.adapter;
 
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.async.Future;
 import cyclops.companion.rx2.Functions;
 import cyclops.companion.rx2.Maybes;
 import cyclops.monads.AnyM;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.maybe;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import io.reactivex.Maybe;
 import lombok.AllArgsConstructor;
 

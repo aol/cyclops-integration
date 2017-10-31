@@ -1,8 +1,8 @@
 package com.aol.cyclops.vavr.hkt;
 
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.hkt.Higher2;
-import com.aol.cyclops2.types.foldable.To;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.hkt.Higher2;
+import com.oath.cyclops.types.foldable.To;
 import cyclops.companion.vavr.Eithers;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;

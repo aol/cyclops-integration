@@ -18,9 +18,9 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPQueueX;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentQueueX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.collections.immutable.PersistentSetX;
@@ -30,13 +30,13 @@ import cyclops.collections.vavr.VavrQueueX;
 import cyclops.companion.Reducers;
 import cyclops.companion.Semigroups;
 import cyclops.stream.Streamable;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 
 import reactor.core.publisher.Flux;
 
-public class LazyPQueueXTest extends AbstractCollectionXTest  {
+public class LazyPersistentQueueXTest extends AbstractCollectionXTest  {
 
 
     @Override
@@ -137,7 +137,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
     }
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
@@ -147,7 +147,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
         return VavrQueueX.empty();
     }
 
-    
+
 
     @Test
     public void remove() {

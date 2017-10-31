@@ -9,15 +9,15 @@ import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.vector;
 import cyclops.collections.vavr.VavrVectorX;
 import com.aol.cyclops.vavr.hkt.VectorKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.ListT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -32,7 +32,7 @@ import io.vavr.collection.List;
 import io.vavr.collection.Vector;
 import io.vavr.control.Either;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.function.*;
@@ -46,7 +46,7 @@ public class Vectors {
     public static <T,W extends WitnessType<W>> ListT<W, T> liftM(Vector<T> opt, W witness) {
         return ListT.ofList(witness.adapter().unit(VavrVectorX.ofAll(opt)));
     }
-   
+
     public static <T> AnyMSeq<vector,T> anyM(Vector<T> option) {
         return AnyM.ofSeq(option, vector.INSTANCE);
     }
@@ -146,7 +146,7 @@ public class Vectors {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Vectores.forEach4;
+     *  import static com.oath.cyclops.reactor.Vectores.forEach4;
      *
      *  forEach4(IntVector.range(1,10).boxed(),
     a-> Vector.iterate(a,i->i+1).limit(10),

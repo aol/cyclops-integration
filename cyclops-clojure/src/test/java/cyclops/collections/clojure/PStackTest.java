@@ -8,29 +8,29 @@ import java.util.Arrays;
 import cyclops.collections.immutable.LinkedListX;
 import org.junit.Before;
 import org.junit.Test;
-import org.pcollections.ConsPStack;
-import org.pcollections.PStack;
+import org.pcollections.ConsPersistentList;
+import org.pcollections.PersistentList;
 
 
-public class PStackTest {
+public class PersistentListTest {
 
-    ConsPStack<Integer> org = null;
-    PStack<Integer> test=null;
-    
+    ConsPersistentList<Integer> org = null;
+    PersistentList<Integer> test=null;
+
     @Before
     public void setup(){
-       org = ConsPStack.empty();
+       org = ConsPersistentList.empty();
        test = ClojureListX.empty();
-     
+
     }
-    
+
     @Test
     public void empty(){
-        assertThat(ConsPStack.empty(),equalTo(ClojureListX.empty()));
+        assertThat(ConsPersistentList.empty(),equalTo(ClojureListX.empty()));
     }
     @Test
     public void singleton(){
-        assertThat(ConsPStack.singleton(1),equalTo(ClojureListX.singleton(1)));
+        assertThat(ConsPersistentList.singleton(1),equalTo(ClojureListX.singleton(1)));
     }
     @Test
     public void testWith(){
@@ -69,7 +69,7 @@ public class PStackTest {
     public void plusMinus(){
         System.out.println(test.plusAll(Arrays.asList(1,2,3)));
         System.out.println(test.plusAll(Arrays.asList(1,2,3)).minus(1));
-        
+
         assertThat(org.plus(1),equalTo(test.plus(1)));
         assertThat(org.plusAll(Arrays.asList(1,2,3)),equalTo(test.plusAll(Arrays.asList(1,2,3))));
         assertThat(org.plusAll(Arrays.asList(1,2,3)).minus((Object)1),equalTo(test.plusAll(Arrays.asList(1,2,3)).minus((Object)1)));
@@ -77,13 +77,13 @@ public class PStackTest {
         assertThat(org.plusAll(Arrays.asList(1,2,3)).minus(1),equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(1)));
         assertThat(org.plusAll(Arrays.asList(1,2,3)).minus(0),equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(0)));
         assertThat(org.plusAll(Arrays.asList(1,2,3)).minus(2),equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(2)));
-       
-        
+
+
         assertThat(org.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7)),
                    equalTo(test.plusAll(Arrays.asList(1,2,3)).plusAll(1,Arrays.asList(5,6,7))));
-        
+
     }
-    
+
     @Test
     public void minusAll(){
         assertThat(org.plusAll(Arrays.asList(1,2,3)).minusAll(Arrays.asList(2,3)),
@@ -91,14 +91,14 @@ public class PStackTest {
     }
     @Test
     public void subList(){
-        
-        
+
+
         assertThat(org.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(3,5),
                    equalTo(test.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(3,5)));
         assertThat(org.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(0,1),
                    equalTo(test.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(0,1)));
         assertThat(org.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(0,6),
                    equalTo(test.plusAll(Arrays.asList(1,2,3,4,5,6,7)).subList(0,6)));
-        
+
     }
 }

@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.vavr.Lists;
 import cyclops.companion.vavr.Queues;
 import cyclops.monads.VavrWitness;
@@ -35,9 +35,9 @@ import lombok.experimental.Delegate;
 
 /**
  * Simulates Higher Kinded Types for Queue's
- * 
+ *
  * QueueKind is a Queue and a Higher Kinded Type (queue,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Queue
@@ -65,7 +65,7 @@ public  class QueueKind<T> implements Higher<queue, T> {
         return  widen(Queue.of(element));
     }
 
-   
+
     @SafeVarargs
     public static <T> QueueKind<T> of(T... elements) {
         return widen(Queue.of(elements));
@@ -73,20 +73,20 @@ public  class QueueKind<T> implements Higher<queue, T> {
     /**
      * Convert a Queue to a simulated HigherKindedType that captures Queue nature
      * and Queue element data type separately. Recover via @see QueueKind#narrow
-     * 
+     *
      * If the supplied Queue implements QueueKind it is returned already, otherwise it
      * is wrapped into a Queue implementation that does implement QueueKind
-     * 
+     *
      * @param list Queue to widen to a QueueKind
      * @return QueueKind encoding HKT info about Queues
      */
     public static <T> QueueKind<T> widen(final Queue<T> list) {
-        
+
         return new QueueKind<>(list);
     }
     /**
      * Widen a QueueKind nested inside another HKT encoded type
-     * 
+     *
      * @param list HTK encoded type containing  a Queue to widen
      * @return HKT encoded type with a widened Queue
      */
@@ -97,7 +97,7 @@ public  class QueueKind<T> implements Higher<queue, T> {
     }
     /**
      * Convert the raw Higher Kinded Type for Queue types into the QueueKind type definition class
-     * 
+     *
      * @param list HKT encoded list into a QueueKind
      * @return QueueKind
      */
@@ -106,13 +106,13 @@ public  class QueueKind<T> implements Higher<queue, T> {
     }
     /**
      * Convert the HigherKindedType definition for a Queue into
-     * 
+     *
      * @param list Type Constructor to convert back into narrowed type
      * @return QueueX from Higher Kinded Type
      */
     public static <T> Queue<T> narrow(final Higher<queue, T> list) {
         return ((QueueKind)list).narrow();
-       
+
     }
 
     @Delegate
@@ -150,5 +150,5 @@ public  class QueueKind<T> implements Higher<queue, T> {
         return "QueueKind [" + boxed + "]";
     }
 
-      
+
 }

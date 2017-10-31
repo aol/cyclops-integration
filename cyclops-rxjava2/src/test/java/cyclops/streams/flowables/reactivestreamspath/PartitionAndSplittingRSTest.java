@@ -2,7 +2,7 @@ package cyclops.streams.flowables.reactivestreamspath;
 
 
 import cyclops.companion.rx2.Flowables;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Test;
 
 import java.util.Optional;

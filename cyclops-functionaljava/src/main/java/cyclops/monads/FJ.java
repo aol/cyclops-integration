@@ -3,8 +3,8 @@ package cyclops.monads;
 import java.util.function.Supplier;
 
 
-import com.aol.cyclops2.types.anyM.AnyMSeq;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.types.anyM.AnyMSeq;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.control.Maybe;
 import fj.P1;
 import fj.data.Either;
@@ -16,13 +16,13 @@ import fj.data.Validation;
 
 /**
  * FunctionalJava Cyclops integration point
- * 
+ *
  * @author johnmcclean
  *
  */
 public interface FJ {
 
-    
+
     public static <T> Maybe<T> maybe(Option<T> opt){
         return opt.isNone() ? Maybe.none() : Maybe.just(opt.some());
     }
@@ -32,7 +32,7 @@ public interface FJ {
      */
     public static class Trampoline8 {
         /**
-         * 
+         *
          * <pre>
          * {@code
          * List<String> list = FJ.anyM(FJ.Trampoline.suspend(() -> Trampoline.pure("hello world")))
@@ -42,9 +42,9 @@ public interface FJ {
               // ["HELLO WORLD"]
          * }
          * </pre>
-         * 
+         *
          * @param s Suspend using a Supplier
-         * 
+         *
          * @return Next Trampoline stage
          */
         public static <T> fj.control.Trampoline<T> suspend(Supplier<fj.control.Trampoline<T>> s) {
@@ -69,7 +69,7 @@ public interface FJ {
     		.toSequence()
     		.toList()
      * }
-     * 
+     *
      * @param validationM to  construct an AnyM from
      * @return AnyM
      */
@@ -86,9 +86,9 @@ public interface FJ {
     			.map(String::toUpperCase)
     			.toSequence()
     			.toList()
-     * 
+     *
      * }
-     * 
+     *
      * @param iterableWM to create AnyM from
      * @return AnyM
      */
@@ -99,7 +99,7 @@ public interface FJ {
     /**
      * (Right biased)
      * <pre>
-     * {@code 
+     * {@code
      * FJ.either(Either.right("hello world"))
     		.map(String::toUpperCase)
     		.flatMapOptional(Optional::of)
@@ -107,7 +107,7 @@ public interface FJ {
     		.toList()
      * }
      * </pre>
-     * 
+     *
      * @param eitherM to construct AnyM from
      * @return AnyM
      */
@@ -126,7 +126,7 @@ public interface FJ {
      * }
      * //[HELLO WORLD]
      * </pre>
-     * 
+     *
      * @param optionM to construct AnyM from
      * @return AnyM
      */
@@ -145,7 +145,7 @@ public interface FJ {
      * }
      *  //[HELLO WORLD]
      * </pre>
-     * 
+     *
      * @param streamM to construct AnyM from
      * @return AnyM
      */
@@ -155,7 +155,7 @@ public interface FJ {
 
     /**
      * <pre>
-     * {@code 
+     * {@code
      * FJ.list(List.list("hello world"))
     			.map(String::toUpperCase)
     			.toSequence()

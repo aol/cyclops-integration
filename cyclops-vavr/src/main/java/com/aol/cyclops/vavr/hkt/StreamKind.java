@@ -1,6 +1,6 @@
 package com.aol.cyclops.vavr.hkt;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.collections.vavr.VavrVectorX;
 import cyclops.companion.vavr.Streams;
 import cyclops.companion.vavr.Vectors;
@@ -9,7 +9,7 @@ import cyclops.monads.VavrWitness.stream;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.ListT;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -28,9 +28,9 @@ import java.util.function.Function;
 
 /**
  * Simulates Higher Kinded Types for Vavr Stream's
- * 
+ *
  * StreamKind is a Stream and a Higher Kinded Type (StreamKind.µ,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Stream
@@ -60,7 +60,7 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
     }
     /**
      * Construct a HKT encoded completed Stream
-     * 
+     *
      * @param value To encode inside a HKT encoded Stream
      * @return Completed HKT encoded FStream
      */
@@ -81,10 +81,10 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
     /**
      * Convert a Stream to a simulated HigherKindedType that captures Stream nature
      * and Stream element data type separately. Recover via @see StreamKind#narrow
-     * 
+     *
      * If the supplied Stream implements StreamKind it is returned already, otherwise it
      * is wrapped into a Stream implementation that does implement StreamKind
-     * 
+     *
      * @param stream Stream to widen to a StreamKind
      * @return StreamKind encoding HKT info about Streams
      */
@@ -95,7 +95,7 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
 
     /**
      * Widen a StreamKind nested inside another HKT encoded type
-     * 
+     *
      * @param flux HTK encoded type containing  a Stream to widen
      * @return HKT encoded type with a widened Stream
      */
@@ -114,7 +114,7 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
 
     /**
      * Convert the raw Higher Kinded Type for StreamKind types into the StreamKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a StreamKind
      * @return StreamKind
      */
@@ -124,7 +124,7 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
 
     /**
      * Convert the HigherKindedType definition for a Stream into
-     * 
+     *
      * @param stream Type Constructor to convert back into narrowed type
      * @return Stream from Higher Kinded Type
      */
@@ -153,13 +153,13 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
 
     }
 
-   
 
-    
+
+
     public T head() {
         return boxed.head();
     }
-    
+
 
     /**
      * @param o
@@ -170,7 +170,7 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
         return boxed.equals(o);
     }
 
-    
+
 
     /**
      * @return
@@ -180,7 +180,7 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
         return boxed.hashCode();
     }
 
-   
+
     /**
      * @return
      * @see io.vavr.Value#toString()
@@ -189,8 +189,8 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
         return boxed.toString();
     }
 
-   
-    
+
+
 
     /**
      * @return
@@ -208,6 +208,6 @@ public final class StreamKind<T> implements Higher<stream, T>, Publisher<T>, Str
         return boxed.isEmpty();
     }
 
-    
+
 
 }

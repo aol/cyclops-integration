@@ -1,7 +1,7 @@
 package com.aol.cyclops.rx2.hkt;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.async.Future;
 import cyclops.companion.rx2.Maybes;
 import cyclops.companion.rx2.Singles;
@@ -38,9 +38,9 @@ import java.util.logging.Level;
 
 /**
  * Simulates Higher Kinded Types for RxJava 2 Single's
- * 
+ *
  * SingleKind is a Single and a Higher Kinded Type (single,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Single
@@ -73,12 +73,12 @@ public final class SingleKind<T> implements Higher<single, T>, Publisher<T> {
     }
     /**
      * Construct a HKT encoded completed Single
-     * 
+     *
      * @param value To encode inside a HKT encoded Single
      * @return Completed HKT encoded FSingle
      */
     public static <T> SingleKind<T> just(T value){
-        
+
         return widen(Single.just(value));
     }
     public static <T> SingleKind<T> empty(){
@@ -88,29 +88,29 @@ public final class SingleKind<T> implements Higher<single, T>, Publisher<T> {
     /**
      * Convert a Single to a simulated HigherKindedType that captures Single nature
      * and Single element data type separately. Recover via @see SingleKind#narrow
-     * 
+     *
      * If the supplied Single implements SingleKind it is returned already, otherwise it
      * is wrapped into a Single implementation that does implement SingleKind
-     * 
+     *
      * @param completableSingle Single to widen to a SingleKind
      * @return SingleKind encoding HKT info about Singles
      */
     public static <T> SingleKind<T> widen(final Single<T> completableSingle) {
-        
+
         return new SingleKind<T>(
                          completableSingle);
     }
-    
+
     public static <T> SingleKind<T> widen(final Publisher<T> completableSingle) {
-        
+
         return new SingleKind<T>(Single.fromPublisher(
                          completableSingle));
     }
-        
-    
+
+
     /**
      * Convert the raw Higher Kinded Type for SingleKind types into the SingleKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a SingleKind
      * @return SingleKind
      */
@@ -120,7 +120,7 @@ public final class SingleKind<T> implements Higher<single, T>, Publisher<T> {
 
     /**
      * Convert the HigherKindedType definition for a Single into
-     * 
+     *
      * @param completableSingle Type Constructor to convert back into narrowed type
      * @return Single from Higher Kinded Type
      */
@@ -586,7 +586,7 @@ public final class SingleKind<T> implements Higher<single, T>, Publisher<T> {
             return boxed;
         }
 
-        
+
         public Future<T> toFuture(){
             return Future.fromPublisher(boxed.toFlowable());
         }
@@ -614,5 +614,5 @@ public final class SingleKind<T> implements Higher<single, T>, Publisher<T> {
         }
 
 
-    
+
 }

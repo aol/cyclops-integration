@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import com.aol.cyclops.reactor.hkt.FluxKind;
-import com.aol.cyclops2.react.Status;
+import com.oath.cyclops.react.Status;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
@@ -26,9 +26,9 @@ import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
 import cyclops.monads.ReactorWitness.mono;
 import com.aol.cyclops.reactor.hkt.MonoKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.async.Future;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
@@ -36,7 +36,7 @@ import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.StreamT;
 import cyclops.monads.transformers.reactor.MonoT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -57,7 +57,7 @@ import static cyclops.companion.Streams.StreamKind.*;
 
 /**
  * Companion class for working with Reactor Mono types
- * 
+ *
  * @author johnmcclean
  *
  */
@@ -120,21 +120,21 @@ public class Monos {
     public static <T> Eval<T> eval(Mono<T> opt){
         return Eval.fromFuture(future(opt));
     }
-    
+
     /**
      * Construct an AnyM type from a Mono. This allows the Mono to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
-     * 
+     *
      * <pre>
-     * {@code 
-     *    
+     * {@code
+     *
      *    AnyMSeq<Integer> mono = Fluxs.anyM(Mono.just(1,2,3));
      *    AnyMSeq<Integer> transformedMono = myGenericOperation(mono);
-     *    
+     *
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
      * }
      * </pre>
-     * 
+     *
      * @param mono To wrap inside an AnyM
      * @return AnyMSeq wrapping a Mono
      */
@@ -248,23 +248,23 @@ public class Monos {
     }
 
     /**
-     * Perform a For Comprehension over a Mono, accepting 3 generating functions. 
+     * Perform a For Comprehension over a Mono, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Monos.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Monos.forEach4;
-     *    
-          forEach4(Mono.just(1), 
+     *
+          forEach4(Mono.just(1),
                   a-> Mono.just(a+1),
                   (a,b) -> Mono.<Integer>just(a+b),
                   (a,b,c) -> Mono.<Integer>just(a+b+c),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Mono
      * @param value2 Nested Mono
      * @param value3 Nested Mono
@@ -297,22 +297,22 @@ public class Monos {
 
 
     /**
-     * Perform a For Comprehension over a Mono, accepting 2 generating functions. 
+     * Perform a For Comprehension over a Mono, accepting 2 generating functions.
      * This results in a three level nested internal iteration over the provided Monos.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Monos.forEach3;
-     *    
-          forEach3(Mono.just(1), 
+     *
+          forEach3(Mono.just(1),
                   a-> Mono.just(a+1),
                   (a,b) -> Mono.<Integer>just(a+b),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Mono
      * @param value2 Nested Mono
      * @param value3 Nested Mono
@@ -344,21 +344,21 @@ public class Monos {
 
 
     /**
-     * Perform a For Comprehension over a Mono, accepting a generating function. 
+     * Perform a For Comprehension over a Mono, accepting a generating function.
      * This results in a two level nested internal iteration over the provided Monos.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Monos.forEach;
-     *    
-          forEach(Mono.just(1), 
+     *
+          forEach(Mono.just(1),
                   a-> Mono.just(a+1),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Mono
      * @param value2 Nested Mono
      * @param yieldingFunction Generates a result per combination
@@ -385,7 +385,7 @@ public class Monos {
 
     /**
      * Lazily combine this Mono with the supplied value via the supplied BiFunction
-     * 
+     *
      * @param mono Mono to combine with another value
      * @param app Value to combine with supplied mono
      * @param fn Combiner function
@@ -399,7 +399,7 @@ public class Monos {
 
     /**
      * Lazily combine this Mono with the supplied Mono via the supplied BiFunction
-     * 
+     *
      * @param mono Mono to combine with another value
      * @param app Mono to combine with supplied mono
      * @param fn Combiner function
@@ -413,7 +413,7 @@ public class Monos {
 
     /**
      * Combine the provided Mono with the first element (if present) in the provided Iterable using the provided BiFunction
-     * 
+     *
      * @param mono Mono to combine with an Iterable
      * @param app Iterable to combine with a Mono
      * @param fn Combining function
@@ -427,7 +427,7 @@ public class Monos {
 
     /**
      * Combine the provided Mono with the first element (if present) in the provided Publisher using the provided BiFunction
-     * 
+     *
      * @param mono  Mono to combine with a Publisher
      * @param fn Publisher to combine with a Mono
      * @param app Combining function
@@ -441,7 +441,7 @@ public class Monos {
 
     /**
      * Test if value is equal to the value inside this Mono
-     * 
+     *
      * @param mono Mono to test
      * @param test Value to test
      * @return true if equal
@@ -453,7 +453,7 @@ public class Monos {
 
     /**
      * Construct a Mono from Iterable by taking the first value from Iterable
-     * 
+     *
      * @param t Iterable to populate Mono from
      * @return Mono containing first element from Iterable (or empty Mono)
      */
@@ -463,7 +463,7 @@ public class Monos {
 
     /**
      * Get an Iterator for the value (if any) in the provided Mono
-     * 
+     *
      * @param pub Mono to get Iterator for
      * @return Iterator over Mono value
      */

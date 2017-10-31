@@ -8,17 +8,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
 import cyclops.collections.dexx.DexxVectorX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.VectorX;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 
 import reactor.core.publisher.Flux;
 
-public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyPersistentListXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
@@ -40,7 +40,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
@@ -50,7 +50,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
         return DexxVectorX.empty();
     }
 
-    
+
 
     @Test
     public void remove() {

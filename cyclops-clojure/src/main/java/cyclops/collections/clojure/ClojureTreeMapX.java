@@ -7,16 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
-import com.aol.cyclops2.types.Unwrapable;
-import com.aol.cyclops2.types.foldable.To;
-import com.aol.cyclops2.types.mixins.TupleWrapper;
+import com.oath.cyclops.data.collections.extensions.ExtensiblePMapX;
+import com.oath.cyclops.types.Unwrapable;
+import com.oath.cyclops.types.foldable.To;
+import com.oath.cyclops.types.mixins.TupleWrapper;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.companion.MapXs;
 import cyclops.control.Eval;
 import cyclops.function.Reducer;
-import cyclops.stream.ReactiveSeq;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.data.tuple.Tuple2;
 import org.pcollections.PMap;
 
 
@@ -28,8 +28,8 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, Unwrapable, To<ClojureTreeMapX<K,V>> {
-    
+public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PersistentMap<K,V>, Unwrapable, To<ClojureTreeMapX<K,V>> {
+
     @Wither
     PersistentTreeMap map;
     @Override
@@ -51,7 +51,7 @@ public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>,
     public static <K,V> ClojureTreeMapX<K,V> fromMap(PersistentTreeMap map){
         return new ClojureTreeMapX<>(map);
     }
-    
+
     public static <K,V> ClojureTreeMapX<K,V> fromJavaMap(Map<K,V> map){
         PersistentTreeMap res = ( PersistentTreeMap)PersistentTreeMap.create(map);
         return fromMap(res);
@@ -70,7 +70,7 @@ public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>,
     public static <K,V> PersistentMapX<K,V> empty(@NonNull Comparator<K> comp){
         return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY),Eval.later(()->toPersistentMapX(comp)));
      }
-    public static <K,V> PMap<K,V> singletonPMap(K key,V value){
+    public static <K,V> PersistentMap<K,V> singletonPMap(K key,V value){
         PersistentTreeMap map = ( PersistentTreeMap)PersistentTreeMap.create(MapXs.of(key, value));
         return fromMap(map);
      }
@@ -82,18 +82,18 @@ public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>,
         PersistentTreeMap map = ( PersistentTreeMap)PersistentTreeMap.create(MapXs.of(key, value));
         return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()-> ClojureTreeMapX.<K,V>toPersistentMapX(comp)));//ClojureTreeMapX.<K,V>toPersistentMapX()
      }
-    
-    
+
+
     public static <K,V> PersistentMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){
         return stream.mapReduce(toPersistentMapX());
     }
-    
+
     @Override
-    public PMap<K, V> plus(K key, V value) {
+    public PersistentMap<K, V> plus(K key, V value) {
         return withMap((PersistentTreeMap)map.cons(PersistentVector.create(key,value)));
     }
     @Override
-    public PMap<K, V> plusAll(java.util.Map<? extends K, ? extends V> m2) {
+    public PersistentMap<K, V> plusAll(java.util.Map<? extends K, ? extends V> m2) {
         PersistentTreeMap m = map;
         for(Object next : m2.entrySet()){
             m = (PersistentTreeMap)m.cons(next);
@@ -101,28 +101,28 @@ public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>,
         return withMap(m);
     }
     @Override
-    public PMap<K, V> minus(Object key) {
-      
-        
+    public PersistentMap<K, V> minus(Object key) {
+
+
         return withMap((PersistentTreeMap)map.without(key));
-     
+
     }
-   
+
     @Override
-    public PMap<K, V> minusAll(Collection<?> keys) {
-      
+    public PersistentMap<K, V> minusAll(Collection<?> keys) {
+
        PersistentTreeMap m = map;
        for(Object key : keys){
-          
+
            m = (PersistentTreeMap)m.without(key);
        }
        return withMap(m);
-        
+
     }
     @Override
     public Set<java.util.Map.Entry<K, V>> entrySet() {
         return map.entrySet();
-        
+
     }
     /* (non-Javadoc)
      * @see java.util.AbstractMap#get(java.lang.Object)
@@ -141,6 +141,6 @@ public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>,
         return ClojureTreeMapX.<K,V>empty(c)
                 .plusAll(map);
     }
-   
-   
+
+
 }

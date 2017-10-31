@@ -2,7 +2,7 @@ package cyclops.companion.reactor;
 
 import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
 import com.aol.cyclops.reactor.hkt.MonoKind;
-import com.aol.cyclops2.internal.stream.ReactiveStreamX;
+import com.oath.cyclops.internal.stream.ReactiveStreamX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
 import cyclops.companion.Optionals.OptionalKind;
@@ -15,15 +15,15 @@ import cyclops.control.Xor;
 import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.ReactorWitness.mono;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -32,7 +32,7 @@ import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.*;
 
@@ -47,7 +47,7 @@ import static com.aol.cyclops.reactor.hkt.FluxKind.widen;
 
 /**
  * Companion class for working with Reactor Flux types
- * 
+ *
  * @author johnmcclean
  *
  */
@@ -264,17 +264,17 @@ public class Fluxs {
     /**
      * Construct an AnyM type from a Flux. This allows the Flux to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
-     * 
+     *
      * <pre>
-     * {@code 
-     *    
+     * {@code
+     *
      *    AnyMSeq<Integer> flux = Fluxs.anyM(Flux.just(1,2,3));
      *    AnyMSeq<Integer> transformedFlux = myGenericOperation(flux);
-     *    
+     *
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
      * }
      * </pre>
-     * 
+     *
      * @param flux To wrap inside an AnyM
      * @return AnyMSeq wrapping a flux
      */
@@ -289,23 +289,23 @@ public class Fluxs {
     }
 
     /**
-     * Perform a For Comprehension over a Flux, accepting 3 generating functions. 
+     * Perform a For Comprehension over a Flux, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Publishers.
-     * 
+     *
      *  <pre>
       * {@code
-      *    
+      *
       *   import static cyclops.companion.reactor.Fluxs.forEach4;
-      *    
-          forEach4(Flux.range(1,10), 
+      *
+          forEach4(Flux.range(1,10),
                   a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
                   (a,b) -> Maybe.<Integer>of(a+b),
                   (a,b,c) -> Mono.<Integer>just(a+b+c),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Flux
      * @param value2 Nested publisher
      * @param value3 Nested publisher
@@ -338,23 +338,23 @@ public class Fluxs {
     }
 
     /**
-     * Perform a For Comprehension over a Flux, accepting 3 generating functions. 
-     * This results in a four level nested internal iteration over the provided Publishers. 
+     * Perform a For Comprehension over a Flux, accepting 3 generating functions.
+     * This results in a four level nested internal iteration over the provided Publishers.
      * <pre>
      * {@code
-     * 
+     *
      *  import static cyclops.companion.reactor.Fluxs.forEach4;
-     *   
-     *  forEach4(Flux.range(1,10), 
+     *
+     *  forEach4(Flux.range(1,10),
                             a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
                             (a,b) -> Maybe.<Integer>just(a+b),
                             (a,b,c) -> Mono.<Integer>just(a+b+c),
                             (a,b,c,d) -> a+b+c+d <100,
                             Tuple::tuple);
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Flux
      * @param value2 Nested publisher
      * @param value3 Nested publisher
@@ -387,23 +387,23 @@ public class Fluxs {
     }
 
     /**
-     * Perform a For Comprehension over a Flux, accepting 2 generating functions. 
-     * This results in a three level nested internal iteration over the provided Publishers. 
-     * 
+     * Perform a For Comprehension over a Flux, accepting 2 generating functions.
+     * This results in a three level nested internal iteration over the provided Publishers.
+     *
      * <pre>
-     * {@code 
-     * 
+     * {@code
+     *
      * import static cyclops.companion.reactor.Fluxs.forEach;
-     * 
-     * forEach(Flux.range(1,10), 
+     *
+     * forEach(Flux.range(1,10),
                             a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
                             (a,b) -> Maybe.<Integer>of(a+b),
                             Tuple::tuple);
-     * 
+     *
      * }
      * </pre>
-     * 
-     * 
+     *
+     *
      * @param value1 top level Flux
      * @param value2 Nested publisher
      * @param value3 Nested publisher
@@ -472,24 +472,24 @@ public class Fluxs {
     }
 
     /**
-     * Perform a For Comprehension over a Flux, accepting an additonal generating function. 
-     * This results in a two level nested internal iteration over the provided Publishers. 
-     * 
+     * Perform a For Comprehension over a Flux, accepting an additonal generating function.
+     * This results in a two level nested internal iteration over the provided Publishers.
+     *
      * <pre>
-     * {@code 
-     * 
+     * {@code
+     *
      *  import static cyclops.companion.reactor.Fluxs.forEach;
      *  forEach(Flux.range(1, 10), i -> Flux.range(i, 10), Tuple::tuple)
               .subscribe(System.out::println);
-              
+
        //(1, 1)
          (1, 2)
          (1, 3)
          (1, 4)
          ...
-     * 
+     *
      * }</pre>
-     * 
+     *
      * @param value1 top level Flux
      * @param value2 Nested publisher
      * @param yieldingFunction Generates a result per combination
@@ -507,15 +507,15 @@ public class Fluxs {
     }
 
     /**
-     * 
+     *
      * <pre>
-     * {@code 
-     * 
+     * {@code
+     *
      *   import static cyclops.companion.reactor.Fluxs.forEach;
-     * 
+     *
      *   forEach(Flux.range(1, 10), i -> Flux.range(i, 10),(a,b) -> a>2 && b<10,Tuple::tuple)
                .subscribe(System.out::println);
-               
+
        //(3, 3)
          (3, 4)
          (3, 5)
@@ -524,11 +524,11 @@ public class Fluxs {
          (3, 8)
          (3, 9)
          ...
-     
-     * 
+
+     *
      * }</pre>
-     * 
-     * 
+     *
+     *
      * @param value1 top level Flux
      * @param value2 Nested publisher
      * @param filterFunction A filtering function, keeps values where the predicate holds

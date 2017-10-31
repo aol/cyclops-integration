@@ -8,10 +8,10 @@ import cyclops.control.lazy.Either;
 import cyclops.function.*;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.supplier;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.free.Free;
 
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 import java.util.Date;
@@ -81,7 +81,7 @@ public class FunctionTest {
         add10.fanIn((String b)->b.length())
                 .apply(Either.left(10));
         //20
-        
+
       add10.fanIn((String b)->b.length())
                 .apply(Either.right("ten"));
         //3

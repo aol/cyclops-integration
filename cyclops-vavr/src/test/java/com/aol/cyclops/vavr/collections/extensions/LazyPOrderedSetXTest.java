@@ -9,22 +9,22 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentSortedSetX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.vavr.VavrTreeSetX;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 
 import reactor.core.publisher.Flux;
 
-public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
+public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        OrderedSetX<T> list = (LazyPOrderedSetX) VavrTreeSetX.empty();
+        OrderedSetX<T> list = (LazyPersistentSortedSetX) VavrTreeSetX.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -35,8 +35,8 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Test
     public void onEmptySwitch() {
-        assertThat((LazyPOrderedSetX) VavrTreeSetX.empty()
-                          .onEmptySwitch(() -> (LazyPOrderedSetX) VavrTreeSetX.of(1, 2, 3)),
+        assertThat((LazyPersistentSortedSetX) VavrTreeSetX.empty()
+                          .onEmptySwitch(() -> (LazyPersistentSortedSetX) VavrTreeSetX.of(1, 2, 3)),
                    equalTo(OrderedSetX.of(1, 2, 3)));
     }
 
@@ -48,17 +48,17 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     }
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return (LazyPOrderedSetX) VavrTreeSetX.empty();
+        return (LazyPersistentSortedSetX) VavrTreeSetX.empty();
     }
 
-    
+
 
     @Test
     public void remove() {

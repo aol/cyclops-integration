@@ -12,7 +12,7 @@ import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.future;
 import org.junit.Test;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
@@ -24,21 +24,21 @@ public class FuturesTest {
 
     @Test
     public void unit(){
-        
+
         FutureKind<String> opt = Futures.Instances.unit()
                                             .unit("hello")
                                             .convert(FutureKind::narrowK);
-        
+
         assertThat(opt.get(),equalTo(Future.successful("hello").get()));
     }
     @Test
     public void functor(){
-        
+
         FutureKind<Integer> opt = Futures.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Futures.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(FutureKind::narrowK);
-        
+
         assertThat(opt.get(),equalTo(Future.successful("hello".length()).get()));
     }
     @Test
@@ -51,18 +51,18 @@ public class FuturesTest {
     }
     @Test
     public void applicative(){
-        
+
         FutureKind<Fn1<Integer,Integer>> optFn = Futures.Instances
                                                         .unit()
                                                         .unit(Lambda.l1((Integer i) ->i*2))
                                                         .convert(FutureKind::narrowK);
-        
+
         FutureKind<Integer> opt = Futures.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Futures.Instances.functor().map((String v) ->v.length(), h))
                                      .applyHKT(h-> Futures.Instances.applicative().ap(optFn, h))
                                      .convert(FutureKind::narrowK);
-        
+
         assertThat(opt.get(),equalTo(Future.successful("hello".length()*2).get()));
     }
     @Test
@@ -73,35 +73,35 @@ public class FuturesTest {
     }
     @Test
     public void monad(){
-        
+
         FutureKind<Integer> opt = Futures.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Futures.Instances.monad().flatMap((String v) -> Futures.Instances.unit().unit(v.length()), h))
                                      .convert(FutureKind::narrowK);
-        
+
         assertThat(opt.get(),equalTo(Future.successful("hello".length()).get()));
     }
     @Test
     public void monadZeroFilter(){
-        
+
         FutureKind<String> opt = Futures.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Futures.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FutureKind::narrowK);
-        
+
         assertThat(opt.get(),equalTo(Future.successful("hello").get()));
     }
     @Test
     public void monadZeroFilterOut(){
-        
+
         FutureKind<String> opt = Futures.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Futures.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(FutureKind::narrowK);
-        
+
         assertFalse(opt.isCompleted());
     }
-    
+
     @Test
     public void monadPlus(){
         FutureKind<Integer> opt = Futures.Instances.<Integer>monadPlus()
@@ -111,7 +111,7 @@ public class FuturesTest {
     }
     @Test
     public void monadPlusNonEmpty(){
-        
+
         Monoid<FutureKind<Integer>> m = Monoid.of(FutureKind.widen(cyclops.async.Future.future()), (a, b)->a.isCompleted() ? b : a);
         FutureKind<Integer> opt = Futures.Instances.<Integer>monadPlusK(m)
                                       .plus(FutureKind.widen(Future.successful(5)), FutureKind.widen(Future.successful(10)))
@@ -122,14 +122,14 @@ public class FuturesTest {
     public void  foldLeft(){
         int sum  = Futures.Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, FutureKind.widen(Future.successful(4)));
-        
+
         assertThat(sum,equalTo(4));
     }
     @Test
     public void  foldRight(){
         int sum  = Futures.Instances.foldable()
                         .foldRight(0, (a,b)->a+b, FutureKind.widen(Future.successful(1)));
-        
+
         assertThat(sum,equalTo(1));
     }
     @Test
@@ -137,10 +137,10 @@ public class FuturesTest {
        Maybe<Higher<future, Integer>> res = Futures.Instances.traverse()
                                                                  .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), FutureKind.successful(1))
                                                                  .convert(Maybe::narrowK);
-       
-       
+
+
        assertThat(res.map(h->h.convert(FutureKind::narrowK).get()),
                   equalTo(Maybe.just(Future.successful(2).get())));
     }
-    
+
 }

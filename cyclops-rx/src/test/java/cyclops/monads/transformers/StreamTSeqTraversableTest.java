@@ -1,6 +1,6 @@
 package cyclops.monads.transformers;
 
-import com.aol.cyclops2.types.traversable.Traversable;
+import com.oath.cyclops.types.traversable.Traversable;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx.Observables;
 import cyclops.monads.AnyM;

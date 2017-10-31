@@ -2,7 +2,7 @@ package cyclops.streams.observables;
 
 import cyclops.companion.Reducers;
 import cyclops.companion.rx.Observables;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Spouts;
 import org.junit.Test;
 

@@ -2,15 +2,15 @@ package com.aol.cyclops.functionaljava.adapter;
 
 
 
-import com.aol.cyclops2.types.anyM.AnyMValue;
-import com.aol.cyclops2.types.extensability.ValueAdapter;
+import com.oath.cyclops.types.anyM.AnyMValue;
+import com.oath.cyclops.types.extensability.ValueAdapter;
 import cyclops.companion.functionaljava.Eithers;
 import cyclops.monads.FJ;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.either;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Xor;
 import cyclops.monads.AnyM;
 

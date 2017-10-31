@@ -2,11 +2,11 @@ package com.aol.cyclops.scala.collections.extension;
 
 
 import cyclops.collections.scala.ScalaQueueX;
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.collections.immutable.LinkedListX;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 
@@ -18,7 +18,7 @@ import java.util.function.UnaryOperator;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class LazyPQueueXTest extends AbstractCollectionXTest {
+public class LazyPersistentQueueXTest extends AbstractCollectionXTest {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
@@ -40,7 +40,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
@@ -50,7 +50,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest {
         return LinkedListX.empty();
     }
 
-    
+
 
     @Test
     public void remove() {

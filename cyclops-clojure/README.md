@@ -14,7 +14,7 @@ cyclops-clojure provides Java friendly bindings to the Clojure collections API. 
 |  Clojure collection | cyclops-clojure factories  |  JDK Interface  | Description  |
 |---|---|---|---|
 | PersistentList   | CloureListX   |  List  | LinkedListX  : extended persistent linkedlist |
-|  PersistentVector | ClojurePVector  |  List   | VectorX : extended persistent ArrayList   |
+|  PersistentVector | ClojurePersistentList  |  List   | VectorX : extended persistent ArrayList   |
 |  PersistentQueue | ClojureQueueX  |  Queue  | PersistentQueueX : extended Persistent Queue  |
 |  PersistentHashSet | ClojureHashSetX  |  Set  | PersistentSetX : extended Persistent Set  |
 |  PersistentTreeSet | ClojureTreeSetX  |  SortedSet  | OrderedSetX : extended Persistent Ordered Set  |

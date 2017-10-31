@@ -1,13 +1,13 @@
 package com.aol.cyclops.reactor.hkt;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -31,9 +31,9 @@ import java.util.stream.Stream;
 
 /**
  * Simulates Higher Kinded Types for Reactor Flux's
- * 
+ *
  * FluxKind is a Flux and a Higher Kinded Type (flux,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Flux
@@ -66,19 +66,19 @@ public final class FluxKind<T> implements Higher<flux, T>, Publisher<T> {
         return Fluxs.liftM(boxed,witness);
     }
 
-    
+
     /**
      * Construct a HKT encoded completed Flux
-     * 
+     *
      * @param value To encode inside a HKT encoded Flux
      * @return Completed HKT encoded FFlux
      */
     public static <T> FluxKind<T> just(T value){
-        
+
         return widen(Flux.just(value));
     }
     public static <T> FluxKind<T> just(T... values){
-            
+
             return widen(Flux.just(values));
     }
     public static <T> FluxKind<T> empty(){
@@ -88,21 +88,21 @@ public final class FluxKind<T> implements Higher<flux, T>, Publisher<T> {
     /**
      * Convert a Flux to a simulated HigherKindedType that captures Flux nature
      * and Flux element data type separately. Recover via @see FluxKind#narrow
-     * 
+     *
      * If the supplied Flux implements FluxKind it is returned already, otherwise it
      * is wrapped into a Flux implementation that does implement FluxKind
-     * 
+     *
      * @param completableFlux Flux to widen to a FluxKind
      * @return FluxKind encoding HKT info about Fluxs
      */
     public static <T> FluxKind<T> widen(final Flux<T> completableFlux) {
-        
+
         return new FluxKind<T>(
                          completableFlux);
     }
     /**
      * Widen a FluxKind nested inside another HKT encoded type
-     * 
+     *
      * @param flux HTK encoded type containing  a Flux to widen
      * @return HKT encoded type with a widened Flux
      */
@@ -112,15 +112,15 @@ public final class FluxKind<T> implements Higher<flux, T>, Publisher<T> {
         return (Higher)flux;
     }
     public static <T> FluxKind<T> widen(final Publisher<T> completableFlux) {
-        
+
         return new FluxKind<T>(Flux.from(
                          completableFlux));
     }
-        
-    
+
+
     /**
      * Convert the raw Higher Kinded Type for FluxKind types into the FluxKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a FluxKind
      * @return FluxKind
      */
@@ -130,19 +130,19 @@ public final class FluxKind<T> implements Higher<flux, T>, Publisher<T> {
 
     /**
      * Convert the HigherKindedType definition for a Flux into
-     * 
+     *
      * @param completableFlux Type Constructor to convert back into narrowed type
      * @return Flux from Higher Kinded Type
      */
     public static <T> Flux<T> narrow(final Higher<flux, T> completableFlux) {
-      
+
             return ((FluxKind<T>)completableFlux).narrow();
-           
-       
+
+
 
     }
 
-    
+
 
         private final Flux<T> boxed;
 
@@ -153,7 +153,7 @@ public final class FluxKind<T> implements Higher<flux, T>, Publisher<T> {
             return boxed;
         }
 
-        
+
         public ReactiveSeq<T> toReactiveSeq(){
             return ReactiveSeq.fromPublisher(boxed);
         }
@@ -179,7 +179,7 @@ public final class FluxKind<T> implements Higher<flux, T>, Publisher<T> {
         public boolean equals(Object obj) {
             return boxed.equals(obj);
         }
-        
+
         /**
          * @return
          * @see reactor.core.publisher.Flux#toString()
@@ -2331,7 +2331,7 @@ public final class FluxKind<T> implements Higher<flux, T>, Publisher<T> {
             return boxed.zipWithIterable(iterable, zipper);
         }
 
-    
 
-    
+
+
 }

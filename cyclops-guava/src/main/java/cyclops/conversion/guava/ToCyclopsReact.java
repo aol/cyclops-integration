@@ -4,7 +4,7 @@ package cyclops.conversion.guava;
 
 import com.google.common.base.Optional;
 import cyclops.control.Maybe;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 
 public class ToCyclopsReact {
 

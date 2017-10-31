@@ -1,7 +1,7 @@
 package com.aol.cyclops.rx.hkt.typeclasses.instances;
 
 import com.aol.cyclops.rx2.hkt.SingleKind;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.async.Future;
 
 import cyclops.companion.rx2.Singles;
@@ -14,7 +14,7 @@ import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.single;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.maybe;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Spouts;
 import cyclops.typeclasses.monad.Applicative;
 import cyclops.typeclasses.monad.Traverse;
@@ -35,21 +35,21 @@ public class SinglesTest {
 
     @Test
     public void unit(){
-        
+
         SingleKind<String> opt = Instances.unit()
                                             .unit("hello")
                                             .convert(SingleKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
     }
     @Test
     public void functor(){
-        
+
         SingleKind<Integer> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(SingleKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
     }
     @Test
@@ -62,15 +62,15 @@ public class SinglesTest {
     }
     @Test
     public void applicative(){
-        
+
         SingleKind<Fn1<Integer,Integer>> optFn = Instances.unit().unit(l1((Integer i) ->i*2)).convert(SingleKind::narrowK);
-        
+
         SingleKind<Integer> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .applyHKT(h-> Instances.applicative().ap(optFn, h))
                                      .convert(SingleKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()*2).join()));
     }
     @Test
@@ -81,27 +81,27 @@ public class SinglesTest {
     }
     @Test
     public void monad(){
-        
+
         SingleKind<Integer> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(SingleKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
     }
     @Test
     public void monadZeroFilter(){
-        
+
         SingleKind<String> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(SingleKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
     }
     @Test
     public void monadZeroFilterOut(){
-        
+
         SingleKind<String> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
@@ -113,7 +113,7 @@ public class SinglesTest {
         f.forEach(System.out::println,System.err::println,()->complete.set(true));
         assertFalse(complete.get());
     }
-    
+
     @Test
     public void monadPlus(){
         SingleKind<Integer> opt = Instances.<Integer>monadPlus()
@@ -124,7 +124,7 @@ public class SinglesTest {
     }
     @Test
     public void monadPlusNonEmpty(){
-        
+
         Monoid<SingleKind<Integer>> m = Monoid.of(widen(Single.never()), (a, b)->a.toFuture().isDone() ? b : a);
         SingleKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(widen(Single.just(5)), widen(Single.just(10)))
@@ -135,14 +135,14 @@ public class SinglesTest {
     public void  foldLeft(){
         int sum  = Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, widen(Future.ofResult(4)));
-        
+
         assertThat(sum,equalTo(4));
     }
     @Test
     public void  foldRight(){
         int sum  = Instances.foldable()
                         .foldRight(0, (a,b)->a+b, widen(Future.ofResult(1)));
-        
+
         assertThat(sum,equalTo(1));
     }
     @Test
@@ -172,5 +172,5 @@ public class SinglesTest {
                                      .map(h -> h.convert(SingleKind::narrow));
 
     }
-    
+
 }

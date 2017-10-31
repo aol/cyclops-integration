@@ -12,7 +12,7 @@ import cyclops.collections.mutable.ListX;
 import cyclops.companion.functionaljava.NonEmptyLists;
 import cyclops.companion.functionaljava.Options;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Maybe;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.option;
@@ -50,9 +50,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for Option's
- * 
+ *
  * OptionKind is a Option and a Higher Kinded Type (option,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Option
@@ -86,7 +86,7 @@ public final class OptionKind<T> implements Higher<option, T>, Iterable<T> {
     public static <T> OptionKind<T> empty() {
         return widen(Option.none());
     }
-    
+
     /**
      * @param value Value to embed in an Option
      * @return An HKT encoded Option
@@ -97,24 +97,24 @@ public final class OptionKind<T> implements Higher<option, T>, Iterable<T> {
     /**
      * Convert a Option to a simulated HigherKindedType that captures Option nature
      * and Option element data type separately. Recover via @see OptionKind#narrow
-     * 
+     *
      * If the supplied Option implements OptionKind it is returned already, otherwise it
      * is wrapped into a Option implementation that does implement OptionKind
-     * 
+     *
      * @param Option Option to widen to a OptionKind
      * @return OptionKind encoding HKT info about Options
      */
     public static <T> OptionKind<T> widen(final Option<T> Option) {
-        
+
         return new OptionKind<T>(Option);
     }
     public static <T> OptionKind<T> widen(final Maybe<T> option) {
-        
+
         return new OptionKind<T>(FromCyclopsReact.option(option));
     }
     /**
      * Convert the raw Higher Kinded Type for OptionKind types into the OptionKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a OptionKind
      * @return OptionKind
      */
@@ -123,26 +123,26 @@ public final class OptionKind<T> implements Higher<option, T>, Iterable<T> {
     }
     /**
      * Convert the HigherKindedType definition for a Option into
-     * 
+     *
      * @param Option Type Constructor to convert back into narrowed type
      * @return Option from Higher Kinded Type
      */
     public static <T> Option<T> narrow(final Higher<option, T> Option) {
         //has to be an OptionKind as only OptionKind can implement Higher<option, T>
          return ((OptionKind<T>)Option).boxed;
-        
+
     }
-    
+
     public <R> R visit(Function<? super T, ? extends R> some, Supplier<? extends R> none){
         Option<T> opt = narrow();
         return opt.isNone() ? none.get() : some.apply(opt.some());
-       
+
     }
     public boolean isSome(){
         return boxed.isSome();
     }
     public Option<T> narrow(){
-       
+
         return boxed;
     }
 
@@ -741,6 +741,6 @@ public final class OptionKind<T> implements Higher<option, T>, Iterable<T> {
         return boxed.liftM2(ob, f);
     }
 
-   
-   
+
+
 }

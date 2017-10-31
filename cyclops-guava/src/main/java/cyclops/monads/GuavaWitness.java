@@ -4,7 +4,7 @@ package cyclops.monads;
 import com.aol.cyclops.guava.adapter.FluentIterableAdapter;
 import com.aol.cyclops.guava.adapter.OptionalAdapter;
 
-import com.aol.cyclops2.types.extensability.FunctionalAdapter;
+import com.oath.cyclops.types.extensability.FunctionalAdapter;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 

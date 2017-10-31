@@ -12,7 +12,7 @@ import cyclops.companion.vavr.Lazys;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Eval;
 
 import cyclops.monads.VavrWitness;
@@ -32,9 +32,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for Lazy's
- * 
+ *
  * LazyKind is a Lazy and a Higher Kinded Type (lazy,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Lazy
@@ -63,7 +63,7 @@ public final  class LazyKind<T> implements Higher<lazy, T> {
     }
     /**
      * Convert the raw Higher Kinded Type for MaybeType types into the MaybeType type definition class
-     * 
+     *
      * @param future HKT encoded list into a OptionalType
      * @return MaybeType
      */
@@ -73,15 +73,15 @@ public final  class LazyKind<T> implements Higher<lazy, T> {
     /**
      * Lazily create an Lazy from the specified Supplier. Supplier#get will only be called once. Return values of Lazy operations will also
      * be cached (later indicates lazy and caching - characteristics can be changed using flatMap).
-     * 
+     *
      * <pre>
      * {@code
      *   LazyKind<Integer> e = LazyKind.of(()->10)
      *                                 .map(i->i*2);
      *   //LazyKind[20] - lazy so will not be executed until the value is accessed
      * }</pre>
-     * 
-     * 
+     *
+     *
      * @param value Supplier to (lazily) populate this Lazy
      * @return LazyKind with specified value
      */
@@ -89,45 +89,45 @@ public final  class LazyKind<T> implements Higher<lazy, T> {
         return widen(Lazy.of(value));
     }
 
-  
+
     /**
      * Convert a Lazy to a simulated HigherKindedType that captures Lazy nature
      * and Lazy element data type separately. Recover via @see LazyKind#narrow
-     * 
+     *
      * If the supplied Lazy implements LazyKind it is returned already, otherwise it
      * is wrapped into a Lazy implementation that does implement LazyKind
-     * 
+     *
      * @param eval Lazy to widen to a LazyKind
      * @return LazyKind encoding HKT info about Lazys
      */
     public static <T> LazyKind<T> widen(final Lazy<T> eval) {
-       
+
         return new LazyKind<>(eval);
     }
     public static <T> LazyKind<T> widen(final Eval<T> eval) {
-        
+
         return new LazyKind<>(FromCyclopsReact.lazy(eval));
     }
 
     /**
      * Convert the HigherKindedType definition for a Lazy into
-     * 
+     *
      * @param eval Type Constructor to convert back into narrowed type
      * @return LazyX from Higher Kinded Type
      */
     public static <T> Lazy<T> narrow(final Higher<lazy, T> eval) {
-       
+
             return ((LazyKind) eval).boxed;
-       
+
     }
     public static <T> Eval<T> narrowEval(final Higher<lazy, T> eval) {
-        
+
         return ToCyclopsReact.eval(((LazyKind) eval).boxed);
-   
+
 }
 
-   
-       
+
+
         private final Lazy<T> boxed;
 
         /**
@@ -138,7 +138,7 @@ public final  class LazyKind<T> implements Higher<lazy, T> {
         }
 
 
-       
+
 
         public T get() {
             return boxed.get();
@@ -275,9 +275,9 @@ public final  class LazyKind<T> implements Higher<lazy, T> {
 
 
 
-        
-              
 
-    
+
+
+
 
 }

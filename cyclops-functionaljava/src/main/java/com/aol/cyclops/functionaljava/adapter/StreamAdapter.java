@@ -3,9 +3,9 @@ package com.aol.cyclops.functionaljava.adapter;
 import cyclops.companion.functionaljava.Streams;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.stream;
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import fj.data.Stream;
 
 import java.util.function.Function;

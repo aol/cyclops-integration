@@ -1,7 +1,7 @@
 package cyclops.streams.observables;
 
 import cyclops.companion.rx.Observables;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Spouts;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +75,7 @@ public class AsyncForEachSequenceMTest {
         }
         assertThat(times.get(),equalTo(1));
     }
-	
+
 	//this::load is simple
 	String load(int i){
         if (i == 2) {
@@ -123,7 +123,7 @@ public class AsyncForEachSequenceMTest {
 		assertThat(result,hasItems(1,3,4,5,6));
 		assertThat(result,not(hasItems(7)));
 	}
-	
+
 	@Test
 	public void forEachWithEvents2() throws InterruptedException {
 		error = null;
@@ -147,24 +147,24 @@ public class AsyncForEachSequenceMTest {
 	}
 	@Test
 	public void forEachXWithErrorExample(){
-	    
-	   
+
+
 	    Subscription s = of(10,20,30)
                                     .map(this::process)
                                     .forEach( 2,System.out::println, System.err::println);
-        
+
         System.out.println("Completed 2");
         s.request(1);
         System.out.println("Finished all!");
-        
+
 	}
 	@Test
 	public void forEachXWithErrors() throws InterruptedException {
-	    
-	    
-	
+
+
+
 		List<Integer> list = new ArrayList<>();
-		
+
 		Subscription s = of(()->1,()->2,()->3,(Supplier<Integer>)()->{ throw new RuntimeException();})
 							.map(Supplier::get)
 							.forEach( 2, i->list.add(i),
@@ -177,9 +177,9 @@ public class AsyncForEachSequenceMTest {
 	}
 	@Test
 	public void forEachXWithEvents() throws InterruptedException {
-	
+
 		List<Integer> list = new ArrayList<>();
-		
+
 		Subscription s = of(()->1,()->2,()->3,(Supplier<Integer>)()->{ throw new RuntimeException();}).map(Supplier::get)
 						.forEach( 2, i->list.add(i),
                                 e->{error=e; complete=true;},()->complete=true);
@@ -192,14 +192,14 @@ public class AsyncForEachSequenceMTest {
 
 
 		assertThat(error,instanceOf(RuntimeException.class));
-		
+
 		assertTrue(complete);
 	}
-	
-	
+
+
 	@Test
 	public void forEachWithErrors() throws InterruptedException {
-	
+
 		List<Integer> list = new ArrayList<>();
 		assertThat(error,nullValue());
 		of(()->1,()->2,()->3,(Supplier<Integer>)()->{ throw new RuntimeException();}).map(Supplier::get)
@@ -209,33 +209,33 @@ public class AsyncForEachSequenceMTest {
 		Thread.sleep(50);
 		assertThat(list,hasItems(1,2,3));
 		assertThat(list.size(),equalTo(3));
-		
+
 		assertThat(list,hasItems(1,2,3));
 		assertThat(list.size(),equalTo(3));
-		
-	
+
+
 		assertThat(error,instanceOf(RuntimeException.class));
 	}
 	@Test
 	public void forEachWithEvents(){
-	
+
 		List<Integer> list = new ArrayList<>();
 		assertFalse(complete);
 		assertThat(error,nullValue());
 		of(()->1,()->2,()->3,(Supplier<Integer>)()->{ throw new RuntimeException();})
 				.map(Supplier::get)
 				 .forEach(i->list.add(i), e->{error=e; complete=true;},()->complete=true);
-		
+
 		while(!complete){
             LockSupport.parkNanos(0l);
         }
-		
+
 		assertThat(list,hasItems(1,2,3));
 		assertThat(list.size(),equalTo(3));
-		
-		
+
+
 		assertThat(error,instanceOf(RuntimeException.class));
-		
+
 		assertTrue(complete);
 	}
 }

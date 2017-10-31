@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.observable;
 import cyclops.monads.WitnessType;
@@ -35,9 +35,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for Reactor Observable's
- * 
+ *
  * ObservableKind is a Observable and a Higher Kinded Type (observable,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Observable
@@ -68,7 +68,7 @@ public final class ObservableKind<T> implements Higher<observable, T>, Publisher
 
     /**
      * Construct a HKT encoded completed Observable
-     * 
+     *
      * @param value To encode inside a HKT encoded Observable
      * @return Completed HKT encoded FObservable
      */

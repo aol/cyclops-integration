@@ -19,14 +19,14 @@ import cyclops.monads.*;
 import cyclops.monads.Rx2Witness.flowable;
 import cyclops.monads.Rx2Witness.observable;
 import com.aol.cyclops.rx2.hkt.ObservableKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.Rx2Witness.single;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 
 
 import cyclops.stream.Spouts;
@@ -42,7 +42,7 @@ import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 
 import static com.aol.cyclops.rx2.hkt.ObservableKind.widen;
@@ -51,7 +51,7 @@ import static jdk.nashorn.internal.objects.NativeArray.reduce;
 
 /**
  * Companion class for working with RxJava Observable types
- * 
+ *
  * @author johnmcclean
  *
  */
@@ -212,10 +212,10 @@ public class Observables {
 
 
 
-    
 
 
-  
+
+
     public static <T> ReactiveSeq<T> empty() {
         return reactiveSeq(Observable.empty());
     }
@@ -225,36 +225,36 @@ public class Observables {
     }
 
 
-  
-  
 
-   
+
+
+
     public static <T> ReactiveSeq<T> from(Iterable<? extends T> iterable) {
         return reactiveSeq(Observable.fromIterable(iterable));
     }
 
 
-   
+
     public static ReactiveSeq<Long> interval(long interval, TimeUnit unit) {
         return interval(interval, interval, unit, Schedulers.computation());
     }
 
-    
+
     public static ReactiveSeq<Long> interval(long interval, TimeUnit unit, Scheduler scheduler) {
         return interval(interval, interval, unit, scheduler);
     }
 
-   
+
     public static ReactiveSeq<Long> interval(long initialDelay, long period, TimeUnit unit) {
         return interval(initialDelay, period, unit, Schedulers.computation());
     }
 
-   
+
     public static ReactiveSeq<Long> interval(long initialDelay, long period, TimeUnit unit, Scheduler scheduler) {
         return reactiveSeq(Observable.interval(initialDelay,period,unit,scheduler));
     }
 
-   
+
     public static <T> ReactiveSeq<T> just(final T value) {
         return reactiveSeq(Observable.just(value));
     }
@@ -271,12 +271,12 @@ public class Observables {
         return just(values);
     }
 
-   
+
     public static <T> ReactiveSeq<T> merge(Iterable<? extends Observable<? extends T>> sequences) {
         return merge(from(sequences));
     }
 
- 
+
     public static <T> ReactiveSeq<T> merge(Iterable<? extends Observable<? extends T>> sequences, int maxConcurrent) {
         return merge(from(sequences), maxConcurrent);
     }
@@ -307,7 +307,7 @@ public class Observables {
     }
 
 
-  
+
     public static <T> ReactiveSeq<T> never() {
         return reactiveSeq(Observable.never());
     }
@@ -317,17 +317,17 @@ public class Observables {
     }
 
 
-   
+
     public static <T> ReactiveSeq<T> switchOnNext(Observable<? extends Observable<? extends T>> sequenceOfSequences) {
         return reactiveSeq(Observable.switchOnNext(sequenceOfSequences));
     }
 
-    
+
     public static <T> ReactiveSeq<T> switchOnNextDelayError(Observable<? extends Observable<? extends T>> sequenceOfSequences) {
         return reactiveSeq(Observable.switchOnNext(sequenceOfSequences));
     }
 
-   
+
     public static ReactiveSeq<Long> timer(long initialDelay, long period, TimeUnit unit) {
         return interval(initialDelay, period, unit, Schedulers.computation());
     }
@@ -337,28 +337,28 @@ public class Observables {
         return timer(delay, unit, Schedulers.computation());
     }
 
- 
+
     public static ReactiveSeq<Long> timer(long delay, TimeUnit unit, Scheduler scheduler) {
         return reactiveSeq(Observable.timer(delay,unit,scheduler));
     }
 
-    
-    
+
+
 
     /**
      * Construct an AnyM type from an Observable. This allows the Observable to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
-     * 
+     *
      * <pre>
-     * {@code 
-     *    
+     * {@code
+     *
      *    AnyMSeq<Integer> obs = Observables.anyM(Observable.just(1,2,3));
      *    AnyMSeq<Integer> transformedObs = myGenericOperation(obs);
-     *    
+     *
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
      * }
      * </pre>
-     * 
+     *
      * @param obs Observable to wrap inside an AnyM
      * @return AnyMSeq wrapping an Observable
      */
@@ -367,7 +367,7 @@ public class Observables {
     }
 
     /**
-     * Perform a For Comprehension over a Observable, accepting 3 generating functions. 
+     * Perform a For Comprehension over a Observable, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Observables.
      *
      *  <pre>
@@ -416,8 +416,8 @@ public class Observables {
     }
 
     /**
-     * Perform a For Comprehension over a Observable, accepting 3 generating functions. 
-     * This results in a four level nested internal iteration over the provided Observables. 
+     * Perform a For Comprehension over a Observable, accepting 3 generating functions.
+     * This results in a four level nested internal iteration over the provided Observables.
      * <pre>
      * {@code
      *
@@ -465,8 +465,8 @@ public class Observables {
     }
 
     /**
-     * Perform a For Comprehension over a Observable, accepting 2 generating functions. 
-     * This results in a three level nested internal iteration over the provided Observables. 
+     * Perform a For Comprehension over a Observable, accepting 2 generating functions.
+     * This results in a three level nested internal iteration over the provided Observables.
      *
      * <pre>
      * {@code
@@ -550,8 +550,8 @@ public class Observables {
     }
 
     /**
-     * Perform a For Comprehension over a Observable, accepting an additonal generating function. 
-     * This results in a two level nested internal iteration over the provided Observables. 
+     * Perform a For Comprehension over a Observable, accepting an additonal generating function.
+     * This results in a two level nested internal iteration over the provided Observables.
      *
      * <pre>
      * {@code

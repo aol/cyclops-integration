@@ -25,10 +25,10 @@ public class DexxTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Dexx List that implements PStack interface
+     * @return Reducer to convert a sequence of data to a Dexx List that implements PersistentList interface
      */
-    public static <T> Reducer<PStack<T>> list() {
-        return DexxListX.toPStack();
+    public static <T> Reducer<PersistentList<T>> list() {
+        return DexxListX.toPersistentList();
     }
     /**
      * Use to set the type of a VectorX to Dexx Vector
@@ -43,10 +43,10 @@ public class DexxTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Dexx Vector that implements PVector interface
+     * @return Reducer to convert a sequence of data to a Dexx Vector that implements PersistentList interface
      */
-    public static <T> Reducer<PVector<T>> vector() {
-        return DexxVectorX.toPVector();
+    public static <T> Reducer<PersistentList<T>> vector() {
+        return DexxVectorX.toPersistentList();
     }
 
     /**
@@ -62,12 +62,12 @@ public class DexxTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Dexx Set that implements POrderedSet interface
+     * @return Reducer to convert a sequence of data to a Dexx Set that implements PersistentSortedSet interface
      */
-    public static <T> Reducer<POrderedSet<T>> treeSet(Comparator<T> ordering) {
-        return DexxTreeSetX.toPOrderedSet(ordering);
+    public static <T> Reducer<PersistentSortedSet<T>> treeSet(Comparator<T> ordering) {
+        return DexxTreeSetX.toPersistentSortedSet(ordering);
     }
-    public static <T extends Comparable<T>> Reducer<POrderedSet<T>> treeSet() {
+    public static <T extends Comparable<T>> Reducer<PersistentSortedSet<T>> treeSet() {
         return DexxTypes.<T>treeSet(Comparator.naturalOrder());
     }
 
@@ -86,7 +86,7 @@ public class DexxTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Dexx Set that implements PSet interface
      */
-    public static <T> Reducer<PSet<T>> hashSet() {
+    public static <T> Reducer<PersistentSet<T>> hashSet() {
         return DexxHashSetX.toPSet();
     }
 }

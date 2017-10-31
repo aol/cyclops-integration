@@ -17,14 +17,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.PersistentSetX;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Reducers;
 import cyclops.companion.Semigroups;
 import cyclops.stream.Streamable;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -113,7 +113,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
@@ -123,7 +123,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
         return ScalaHashSetX.empty();
     }
 
-    
+
 
     @Test
     public void remove() {
@@ -220,15 +220,15 @@ public class LazyPSetXTest extends AbstractCollectionXTest {
     }
     @Test
     public void takeWhileTest(){
-        
-        
-        
-        
-        
+
+
+
+
+
     }
     @Test
     public void limitWhileTest(){
 
-        
+
     }
 }

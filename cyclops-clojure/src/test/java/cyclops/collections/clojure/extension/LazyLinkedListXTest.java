@@ -8,13 +8,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
 
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Semigroups;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 import cyclops.collections.clojure.ClojureListX;
@@ -39,7 +39,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
         assertThat(of(1,2,3)
                    .combine((a, b)->a.equals(b), Semigroups.intSum)
                    .toListX(),equalTo(ListX.of(1,2,3)));
-                   
+
     }
 
     @Test
@@ -51,7 +51,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
@@ -61,7 +61,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
         return ClojureListX.empty();
     }
 
-    
+
 
     @Test
     public void remove() {

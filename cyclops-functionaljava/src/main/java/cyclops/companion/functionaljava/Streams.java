@@ -14,14 +14,14 @@ import cyclops.monads.FJWitness.list;
 import cyclops.monads.FJWitness.nonEmptyList;
 import cyclops.monads.FJWitness.option;
 import cyclops.monads.FJWitness.stream;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -33,7 +33,7 @@ import fj.F;
 import fj.P2;
 import fj.data.*;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -166,7 +166,7 @@ public class Streams {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Streames.forEach4;
+     *  import static com.oath.cyclops.reactor.Streames.forEach4;
      *
      *  forEach4(IntStream.range(1,10).boxed(),
     a-> Stream.iterate(a,i->i+1).limit(10),

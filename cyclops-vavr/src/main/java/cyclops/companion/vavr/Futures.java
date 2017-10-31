@@ -16,22 +16,22 @@ import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.ArrayKind;
 import com.aol.cyclops.vavr.hkt.ListKind;
-import com.aol.cyclops2.react.Status;
+import com.oath.cyclops.react.Status;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness.future;
 import com.aol.cyclops.vavr.hkt.FutureKind;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Monoids;
 import cyclops.function.Reducer;
@@ -249,7 +249,7 @@ public class Futures {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Futures.forEach4;
+     *   import static com.oath.cyclops.reactor.Futures.forEach4;
      *
     forEach4(Future.just(1),
     a-> Future.just(a+1),
@@ -297,7 +297,7 @@ public class Futures {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Futures.forEach4;
+     *  import static com.oath.cyclops.reactor.Futures.forEach4;
      *
      *  forEach4(Future.just(1),
     a-> Future.just(a+1),
@@ -348,7 +348,7 @@ public class Futures {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Futures.forEach3;
+     *   import static com.oath.cyclops.reactor.Futures.forEach3;
      *
     forEach3(Future.just(1),
     a-> Future.just(a+1),
@@ -390,7 +390,7 @@ public class Futures {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Futures.forEach3;
+     *  import static com.oath.cyclops.reactor.Futures.forEach3;
      *
      *  forEach3(Future.just(1),
     a-> Future.just(a+1),
@@ -436,7 +436,7 @@ public class Futures {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Futures.forEach;
+     *   import static com.oath.cyclops.reactor.Futures.forEach;
      *
     forEach(Future.just(1),
     a-> Future.just(a+1),
@@ -471,7 +471,7 @@ public class Futures {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Futures.forEach;
+     *  import static com.oath.cyclops.reactor.Futures.forEach;
      *
      *  forEach(Future.just(1),
     a-> Future.just(a+1),

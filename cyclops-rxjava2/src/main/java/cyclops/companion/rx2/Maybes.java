@@ -5,11 +5,11 @@ import com.aol.cyclops.rx2.hkt.FlowableKind;
 import com.aol.cyclops.rx2.hkt.MaybeKind;
 import com.aol.cyclops.rx2.hkt.ObservableKind;
 import com.aol.cyclops.rx2.hkt.SingleKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.react.Status;
-import com.aol.cyclops2.types.MonadicValue;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.react.Status;
+import com.oath.cyclops.types.MonadicValue;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.async.Future;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
@@ -32,7 +32,7 @@ import cyclops.monads.Rx2Witness.observable;
 import cyclops.monads.Rx2Witness.single;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.rx2.MaybeT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -60,7 +60,7 @@ import static com.aol.cyclops.rx2.hkt.MaybeKind.widen;
 
 /**
  * Companion class for working with Reactor Maybe types
- * 
+ *
  * @author johnmcclean
  *
  */
@@ -141,21 +141,21 @@ public class Maybes {
     public static <T> Eval<T> eval(Maybe<T> opt){
         return Eval.fromFuture(future(opt));
     }
-    
+
     /**
      * Construct an AnyM type from a Maybe. This allows the Maybe to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
-     * 
+     *
      * <pre>
-     * {@code 
-     *    
+     * {@code
+     *
      *    AnyMSeq<Integer> maybe = Fluxs.anyM(Maybe.just(1,2,3));
      *    AnyMSeq<Integer> transformedMaybe = myGenericOperation(maybe);
-     *    
+     *
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
      * }
      * </pre>
-     * 
+     *
      * @param maybe To wrap inside an AnyM
      * @return AnyMSeq wrapping a Maybe
      */
@@ -271,23 +271,23 @@ public class Maybes {
     }
 
     /**
-     * Perform a For Comprehension over a Maybe, accepting 3 generating functions. 
+     * Perform a For Comprehension over a Maybe, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Maybes.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Maybes.forEach4;
-     *    
-          forEach4(Maybe.just(1), 
+     *
+          forEach4(Maybe.just(1),
                   a-> Maybe.just(a+1),
                   (a,b) -> Maybe.<Integer>just(a+b),
                   (a,b,c) -> Maybe.<Integer>just(a+b+c),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Maybe
      * @param value2 Nested Maybe
      * @param value3 Nested Maybe
@@ -320,22 +320,22 @@ public class Maybes {
 
 
     /**
-     * Perform a For Comprehension over a Maybe, accepting 2 generating functions. 
+     * Perform a For Comprehension over a Maybe, accepting 2 generating functions.
      * This results in a three level nested internal iteration over the provided Maybes.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Maybes.forEach3;
-     *    
-          forEach3(Maybe.just(1), 
+     *
+          forEach3(Maybe.just(1),
                   a-> Maybe.just(a+1),
                   (a,b) -> Maybe.<Integer>just(a+b),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Maybe
      * @param value2 Nested Maybe
      * @param value3 Nested Maybe
@@ -368,21 +368,21 @@ public class Maybes {
 
 
     /**
-     * Perform a For Comprehension over a Maybe, accepting a generating function. 
+     * Perform a For Comprehension over a Maybe, accepting a generating function.
      * This results in a two level nested internal iteration over the provided Maybes.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Maybes.forEach;
-     *    
-          forEach(Maybe.just(1), 
+     *
+          forEach(Maybe.just(1),
                   a-> Maybe.just(a+1),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Maybe
      * @param value2 Nested Maybe
      * @param yieldingFunction Generates a result per combination
@@ -409,7 +409,7 @@ public class Maybes {
 
     /**
      * Lazily combine this Maybe with the supplied value via the supplied BiFunction
-     * 
+     *
      * @param maybe Maybe to combine with another value
      * @param app Value to combine with supplied maybe
      * @param fn Combiner function
@@ -423,7 +423,7 @@ public class Maybes {
 
     /**
      * Lazily combine this Maybe with the supplied Maybe via the supplied BiFunction
-     * 
+     *
      * @param maybe Maybe to combine with another value
      * @param app Maybe to combine with supplied maybe
      * @param fn Combiner function
@@ -437,7 +437,7 @@ public class Maybes {
 
     /**
      * Combine the provided Maybe with the first element (if present) in the provided Iterable using the provided BiFunction
-     * 
+     *
      * @param maybe Maybe to combine with an Iterable
      * @param app Iterable to combine with a Maybe
      * @param fn Combining function
@@ -451,7 +451,7 @@ public class Maybes {
 
     /**
      * Combine the provided Maybe with the first element (if present) in the provided Publisher using the provided BiFunction
-     * 
+     *
      * @param maybe  Maybe to combine with a Publisher
      * @param fn Publisher to combine with a Maybe
      * @param app Combining function
@@ -465,7 +465,7 @@ public class Maybes {
 
     /**
      * Test if value is equal to the value inside this Maybe
-     * 
+     *
      * @param maybe Maybe to test
      * @param test Value to test
      * @return true if equal
@@ -477,7 +477,7 @@ public class Maybes {
 
     /**
      * Construct a Maybe from Iterable by taking the first value from Iterable
-     * 
+     *
      * @param t Iterable to populate Maybe from
      * @return Maybe containing first element from Iterable (or empty Maybe)
      */
@@ -487,7 +487,7 @@ public class Maybes {
 
     /**
      * Get an Iterator for the value (if any) in the provided Maybe
-     * 
+     *
      * @param pub Maybe to get Iterator for
      * @return Iterator over Maybe value
      */

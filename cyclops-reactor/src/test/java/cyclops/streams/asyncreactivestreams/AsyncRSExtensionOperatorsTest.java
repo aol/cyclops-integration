@@ -7,7 +7,7 @@ import cyclops.companion.Streams;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Spouts;
 import cyclops.stream.Streamable;
 import org.hamcrest.Matchers;

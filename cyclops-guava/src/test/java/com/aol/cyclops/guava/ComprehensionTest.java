@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.guava.FluentIterables;
 import cyclops.companion.guava.Optionals;
-import org.jooq.lambda.tuple.Tuple;
+import cyclops.data.tuple.Tuple;
 import org.junit.Test;
 
 

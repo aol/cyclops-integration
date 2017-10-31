@@ -1,10 +1,10 @@
 package com.aol.cyclops.vavr.hkt;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.vavr.HashSets;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.hashSet;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -20,9 +20,9 @@ import java.util.function.Function;
 
 /**
  * Simulates Higher Kinded Types for Vavr Set's
- * 
+ *
  * HashSetKind is a Set and a Higher Kinded Type (HashSetKind.µ,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Set
@@ -49,7 +49,7 @@ public class HashSetKind<T> implements Higher<hashSet, T>, Publisher<T>, Set<T> 
 
     /**
      * Construct a HKT encoded completed Set
-     * 
+     *
      * @param value To encode inside a HKT encoded Set
      * @return Completed HKT encoded FSet
      */
@@ -70,10 +70,10 @@ public class HashSetKind<T> implements Higher<hashSet, T>, Publisher<T>, Set<T> 
     /**
      * Convert a Set to a simulated HigherKindedType that captures Set nature
      * and Set element data type separately. Recover via @see HashSetKind#narrow
-     * 
+     *
      * If the supplied Set implements HashSetKind it is returned already, otherwise it
      * is wrapped into a Set implementation that does implement HashSetKind
-     * 
+     *
      * @param completableSet Set to widen to a HashSetKind
      * @return HashSetKind encoding HKT info about HashSets
      */
@@ -85,7 +85,7 @@ public class HashSetKind<T> implements Higher<hashSet, T>, Publisher<T>, Set<T> 
 
     /**
      * Widen a HashSetKind nested inside another HKT encoded type
-     * 
+     *
      * @param flux HTK encoded type containing  a Set to widen
      * @return HKT encoded type with a widened Set
      */
@@ -104,7 +104,7 @@ public class HashSetKind<T> implements Higher<hashSet, T>, Publisher<T>, Set<T> 
 
     /**
      * Convert the raw Higher Kinded Type for HashSetKind types into the HashSetKind type definition class
-     * 
+     *
      * @param future HKT encoded hashSet into a HashSetKind
      * @return HashSetKind
      */
@@ -114,7 +114,7 @@ public class HashSetKind<T> implements Higher<hashSet, T>, Publisher<T>, Set<T> 
 
     /**
      * Convert the HigherKindedType definition for a Set into
-     * 
+     *
      * @param set Type Constructor to convert back into narrowed type
      * @return Set from Higher Kinded Type
      */

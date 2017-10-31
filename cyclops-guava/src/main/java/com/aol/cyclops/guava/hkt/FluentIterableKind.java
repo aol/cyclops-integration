@@ -4,13 +4,13 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.guava.FluentIterables;
 import cyclops.monads.GuavaWitness;
 import cyclops.monads.GuavaWitness.fluentIterable;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -40,9 +40,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for ToCyclopsReact FluentIterable's
- * 
+ *
  * FluentIterableKind is a FluentIterable and a Higher Kinded Type (fluentIterable,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <E> Data type stored within the FluentIterable
@@ -73,7 +73,7 @@ public final class FluentIterableKind<E> implements Higher<fluentIterable, E>, P
     }
     /**
      * Construct a HKT encoded completed FluentIterable
-     * 
+     *
      * @param value To encode inside a HKT encoded FluentIterable
      * @return Completed HKT encoded FFluentIterable
      */
@@ -94,10 +94,10 @@ public final class FluentIterableKind<E> implements Higher<fluentIterable, E>, P
     /**
      * Convert a FluentIterable to a simulated HigherKindedType that captures FluentIterable nature
      * and FluentIterable element data type separately. Recover via @see FluentIterableKind#narrow
-     * 
+     *
      * If the supplied FluentIterable implements FluentIterableKind it is returned already, otherwise it
      * is wrapped into a FluentIterable implementation that does implement FluentIterableKind
-     * 
+     *
      * @param fluentIterable FluentIterable to widen to a FluentIterableKind
      * @return FluentIterableKind encoding HKT info about FluentIterables
      */
@@ -109,7 +109,7 @@ public final class FluentIterableKind<E> implements Higher<fluentIterable, E>, P
 
     /**
      * Widen a FluentIterableKind nested inside another HKT encoded type
-     * 
+     *
      * @param flux HTK encoded type containing  a FluentIterable to widen
      * @return HKT encoded type with a widened FluentIterable
      */
@@ -122,13 +122,13 @@ public final class FluentIterableKind<E> implements Higher<fluentIterable, E>, P
 
     public static <T> FluentIterableKind<T> widen(final Publisher<T> completableFluentIterable) {
 
-        
+
         return new FluentIterableKind<>(FromCyclopsReact.fromSimpleReact(ReactiveSeq.fromPublisher(completableFluentIterable)));
     }
 
     /**
      * Convert the raw Higher Kinded Type for FluentIterableKind types into the FluentIterableKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a FluentIterableKind
      * @return FluentIterableKind
      */
@@ -138,7 +138,7 @@ public final class FluentIterableKind<E> implements Higher<fluentIterable, E>, P
 
     /**
      * Convert the HigherKindedType definition for a FluentIterable into
-     * 
+     *
      * @param fluentIterable Type Constructor to convert back into narrowed type
      * @return FluentIterable from Higher Kinded Type
      */
@@ -169,7 +169,7 @@ public final class FluentIterableKind<E> implements Higher<fluentIterable, E>, P
         return boxed.iterator();
     }
 
-  
+
 
     /**
      * @return
@@ -453,7 +453,7 @@ public final class FluentIterableKind<E> implements Higher<fluentIterable, E>, P
     public ReactiveSeq<E> toReactiveSeq(){
         return ReactiveSeq.fromIterable(boxed);
     }
-    
 
-   
+
+
 }

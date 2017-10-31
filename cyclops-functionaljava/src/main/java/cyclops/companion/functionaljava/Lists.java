@@ -14,15 +14,15 @@ import cyclops.conversion.functionaljava.FromJDK;
 import cyclops.conversion.functionaljava.FromJooqLambda;
 import cyclops.monads.*;
 import cyclops.monads.FJWitness.list;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.FJWitness.nonEmptyList;
 import cyclops.monads.FJWitness.option;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -39,7 +39,7 @@ import fj.data.List;
 import fj.data.Stream;
 import io.vavr.collection.*;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -165,7 +165,7 @@ public class Lists {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Listes.forEach4;
+     *  import static com.oath.cyclops.reactor.Listes.forEach4;
      *
      *  forEach4(IntList.range(1,10).boxed(),
     a-> List.iterate(a,i->i+1).limit(10),

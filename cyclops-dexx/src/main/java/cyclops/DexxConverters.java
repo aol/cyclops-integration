@@ -1,7 +1,7 @@
 package cyclops;
 
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.foldable.To;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.foldable.To;
 import com.github.andrewoma.dexx.collection.HashSet;
 import com.github.andrewoma.dexx.collection.List;
 import com.github.andrewoma.dexx.collection.TreeSet;
@@ -71,7 +71,7 @@ public interface DexxConverters {
                 });
     }
 
-    
+
 
 
 }

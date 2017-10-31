@@ -33,7 +33,7 @@ configurations {
 
 dependencies {
 
-  compile group: 'com.aol.simplereact', name: 'cyclops-react', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   compile group: 'io.vavr', name: 'vavr', version: vavrVersion
   provided "org.functionaljava:functionaljava:" + functionalJavaVersion

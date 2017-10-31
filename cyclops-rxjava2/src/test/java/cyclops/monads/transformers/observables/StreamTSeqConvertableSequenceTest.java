@@ -1,7 +1,7 @@
 package cyclops.monads.transformers.observables;
 
 
-import com.aol.cyclops2.types.foldable.ConvertableSequence;
+import com.oath.cyclops.types.foldable.ConvertableSequence;
 import cyclops.companion.rx2.Observables;
 import cyclops.monads.Witness;
 import cyclops.monads.transformers.AbstractConvertableSequenceTest;

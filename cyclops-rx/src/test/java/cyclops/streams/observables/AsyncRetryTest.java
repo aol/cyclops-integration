@@ -1,8 +1,8 @@
 package cyclops.streams.observables;
 
-import com.aol.cyclops2.util.ExceptionSoftener;
+import com.oath.cyclops.util.ExceptionSoftener;
 import cyclops.companion.rx.Observables;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Spouts;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -25,17 +25,17 @@ import static org.mockito.Matchers.anyInt;
 
 public class AsyncRetryTest {
 
-	
+
 	@Mock
 	Function<Integer, String> serviceMock;
-	
+
 	Throwable error;
-	
+
 	@Before
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		
-		
+
+
 		error = null;
 	}
 
@@ -86,7 +86,7 @@ public class AsyncRetryTest {
 					.recover(e->"hello")
 					.firstValue(),equalTo("hello"));
 	}
-	
+
 	@Test
 	public void recover2IO(){
 		assertThat(of(1,2,3,4)
@@ -97,7 +97,7 @@ public class AsyncRetryTest {
 					.firstValue(),equalTo("hello"));
 	}
 	@Test(expected=Exception.class)
-	
+
 	public void recoverIOUnhandledThrown(){
 		assertThat(of(1,2,3,4)
 					.map(i->i+2)
@@ -131,42 +131,42 @@ public class AsyncRetryTest {
 	}
 
 
-	
+
 
 	@Test @Ignore
 	public void shouldRethrowOriginalExceptionFromUserFutureCompletion()
 			throws Exception {
-		
-		
-		
-			
+
+
+
+
 		given(serviceMock.apply(anyInt())).willThrow(
 				new RuntimeException("DONT PANIC"));
 
-		
+
 		List<String> result = of(1)
-				
+
 				.retry(serviceMock).toList();
 
-		
+
 		assertThat(result.size(), is(0));
 		assertThat((error).getMessage(), is("DONT PANIC"));
 
 	}
 
-	
+
 
 	@Test @Ignore
 	public void shouldRethrowExceptionThatWasThrownFromUserTaskBeforeReturningFuture()
 			throws Exception {
 		error = null;
-		
+
 		given(serviceMock.apply(anyInt())).willThrow(
 				new IllegalArgumentException("DONT PANIC"));
 
-		
+
 		List<String> result = of(1).retry(serviceMock).toList();
-		
+
 		assertThat(result.size(), is(0));
 
 		error.printStackTrace();
@@ -174,6 +174,6 @@ public class AsyncRetryTest {
 		assertThat(error.getCause().getMessage(), is("DONT PANIC"));
 	}
 
-	
+
 
 }

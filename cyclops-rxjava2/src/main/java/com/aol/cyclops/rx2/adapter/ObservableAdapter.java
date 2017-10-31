@@ -5,7 +5,7 @@ import cyclops.companion.rx2.Flowables;
 import cyclops.companion.rx2.Observables;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.observable;
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
 import lombok.AllArgsConstructor;
 import io.reactivex.Observable;

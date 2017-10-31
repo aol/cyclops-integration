@@ -1,8 +1,8 @@
 package com.aol.cyclops.rx2.adapter;
 
-import com.aol.cyclops2.types.anyM.AnyMSeq;
-import com.aol.cyclops2.types.stream.HeadAndTail;
-import com.aol.cyclops2.types.traversable.Traversable;
+import com.oath.cyclops.types.anyM.AnyMSeq;
+import com.oath.cyclops.types.stream.HeadAndTail;
+import com.oath.cyclops.types.traversable.Traversable;
 import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Functions;
@@ -14,17 +14,17 @@ import cyclops.monads.AnyM;
 import cyclops.monads.Witness.reactiveSeq;
 import cyclops.monads.Witness.stream;
 import cyclops.monads.transformers.ListT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Spouts;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Wither;
-import org.jooq.lambda.tuple.Tuple;
-import org.jooq.lambda.tuple.Tuple2;
-import org.jooq.lambda.tuple.Tuple3;
-import org.jooq.lambda.tuple.Tuple4;
+import cyclops.data.tuple.Tuple;
+import cyclops.data.tuple.Tuple2;
+import cyclops.data.tuple.Tuple3;
+import cyclops.data.tuple.Tuple4;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -504,12 +504,12 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <R> ReactiveSeq<R> flatMapStream(Function<? super T, BaseStream<? extends R, ?>> fn) {
-        
+
         return this.<R>flux((Flowable) flowable.flatMap(Functions.rxFunction(fn.andThen(s->{
             ReactiveSeq<R> res = s instanceof ReactiveSeq ? (ReactiveSeq) s : (ReactiveSeq) ReactiveSeq.fromSpliterator(s.spliterator());
            return res;
                 }
-            
+
         ))));
     }
 
@@ -555,7 +555,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public void close() {
-        
+
     }
 
     @Override

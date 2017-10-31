@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
-import com.aol.cyclops2.types.functor.Transformable;
+import com.oath.cyclops.types.functor.Transformable;
 import cyclops.async.LazyReact;
 
 import cyclops.collections.mutable.ListX;
@@ -22,7 +22,7 @@ import cyclops.control.Eval;
 import cyclops.monads.AnyM;
 import cyclops.monads.Vavr;
 import cyclops.monads.VavrWitness;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Test;
 
 
@@ -119,10 +119,10 @@ public class AnyJavaslangMTest {
                    equalTo(Arrays.asList("HELLO WORLD")));
     }
 
-    
+
     @Test
     public void tryTest() {
-        
+
         assertThat(Vavr.tryM(Try.of(this::success))
                             .map(String::toUpperCase)
                            .to(ANY_M_LIST_FUNCTION),

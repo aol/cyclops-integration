@@ -8,10 +8,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.LinkedListX;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 
@@ -28,7 +28,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
         for (T next : values) {
             list = list.plus(list.size(), next);
         }
-        
+
         return list;
 
     }
@@ -43,7 +43,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
@@ -53,7 +53,7 @@ public class LazyLinkedListXTest extends AbstractOrderDependentCollectionXTest  
         return DexxListX.empty();
     }
 
-    
+
 
     @Test
     public void remove() {

@@ -1,7 +1,7 @@
 package com.aol.cyclops.guava.adapter;
 
-import com.aol.cyclops2.types.anyM.AnyMValue;
-import com.aol.cyclops2.types.extensability.ValueAdapter;
+import com.oath.cyclops.types.anyM.AnyMValue;
+import com.oath.cyclops.types.extensability.ValueAdapter;
 import cyclops.conversion.guava.FromCyclopsReact;
 import cyclops.conversion.guava.ToCyclopsReact;
 import cyclops.monads.GuavaWitness;

@@ -17,11 +17,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import cyclops.collections.clojure.ClojureQueueX;
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentSortedSetX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.OrderedSetX;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 import cyclops.collections.clojure.ClojureTreeSetX;
@@ -29,13 +29,13 @@ import cyclops.collections.clojure.ClojureTreeSetX;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
+public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest  {
 
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
         ClojureQueueX.of(1,2,3).printOut();
-        OrderedSetX<T> list = (LazyPOrderedSetX) ClojureTreeSetX.empty((Comparator)Comparator.naturalOrder());
+        OrderedSetX<T> list = (LazyPersistentSortedSetX) ClojureTreeSetX.empty((Comparator)Comparator.naturalOrder());
         for (T next : values) {
             list = list.plus(next);
         }
@@ -51,24 +51,24 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     }
     @Test
     public void onEmptySwitch() {
-        assertThat((LazyPOrderedSetX) ClojureTreeSetX.empty((Comparator)Comparator.naturalOrder())
-                          .onEmptySwitch(() -> (LazyPOrderedSetX) ClojureTreeSetX.of((Comparator)Comparator.naturalOrder(),1, 2, 3)),
+        assertThat((LazyPersistentSortedSetX) ClojureTreeSetX.empty((Comparator)Comparator.naturalOrder())
+                          .onEmptySwitch(() -> (LazyPersistentSortedSetX) ClojureTreeSetX.of((Comparator)Comparator.naturalOrder(),1, 2, 3)),
                    equalTo(OrderedSetX.of(1, 2, 3)));
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return (LazyPOrderedSetX) ClojureTreeSetX.empty( (Comparator)Comparator.naturalOrder());
+        return (LazyPersistentSortedSetX) ClojureTreeSetX.empty( (Comparator)Comparator.naturalOrder());
     }
 
-    
+
 
     @Test
     public void remove() {

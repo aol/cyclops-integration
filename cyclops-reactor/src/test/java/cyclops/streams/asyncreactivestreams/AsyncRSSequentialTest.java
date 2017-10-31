@@ -4,13 +4,13 @@ import cyclops.async.adapters.Topic;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.control.Maybe;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Streamable;
 
 import cyclops.streams.syncflux.BaseSequentialTest;
 import org.hamcrest.Matchers;
-import org.jooq.lambda.tuple.Tuple2;
-import org.jooq.lambda.tuple.Tuple3;
+import cyclops.data.tuple.Tuple2;
+import cyclops.data.tuple.Tuple3;
 import org.junit.Test;
 import org.reactivestreams.Subscription;
 import reactor.core.publisher.Flux;

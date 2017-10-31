@@ -2,10 +2,10 @@ package cyclops.conversion.guava;
 
 import java.util.stream.Stream;
 
-import com.aol.cyclops2.types.MonadicValue;
+import com.oath.cyclops.types.MonadicValue;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 
 public class FromCyclopsReact {
 

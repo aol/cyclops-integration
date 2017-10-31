@@ -10,7 +10,7 @@ import cyclops.conversion.guava.FromCyclopsReact;
 import cyclops.conversion.guava.FromJDK;
 import cyclops.conversion.guava.ToCyclopsReact;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -31,9 +31,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for Optional's
- * 
+ *
  * OptionalKind is a Optional and a Higher Kinded Type (optional,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Optional
@@ -72,35 +72,35 @@ public class OptionalKind<T> implements Higher<optional, T> {
     /**
      *  Construct a OptionalKind  that contains a single value extracted from the supplied Iterable
      * <pre>
-     * {@code 
+     * {@code
      *   ReactiveSeq<Integer> stream =  ReactiveSeq.of(1,2,3);
-        
+
          OptionalKind<Integer> maybe = OptionalKind.fromIterable(stream);
-        
+
         //Optional[1]
-     * 
+     *
      * }
-     * </pre> 
+     * </pre>
      * @param iterable Iterable  to extract value from
      * @return Optional populated with first value from Iterable (Optional.empty if Publisher empty)
      */
     public static <T> OptionalKind<T> fromIterable(final Iterable<T> iterable) {
-       
+
         return widen(FromCyclopsReact.optional(Eval.fromIterable(iterable)));
     }
 
     /**
      * Construct an equivalent Optional from the Supplied Optional
      * <pre>
-     * {@code 
+     * {@code
      *   OptionalKind<Integer> some = OptionalKind.fromOptional(Optional.of(10));
      *   //Optional[10], Some[10]
-     *  
+     *
      *   OptionalKind<Integer> none = OptionalKind.fromOptional(Optional.empty());
      *   //Optional.empty, None[]
      * }
      * </pre>
-     * 
+     *
      * @param optional Optional to construct Optional from
      * @return Optional created from Optional
      */
@@ -111,24 +111,24 @@ public class OptionalKind<T> implements Higher<optional, T> {
     /**
      * Convert a Optional to a simulated HigherKindedType that captures Optional nature
      * and Optional element data type separately. Recover via @see OptionalKind#narrow
-     * 
+     *
      * If the supplied Optional implements OptionalKind it is returned already, otherwise it
      * is wrapped into a Optional implementation that does implement OptionalKind
-     * 
+     *
      * @param optional Optional to widen to a OptionalKind
      * @return OptionalKind encoding HKT info about Optionals (converts Optional to a Optional)
      */
     public static <T> OptionalKind<T> widen(final java.util.Optional<T> optional) {
-        
+
         return new OptionalKind<>(FromJDK.optional(optional));
     }
     public static <T> OptionalKind<T> widen(final Maybe<T> option) {
-        
+
         return new OptionalKind<T>(FromCyclopsReact.optional(option));
     }
     /**
      * Convert the raw Higher Kinded Type for OptionalKind types into the OptionalKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a OptionalKind
      * @return OptionalKind
      */
@@ -142,28 +142,28 @@ public class OptionalKind<T> implements Higher<optional, T> {
     }
     /**
      * Convert the HigherKindedType definition for a Optional into
-     * 
+     *
      * @param optional Type Constructor to convert back into narrowed type
      * @return Optional from Higher Kinded Type
      */
     public static <T> java.util.Optional<T> narrowOptional(final Higher<optional, T> optional) {
-        
+
          return ToCyclopsReact.maybe(narrow(optional)).toOptional();
-        
+
     }
 
     /**
      * Construct an Optional which contains the provided (non-null) value.
      * Alias for @see {@link Optional#of(Object)}
-     * 
+     *
      * <pre>
-     * {@code 
-     * 
+     * {@code
+     *
      *    Optional<Integer> some = Optional.just(10);
      *    some.map(i->i*2);
      * }
      * </pre>
-     * 
+     *
      * @param value Value to wrap inside a Optional
      * @return Optional containing the supplied value
      */
@@ -171,21 +171,21 @@ public class OptionalKind<T> implements Higher<optional, T> {
         return ofNullable(value);
     }
 
-    
+
 
     /**
      * <pre>
-     * {@code 
+     * {@code
      *    Optional<Integer> maybe  = Optional.ofNullable(null);
      *    //None
-     *     
+     *
      *    Optional<Integer> maybe = Optional.ofNullable(10);
      *    //Optional[10], Some[10]
-     * 
+     *
      * }
      * </pre>
-     * 
-     * 
+     *
+     *
      * @param value
      * @return
      */
@@ -196,22 +196,22 @@ public class OptionalKind<T> implements Higher<optional, T> {
     /**
      * Convert a Optional to a simulated HigherKindedType that captures Optional nature
      * and Optional element data type separately. Recover via @see OptionalKind#narrow
-     * 
+     *
      * If the supplied Optional implements OptionalKind it is returned already, otherwise it
      * is wrapped into a Optional implementation that does implement OptionalKind
-     * 
+     *
      * @param maybe Optional to widen to a OptionalKind
      * @return OptionalKind encoding HKT info about Optionals
      */
     public static <T> OptionalKind<T> widen(final Optional<T> maybe) {
-   
+
         return new OptionalKind<>(
                          maybe);
     }
 
     /**
      * Convert the HigherKindedType definition for a Optional into
-     * 
+     *
      * @param maybe Type Constructor to convert back into narrowed type
      * @return OptionalX from Higher Kinded Type
      */
@@ -223,7 +223,7 @@ public class OptionalKind<T> implements Higher<optional, T> {
         return type.boxed;
     }
     private final Optional<T> boxed;
-    
+
 
     public Optional<T> narrow(){
         return boxed;
@@ -314,7 +314,7 @@ public class OptionalKind<T> implements Higher<optional, T> {
             return true;
         if (obj == null)
             return false;
-       
+
         Optional other = (Optional) obj;
         if (boxed == null) {
             if (other != null)
@@ -323,9 +323,9 @@ public class OptionalKind<T> implements Higher<optional, T> {
             return false;
         return true;
     }
-   
-   
 
-   
+
+
+
 
 }

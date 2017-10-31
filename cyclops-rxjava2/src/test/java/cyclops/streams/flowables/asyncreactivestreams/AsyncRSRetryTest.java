@@ -1,9 +1,9 @@
 package cyclops.streams.flowables.asyncreactivestreams;
 
-import com.aol.cyclops2.util.ExceptionSoftener;
+import com.oath.cyclops.util.ExceptionSoftener;
 
 import cyclops.companion.rx2.Flowables;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,17 +28,17 @@ import static org.mockito.Matchers.anyInt;
 
 public class AsyncRSRetryTest {
 
-	
+
 	@Mock
 	Function<Integer, String> serviceMock;
-	
+
 	Throwable error;
-	
+
 	@Before
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		
-		
+
+
 		error = null;
 	}
 
@@ -81,7 +81,7 @@ public class AsyncRSRetryTest {
 					.recover(e->"hello")
 					.firstValue(),equalTo("hello"));
 	}
-	
+
 	@Test
 	public void recover2IO(){
 		assertThat(of(1,2,3,4)
@@ -92,7 +92,7 @@ public class AsyncRSRetryTest {
 					.firstValue(),equalTo("hello"));
 	}
 	@Test(expected=Exception.class)
-	
+
 	public void recoverIOUnhandledThrown(){
 		assertThat(of(1,2,3,4)
 					.map(i->i+2)
@@ -126,42 +126,42 @@ public class AsyncRSRetryTest {
 	}
 
 
-	
+
 
 	@Test @Ignore
 	public void shouldRethrowOriginalExceptionFromUserFutureCompletion()
 			throws Exception {
-		
-		
-		
-			
+
+
+
+
 		given(serviceMock.apply(anyInt())).willThrow(
 				new RuntimeException("DONT PANIC"));
 
-		
+
 		List<String> result = of(1)
-				
+
 				.retry(serviceMock).toList();
 
-		
+
 		assertThat(result.size(), is(0));
 		assertThat((error).getMessage(), is("DONT PANIC"));
 
 	}
 
-	
+
 
 	@Test @Ignore
 	public void shouldRethrowExceptionThatWasThrownFromUserTaskBeforeReturningFuture()
 			throws Exception {
 		error = null;
-		
+
 		given(serviceMock.apply(anyInt())).willThrow(
 				new IllegalArgumentException("DONT PANIC"));
 
-		
+
 		List<String> result = of(1).retry(serviceMock).toList();
-		
+
 		assertThat(result.size(), is(0));
 
 		error.printStackTrace();
@@ -169,6 +169,6 @@ public class AsyncRSRetryTest {
 		assertThat(error.getCause().getMessage(), is("DONT PANIC"));
 	}
 
-	
+
 
 }

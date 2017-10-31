@@ -4,7 +4,7 @@ package com.aol.cyclops.rx.adapter;
 import cyclops.companion.rx.Observables;
 import cyclops.monads.RxWitness;
 import cyclops.monads.RxWitness.observable;
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
 import lombok.AllArgsConstructor;
 import rx.Observable;

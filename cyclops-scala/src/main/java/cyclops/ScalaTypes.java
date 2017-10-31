@@ -22,10 +22,10 @@ public class ScalaTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Scala List that implements PStack interface
+     * @return Reducer to convert a sequence of data to a Scala List that implements PersistentList interface
      */
-    public static <T> Reducer<PStack<T>> list() {
-        return ScalaListX.toPStack();
+    public static <T> Reducer<PersistentList<T>> list() {
+        return ScalaListX.toPersistentList();
     }
     /**
      * Use to set the type of a VectorX to Scala Vector
@@ -40,10 +40,10 @@ public class ScalaTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Scala Vector that implements PVector interface
+     * @return Reducer to convert a sequence of data to a Scala Vector that implements PersistentList interface
      */
-    public static <T> Reducer<PVector<T>> vector() {
-        return ScalaVectorX.toPVector();
+    public static <T> Reducer<PersistentList<T>> vector() {
+        return ScalaVectorX.toPersistentList();
     }
 
     /**
@@ -59,10 +59,10 @@ public class ScalaTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Scala List that implements PQueue interface
+     * @return Reducer to convert a sequence of data to a Scala List that implements PersistentQueue interface
      */
-    public static <T> Reducer<PQueue<T>> queue() {
-        return ScalaQueueX.toPQueue();
+    public static <T> Reducer<PersistentQueue<T>> queue() {
+        return ScalaQueueX.toPersistentQueue();
     }
     /**
      * Use to set the type of an OrderedSetX to Scala TreeSet
@@ -77,10 +77,10 @@ public class ScalaTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Scala Set that implements POrderedSet interface
+     * @return Reducer to convert a sequence of data to a Scala Set that implements PersistentSortedSet interface
      */
-    public static <T> Reducer<POrderedSet<T>> treeSet(Comparator<T> ordering) {
-        return ScalaTreeSetX.toPOrderedSet(ordering);
+    public static <T> Reducer<PersistentSortedSet<T>> treeSet(Comparator<T> ordering) {
+        return ScalaTreeSetX.toPersistentSortedSet(ordering);
     }
     /**
      * Use to set the type of an OrderedSetX to Scala TreeSet
@@ -95,10 +95,10 @@ public class ScalaTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Scala Set that implements POrderedSet interface
+     * @return Reducer to convert a sequence of data to a Scala Set that implements PersistentSortedSet interface
      */
-    public static <T extends Comparable<T>> Reducer<POrderedSet<T>> treeSet() {
-        return ScalaTreeSetX.<T>toPOrderedSet(Comparator.<T>naturalOrder());
+    public static <T extends Comparable<T>> Reducer<PersistentSortedSet<T>> treeSet() {
+        return ScalaTreeSetX.<T>toPersistentSortedSet(Comparator.<T>naturalOrder());
     }
     /**
      * Use to set the type of an OrderedSetX to Scala TreeSet
@@ -112,10 +112,10 @@ public class ScalaTypes {
      *
      * </pre>
      *
-     * @return Reducer to convert a sequence of data to a Scala Set that implements POrderedSet interface
+     * @return Reducer to convert a sequence of data to a Scala Set that implements PersistentSortedSet interface
      */
-    public static Reducer<POrderedSet<Integer>> bitset() {
-        return ScalaBitSetX.toPOrderedSet();
+    public static Reducer<PersistentSortedSet<Integer>> bitset() {
+        return ScalaBitSetX.toPersistentSortedSet();
     }
 
     /**
@@ -133,7 +133,7 @@ public class ScalaTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Scala Set that implements PSet interface
      */
-    public static <T> Reducer<PSet<T>> hashSet() {
+    public static <T> Reducer<PersistentSet<T>> hashSet() {
         return ScalaHashSetX.toPSet();
     }
 }

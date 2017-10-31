@@ -11,7 +11,7 @@ import cyclops.companion.vavr.Arrays;
 import cyclops.companion.vavr.Futures;
 import cyclops.conversion.vavr.FromCyclopsReact;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
@@ -33,9 +33,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for Vavr Future's
- * 
+ *
  * FutureKind is a Future and a Higher Kinded Type (future,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Future
@@ -65,7 +65,7 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
     }
     /**
      * Construct a HKT encoded completed Future
-     * 
+     *
      * @param value To encode inside a HKT encoded Future
      * @return Completed HKT encoded Future
      */
@@ -76,10 +76,10 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
     /**
      * Convert a Future to a simulated HigherKindedType that captures Future nature
      * and Future element data type separately. Recover via @see FutureKind#narrow
-     * 
+     *
      * If the supplied Future implements FutureKind it is returned already, otherwise it
      * is wrapped into a Future implementation that does implement FutureKind
-     * 
+     *
      * @param completableFuture Future to widen to a FutureKind
      * @return FutureKind encoding HKT info about Futures
      */
@@ -99,7 +99,7 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
     }
     /**
      * Convert the raw Higher Kinded Type for FutureKind types into the FutureKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a FutureKind
      * @return FutureKind
      */
@@ -109,14 +109,14 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
 
     /**
      * Convert the HigherKindedType definition for a Future into
-     * 
+     *
      * @param completableFuture Type Constructor to convert back into narrowed type
      * @return Future from Higher Kinded Type
      */
     public static <T> Future<T> narrow(final Higher<future, T> completableFuture) {
         if (completableFuture instanceof Future) {
             return (Future)completableFuture;
-           
+
         }
         // this code should be unreachable due to HKT type checker
         final Box<T> type = (Box<T>) completableFuture;
@@ -137,7 +137,7 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
             return boxed;
         }
 
-        
+
 
         public boolean equals(Object o) {
             return boxed.equals(o);
@@ -147,12 +147,12 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
             return boxed.await();
         }
 
-        
+
         public int hashCode() {
             return boxed.hashCode();
         }
 
-      
+
         public String toString() {
             return boxed.toString();
         }
@@ -161,7 +161,7 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
             return boxed.executorService();
         }
 
-      
+
         public Option<Try<T>> getValue() {
             return boxed.getValue();
         }
@@ -170,7 +170,7 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
             return boxed.isCompleted();
         }
 
-        
+
 
         public Future<T> onComplete(Consumer<? super Try<T>> action) {
             return boxed.onComplete(action);
@@ -233,5 +233,5 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
 
     }
 
-    
+
 }

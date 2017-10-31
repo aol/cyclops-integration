@@ -2,32 +2,44 @@ package cyclops.collections.clojure;
 
 import clojure.lang.PersistentArrayMap;
 import clojure.lang.PersistentVector;
-import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
-import com.aol.cyclops2.types.mixins.TupleWrapper;
+import com.oath.cyclops.data.collections.extensions.ExtensiblePMapX;
+import com.oath.cyclops.types.Unwrapable;
+import com.oath.cyclops.types.persistent.PersistentMap;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.companion.MapXs;
+import cyclops.companion.Reducers;
 import cyclops.control.Eval;
+import cyclops.control.Option;
+import cyclops.data.HashMap;
+import cyclops.data.tuple.Tuple2;
 import cyclops.function.Reducer;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Wither;
-import org.jooq.lambda.tuple.Tuple2;
-import org.pcollections.PMap;
+import cyclops.data.tuple.Tuple2;
+
 
 import java.util.*;
+import java.util.function.Supplier;
+
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClojureArrayMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>{
-    
+public class ClojureArrayMapX<K,V> implements PersistentMap<K,V> , Unwrapable {
+
     @Wither
     PersistentArrayMap map;
-    public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX() {
-        return Reducer.<PersistentMapX<K, V>> of(empty(), (final PersistentMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
-            final List w = ((TupleWrapper) () -> in).values();
-            return singleton((K) w.get(0), (V) w.get(1));
-        });
-    }
+
+  public static <K, V> Reducer<PersistentMapX<K, V>, Tuple2<K,V>> toPersistentMapX() {
+    return Reducer.of(PersistentMapX.empty(), (final PersistentMapX<K, V> a) -> b -> a.putAll(b), (in) -> {
+      Tuple2<K, V> w = in;
+      return singleton((K) w._1(), (V) w._2());
+    });
+
+
+  }
+
+
     public static <K,V> ClojureArrayMapX<K,V> fromMap(@NonNull PersistentArrayMap map){
         return new ClojureArrayMapX<>(map);
     }
@@ -41,64 +53,90 @@ public class ClojureArrayMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>
     public static <K,V> PersistentMapX<K,V> empty(){
        return new ExtensiblePMapX<K,V>(new ClojureArrayMapX<>(PersistentArrayMap.EMPTY),Eval.later(()->toPersistentMapX()));
     }
-    public static <K,V> PMap<K,V> singletonPMap(K key,V value){
+    public static <K,V> PersistentMap<K,V> singletonPMap(K key,V value){
         PersistentArrayMap map = ( PersistentArrayMap)PersistentArrayMap.create(MapXs.of(key, value));
         return fromMap(map);
      }
     public static <K,V> PersistentMapX<K,V> singleton(K key,V value){
         PersistentArrayMap map = ( PersistentArrayMap)PersistentArrayMap.create(MapXs.of(key, value));
-        return new ExtensiblePMapX<K,V>(fromMap(map), Eval.later(()-> ClojureArrayMapX.<K,V>toPersistentMapX()));
+        return new ExtensiblePMapX<K,V>(fromMap(map), Eval.later(()-> toPersistentMapX()));
      }
-    
+
     public static <K,V> PersistentMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){
         return stream.mapReduce(toPersistentMapX());
     }
-    
+
     @Override
-    public PMap<K, V> plus(K key, V value) {
+    public PersistentMap<K, V> put(K key, V value) {
         return withMap((PersistentArrayMap)map.cons(PersistentVector.create(key,value)));
     }
-    @Override
-    public PMap<K, V> plusAll(java.util.Map<? extends K, ? extends V> m2) {
+
+  @Override
+  public PersistentMap<K, V> put(Tuple2<K, V> keyAndValue) {
+    return put(keyAndValue._1(),keyAndValue._2());
+  }
+
+  @Override
+    public PersistentMap<K, V> putAll(PersistentMap<? extends K, ? extends V> m2) {
         PersistentArrayMap m = map;
-        for(Object next : m2.entrySet()){
+        for(Object next : m2){
             m = (PersistentArrayMap)m.cons(next);
         }
         return withMap(m);
     }
     @Override
-    public PMap<K, V> minus(Object key) {
-      
-        
+    public PersistentMap<K, V> remove(K key) {
+
+
         return withMap((PersistentArrayMap)map.without(key));
-     
+
     }
-   
+
     @Override
-    public PMap<K, V> minusAll(Collection<?> keys) {
-      
+    public PersistentMap<K, V> removeAll(Iterable<? extends K> keys) {
+
        PersistentArrayMap m = map;
        for(Object key : keys){
-          
+
            m = (PersistentArrayMap)m.without(key);
        }
        return withMap(m);
-        
+
     }
-    @Override
+
     public Set<java.util.Map.Entry<K, V>> entrySet() {
         return map.entrySet();
-        
+
     }
-    /* (non-Javadoc)
-     * @see java.util.AbstractMap#get(java.lang.Object)
-     */
+
     @Override
-    public V get(Object key) {
-       return (V)map.valAt(key);
+    public Option<V> get(K key) {
+       return Option.ofNullable((V)map.valAt(key));
+
     }
-   
-    
-   
-   
+
+  @Override
+  public V getOrElse(K key, V alt) {
+    return (V)map.valAt(key,alt);
+  }
+
+  @Override
+  public V getOrElseGet(K key, Supplier<? extends V> alt) {
+    return (V)map.valAt(key,alt.get());
+  }
+
+  @Override
+  public int size() {
+    return map.size();
+  }
+
+  @Override
+  public boolean containsKey(K key) {
+    return map.containsKey(key);
+  }
+
+  @Override //@TODO fix
+  public Iterator<Tuple2<K, V>> iterator() {
+    return (Iterator)map.iterator();
+  }
 }

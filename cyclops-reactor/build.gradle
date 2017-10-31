@@ -42,9 +42,8 @@ configurations {
 }
 
 dependencies {
-  doc 'com.aol.simplereact:cyclops-react:' + cyclopsReactVersion + ':sources'
+  compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
   compile 'io.projectreactor:reactor-core:' + reactorVersion
-  compile group: 'com.aol.simplereact', name: 'cyclops-react', version: cyclopsReactVersion
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
   testCompile 'commons-io:commons-io:2.4'

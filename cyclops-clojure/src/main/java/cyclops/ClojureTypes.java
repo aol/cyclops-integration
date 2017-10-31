@@ -1,5 +1,6 @@
 package cyclops;
 
+import com.oath.cyclops.types.persistent.PersistentSet;
 import cyclops.collections.clojure.*;
 import cyclops.function.Reducer;
 import org.pcollections.*;
@@ -22,10 +23,10 @@ public class ClojureTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Clojure List that implements PStack interface
+     * @return Reducer to convert a sequence of data to a Clojure List that implements PersistentList interface
      */
-    public static <T> Reducer<PStack<T>> list() {
-        return ClojureListX.toPStack();
+    public static <T> Reducer<PersistentList<T>> list() {
+        return ClojureListX.toPersistentList();
     }
     /**
      * Use to set the type of a VectorX to Clojure Vector
@@ -40,10 +41,10 @@ public class ClojureTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Clojure Vector that implements PVector interface
+     * @return Reducer to convert a sequence of data to a Clojure Vector that implements PersistentList interface
      */
-    public static <T> Reducer<PVector<T>> vector() {
-        return ClojureVectorX.toPVector();
+    public static <T> Reducer<PersistentList<T>> vector() {
+        return ClojureVectorX.toPersistentList();
     }
 
     /**
@@ -59,10 +60,10 @@ public class ClojureTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Clojure List that implements PQueue interface
+     * @return Reducer to convert a sequence of data to a Clojure List that implements PersistentQueue interface
      */
-    public static <T> Reducer<PQueue<T>> queue() {
-        return ClojureQueueX.toPQueue();
+    public static <T> Reducer<PersistentQueue<T>> queue() {
+        return ClojureQueueX.toPersistentQueue();
     }
     /**
      * Use to set the type of an OrderedSetX to Clojure TreeSet
@@ -77,13 +78,13 @@ public class ClojureTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Clojure Set that implements POrderedSet interface
+     * @return Reducer to convert a sequence of data to a Clojure Set that implements PersistentSortedSet interface
      */
-    public static <T> Reducer<POrderedSet<T>> treeSet(Comparator<T> ordering) {
-        return ClojureTreeSetX.toPOrderedSet(ordering);
+    public static <T> Reducer<PersistentSortedSet<T>> treeSet(Comparator<T> ordering) {
+        return ClojureTreeSetX.toPersistentSortedSet(ordering);
     }
-    public static <T extends Comparable<T>> Reducer<POrderedSet<T>> treeSet() {
-        return ClojureTreeSetX.<T>toPOrderedSet(Comparator.naturalOrder());
+    public static <T extends Comparable<T>> Reducer<PersistentSortedSet<T>> treeSet() {
+        return ClojureTreeSetX.<T>toPersistentSortedSet(Comparator.naturalOrder());
     }
 
     /**
@@ -101,7 +102,7 @@ public class ClojureTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Clojure Set that implements PSet interface
      */
-    public static <T> Reducer<PSet<T>> hashSet() {
+    public static <T> Reducer<PersistentSet<T>> hashSet() {
         return ClojureHashSetX.toPSet();
     }
 }

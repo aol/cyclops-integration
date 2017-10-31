@@ -8,34 +8,34 @@ import java.util.Arrays;
 import cyclops.collections.vavr.VavrQueueX;
 import org.junit.Before;
 import org.junit.Test;
-import org.pcollections.AmortizedPQueue;
-import org.pcollections.PQueue;
-public class PQueueTest {
+import org.pcollections.AmortizedPersistentQueue;
+import org.pcollections.PersistentQueue;
+public class PersistentQueueTest {
 
-    AmortizedPQueue<Integer> org = null;
-    PQueue<Integer> test=null;
-    
+    AmortizedPersistentQueue<Integer> org = null;
+    PersistentQueue<Integer> test=null;
+
     @Before
     public void setup(){
-       org = AmortizedPQueue.empty();
+       org = AmortizedPersistentQueue.empty();
        test = VavrQueueX.empty();
-     
+
     }
-    
+
     @Test
     public void empty(){
-        assertThat(AmortizedPQueue.empty().toArray(),equalTo(VavrQueueX.empty().toArray()));
+        assertThat(AmortizedPersistentQueue.empty().toArray(),equalTo(VavrQueueX.empty().toArray()));
     }
     @Test
     public void singleton(){
-        assertThat(AmortizedPQueue.empty().plus(1).toArray(),equalTo(VavrQueueX.singleton(1).toArray()));
+        assertThat(AmortizedPersistentQueue.empty().plus(1).toArray(),equalTo(VavrQueueX.singleton(1).toArray()));
     }
-    
+
     @Test
     public void plusMinus(){
         System.out.println(test.plusAll(Arrays.asList(1,2,3)));
         System.out.println(test.plusAll(Arrays.asList(1,2,3)).minus(1));
-        
+
         assertThat(org.plus(1).toArray(),equalTo(test.plus(1).toArray()));
         assertThat(org.plusAll(Arrays.asList(1,2,3)).toArray(),
                    equalTo(test.plusAll(Arrays.asList(1,2,3)).toArray()));
@@ -50,10 +50,10 @@ public class PQueueTest {
                    equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(2).toArray()));
         assertThat(org.plusAll(Arrays.asList(1,2,3)).minusAll(Arrays.asList(2,3)).toArray(),
                    equalTo(test.plusAll(Arrays.asList(1,2,3)).minusAll(Arrays.asList(2,3)).toArray()));
-        
-        
-        
+
+
+
     }
-    
-   
+
+
 }

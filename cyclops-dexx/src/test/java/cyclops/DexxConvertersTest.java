@@ -25,9 +25,9 @@ public class DexxConvertersTest {
 
     @Test
     public void listNative(){
-//materializeList makes use of ConsPStack
+//materializeList makes use of ConsPersistentList
         List<Integer> list = LinkedListX.of(1,2,3)
-                                        .type(DexxListX.toPStack())
+                                        .type(DexxListX.toPersistentList())
                                         .map(i->i*2)
                                         .to(DexxConverters::List);
 
@@ -35,7 +35,7 @@ public class DexxConvertersTest {
     }
     @Test
     public void listAlien(){
-//materializeList makes use of ConsPStack
+//materializeList makes use of ConsPersistentList
         List<Integer> list = LinkedListX.of(1,2,3)
                 .map(i->i*2)
                 .to(DexxConverters::List);

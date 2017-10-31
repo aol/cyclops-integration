@@ -1,7 +1,7 @@
 package com.aol.cyclops.rx.hkt.typeclasses.instances;
 
 import com.aol.cyclops.rx2.hkt.FlowableKind;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Flowables;
 import cyclops.control.Maybe;
@@ -9,7 +9,7 @@ import cyclops.function.Fn1;
 import cyclops.function.Lambda;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.flowable;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import io.reactivex.Flowable;
 import org.junit.Test;
 
@@ -25,21 +25,21 @@ public class FlowableTest {
 
     @Test
     public void unit(){
-        
+
         FlowableKind<String> list = Flowables.Instances.unit()
                                      .unit("hello")
                                      .convert(FlowableKind::narrowK);
-        
+
         assertThat(Flowables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello")));
     }
     @Test
     public void functor(){
-        
+
         FlowableKind<Integer> list = Flowables.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h->Flowables.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(FlowableKind::narrowK);
-        
+
         assertThat(Flowables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello".length())));
     }
     @Test
@@ -52,15 +52,15 @@ public class FlowableTest {
     }
     @Test
     public void applicative(){
-        
+
         FlowableKind<Fn1<Integer,Integer>> listFn =Flowables.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(FlowableKind::narrowK);
-        
+
         FlowableKind<Integer> list = Flowables.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h->Flowables.Instances.functor().map((String v) ->v.length(), h))
                                      .applyHKT(h->Flowables.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(FlowableKind::narrowK);
-        
+
         assertThat(Flowables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello".length()*2)));
     }
     @Test
@@ -71,35 +71,35 @@ public class FlowableTest {
     }
     @Test
     public void monad(){
-        
+
         FlowableKind<Integer> list = Flowables.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h->Flowables.Instances.monad().flatMap((String v) ->Flowables.Instances.unit().unit(v.length()), h))
                                      .convert(FlowableKind::narrowK);
-        
+
         assertThat(Flowables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello".length())));
     }
     @Test
     public void monadZeroFilter(){
-        
+
         FlowableKind<String> list = Flowables.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h->Flowables.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(FlowableKind::narrowK);
-        
+
         assertThat(Flowables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList("hello")));
     }
     @Test
     public void monadZeroFilterOut(){
-        
+
         FlowableKind<String> list = Flowables.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h->Flowables.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(FlowableKind::narrowK);
-        
+
         assertThat(Flowables.reactiveSeq(list.narrow()).toList(),equalTo(Arrays.asList()));
     }
-    
+
     @Test
     public void monadPlus(){
         FlowableKind<Integer> list = Flowables.Instances.<Integer>monadPlus()
@@ -112,14 +112,14 @@ public class FlowableTest {
     public void  foldLeft(){
         int sum  = Flowables.Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, FlowableKind.widen(Flowable.just(1,2,3,4)));
-        
+
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
         int sum  = Flowables.Instances.foldable()
                         .foldRight(0, (a,b)->a+b, FlowableKind.widen(Flowable.just(1,2,3,4)));
-        
+
         assertThat(sum,equalTo(10));
     }
     @Test
@@ -129,11 +129,11 @@ public class FlowableTest {
         Maybe<Higher<flowable, Integer>> res = Flowables.Instances.traverse()
                                                                  .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), FlowableKind.just(1,2,3))
                                                                 .convert(Maybe::narrowK);
-       
-       
+
+
        assertThat(res.map(i->Flowables.reactiveSeq(FlowableKind.narrow(i)).toList()),
                   equalTo(Maybe.just(ListX.of(2,4,6))));
     }
-   
-    
+
+
 }

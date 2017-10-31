@@ -5,13 +5,13 @@ import java.util.*;
 
 import com.aol.cyclops.scala.collections.Converters;
 import com.aol.cyclops.scala.collections.HasScalaCollection;
-import com.aol.cyclops2.data.collections.extensions.ExtensiblePMapX;
-import com.aol.cyclops2.types.Unwrapable;
-import com.aol.cyclops2.types.mixins.TupleWrapper;
+import com.oath.cyclops.data.collections.extensions.ExtensiblePMapX;
+import com.oath.cyclops.types.Unwrapable;
+import com.oath.cyclops.types.mixins.TupleWrapper;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.control.Eval;
 import cyclops.function.Reducer;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.pcollections.PMap;
 
 
@@ -29,8 +29,8 @@ import scala.collection.immutable.TreeMap;
 import scala.collection.immutable.TreeMap$;
 import scala.collection.mutable.Builder;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, HasScalaCollection, Unwrapable {
-    
+public class ScalaTreeMapX<K,V> extends AbstractMap<K,V> implements PersistentMap<K,V>, HasScalaCollection, Unwrapable {
+
     @Wither
     TreeMap<K,V> map;
 
@@ -62,7 +62,7 @@ public class ScalaTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
        return new ExtensiblePMapX<K,V>(fromMap(TreeMap$.MODULE$.empty(Converters.ordering(comp))),
                Eval.later (()-> ScalaTreeMapX.<K,V>toPersistentMapX(comp)));
     }
-    public static <K,V> PMap<K,V> singletonPMap(Comparator<? super K> c,K key,V value){
+    public static <K,V> PersistentMap<K,V> singletonPMap(Comparator<? super K> c,K key,V value){
         Comparator<K> comp = (Comparator<K>)c;
         Builder<Tuple2<K, V>, TreeMap> builder = TreeMap$.MODULE$.newBuilder(Converters.ordering(comp));
         TreeMap<K,V> map = builder.$plus$eq(Tuple2.apply(key,value)).result();
@@ -74,19 +74,19 @@ public class ScalaTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
         TreeMap<K,V> map = builder.$plus$eq(Tuple2.apply(key,value)).result();
         return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later (()-> ScalaTreeMapX.<K,V>toPersistentMapX(c)));
      }
-    
+
     public static <K,V> PersistentMapX<K,V> fromStream(Comparator<? super K> c,ReactiveSeq<Tuple2<K,V>> stream){
         return stream.mapReduce(toPersistentMapX(c));
     }
-    
+
     @Override
-    public PMap<K, V> plus(K key, V value) {
+    public PersistentMap<K, V> plus(K key, V value) {
         return withMap(map.$plus(Tuple2.apply(key,value)));
     }
     @Override
-    public PMap<K, V> plusAll(java.util.Map<? extends K, ? extends V> m) {
+    public PersistentMap<K, V> plusAll(java.util.Map<? extends K, ? extends V> m) {
          TreeMap<K,V> use = map;
-         
+
          if(m instanceof ScalaTreeMapX){
              TreeMap<K,V> add = ((ScalaTreeMapX)m).map;
              use = (TreeMap<K, V>) use.$plus$plus(map);
@@ -103,19 +103,19 @@ public class ScalaTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
         return withMap(use);
     }
     @Override
-    public PMap<K, V> minus(Object key) {
-      
+    public PersistentMap<K, V> minus(Object key) {
+
         TreeMap m = map;
         return withMap((TreeMap)m.$minus(key));
-     
+
     }
-   
+
     @Override
-    public PMap<K, V> minusAll(Collection<?> keys) {
+    public PersistentMap<K, V> minusAll(Collection<?> keys) {
         GenTraversableOnce gen =  HasScalaCollection.traversable(keys);
         MapLike m = map;
         return withMap((TreeMap)m.$minus$minus(gen));
-        
+
     }
     @Override
     public Set<java.util.Map.Entry<K, V>> entrySet() {
@@ -136,8 +136,8 @@ public class ScalaTreeMapX<K,V> extends AbstractMap<K,V> implements PMap<K,V>, H
      */
     @Override
     public V get(Object key) {
-        
+
         return map.apply((K)key);
     }
-   
+
 }

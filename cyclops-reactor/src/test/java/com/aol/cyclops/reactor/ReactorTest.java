@@ -12,9 +12,9 @@ import java.util.stream.Stream;
 
 import cyclops.collections.mutable.SetX;
 import cyclops.companion.reactor.Fluxs;
-import cyclops.stream.ReactiveSeq;
-import org.jooq.lambda.tuple.Tuple;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.data.tuple.Tuple;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 
@@ -26,7 +26,7 @@ import reactor.core.scheduler.Schedulers;
 public class ReactorTest {
 
     static class LinkedList{
-        
+
     }
     @Test
     public void amb() {

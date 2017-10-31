@@ -37,7 +37,7 @@ dependencies {
   provided "org.functionaljava:functionaljava-java8:" + functionalJavaVersion
   provided group: 'io.vavr', name: 'vavr', version: vavrVersion
   compile 'com.google.guava:guava:' + guavaVersion
-  provided group: 'com.aol.simplereact', name: 'cyclops-react', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   testCompile group: 'junit', name: 'junit', version: '4.12'
   testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'

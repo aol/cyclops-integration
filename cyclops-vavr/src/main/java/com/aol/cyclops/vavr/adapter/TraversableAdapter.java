@@ -1,9 +1,9 @@
 package com.aol.cyclops.vavr.adapter;
 
 import cyclops.monads.VavrWitness;
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import io.vavr.collection.Traversable;
 import lombok.AllArgsConstructor;
 

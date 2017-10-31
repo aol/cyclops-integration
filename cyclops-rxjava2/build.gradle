@@ -33,7 +33,7 @@ configurations {
 
 dependencies {
   compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.1'
-  compile group: 'com.aol.simplereact', name: 'cyclops-react', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
   //testCompile ('cyclops-reactor')

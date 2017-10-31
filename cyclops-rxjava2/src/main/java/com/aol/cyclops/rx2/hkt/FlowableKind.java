@@ -1,14 +1,14 @@
 package com.aol.cyclops.rx2.hkt;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.rx2.Flowables;
 import cyclops.companion.rx2.Observables;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.flowable;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -48,9 +48,9 @@ import java.util.stream.Stream;
 
 /**
  * Simulates Higher Kinded Types for Reactor Flowable's
- * 
+ *
  * FlowableKind is a Flowable and a Higher Kinded Type (flowable,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Flowable
@@ -95,19 +95,19 @@ public final class FlowableKind<T> implements Higher<flowable, T>, Publisher<T> 
     }
 
 
-    
+
     /**
      * Construct a HKT encoded completed Flowable
-     * 
+     *
      * @param value To encode inside a HKT encoded Flowable
      * @return Completed HKT encoded FFlowable
      */
     public static <T> FlowableKind<T> just(T value){
-        
+
         return widen(Flowable.just(value));
     }
     public static <T> FlowableKind<T> just(T... values){
-            
+
             return widen(Flowable.fromArray(values));
     }
     public static <T> FlowableKind<T> empty(){
@@ -117,21 +117,21 @@ public final class FlowableKind<T> implements Higher<flowable, T>, Publisher<T> 
     /**
      * Convert a Flowable to a simulated HigherKindedType that captures Flowable nature
      * and Flowable element data type separately. Recover via @see FlowableKind#narrow
-     * 
+     *
      * If the supplied Flowable implements FlowableKind it is returned already, otherwise it
      * is wrapped into a Flowable implementation that does implement FlowableKind
-     * 
+     *
      * @param completableFlowable Flowable to widen to a FlowableKind
      * @return FlowableKind encoding HKT info about Flowables
      */
     public static <T> FlowableKind<T> widen(final Flowable<T> completableFlowable) {
-        
+
         return new FlowableKind<T>(
                          completableFlowable);
     }
     /**
      * Widen a FlowableKind nested inside another HKT encoded type
-     * 
+     *
      * @param flux HTK encoded type containing  a Flowable to widen
      * @return HKT encoded type with a widened Flowable
      */
@@ -141,15 +141,15 @@ public final class FlowableKind<T> implements Higher<flowable, T>, Publisher<T> 
         return (Higher)flux;
     }
     public static <T> FlowableKind<T> widen(final Publisher<T> completableFlowable) {
-        
+
         return new FlowableKind<T>(Flowable.fromPublisher(
                          completableFlowable));
     }
-        
-    
+
+
     /**
      * Convert the raw Higher Kinded Type for FlowableKind types into the FlowableKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a FlowableKind
      * @return FlowableKind
      */
@@ -159,15 +159,15 @@ public final class FlowableKind<T> implements Higher<flowable, T>, Publisher<T> 
 
     /**
      * Convert the HigherKindedType definition for a Flowable into
-     * 
+     *
      * @param completableFlowable Type Constructor to convert back into narrowed type
      * @return Flowable from Higher Kinded Type
      */
     public static <T> Flowable<T> narrow(final Higher<flowable, T> completableFlowable) {
-      
+
             return ((FlowableKind<T>)completableFlowable).narrow();
-           
-       
+
+
 
     }
 
@@ -2493,5 +2493,5 @@ public final class FlowableKind<T> implements Higher<flowable, T>, Publisher<T> 
 
     private final Flowable<T> boxed;
 
-    
+
 }

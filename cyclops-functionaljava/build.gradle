@@ -34,7 +34,7 @@ configurations {
 dependencies {
 
   provided 'com.google.guava:guava:' + guavaVersion
-  provided group: 'com.aol.simplereact', name: 'cyclops-react', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   compile "org.functionaljava:functionaljava:" + functionalJavaVersion
   compile "org.functionaljava:functionaljava-java8:" + functionalJavaVersion

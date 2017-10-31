@@ -5,12 +5,12 @@ import static cyclops.companion.rx2.Observables.reactiveSeq;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.monads.Rx2Witness.observable;
 
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Observables;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Spouts;
 import io.reactivex.Observable;
 import org.junit.Test;

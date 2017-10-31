@@ -15,15 +15,15 @@ import java.util.stream.Stream;
 
 import com.aol.cyclops.scala.collections.Converters;
 import com.aol.cyclops.scala.collections.HasScalaCollection;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
-import com.aol.cyclops2.types.Unwrapable;
-import com.aol.cyclops2.types.foldable.Evaluation;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentSortedSetX;
+import com.oath.cyclops.types.Unwrapable;
+import com.oath.cyclops.types.foldable.Evaluation;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.function.Reducer;
-import cyclops.stream.ReactiveSeq;
-import org.jooq.lambda.tuple.Tuple2;
-import org.pcollections.POrderedSet;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.data.tuple.Tuple2;
+import org.pcollections.PersistentSortedSet;
 
 
 import lombok.AccessLevel;
@@ -38,7 +38,7 @@ import scala.collection.mutable.Builder;
 
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, HasScalaCollection<T>, Unwrapable {
+public class ScalaTreeSetX<T> extends AbstractSet<T> implements PersistentSortedSet<T>, HasScalaCollection<T>, Unwrapable {
     public static <T> OrderedSetX<T> treeSetX(ReactiveSeq<T> stream, Comparator<? super T> c){
         return fromStream(stream,c);
     }
@@ -50,7 +50,7 @@ public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, 
         return (R)set;
     }
 
-    public LazyPOrderedSetX<T> plusLoop(int max, IntFunction<T> value) {
+    public LazyPersistentSortedSetX<T> plusLoop(int max, IntFunction<T> value) {
         TreeSet<T> toUse = set;
         for (int i = 0; i < max; i++) {
             toUse = toUse.$plus(value.apply(i));
@@ -59,7 +59,7 @@ public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, 
 
     }
 
-    public LazyPOrderedSetX<T> plusLoop(Supplier<Optional<T>> supplier) {
+    public LazyPersistentSortedSetX<T> plusLoop(Supplier<Optional<T>> supplier) {
         TreeSet<T> toUse = set;
         Optional<T> next = supplier.get();
         while (next.isPresent()) {
@@ -69,112 +69,112 @@ public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, 
         return lazySet(toUse);
     }
     /**
-     * Create a LazyPOrderedSetX from a Stream
-     * 
+     * Create a LazyPersistentSortedSetX from a Stream
+     *
      * @param stream to construct a LazyQueueX from
-     * @return LazyPOrderedSetX
+     * @return LazyPersistentSortedSetX
      */
-    public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> fromStream(Stream<T> stream) {
-        Reducer<POrderedSet<T>> reducer = ScalaTreeSetX.<T>toPOrderedSet(Comparator.naturalOrder());
-        return new LazyPOrderedSetX<T>(null, ReactiveSeq.fromStream(stream),
+    public static <T extends Comparable<? super T>> LazyPersistentSortedSetX<T> fromStream(Stream<T> stream) {
+        Reducer<PersistentSortedSet<T>> reducer = ScalaTreeSetX.<T>toPersistentSortedSet(Comparator.naturalOrder());
+        return new LazyPersistentSortedSetX<T>(null, ReactiveSeq.fromStream(stream),
                                   reducer,Evaluation.LAZY);
     }
 
-    public static <T> LazyPOrderedSetX<T> fromStream(Stream<T> stream,Comparator<? super T> c) {
-        Reducer<POrderedSet<T>> reducer = ScalaTreeSetX.<T>toPOrderedSet((Comparator<T>)c);
-        return new LazyPOrderedSetX<T>(null, ReactiveSeq.fromStream(stream),
+    public static <T> LazyPersistentSortedSetX<T> fromStream(Stream<T> stream,Comparator<? super T> c) {
+        Reducer<PersistentSortedSet<T>> reducer = ScalaTreeSetX.<T>toPersistentSortedSet((Comparator<T>)c);
+        return new LazyPersistentSortedSetX<T>(null, ReactiveSeq.fromStream(stream),
                 reducer, Evaluation.LAZY);
     }
 
     /**
-     * Create a LazyPOrderedSetX that contains the Integers between start and end
-     * 
+     * Create a LazyPersistentSortedSetX that contains the Integers between start and end
+     *
      * @param start
      *            Number of range to start from
      * @param end
      *            Number for range to end at
      * @return Range SetX
      */
-    public static LazyPOrderedSetX<Integer> range(int start, int end) {
+    public static LazyPersistentSortedSetX<Integer> range(int start, int end) {
         return fromStream(ReactiveSeq.range(start, end));
     }
 
     /**
-     * Create a LazyPOrderedSetX that contains the Longs between start and end
-     * 
+     * Create a LazyPersistentSortedSetX that contains the Longs between start and end
+     *
      * @param start
      *            Number of range to start from
      * @param end
      *            Number for range to end at
      * @return Range SetX
      */
-    public static LazyPOrderedSetX<Long> rangeLong(long start, long end) {
+    public static LazyPersistentSortedSetX<Long> rangeLong(long start, long end) {
         return fromStream(ReactiveSeq.rangeLong(start, end));
     }
 
     /**
      * Unfold a function into a SetX
-     * 
+     *
      * <pre>
-     * {@code 
-     *  LazyPOrderedSetX.unfold(1,i->i<=6 ? Optional.of(Tuple.tuple(i,i+1)) : Optional.empty());
-     * 
+     * {@code
+     *  LazyPersistentSortedSetX.unfold(1,i->i<=6 ? Optional.of(Tuple.tuple(i,i+1)) : Optional.empty());
+     *
      * //(1,2,3,4,5)
-     * 
+     *
      * }</pre>
-     * 
-     * @param seed Initial value 
+     *
+     * @param seed Initial value
      * @param unfolder Iteratively applied function, terminated by an empty Optional
      * @return SetX generated by unfolder function
      */
-    public static <U, T extends Comparable<? super T>> LazyPOrderedSetX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
+    public static <U, T extends Comparable<? super T>> LazyPersistentSortedSetX<T> unfold(U seed, Function<? super U, Optional<Tuple2<T, U>>> unfolder) {
         return fromStream(ReactiveSeq.unfold(seed, unfolder));
     }
 
     /**
-     * Generate a LazyPOrderedSetX from the provided Supplier up to the provided limit number of times
-     * 
+     * Generate a LazyPersistentSortedSetX from the provided Supplier up to the provided limit number of times
+     *
      * @param limit Max number of elements to generate
      * @param s Supplier to generate SetX elements
      * @return SetX generated from the provided Supplier
      */
-    public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> generate(long limit, Supplier<T> s) {
+    public static <T extends Comparable<? super T>> LazyPersistentSortedSetX<T> generate(long limit, Supplier<T> s) {
 
         return fromStream(ReactiveSeq.generate(s)
                                      .limit(limit));
     }
 
     /**
-     * Create a LazyPOrderedSetX by iterative application of a function to an initial element up to the supplied limit number of times
-     * 
+     * Create a LazyPersistentSortedSetX by iterative application of a function to an initial element up to the supplied limit number of times
+     *
      * @param limit Max number of elements to generate
      * @param seed Initial element
      * @param f Iteratively applied to each element to generate the next element
      * @return SetX generated by iterative application
      */
-    public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> iterate(long limit, final T seed, final UnaryOperator<T> f) {
+    public static <T extends Comparable<? super T>> LazyPersistentSortedSetX<T> iterate(long limit, final T seed, final UnaryOperator<T> f) {
         return fromStream(ReactiveSeq.iterate(seed, f)
                                      .limit(limit));
     }
 
     /**
      * <pre>
-     * {@code 
-     * POrderedSet<Integer> q = JSPOrderedSet.<Integer>toPOrderedSet()
+     * {@code
+     * PersistentSortedSet<Integer> q = JSPersistentSortedSet.<Integer>toPersistentSortedSet()
                                      .mapReduce(Stream.of(1,2,3,4));
-     * 
+     *
      * }
      * </pre>
-     * @return Reducer for POrderedSet
+     * @return Reducer for PersistentSortedSet
      */
-    public static <T extends Comparable<? super T>>  Reducer<POrderedSet<T>> toPOrderedSet() {
-        return Reducer.<POrderedSet<T>> of(ScalaTreeSetX.emptyPOrderedSet(), (final POrderedSet<T> a) -> b -> a.plusAll(b),
+    public static <T extends Comparable<? super T>>  Reducer<PersistentSortedSet<T>> toPersistentSortedSet() {
+        return Reducer.<PersistentSortedSet<T>> of(ScalaTreeSetX.emptyPersistentSortedSet(), (final PersistentSortedSet<T> a) -> b -> a.plusAll(b),
                                       (final T x) -> ScalaTreeSetX.singleton(x));
     }
-    
-    public static <T>  Reducer<POrderedSet<T>> toPOrderedSet(Comparator<T> ordering) {
-        return Reducer.<POrderedSet<T>> of(ScalaTreeSetX.emptyPOrderedSet(ordering),
-                                           (final POrderedSet<T> a) -> b -> a.plusAll(b),
+
+    public static <T>  Reducer<PersistentSortedSet<T>> toPersistentSortedSet(Comparator<T> ordering) {
+        return Reducer.<PersistentSortedSet<T>> of(ScalaTreeSetX.emptyPersistentSortedSet(ordering),
+                                           (final PersistentSortedSet<T> a) -> b -> a.plusAll(b),
                                       (final T x) -> ScalaTreeSetX.singleton(ordering,x));
     }
 
@@ -182,70 +182,70 @@ public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, 
         return new ScalaTreeSetX<>(
                                  set);
     }
-    public static <T> LazyPOrderedSetX<T> lazySet(TreeSet<T> set){
-        POrderedSet<T> ordered = fromSet(set);
-        return fromPOrderedSet(ordered, (Reducer)toPOrderedSet());
+    public static <T> LazyPersistentSortedSetX<T> lazySet(TreeSet<T> set){
+        PersistentSortedSet<T> ordered = fromSet(set);
+        return fromPersistentSortedSet(ordered, (Reducer)toPersistentSortedSet());
     }
 
-    private static <T> LazyPOrderedSetX<T> fromPOrderedSet(POrderedSet<T> ordered, Reducer<POrderedSet<T>> reducer) {
-        return  new LazyPOrderedSetX<T>(ordered,null,reducer, Evaluation.LAZY);
+    private static <T> LazyPersistentSortedSetX<T> fromPersistentSortedSet(PersistentSortedSet<T> ordered, Reducer<PersistentSortedSet<T>> reducer) {
+        return  new LazyPersistentSortedSetX<T>(ordered,null,reducer, Evaluation.LAZY);
     }
 
-    public static <T extends Comparable<? super T>> ScalaTreeSetX<T> emptyPOrderedSet() {
+    public static <T extends Comparable<? super T>> ScalaTreeSetX<T> emptyPersistentSortedSet() {
         return new ScalaTreeSetX<>(
                                  TreeSet$.MODULE$.empty(Converters.<T>ordering(Comparator.naturalOrder())));
     }
-    
-    public static <T> ScalaTreeSetX<T> emptyPOrderedSet(Comparator<T> ordering) {
+
+    public static <T> ScalaTreeSetX<T> emptyPersistentSortedSet(Comparator<T> ordering) {
         return new ScalaTreeSetX<>(
                                  TreeSet$.MODULE$.empty(ordering(ordering)));
     }
 
-    public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> empty() {
-        
-        return fromPOrderedSet(new ScalaTreeSetX<>(
+    public static <T extends Comparable<? super T>> LazyPersistentSortedSetX<T> empty() {
+
+        return fromPersistentSortedSet(new ScalaTreeSetX<>(
                 TreeSet$.MODULE$.empty(Converters.<T>ordering(Comparator.naturalOrder()))),
-                                                toPOrderedSet());
+                                                toPersistentSortedSet());
     }
-    public static <T> LazyPOrderedSetX<T> empty(Comparator<T> comp) {
-        
-        return fromPOrderedSet(new ScalaTreeSetX<>(
+    public static <T> LazyPersistentSortedSetX<T> empty(Comparator<T> comp) {
+
+        return fromPersistentSortedSet(new ScalaTreeSetX<>(
                 TreeSet$.MODULE$.empty(Converters.<T>ordering(comp))),
-                                                toPOrderedSet(comp));
+                                                toPersistentSortedSet(comp));
     }
 
-    public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> singleton(T t) {
+    public static <T extends Comparable<? super T>> LazyPersistentSortedSetX<T> singleton(T t) {
         return of(t);
     }
-    public static <T> LazyPOrderedSetX<T> singleton(Comparator<T> comp,T t) {
+    public static <T> LazyPersistentSortedSetX<T> singleton(Comparator<T> comp,T t) {
         return of(comp,t);
     }
-    public static <T> LazyPOrderedSetX<T> of(Comparator<T> comp,T... t) {
+    public static <T> LazyPersistentSortedSetX<T> of(Comparator<T> comp,T... t) {
 
         Builder<T, TreeSet<T>> lb = TreeSet$.MODULE$.newBuilder(Converters.<T>ordering(comp));
        for (T next : t)
            lb.$plus$eq(next);
        TreeSet<T> vec = lb.result();
-       return fromPOrderedSet(new ScalaTreeSetX<>(
+       return fromPersistentSortedSet(new ScalaTreeSetX<>(
                                                        vec),
-                                     toPOrderedSet(comp));
+                                     toPersistentSortedSet(comp));
    }
 
-    public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> of(T... t) {
+    public static <T extends Comparable<? super T>> LazyPersistentSortedSetX<T> of(T... t) {
 
         return of(Comparator.naturalOrder(),t);
     }
-    
 
-    public static <T> LazyPOrderedSetX<T> POrderedSet(TreeSet<T> q) {
-        return fromPOrderedSet(new ScalaTreeSetX<T>(
+
+    public static <T> LazyPersistentSortedSetX<T> PersistentSortedSet(TreeSet<T> q) {
+        return fromPersistentSortedSet(new ScalaTreeSetX<T>(
                                                          q),
-                                      toPOrderedSet(q.ordering()));
+                                      toPersistentSortedSet(q.ordering()));
     }
 
     @SafeVarargs
-    public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> POrderedSet(T... elements) {
-        return fromPOrderedSet(of(elements), toPOrderedSet());
+    public static <T extends Comparable<? super T>> LazyPersistentSortedSetX<T> PersistentSortedSet(T... elements) {
+        return fromPersistentSortedSet(of(elements), toPersistentSortedSet());
     }
 
     @Wither
@@ -253,13 +253,13 @@ public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, 
 
     @Override
     public ScalaTreeSetX<T> plus(T e) {
-       
+
         return withSet(set.$plus(e));
     }
 
     @Override
     public ScalaTreeSetX<T> plusAll(Collection<? extends T> l) {
-        
+
         TreeSet<T> use =HasScalaCollection.visit(l, scala->set, java->{
             TreeSet<T> vec = set;
             for (T next : l) {
@@ -267,32 +267,32 @@ public class ScalaTreeSetX<T> extends AbstractSet<T> implements POrderedSet<T>, 
             }
             return vec;
         });
-        
+
 
         return withSet(use);
-       
+
     }
 
-   
 
-    
-  
+
+
+
 
     @Override
-    public POrderedSet<T> minus(Object e) {
+    public PersistentSortedSet<T> minus(Object e) {
         return withSet(set.$minus((T)e));
-        
+
     }
 
     @Override
-    public POrderedSet<T> minusAll(Collection<?> s) {
-        
+    public PersistentSortedSet<T> minusAll(Collection<?> s) {
+
         GenTraversableOnce<T> col = HasScalaCollection.<T>traversable((Collection)s);
-        return withSet((TreeSet)set.$minus$minus(col));        
+        return withSet((TreeSet)set.$minus$minus(col));
     }
 
-  
-   
+
+
 
     @Override
     public int size() {

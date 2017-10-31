@@ -1,14 +1,14 @@
 package com.aol.cyclops.vavr.adapter;
 
 
-import com.aol.cyclops2.types.anyM.AnyMValue;
-import com.aol.cyclops2.types.extensability.ValueAdapter;
+import com.oath.cyclops.types.anyM.AnyMValue;
+import com.oath.cyclops.types.extensability.ValueAdapter;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
 import io.vavr.control.Option;

@@ -1,7 +1,7 @@
 package com.aol.cyclops.rx2.hkt;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.async.Future;
 import cyclops.companion.rx2.Flowables;
 import cyclops.companion.rx2.Maybes;
@@ -26,9 +26,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Simulates Higher Kinded Types for RxJava 2 Maybe's
- * 
+ *
  * MaybeKind is a Maybe and a Higher Kinded Type (maybe,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Maybe
@@ -59,15 +59,15 @@ public final class MaybeKind<T> implements Higher<maybe, T>, Publisher<T> {
     public <W extends WitnessType<W>> MaybeT<W, T> liftM(W witness) {
         return MaybeT.of(witness.adapter().unit(boxed));
     }
-    
+
     /**
      * Construct a HKT encoded completed Maybe
-     * 
+     *
      * @param value To encode inside a HKT encoded Maybe
      * @return Completed HKT encoded FMaybe
      */
     public static <T> MaybeKind<T> just(T value){
-        
+
         return widen(Maybe.just(value));
     }
     public static <T> MaybeKind<T> empty(){
@@ -77,29 +77,29 @@ public final class MaybeKind<T> implements Higher<maybe, T>, Publisher<T> {
     /**
      * Convert a Maybe to a simulated HigherKindedType that captures Maybe nature
      * and Maybe element data type separately. Recover via @see MaybeKind#narrow
-     * 
+     *
      * If the supplied Maybe implements MaybeKind it is returned already, otherwise it
      * is wrapped into a Maybe implementation that does implement MaybeKind
-     * 
+     *
      * @param completableMaybe Maybe to widen to a MaybeKind
      * @return MaybeKind encoding HKT info about Maybes
      */
     public static <T> MaybeKind<T> widen(final Maybe<T> completableMaybe) {
-        
+
         return new MaybeKind<T>(
                          completableMaybe);
     }
-    
+
     public static <T> MaybeKind<T> widen(final Publisher<T> completableMaybe) {
-        
+
         return new MaybeKind<T>(Maybes.fromPublisher(
                          completableMaybe));
     }
-        
-    
+
+
     /**
      * Convert the raw Higher Kinded Type for MaybeKind types into the MaybeKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a MaybeKind
      * @return MaybeKind
      */
@@ -109,15 +109,15 @@ public final class MaybeKind<T> implements Higher<maybe, T>, Publisher<T> {
 
     /**
      * Convert the HigherKindedType definition for a Maybe into
-     * 
+     *
      * @param completableMaybe Type Constructor to convert back into narrowed type
      * @return Maybe from Higher Kinded Type
      */
     public static <T> Maybe<T> narrow(final Higher<maybe, T> completableMaybe) {
-      
+
             return ((MaybeKind<T>)completableMaybe).narrow();
-           
-       
+
+
 
     }
 
@@ -689,7 +689,7 @@ public final class MaybeKind<T> implements Higher<maybe, T>, Publisher<T> {
             return boxed;
         }
 
-        
+
         public Future<T> toFuture(){
             return Future.fromPublisher(boxed.toFlowable());
         }
@@ -717,5 +717,5 @@ public final class MaybeKind<T> implements Higher<maybe, T>, Publisher<T> {
         }
 
 
-    
+
 }

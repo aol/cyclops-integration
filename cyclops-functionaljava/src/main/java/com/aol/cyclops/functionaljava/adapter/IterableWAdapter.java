@@ -3,10 +3,10 @@ package com.aol.cyclops.functionaljava.adapter;
 import cyclops.monads.FJ;
 import cyclops.monads.FJWitness;
 import cyclops.monads.FJWitness.iterableW;
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
 
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import fj.data.IterableW;
 
 import java.util.ArrayList;

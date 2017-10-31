@@ -1,14 +1,14 @@
 package com.aol.cyclops.reactor.adapter;
 
-import com.aol.cyclops2.types.anyM.AnyMValue;
-import com.aol.cyclops2.types.extensability.ValueAdapter;
+import com.oath.cyclops.types.anyM.AnyMValue;
+import com.oath.cyclops.types.extensability.ValueAdapter;
 import cyclops.companion.reactor.Monos;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.mono;
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.async.Future;
 import cyclops.monads.AnyM;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Mono;
 

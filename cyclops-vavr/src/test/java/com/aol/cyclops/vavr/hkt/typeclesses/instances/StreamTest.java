@@ -12,12 +12,12 @@ import com.aol.cyclops.vavr.hkt.StreamKind;
 
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.stream;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Pure;
 import cyclops.typeclasses.functor.Functor;
 import org.junit.Test;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Maybe;
 import cyclops.function.Fn1;
 import cyclops.function.Lambda;
@@ -28,11 +28,11 @@ public class StreamTest {
 
     @Test
     public void unit(){
-        
+
         StreamKind<String> list = Streams.Instances.unit()
                                      .unit("hello")
                                      .convert(StreamKind::narrowK);
-        
+
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello")));
     }
     @Test
@@ -42,7 +42,7 @@ public class StreamTest {
                                      .unit("hello")
                                      .applyHKT(h->Streams.Instances.functor().map((String v) ->v.length(), h))
                                      .convert(StreamKind::narrowK);
-        
+
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
     }
     @Test
@@ -68,15 +68,15 @@ public class StreamTest {
     }
     @Test
     public void applicative(){
-        
+
         StreamKind<Fn1<Integer,Integer>> listFn =Streams.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(StreamKind::narrowK);
-        
+
         StreamKind<Integer> list = Streams.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h->Streams.Instances.functor().map((String v) ->v.length(), h))
                                      .applyHKT(h->Streams.Instances.zippingApplicative().ap(listFn, h))
                                      .convert(StreamKind::narrowK);
-        
+
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length()*2)));
     }
     @Test
@@ -87,35 +87,35 @@ public class StreamTest {
     }
     @Test
     public void monad(){
-        
+
         StreamKind<Integer> list = Streams.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h->Streams.Instances.monad().flatMap((String v) ->Streams.Instances.unit().unit(v.length()), h))
                                      .convert(StreamKind::narrowK);
-        
+
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello".length())));
     }
     @Test
     public void monadZeroFilter(){
-        
+
         StreamKind<String> list = Streams.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h->Streams.Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(StreamKind::narrowK);
-        
+
         assertThat(list.toJavaList(),equalTo(Arrays.asList("hello")));
     }
     @Test
     public void monadZeroFilterOut(){
-        
+
         StreamKind<String> list = Streams.Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h->Streams.Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(StreamKind::narrowK);
-        
+
         assertThat(list.toJavaList(),equalTo(Arrays.asList()));
     }
-    
+
     @Test
     public void monadPlus(){
         StreamKind<Integer> list = Streams.Instances.<Integer>monadPlus()
@@ -128,14 +128,14 @@ public class StreamTest {
     public void  foldLeft(){
         int sum  = Streams.Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, StreamKind.widen(Stream.of(1,2,3,4)));
-        
+
         assertThat(sum,equalTo(10));
     }
     @Test
     public void  foldRight(){
         int sum  = Streams.Instances.foldable()
                         .foldRight(0, (a,b)->a+b, StreamKind.widen(Stream.of(1,2,3,4)));
-        
+
         assertThat(sum,equalTo(10));
     }
     @Test
@@ -143,10 +143,10 @@ public class StreamTest {
        Maybe<Higher<stream, Integer>> res = Streams.Instances.traverse()
                                                          .traverseA(Maybe.Instances.applicative(), (Integer a)->Maybe.just(a*2), StreamKind.just(1,2,3))
                                                          .convert(Maybe::narrowK);
-       
-       
+
+
        assertThat(res.map(i->i.convert(StreamKind::narrowK).toJavaList()),
                   equalTo(Maybe.just(ListX.of(2,4,6))));
     }
-    
+
 }

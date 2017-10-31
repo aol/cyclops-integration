@@ -1,12 +1,12 @@
 package cyclops.monads.transformers;
 
 
-import com.aol.cyclops2.types.anyM.transformers.FoldableTransformerSeq;
+import com.oath.cyclops.types.anyM.transformers.FoldableTransformerSeq;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Reducers;
 import cyclops.control.Maybe;
 import cyclops.monads.WitnessType;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
@@ -32,10 +32,10 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
     public final SystemOutRule sout = new SystemOutRule().enableLog();
     @Rule
     public final SystemErrRule serr = new SystemErrRule().enableLog();
-    
+
     public abstract <T> FoldableTransformerSeq<W,T> of(T...elements);
     public abstract <T> FoldableTransformerSeq<W,T> empty();
-    
+
 
 
     @Test
@@ -126,31 +126,31 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
 
     @Test
     public void foldRight() {
-        
+
         assertThat(of("hello","2","world","4").foldRight(Reducers.toString(",")).singleUnsafe().length(),
                 equalTo(",hello,2,world,4".length()));
-       
+
     }
-    
+
 
     @Test
     public void foldRightIdentity() {
         assertThat(of(100,200,300,400,500).foldRight( 0,(acc,next) -> acc+next).stream().singleUnsafe(),is(1500));
     }
 
-    
+
     @Test
     public void foldRightMapToType() {
         assertThat(of(1,2,3,4).foldRightMapToType(Reducers.toLinkedListX()).singleUnsafe().size(),
                 equalTo(4));
     }
-    
+
 
     @Test
     public void testJoin() {
         assertEquals("123".length(),of(1, 2, 3).join().singleUnsafe().length());
-        
-       
+
+
     }
 
     @Test
@@ -206,12 +206,12 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
     @Test
     public void testGroupBy() {
         Map<Integer, ListX<Integer>> map1 =of(1, 2, 3, 4).groupBy(i -> i % 2).singleUnsafe();
-        
+
         assertThat(map1.get(0),hasItem(2));
         assertThat(map1.get(0),hasItem(4));
         assertThat(map1.get(1),hasItem(1));
         assertThat(map1.get(1),hasItem(3));
-        
+
         assertEquals(2, map1.size());
     }
 
@@ -290,7 +290,7 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
 
         assertThat(repeat.reactiveSeq().toList(),hasItems(1,2,3,4,5,6));
         assertThat(repeat.reactiveSeq().toList(),hasItems(1,2,3,4,5,6));
-        
+
     }
  **/
 
@@ -311,7 +311,7 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
 
     @Test
     public void testSingleOptional() {
-        
+
         assertThat(of(1,11).single().stream().toListX(),equalTo(ListX.of(Maybe.none())));
     }
 
@@ -323,7 +323,7 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
     @Test
     public void testSchedule() {
         assertThat(of(1,2,3,4)
-                
+
                 .schedule("* * * * * ?", ex)
                 .connect()
                 .debounce(1,TimeUnit.DAYS)
@@ -333,7 +333,7 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
 
     @Test
     public void testScheduleFixedDelay() {
-        assertThat(of(1,2,3,4)          
+        assertThat(of(1,2,3,4)
                 .scheduleFixedDelay(1000, ex)
                 .connect()
                 .debounce(1,TimeUnit.DAYS)

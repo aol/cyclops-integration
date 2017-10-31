@@ -12,9 +12,9 @@ import cyclops.monads.AnyM;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.optional;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
-import org.jooq.lambda.tuple.Tuple;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.data.tuple.Tuple;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 
@@ -45,7 +45,7 @@ public class FluxesTest {
     }
     @Test
     public void fluxComp() {
-       
+
 
         Flux<Tuple2<Integer, Integer>> stream = Fluxs.forEach(Flux.range(1, 10), i -> Flux.range(i, 10), Tuple::tuple);
         Flux<Integer> result = Fluxs.forEach(Flux.just(10, 20), a -> Flux.<Integer> just(a + 10), (a, b) -> a + b);
@@ -63,6 +63,6 @@ public class FluxesTest {
         Fluxs.forEach(Flux.range(1, 10), i -> Flux.range(i, 10),(a, b) -> a>2 && b<10,Tuple::tuple)
                           .subscribe(System.out::println);
     }
-    
+
 
 }

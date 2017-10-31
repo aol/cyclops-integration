@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import cyclops.companion.reactor.Monos;
 import com.aol.cyclops.reactor.hkt.MonoKind;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.async.Future;
 import cyclops.companion.reactor.Monos.Instances;
 import cyclops.control.Maybe;
@@ -30,21 +30,21 @@ public class MonosTest {
 
     @Test
     public void unit(){
-        
+
         MonoKind<String> opt = Instances.unit()
                                             .unit("hello")
                                             .convert(MonoKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
     }
     @Test
     public void functor(){
-        
+
         MonoKind<Integer> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(MonoKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
     }
     @Test
@@ -57,15 +57,15 @@ public class MonosTest {
     }
     @Test
     public void applicative(){
-        
+
         MonoKind<Fn1<Integer,Integer>> optFn = Instances.unit().unit(l1((Integer i) ->i*2)).convert(MonoKind::narrowK);
-        
+
         MonoKind<Integer> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .applyHKT(h-> Instances.applicative().ap(optFn, h))
                                      .convert(MonoKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()*2).join()));
     }
     @Test
@@ -76,35 +76,35 @@ public class MonosTest {
     }
     @Test
     public void monad(){
-        
+
         MonoKind<Integer> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(MonoKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
     }
     @Test
     public void monadZeroFilter(){
-        
+
         MonoKind<String> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(MonoKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
     }
     @Test
     public void monadZeroFilterOut(){
-        
+
         MonoKind<String> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(MonoKind::narrowK);
-        
+
         assertTrue(opt.block()==null);
     }
-    
+
     @Test
     public void monadPlus(){
         MonoKind<Integer> opt = Instances.<Integer>monadPlus()
@@ -114,7 +114,7 @@ public class MonosTest {
     }
     @Test
     public void monadPlusNonEmpty(){
-        
+
         Monoid<MonoKind<Integer>> m = Monoid.of(MonoKind.widen(Mono.empty()), (a, b)->a.toFuture().isDone() ? b : a);
         MonoKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(MonoKind.widen(Mono.just(5)), MonoKind.widen(Mono.just(10)))
@@ -125,14 +125,14 @@ public class MonosTest {
     public void  foldLeft(){
         int sum  = Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, MonoKind.widen(Future.ofResult(4)));
-        
+
         assertThat(sum,equalTo(4));
     }
     @Test
     public void  foldRight(){
         int sum  = Instances.foldable()
                         .foldRight(0, (a,b)->a+b, MonoKind.widen(Future.ofResult(1)));
-        
+
         assertThat(sum,equalTo(1));
     }
     @Test
@@ -162,5 +162,5 @@ public class MonosTest {
                                      .map(h -> h.convert(MonoKind::narrow));
 
     }
-    
+
 }

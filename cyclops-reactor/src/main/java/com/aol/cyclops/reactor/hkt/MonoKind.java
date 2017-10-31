@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.async.Future;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.companion.reactor.Monos;
@@ -44,9 +44,9 @@ import reactor.util.function.Tuple2;
 
 /**
  * Simulates Higher Kinded Types for Reactor Mono's
- * 
+ *
  * MonoKind is a Mono and a Higher Kinded Type (mono,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Mono
@@ -81,12 +81,12 @@ public final class MonoKind<T> implements Higher<mono, T>, Publisher<T> {
 
     /**
      * Construct a HKT encoded completed Mono
-     * 
+     *
      * @param value To encode inside a HKT encoded Mono
      * @return Completed HKT encoded FMono
      */
     public static <T> MonoKind<T> just(T value){
-        
+
         return widen(Mono.just(value));
     }
     public static <T> MonoKind<T> empty(){
@@ -96,29 +96,29 @@ public final class MonoKind<T> implements Higher<mono, T>, Publisher<T> {
     /**
      * Convert a Mono to a simulated HigherKindedType that captures Mono nature
      * and Mono element data type separately. Recover via @see MonoKind#narrow
-     * 
+     *
      * If the supplied Mono implements MonoKind it is returned already, otherwise it
      * is wrapped into a Mono implementation that does implement MonoKind
-     * 
+     *
      * @param completableMono Mono to widen to a MonoKind
      * @return MonoKind encoding HKT info about Monos
      */
     public static <T> MonoKind<T> widen(final Mono<T> completableMono) {
-        
+
         return new MonoKind<T>(
                          completableMono);
     }
-    
+
     public static <T> MonoKind<T> widen(final Publisher<T> completableMono) {
-        
+
         return new MonoKind<T>(Mono.from(
                          completableMono));
     }
-        
-    
+
+
     /**
      * Convert the raw Higher Kinded Type for MonoKind types into the MonoKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a MonoKind
      * @return MonoKind
      */
@@ -128,19 +128,19 @@ public final class MonoKind<T> implements Higher<mono, T>, Publisher<T> {
 
     /**
      * Convert the HigherKindedType definition for a Mono into
-     * 
+     *
      * @param completableMono Type Constructor to convert back into narrowed type
      * @return Mono from Higher Kinded Type
      */
     public static <T> Mono<T> narrow(final Higher<mono, T> completableMono) {
-      
+
             return ((MonoKind<T>)completableMono).narrow();
-           
-       
+
+
 
     }
 
-    
+
 
         private final Mono<T> boxed;
 
@@ -151,7 +151,7 @@ public final class MonoKind<T> implements Higher<mono, T>, Publisher<T> {
             return boxed;
         }
 
-        
+
         public Future<T> toFuture(){
             return Future.of(boxed.toFuture());
         }
@@ -824,7 +824,7 @@ public final class MonoKind<T> implements Higher<mono, T>, Publisher<T> {
         public final Mono<Void> then() {
             return boxed.then();
         }
-        
+
         /**
          * @param other
          * @return
@@ -942,7 +942,7 @@ public final class MonoKind<T> implements Higher<mono, T>, Publisher<T> {
         public final Mono<Tuple2<Long, T>> timestamp(TimedScheduler scheduler) {
             return boxed.timestamp(scheduler);
         }
-        
+
         /**
          * @param transformer
          * @return
@@ -959,7 +959,7 @@ public final class MonoKind<T> implements Higher<mono, T>, Publisher<T> {
             return boxed.toString();
         }
 
-    
 
-    
+
+
 }

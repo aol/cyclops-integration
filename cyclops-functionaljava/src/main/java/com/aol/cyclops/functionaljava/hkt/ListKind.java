@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.functionaljava.Lists;
 import cyclops.monads.FJWitness;
@@ -36,9 +36,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for List's
- * 
+ *
  * ListKind is a List and a Higher Kinded Type (list,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the List
@@ -66,26 +66,26 @@ public  class ListKind<T> implements Higher<list, T> {
         return widen(op.apply(boxed));
     }
     public static <T> ListKind<T> list(final T... values) {
-        
+
         return widen(List.list(values));
     }
     /**
      * Convert a List to a simulated HigherKindedType that captures List nature
      * and List element data type separately. Recover via @see ListKind#narrow
-     * 
+     *
      * If the supplied List implements ListKind it is returned already, otherwise it
      * is wrapped into a List implementation that does implement ListKind
-     * 
+     *
      * @param list List to widen to a ListKind
      * @return ListKind encoding HKT info about Lists
      */
     public static <T> ListKind<T> widen(final List<T> list) {
-        
+
         return new ListKind<>(list);
     }
     /**
      * Widen a ListKind nested inside another HKT encoded type
-     * 
+     *
      * @param list HTK encoded type containing  a List to widen
      * @return HKT encoded type with a widened List
      */
@@ -96,7 +96,7 @@ public  class ListKind<T> implements Higher<list, T> {
     }
     /**
      * Convert the raw Higher Kinded Type for List types into the ListKind type definition class
-     * 
+     *
      * @param list HKT encoded list into a ListKind
      * @return ListKind
      */
@@ -105,13 +105,13 @@ public  class ListKind<T> implements Higher<list, T> {
     }
     /**
      * Convert the HigherKindedType definition for a List into
-     * 
+     *
      * @param list Type Constructor to convert back into narrowed type
      * @return ListX from Higher Kinded Type
      */
     public static <T> List<T> narrow(final Higher<list, T> list) {
         return ((ListKind)list).narrow();
-       
+
     }
 
 
@@ -310,7 +310,7 @@ public  class ListKind<T> implements Higher<list, T> {
     public List<T> narrow() {
         return (List) (boxed);
     }
-    
+
     /**
      * @return
      * @see fj.data.List#iterator()
@@ -332,7 +332,7 @@ public  class ListKind<T> implements Higher<list, T> {
     public List<T> tail() {
         return boxed.tail();
     }
-    
+
     /**
      * @return
      * @see fj.data.List#length()

@@ -3,7 +3,7 @@ package com.aol.cyclops.vavr.hkt.typeclesses.instances;
 import com.aol.cyclops.vavr.hkt.ListKind;
 import com.aol.cyclops.vavr.hkt.OptionKind;
 import com.aol.cyclops.vavr.hkt.StreamKind;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import com.google.common.collect.FluentIterable;
 import cyclops.companion.Monoids;
 import cyclops.companion.vavr.Lists;

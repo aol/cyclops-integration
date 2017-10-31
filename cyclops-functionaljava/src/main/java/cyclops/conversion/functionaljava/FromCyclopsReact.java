@@ -1,7 +1,7 @@
 package cyclops.conversion.functionaljava;
 
 
-import com.aol.cyclops2.types.MonadicValue;
+import com.oath.cyclops.types.MonadicValue;
 import cyclops.control.Xor;
 import fj.data.Either;
 import fj.data.Option;
@@ -9,10 +9,10 @@ import fj.data.Validation;
 
 public class FromCyclopsReact {
     public static <T> fj.data.Stream<T> stream(java.util.stream.Stream<T> s) {
-        
+
         return fj.data.Stream.iteratorStream(s.iterator());
     }
-   
+
     public static <T> Option<T> option(MonadicValue<T> value) {
         return Option.fromNull(value.orElse(null));
     }

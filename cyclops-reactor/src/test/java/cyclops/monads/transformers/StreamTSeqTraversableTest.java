@@ -1,9 +1,9 @@
 package cyclops.monads.transformers;
 
-import com.aol.cyclops2.types.traversable.Traversable;
+import com.oath.cyclops.types.traversable.Traversable;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.monads.Witness;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 
 
 public class StreamTSeqTraversableTest extends AbstractTraversableTest {

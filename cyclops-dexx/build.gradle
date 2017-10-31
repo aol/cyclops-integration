@@ -45,7 +45,7 @@ configurations {
 dependencies {
 
   compile 'com.github.andrewoma.dexx:collection:' + dexxVersion
-  compile group: 'com.aol.simplereact', name: 'cyclops-react', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
   testCompile 'commons-io:commons-io:2.4'

@@ -4,10 +4,10 @@ import cyclops.companion.guava.FluentIterables;
 
 import cyclops.monads.GuavaWitness;
 import cyclops.monads.GuavaWitness.fluentIterable;
-import com.aol.cyclops2.types.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import com.google.common.collect.FluentIterable;
 import cyclops.monads.AnyM;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import lombok.AllArgsConstructor;
 
 

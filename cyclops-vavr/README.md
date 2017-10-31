@@ -178,7 +178,7 @@ assertThat(Vavr.tryM(Try.of(this::success))
 # Kotlin style sequence generators
 
 ```java
-import static com.aol.cyclops2.types.foldable.ConvertableSequence.Conversion.LAZY;
+import static com.oath.cyclops.types.foldable.ConvertableSequence.Conversion.LAZY;
 import static cyclops.stream.Generator.suspend;
 import static cyclops.stream.Generator.times;
 

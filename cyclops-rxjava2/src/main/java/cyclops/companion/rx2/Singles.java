@@ -5,11 +5,11 @@ import com.aol.cyclops.rx2.hkt.FlowableKind;
 import com.aol.cyclops.rx2.hkt.MaybeKind;
 import com.aol.cyclops.rx2.hkt.ObservableKind;
 import com.aol.cyclops.rx2.hkt.SingleKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.react.Status;
-import com.aol.cyclops2.types.MonadicValue;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.react.Status;
+import com.oath.cyclops.types.MonadicValue;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.async.Future;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
@@ -32,7 +32,7 @@ import cyclops.monads.Rx2Witness.single;
 import cyclops.monads.Witness.*;
 
 import cyclops.monads.transformers.rx2.SingleT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -60,7 +60,7 @@ import static com.aol.cyclops.rx2.hkt.SingleKind.widen;
 
 /**
  * Companion class for working with Reactor Single types
- * 
+ *
  * @author johnmcclean
  *
  */
@@ -124,21 +124,21 @@ public class Singles {
     public static <T> Eval<T> eval(Single<T> opt){
         return Eval.fromFuture(future(opt));
     }
-    
+
     /**
      * Construct an AnyM type from a Single. This allows the Single to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
-     * 
+     *
      * <pre>
-     * {@code 
-     *    
+     * {@code
+     *
      *    AnyMSeq<Integer> single = Fluxs.anyM(Single.just(1,2,3));
      *    AnyMSeq<Integer> transformedSingle = myGenericOperation(single);
-     *    
+     *
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
      * }
      * </pre>
-     * 
+     *
      * @param single To wrap inside an AnyM
      * @return AnyMSeq wrapping a Single
      */
@@ -252,23 +252,23 @@ public class Singles {
     }
 
     /**
-     * Perform a For Comprehension over a Single, accepting 3 generating functions. 
+     * Perform a For Comprehension over a Single, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Singles.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Singles.forEach4;
-     *    
-          forEach4(Single.just(1), 
+     *
+          forEach4(Single.just(1),
                   a-> Single.just(a+1),
                   (a,b) -> Single.<Integer>just(a+b),
                   (a,b,c) -> Single.<Integer>just(a+b+c),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Single
      * @param value2 Nested Single
      * @param value3 Nested Single
@@ -301,22 +301,22 @@ public class Singles {
 
 
     /**
-     * Perform a For Comprehension over a Single, accepting 2 generating functions. 
+     * Perform a For Comprehension over a Single, accepting 2 generating functions.
      * This results in a three level nested internal iteration over the provided Singles.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Singles.forEach3;
-     *    
-          forEach3(Single.just(1), 
+     *
+          forEach3(Single.just(1),
                   a-> Single.just(a+1),
                   (a,b) -> Single.<Integer>just(a+b),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Single
      * @param value2 Nested Single
      * @param value3 Nested Single
@@ -349,21 +349,21 @@ public class Singles {
 
 
     /**
-     * Perform a For Comprehension over a Single, accepting a generating function. 
+     * Perform a For Comprehension over a Single, accepting a generating function.
      * This results in a two level nested internal iteration over the provided Singles.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Singles.forEach;
-     *    
-          forEach(Single.just(1), 
+     *
+          forEach(Single.just(1),
                   a-> Single.just(a+1),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Single
      * @param value2 Nested Single
      * @param yieldingFunction Generates a result per combination
@@ -390,7 +390,7 @@ public class Singles {
 
     /**
      * Lazily combine this Single with the supplied value via the supplied BiFunction
-     * 
+     *
      * @param single Single to combine with another value
      * @param app Value to combine with supplied single
      * @param fn Combiner function
@@ -404,7 +404,7 @@ public class Singles {
 
     /**
      * Lazily combine this Single with the supplied Single via the supplied BiFunction
-     * 
+     *
      * @param single Single to combine with another value
      * @param app Single to combine with supplied single
      * @param fn Combiner function
@@ -418,7 +418,7 @@ public class Singles {
 
     /**
      * Combine the provided Single with the first element (if present) in the provided Iterable using the provided BiFunction
-     * 
+     *
      * @param single Single to combine with an Iterable
      * @param app Iterable to combine with a Single
      * @param fn Combining function
@@ -432,7 +432,7 @@ public class Singles {
 
     /**
      * Combine the provided Single with the first element (if present) in the provided Publisher using the provided BiFunction
-     * 
+     *
      * @param single  Single to combine with a Publisher
      * @param fn Publisher to combine with a Single
      * @param app Combining function
@@ -446,7 +446,7 @@ public class Singles {
 
     /**
      * Test if value is equal to the value inside this Single
-     * 
+     *
      * @param single Single to test
      * @param test Value to test
      * @return true if equal
@@ -458,7 +458,7 @@ public class Singles {
 
     /**
      * Construct a Single from Iterable by taking the first value from Iterable
-     * 
+     *
      * @param t Iterable to populate Single from
      * @return Single containing first element from Iterable (or empty Single)
      */
@@ -468,7 +468,7 @@ public class Singles {
 
     /**
      * Get an Iterator for the value (if any) in the provided Single
-     * 
+     *
      * @param pub Single to get Iterator for
      * @return Iterator over Single value
      */

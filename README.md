@@ -122,7 +122,7 @@ The code for this performance testing speeding up the execution of functional op
 cyclops also allows data to be pushed asynchronously into collection types from the major functional libraries. For example to asynchronously populate a JavaSlang / Vavr Vector we can write
 
 ```java
-VectorX<Integer> asyncPopulated = JavaSlangPVector.fromStream(Spouts.publishOn(ReactiveSeq.of(1,2,3),
+VectorX<Integer> asyncPopulated = JavaSlangPersistentList.fromStream(Spouts.publishOn(ReactiveSeq.of(1,2,3),
                 Executors.newFixedThreadPool(1));
 ```
 

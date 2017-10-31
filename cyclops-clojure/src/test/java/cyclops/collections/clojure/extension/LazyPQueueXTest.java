@@ -8,10 +8,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import com.aol.cyclops2.data.collections.extensions.FluentCollectionX;
+import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.PersistentQueueX;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
 import cyclops.collections.clojure.ClojureQueueX;
@@ -19,7 +19,7 @@ import cyclops.collections.clojure.ClojureQueueX;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPQueueXTest extends AbstractCollectionXTest  {
+public class LazyPersistentQueueXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
@@ -41,7 +41,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.aol.cyclops.functions.collections.extensions.AbstractCollectionXTest#
      * empty()
@@ -51,7 +51,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
         return ClojureQueueX.empty();
     }
 
-    
+
 
     @Test
     public void remove() {

@@ -1,9 +1,9 @@
 package cyclops.streams.syncflux;
 
 import cyclops.companion.reactor.Fluxs;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.stream.Spouts;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 

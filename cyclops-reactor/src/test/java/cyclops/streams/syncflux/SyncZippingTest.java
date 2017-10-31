@@ -1,10 +1,10 @@
 package cyclops.streams.syncflux;
 
 import cyclops.companion.reactor.Fluxs;
-import cyclops.stream.ReactiveSeq;
-import org.jooq.lambda.tuple.Tuple2;
-import org.jooq.lambda.tuple.Tuple3;
-import org.jooq.lambda.tuple.Tuple4;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.data.tuple.Tuple2;
+import cyclops.data.tuple.Tuple3;
+import cyclops.data.tuple.Tuple4;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -94,51 +94,51 @@ public class SyncZippingTest {
 		List<Tuple2<Integer,Integer>> list =
 				of(1,2,3,4,5,6).zip(of(100,200,300,400))
 												.peek(it -> System.out.println(it))
-												
+
 												.collect(Collectors.toList());
 		System.out.println(list);
-		
+
 		List<Integer> right = list.stream().map(t -> t.v2).collect(Collectors.toList());
-		
+
 		assertThat(right,hasItem(100));
 		assertThat(right,hasItem(200));
 		assertThat(right,hasItem(300));
 		assertThat(right,hasItem(400));
-		
+
 		List<Integer> left = list.stream().map(t -> t.v1).collect(Collectors.toList());
 		assertThat(Arrays.asList(1,2,3,4,5,6),hasItem(left.get(0)));
-		
-		
+
+
 	}
 	@Test
 	public void zip3(){
 		List<Tuple3<Integer,Integer,Character>> list =
 				of(1,2,3,4,5,6).zip3(of(100,200,300,400),of('a','b','c'))
 												.peek(it -> System.out.println(it))
-												
+
 												.collect(Collectors.toList());
-		
+
 		System.out.println(list);
 		List<Integer> right = list.stream().map(t -> t.v2).collect(Collectors.toList());
 		assertThat(right,hasItem(100));
 		assertThat(right,hasItem(200));
 		assertThat(right,hasItem(300));
 		assertThat(right,not(hasItem(400)));
-		
+
 		List<Integer> left = list.stream().map(t -> t.v1).collect(Collectors.toList());
 		assertThat(Arrays.asList(1,2,3,4,5,6),hasItem(left.get(0)));
-		
+
 		List<Character> three = list.stream().map(t -> t.v3).collect(Collectors.toList());
 		assertThat(Arrays.asList('a','b','c'),hasItem(three.get(0)));
-		
-		
+
+
 	}
 	@Test
 	public void zip4(){
 		List<Tuple4<Integer,Integer,Character,String>> list =
 				of(1,2,3,4,5,6).zip4(of(100,200,300,400),of('a','b','c'),of("hello","world"))
 												.peek(it -> System.out.println(it))
-												
+
 												.collect(Collectors.toList());
 		System.out.println(list);
 		List<Integer> right = list.stream().map(t -> t.v2).collect(Collectors.toList());
@@ -146,19 +146,19 @@ public class SyncZippingTest {
 		assertThat(right,hasItem(200));
 		assertThat(right,not(hasItem(300)));
 		assertThat(right,not(hasItem(400)));
-		
+
 		List<Integer> left = list.stream().map(t -> t.v1).collect(Collectors.toList());
 		assertThat(Arrays.asList(1,2,3,4,5,6),hasItem(left.get(0)));
-		
+
 		List<Character> three = list.stream().map(t -> t.v3).collect(Collectors.toList());
 		assertThat(Arrays.asList('a','b','c'),hasItem(three.get(0)));
-	
+
 		List<String> four = list.stream().map(t -> t.v4).collect(Collectors.toList());
 		assertThat(Arrays.asList("hello","world"),hasItem(four.get(0)));
-		
-		
+
+
 	}
-	
+
 	@Test
 	public void zip2of(){
 
@@ -184,66 +184,66 @@ public class SyncZippingTest {
 	}
 	@Test
 	public void zipInOrder(){
-		
+
 		List<Tuple2<Integer,Integer>> list =  of(1,2,3,4,5,6)
 													.zip( of(100,200,300,400))
 													.collect(Collectors.toList());
-		
+
 		assertThat(asList(1,2,3,4,5,6),hasItem(list.get(0).v1));
 		assertThat(asList(100,200,300,400),hasItem(list.get(0).v2));
-		
-		
-		
+
+
+
 	}
 
 	@Test
 	public void zipEmpty() throws Exception {
-		
-		
+
+
 		final ReactiveSeq<Integer> zipped = empty.zip(ReactiveSeq.<Integer>of(), (a, b) -> a + b);
 		assertTrue(zipped.collect(Collectors.toList()).isEmpty());
 	}
 
 	@Test
 	public void shouldReturnEmptySeqWhenZipEmptyWithNonEmpty() throws Exception {
-		
-		
-		
+
+
+
 		final ReactiveSeq<Integer> zipped = empty.zip(nonEmpty, (a, b) -> a + b);
 		assertTrue(zipped.collect(Collectors.toList()).isEmpty());
 	}
 
 	@Test
 	public void shouldReturnEmptySeqWhenZipNonEmptyWithEmpty() throws Exception {
-		
-		
+
+
 		final ReactiveSeq<Integer> zipped = nonEmpty.zip(empty, (a, b) -> a + b);
 
-		
+
 		assertTrue(zipped.collect(Collectors.toList()).isEmpty());
 	}
 
 	@Test
 	public void shouldZipTwoFiniteSequencesOfSameSize() throws Exception {
-		
+
 		final ReactiveSeq<String> first = of("A", "B", "C");
 		final ReactiveSeq<Integer> second = of(1, 2, 3);
 
-		
+
 		final ReactiveSeq<String> zipped = first.zip(second, (a, b) -> a + b);
 
-		
+
 		assertThat(zipped.collect(Collectors.toList()).size(),is(3));
 	}
 
-	
+
 
 	@Test
 	public void shouldTrimSecondFixedSeqIfLonger() throws Exception {
 		final ReactiveSeq<String> first = of("A", "B", "C");
 		final ReactiveSeq<Integer> second = of(1, 2, 3, 4);
 
-		
+
 		final ReactiveSeq<String> zipped = first.zip(second, (a, b) -> a + b);
 
 		assertThat(zipped.collect(Collectors.toList()).size(),is(3));
@@ -255,7 +255,7 @@ public class SyncZippingTest {
 		final ReactiveSeq<Integer> second = of(1, 2, 3);
 		final ReactiveSeq<String> zipped = first.zip(second, (a, b) -> a + b);
 
-		
+
 		assertThat(zipped.collect(Collectors.toList()).size(),equalTo(3));
 	}
 
@@ -271,13 +271,13 @@ public class SyncZippingTest {
 
 	}
 
-	
+
 	@Test
 	public void shouldTrimSecondFixedSeqIfLongerStream() throws Exception {
 		final ReactiveSeq<String> first = of("A", "B", "C");
 		final ReactiveSeq<Integer> second = of(1, 2, 3, 4);
 
-		
+
 		final ReactiveSeq<String> zipped = first.zipS(second, (a, b) -> a + b);
 
 		assertThat(zipped.collect(Collectors.toList()).size(),is(3));
@@ -289,7 +289,7 @@ public class SyncZippingTest {
 		final ReactiveSeq<Integer> second = of(1, 2, 3);
 		final ReactiveSeq<String> zipped = first.zipS(second, (a, b) -> a + b);
 
-		
+
 		assertThat(zipped.collect(Collectors.toList()).size(),equalTo(3));
 	}
 
@@ -310,7 +310,7 @@ public class SyncZippingTest {
 		final ReactiveSeq<String> first = of("A", "B", "C");
 		final ReactiveSeq<Integer> second = of(1, 2, 3, 4);
 
-		
+
 		final ReactiveSeq<String> zipped = first.zip(second, (a, b) -> a + b);
 
 		assertThat(zipped.collect(Collectors.toList()).size(),is(3));
@@ -322,7 +322,7 @@ public class SyncZippingTest {
 		final ReactiveSeq<Integer> second = of(1, 2, 3);
 		final ReactiveSeq<String> zipped = first.zip(second, (a, b) -> a + b);
 
-		
+
 		assertThat(zipped.collect(Collectors.toList()).size(),equalTo(3));
 	}
 

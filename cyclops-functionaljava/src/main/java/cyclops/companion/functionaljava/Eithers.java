@@ -2,8 +2,8 @@ package cyclops.companion.functionaljava;
 
 
 import com.aol.cyclops.functionaljava.hkt.*;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.hkt.Higher2;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.hkt.Higher2;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
@@ -18,9 +18,9 @@ import cyclops.control.Xor;
 import cyclops.monads.*;
 import cyclops.conversion.functionaljava.FromCyclopsReact;
 import cyclops.conversion.functionaljava.ToCyclopsReact;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
@@ -31,7 +31,7 @@ import cyclops.monads.FJWitness.nonEmptyList;
 import cyclops.monads.FJWitness.option;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.XorT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
@@ -124,7 +124,7 @@ public class Eithers {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Eithers.forEach4;
+     *   import static com.oath.cyclops.reactor.Eithers.forEach4;
      *
     forEach4(Either.just(1),
     a-> Either.just(a+1),
@@ -172,7 +172,7 @@ public class Eithers {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Eithers.forEach3;
+     *   import static com.oath.cyclops.reactor.Eithers.forEach3;
      *
     forEach3(Either.just(1),
     a-> Either.just(a+1),
@@ -215,7 +215,7 @@ public class Eithers {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Eithers.forEach;
+     *   import static com.oath.cyclops.reactor.Eithers.forEach;
      *
     forEach(Either.just(1),
     a-> Either.just(a+1),

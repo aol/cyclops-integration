@@ -1,10 +1,12 @@
 package cyclops;
 
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.foldable.To;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.foldable.To;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.collections.vavr.*;
+import io.vavr.Tuple2;
 import io.vavr.collection.*;
+import io.vavr.control.Option;
 
 import java.util.Comparator;
 import java.util.function.Function;
@@ -25,6 +27,12 @@ import java.util.function.Function;
  */
 public interface VavrConverters {
 
+  public static <T> cyclops.control.Option<T> toCyclopsOption(Option<T> opt){
+    return opt.map(s->cyclops.control.Option.some(s)).getOrElse(cyclops.control.Option.none());
+  }
+  public static <K, V> cyclops.data.tuple.Tuple2<K,V> toCyclopsTuple2(Tuple2<K, V> t) {
+    return cyclops.data.tuple.Tuple.tuple(t._1(),t._2());
+  }
 
     public static <K,V> HashMap<K,V> HashMap(PersistentMapX<K,V> vec){
         return vec.unwrapNested(HashMap.class,

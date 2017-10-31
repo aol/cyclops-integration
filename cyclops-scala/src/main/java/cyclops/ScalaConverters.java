@@ -1,12 +1,15 @@
 package cyclops;
 
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.data.collections.extensions.lazy.immutable.LazyLinkedListX;
-import com.aol.cyclops2.types.foldable.To;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyLinkedListX;
+import com.oath.cyclops.types.foldable.To;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.collections.scala.*;
 import cyclops.companion.Reducers;
+import cyclops.control.Option;
 import org.pcollections.*;
+import scala.Tuple2;
+import scala.collection.Iterator;
 import scala.collection.immutable.*;
 
 
@@ -31,7 +34,23 @@ import java.util.stream.Collectors;
  */
 public interface ScalaConverters {
 
+  public static <T> java.util.Iterator<T> iterator(Iterator<T> it){
+    return new java.util.Iterator<T>() {
+      @Override
+      public boolean hasNext() {
+        return it.hasNext();
+      }
 
+      @Override
+      public T next() {
+        return it.next();
+      }
+    }
+  }
+
+  public static <T> Option<T> toCyclopsOption(scala.Option<T> o){
+    return o.fold(()->Option.none(),b->Option.some(b));
+  }
 
     public static <K,V> HashMap<K,V> HashMap(PersistentMapX<K,V> vec){
         return vec.unwrapNested(HashMap.class,
@@ -113,4 +132,7 @@ public interface ScalaConverters {
     }
 
 
+  public static <K, V> cyclops.data.tuple.Tuple2<K,V> toCyclopsTuple2(Tuple2<K, V> t) {
+      return cyclops.data.tuple.Tuple.tuple(t._1(),t._2());
+  }
 }

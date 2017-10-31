@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.function.Function;
 
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.functionaljava.Options;
 import cyclops.companion.functionaljava.Streams;
 import cyclops.control.Maybe;
@@ -14,7 +14,7 @@ import cyclops.monads.FJWitness.stream;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.MaybeT;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -39,9 +39,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for Stream's
- * 
+ *
  * StreamKind is a Stream and a Higher Kinded Type (StreamKind.µ,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Stream
@@ -68,26 +68,26 @@ public  class StreamKind<T> implements Higher<stream, T> {
                 completableList);
     }
     public static <T> StreamKind<T> stream(final T... values) {
-        
+
         return widen(Stream.stream(values));
     }
     /**
      * Convert a Stream to a simulated HigherKindedType that captures Stream nature
      * and Stream element data type separately. Recover via @see StreamKind#narrow
-     * 
+     *
      * If the supplied Stream implements StreamKind it is returned already, otherwise it
      * is wrapped into a Stream implementation that does implement StreamKind
-     * 
+     *
      * @param stream Stream to widen to a StreamKind
      * @return StreamKind encoding HKT info about Streams
      */
     public static <T> StreamKind<T> widen(final Stream<T> stream) {
-        
+
         return new StreamKind<>(stream);
     }
     /**
      * Widen a StreamKind nested inside another HKT encoded type
-     * 
+     *
      * @param stream HTK encoded type containing  a Stream to widen
      * @return HKT encoded type with a widened Stream
      */
@@ -98,7 +98,7 @@ public  class StreamKind<T> implements Higher<stream, T> {
     }
     /**
      * Convert the raw Higher Kinded Type for Stream types into the StreamKind type definition class
-     * 
+     *
      * @param stream HKT encoded stream into a StreamKind
      * @return StreamKind
      */
@@ -107,13 +107,13 @@ public  class StreamKind<T> implements Higher<stream, T> {
     }
     /**
      * Convert the HigherKindedType definition for a Stream into
-     * 
+     *
      * @param stream Type Constructor to convert back into narrowed type
      * @return StreamX from Higher Kinded Type
      */
     public static <T> Stream<T> narrow(final Higher<stream, T> stream) {
         return ((StreamKind)stream).narrow();
-       
+
     }
 
     public <R> StreamKind<R> fold(Function<? super Stream<?  super T>,? extends Stream<R>> op){
@@ -128,7 +128,7 @@ public  class StreamKind<T> implements Higher<stream, T> {
     public Stream<T> narrow() {
         return (Stream) (boxed);
     }
-    
+
     /**
      * @return
      * @see fj.data.Stream#iterator()
@@ -157,7 +157,7 @@ public  class StreamKind<T> implements Higher<stream, T> {
     public final boolean isEmpty() {
         return boxed.isEmpty();
     }
-    
+
     /**
      * @return
      * @see fj.data.Stream#isNotEmpty()
@@ -849,6 +849,6 @@ public  class StreamKind<T> implements Higher<stream, T> {
     public final F<Integer, T> toFunction() {
         return boxed.toFunction();
     }
-    
-    
+
+
 }

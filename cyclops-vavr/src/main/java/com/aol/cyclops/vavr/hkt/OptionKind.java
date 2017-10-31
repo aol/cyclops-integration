@@ -9,7 +9,7 @@ import cyclops.companion.vavr.Futures;
 import cyclops.companion.vavr.Options;
 import cyclops.conversion.vavr.FromCyclopsReact;
 
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.Optionals.OptionalKind;
 import cyclops.control.Eval;
 
@@ -33,9 +33,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * Simulates Higher Kinded Types for Option's
- * 
+ *
  * OptionKind is a Option and a Higher Kinded Type (OptionKind.µ,T)
- * 
+ *
  * @author johnmcclean
  *
  * @param <T> Data type stored within the Option
@@ -70,15 +70,15 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     /**
      *  Construct a OptionKind  that contains a single value extracted from the supplied Iterable
      * <pre>
-     * {@code 
+     * {@code
      *   ReactiveSeq<Integer> stream =  ReactiveSeq.of(1,2,3);
-        
+
          OptionKind<Integer> maybe = OptionKind.fromIterable(stream);
-        
+
         //Option[1]
-     * 
+     *
      * }
-     * </pre> 
+     * </pre>
      * @param iterable Iterable  to extract value from
      * @return Option populated with first value from Iterable (Option.empty if Publisher empty)
      */
@@ -89,15 +89,15 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     /**
      * Construct an equivalent Option from the Supplied Optional
      * <pre>
-     * {@code 
+     * {@code
      *   OptionKind<Integer> some = OptionKind.ofOptional(Optional.of(10));
      *   //Option[10], Some[10]
-     *  
+     *
      *   OptionKind<Integer> none = OptionKind.ofOptional(Optional.empty());
      *   //Option.empty, None[]
      * }
      * </pre>
-     * 
+     *
      * @param optional Optional to construct Option from
      * @return Option created from Optional
      */
@@ -110,15 +110,15 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     /**
      * Convert a Optional to a simulated HigherKindedType that captures Optional nature
      * and Optional element data type separately. Recover via @see OptionalType#narrow
-     * 
+     *
      * If the supplied Optional implements OptionalType it is returned already, otherwise it
      * is wrapped into a Optional implementation that does implement OptionalType
-     * 
+     *
      * @param optional Optional to widen to a OptionalType
      * @return OptionKind encoding HKT info about Optionals (converts Optional to a Option)
      */
     public static <T> OptionKind<T> widen(final Optional<T> optional) {
-        
+
         return new Box<>(Option.ofOptional(optional));
     }
     public static <C2,T> Higher<C2, Higher<option,T>> widen2(Higher<C2, OptionKind<T>> nestedOption){
@@ -128,18 +128,18 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     }
     /**
      * Convert the HigherKindedType definition for a Optional into
-     * 
+     *
      * @param Optional Type Constructor to convert back into narrowed type
      * @return Optional from Higher Kinded Type
      */
     public static <T> Optional<T> narrowOptional(final Higher<option, T> Optional) {
-        
+
          return ((Box<T>)Optional).narrow().toJavaOptional();
-        
+
     }
     /**
      * Convert the raw Higher Kinded Type for OptionKind types into the OptionKind type definition class
-     * 
+     *
      * @param future HKT encoded list into a OptionKind
      * @return OptionKind
      */
@@ -149,15 +149,15 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     /**
      * Construct an Option which contains the provided (non-null) value.
      * Alias for @see {@link Option#of(Object)}
-     * 
+     *
      * <pre>
-     * {@code 
-     * 
+     * {@code
+     *
      *    Option<Integer> some = Option.just(10);
      *    some.map(i->i*2);
      * }
      * </pre>
-     * 
+     *
      * @param value Value to wrap inside a Option
      * @return Option containing the supplied value
      */
@@ -169,13 +169,13 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
      * Construct an Option which contains the provided (non-null) value
      * Equivalent to @see {@link Option#some(Object)}
      * <pre>
-     * {@code 
-     * 
+     * {@code
+     *
      *    Option<Integer> some = Option.of(10);
      *    some.map(i->i*2);
      * }
      * </pre>
-     * 
+     *
      * @param value Value to wrap inside a Option
      * @return Option containing the supplied value
      */
@@ -187,10 +187,10 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     /**
      * Convert a Option to a simulated HigherKindedType that captures Option nature
      * and Option element data type separately. Recover via @see OptionKind#narrow
-     * 
+     *
      * If the supplied Option implements OptionKind it is returned already, otherwise it
      * is wrapped into a Option implementation that does implement OptionKind
-     * 
+     *
      * @param maybe Option to widen to a OptionKind
      * @return OptionKind encoding HKT info about Options
      */
@@ -203,7 +203,7 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
 
     /**
      * Convert the HigherKindedType definition for a Option into
-     * 
+     *
      * @param maybe Type Constructor to convert back into narrowed type
      * @return OptionX from Higher Kinded Type
      */
@@ -218,7 +218,7 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     static final class Box<T> implements OptionKind<T> {
 
-        
+
         private final Option<T> boxed;
 
         /**
@@ -228,7 +228,7 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
             return boxed;
         }
 
-       
+
 
         public T get() {
             return boxed.get();
@@ -250,7 +250,7 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
 
 
 
-        
+
 
         @Override
         public String stringPrefix() {
@@ -278,7 +278,7 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
             if(!(obj instanceof Option))
                 return false;
             Option other = (Option) obj;
-            
+
             if (boxed == null) {
                 if (other != null)
                     return false;
@@ -313,6 +313,6 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
     }
 
 
-   
+
 
 }

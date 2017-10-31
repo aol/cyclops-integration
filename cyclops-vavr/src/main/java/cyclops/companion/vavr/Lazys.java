@@ -16,19 +16,19 @@ import cyclops.control.Reader;
 import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 
 import com.aol.cyclops.vavr.hkt.EitherKind;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import com.aol.cyclops.vavr.hkt.LazyKind;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.Value;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.Value;
 import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.monads.transformers.EvalT;
@@ -103,7 +103,7 @@ public class Lazys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Lazys.forEach4;
+     *   import static com.oath.cyclops.reactor.Lazys.forEach4;
      *
     forEach4(Lazy.just(1),
     a-> Lazy.just(a+1),
@@ -152,7 +152,7 @@ public class Lazys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Lazys.forEach3;
+     *   import static com.oath.cyclops.reactor.Lazys.forEach3;
      *
     forEach3(Lazy.just(1),
     a-> Lazy.just(a+1),
@@ -196,7 +196,7 @@ public class Lazys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Lazys.forEach;
+     *   import static com.oath.cyclops.reactor.Lazys.forEach;
      *
     forEach(Lazy.just(1),
     a-> Lazy.just(a+1),

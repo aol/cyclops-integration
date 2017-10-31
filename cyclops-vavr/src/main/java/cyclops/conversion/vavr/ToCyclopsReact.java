@@ -1,6 +1,6 @@
 package cyclops.conversion.vavr;
 
-import com.aol.cyclops2.types.Zippable;
+import com.oath.cyclops.types.Zippable;
 import cyclops.async.Future;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;

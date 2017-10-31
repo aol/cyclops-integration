@@ -2,7 +2,7 @@ package cyclops;
 
 import com.aol.cyclops.vavr.hkt.FutureKind;
 import com.aol.cyclops.vavr.hkt.TryKind;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.vavr.Futures;
 import cyclops.companion.vavr.Trys;
 import cyclops.monads.VavrWitness.future;

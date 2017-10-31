@@ -11,21 +11,21 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 
-import com.aol.cyclops2.types.foldable.To;
-import com.aol.cyclops2.types.functor.Transformable;
+import com.oath.cyclops.types.foldable.To;
+import com.oath.cyclops.types.functor.Transformable;
 import cyclops.async.Future;
 import cyclops.control.Trampoline;
-import com.aol.cyclops2.types.*;
-import org.jooq.lambda.tuple.Tuple;
-import org.jooq.lambda.tuple.Tuple2;
-import org.jooq.lambda.tuple.Tuple3;
-import org.jooq.lambda.tuple.Tuple4;
+import com.oath.cyclops.types.*;
+import cyclops.data.tuple.Tuple;
+import cyclops.data.tuple.Tuple2;
+import cyclops.data.tuple.Tuple3;
+import cyclops.data.tuple.Tuple4;
 import org.reactivestreams.Publisher;
 
 import cyclops.monads.AnyM;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.monads.WitnessType;
-import com.aol.cyclops2.types.anyM.transformers.ValueTransformer;
+import com.oath.cyclops.types.anyM.transformers.ValueTransformer;
 import cyclops.function.Fn4;
 import cyclops.function.Fn3;
 import reactor.core.publisher.Mono;
@@ -262,7 +262,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override
@@ -305,7 +305,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
     }
 
     /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#combine(com.aol.cyclops2.types.Value, java.util.function.BiFunction)
+     * @see cyclops2.monads.transformers.values.ValueTransformer#combine(com.oath.cyclops.types.Value, java.util.function.BiFunction)
      */
     @Override
     public <T2, R> MonoT<W,R> combine(Value<? extends T2> app,
@@ -314,7 +314,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
     }
 
     /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#combine(java.util.function.BinaryOperator, com.aol.cyclops2.types.Combiner)
+     * @see cyclops2.monads.transformers.values.ValueTransformer#combine(java.util.function.BinaryOperator, com.oath.cyclops.types.Combiner)
      */
     @Override
     public MonoT<W, T> zip(BinaryOperator<Zippable<T>> combiner, Zippable<T> app) {
@@ -382,7 +382,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
 
 
     /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach4(java.util.function.Function, java.util.function.BiFunction, com.aol.cyclops2.util.function.TriFunction, com.aol.cyclops2.util.function.QuadFunction)
+     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach4(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction, com.oath.cyclops.util.function.QuadFunction)
      */
     @Override
     public <T2, R1, R2, R3, R> MonoT<W, R> forEach4(Function<? super T, ? extends MonadicValue<R1>> value1,
@@ -394,7 +394,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
     }
 
     /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach4(java.util.function.Function, java.util.function.BiFunction, com.aol.cyclops2.util.function.TriFunction, com.aol.cyclops2.util.function.QuadFunction, com.aol.cyclops2.util.function.QuadFunction)
+     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach4(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction, com.oath.cyclops.util.function.QuadFunction, com.oath.cyclops.util.function.QuadFunction)
      */
     @Override
     public <T2, R1, R2, R3, R> MonoT<W, R> forEach4(Function<? super T, ? extends MonadicValue<R1>> value1,
@@ -407,7 +407,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
     }
 
     /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach3(java.util.function.Function, java.util.function.BiFunction, com.aol.cyclops2.util.function.TriFunction)
+     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach3(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction)
      */
     @Override
     public <T2, R1, R2, R> MonoT<W, R> forEach3(Function<? super T, ? extends MonadicValue<R1>> value1,
@@ -418,7 +418,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
     }
 
     /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach3(java.util.function.Function, java.util.function.BiFunction, com.aol.cyclops2.util.function.TriFunction, com.aol.cyclops2.util.function.TriFunction)
+     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach3(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction, com.oath.cyclops.util.function.TriFunction)
      */
     @Override
     public <T2, R1, R2, R> MonoT<W, R> forEach3(Function<? super T, ? extends MonadicValue<R1>> value1,

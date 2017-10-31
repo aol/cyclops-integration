@@ -12,8 +12,8 @@ import cyclops.control.Xor;
 import cyclops.monads.*;
 import cyclops.monads.GuavaWitness.fluentIterable;
 import com.aol.cyclops.guava.hkt.FluentIterableKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 import com.google.common.collect.FluentIterable;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
@@ -21,7 +21,7 @@ import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.ListT;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -30,7 +30,7 @@ import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -150,7 +150,7 @@ public class FluentIterables {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.FluentIterablees.forEach4;
+     *  import static com.oath.cyclops.reactor.FluentIterablees.forEach4;
      *
      *  forEach4(IntFluentIterable.range(1,10).boxed(),
     a-> FluentIterable.iterate(a,i->i+1).limit(10),

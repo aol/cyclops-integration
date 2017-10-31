@@ -16,20 +16,20 @@ import cyclops.control.Xor;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.function.Fn3;
 import cyclops.function.Fn4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.TryKind;
 import cyclops.companion.Monoids;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.VavrWitness;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
@@ -114,7 +114,7 @@ public class Trys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Trys.forEach4;
+     *   import static com.oath.cyclops.reactor.Trys.forEach4;
      *
     forEach4(Try.just(1),
     a-> Try.just(a+1),
@@ -162,7 +162,7 @@ public class Trys {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Trys.forEach4;
+     *  import static com.oath.cyclops.reactor.Trys.forEach4;
      *
      *  forEach4(Try.just(1),
     a-> Try.just(a+1),
@@ -213,7 +213,7 @@ public class Trys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Trys.forEach3;
+     *   import static com.oath.cyclops.reactor.Trys.forEach3;
      *
     forEach3(Try.just(1),
     a-> Try.just(a+1),
@@ -255,7 +255,7 @@ public class Trys {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Trys.forEach3;
+     *  import static com.oath.cyclops.reactor.Trys.forEach3;
      *
      *  forEach3(Try.just(1),
     a-> Try.just(a+1),
@@ -301,7 +301,7 @@ public class Trys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Trys.forEach;
+     *   import static com.oath.cyclops.reactor.Trys.forEach;
      *
     forEach(Try.just(1),
     a-> Try.just(a+1),
@@ -336,7 +336,7 @@ public class Trys {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Trys.forEach;
+     *  import static com.oath.cyclops.reactor.Trys.forEach;
      *
      *  forEach(Try.just(1),
     a-> Try.just(a+1),

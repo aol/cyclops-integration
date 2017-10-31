@@ -1,7 +1,7 @@
 package com.aol.cyclops.rx.hkt.typeclasses.instances;
 
 import com.aol.cyclops.rx2.hkt.MaybeKind;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.async.Future;
 import cyclops.companion.rx2.Maybes.Instances;
 
@@ -25,21 +25,21 @@ public class MaybesTest {
 
     @Test
     public void unit(){
-        
+
         MaybeKind<String> opt = Instances.unit()
                                             .unit("hello")
                                             .convert(MaybeKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
     }
     @Test
     public void functor(){
-        
+
         MaybeKind<Integer> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(MaybeKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
     }
     @Test
@@ -52,15 +52,15 @@ public class MaybesTest {
     }
     @Test
     public void applicative(){
-        
+
         MaybeKind<Fn1<Integer,Integer>> optFn = Instances.unit().unit(l1((Integer i) ->i*2)).convert(MaybeKind::narrowK);
-        
+
         MaybeKind<Integer> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .applyHKT(h-> Instances.applicative().ap(optFn, h))
                                      .convert(MaybeKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()*2).join()));
     }
     @Test
@@ -71,35 +71,35 @@ public class MaybesTest {
     }
     @Test
     public void monad(){
-        
+
         MaybeKind<Integer> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(MaybeKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
     }
     @Test
     public void monadZeroFilter(){
-        
+
         MaybeKind<String> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(MaybeKind::narrowK);
-        
+
         assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
     }
     @Test
     public void monadZeroFilterOut(){
-        
+
         MaybeKind<String> opt = Instances.unit()
                                      .unit("hello")
                                      .applyHKT(h-> Instances.monadZero().filter((String t)->!t.startsWith("he"), h))
                                      .convert(MaybeKind::narrowK);
-        
+
         assertTrue(opt.blockingGet()==null);
     }
-    
+
     @Test
     public void monadPlus(){
         MaybeKind<Integer> opt = Instances.<Integer>monadPlus()
@@ -109,7 +109,7 @@ public class MaybesTest {
     }
     @Test
     public void monadPlusNonEmpty(){
-        
+
         Monoid<MaybeKind<Integer>> m = Monoid.of(widen(Maybe.never()), (a, b)->a.toFuture().isDone() ? b : a);
         MaybeKind<Integer> opt = Instances.<Integer>monadPlusK(m)
                                       .plus(widen(Maybe.just(5)), widen(Maybe.just(10)))
@@ -120,14 +120,14 @@ public class MaybesTest {
     public void  foldLeft(){
         int sum  = Instances.foldable()
                         .foldLeft(0, (a,b)->a+b, widen(Future.ofResult(4)));
-        
+
         assertThat(sum,equalTo(4));
     }
     @Test
     public void  foldRight(){
         int sum  = Instances.foldable()
                         .foldRight(0, (a,b)->a+b, widen(Future.ofResult(1)));
-        
+
         assertThat(sum,equalTo(1));
     }
     @Test
@@ -158,5 +158,5 @@ public class MaybesTest {
                                      .map(h -> h.convert(MaybeKind::narrow));
 
     }
-    
+
 }

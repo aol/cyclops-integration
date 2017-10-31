@@ -1,7 +1,7 @@
 package cyclops;
 
 import com.aol.cyclops.vavr.hkt.ListKind;
-import com.aol.cyclops2.hkt.Higher;
+import com.oath.cyclops.hkt.Higher;
 import cyclops.async.Future;
 
 import cyclops.companion.vavr.Lists;
@@ -10,7 +10,7 @@ import cyclops.control.Xor;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.list;
 import cyclops.monads.VavrWitness.stream;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.monad.MonadRec;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
