@@ -5,7 +5,6 @@ import com.oath.cyclops.hkt.Higher2;
 import com.oath.cyclops.types.foldable.To;
 import cyclops.companion.vavr.Eithers;
 import cyclops.conversion.vavr.ToCyclopsReact;
-import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.either;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.EitherT;
@@ -13,34 +12,11 @@ import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 
-import io.vavr.CheckedFunction0;
-
-import io.vavr.Tuple2;
-import io.vavr.Value;
-import io.vavr.collection.*;
-import io.vavr.collection.Iterator;
-import io.vavr.collection.PriorityQueue;
-import io.vavr.collection.Queue;
-import io.vavr.collection.SortedMap;
-import io.vavr.collection.SortedSet;
-import io.vavr.collection.Vector;
 import io.vavr.control.Either;
-import io.vavr.control.Option;
-import io.vavr.control.Try;
-import io.vavr.control.Validation;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
-import java.util.stream.Collector;
-import java.util.stream.Stream;
 
 
 public interface EitherKind<L,R> extends Either<L,R>,To<EitherKind<L,R>>,
@@ -76,7 +52,7 @@ public interface EitherKind<L,R> extends Either<L,R>,To<EitherKind<L,R>>,
         return Nested.of(widen(bimap(l->l,r->fn.apply(r))), Eithers.Instances.definitions(), defs);
     }
     default <W extends WitnessType<W>> EitherT<W, L,R> liftM(W witness) {
-        return EitherT.of(witness.adapter().unit(ToCyclopsReact.xor(this)));
+        return EitherT.of(witness.adapter().unit(ToCyclopsReact.either(this)));
     }
     public static <L1, R1> Either<L1, R1> right(R1 right) {
         return Either.right(right);

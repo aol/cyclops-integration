@@ -861,9 +861,9 @@ public class Monos {
             MonoKind<Higher<Witness.future,T>> y = (MonoKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<mono,Higher<xor,S>, P> xor(Mono<Either<S, P>> nested){
+        public static <S, P> Nested<mono,Higher<Witness.either,S>, P> xor(Mono<Either<S, P>> nested){
             MonoKind<Either<S, P>> x = widen(nested);
-            MonoKind<Higher<Higher<xor,S>, P>> y = (MonoKind)x;
+            MonoKind<Higher<Higher<Witness.either,S>, P>> y = (MonoKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<mono,Higher<reader,S>, T> reader(Mono<Reader<S, T>> nested, S defaultValue){
@@ -923,7 +923,7 @@ public class Monos {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,mono, P> xor(Either<S, Mono<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,mono, P> xor(Either<S, Mono<P>> nested){
             Either<S, Higher<mono,P>> x = nested.map(MonoKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

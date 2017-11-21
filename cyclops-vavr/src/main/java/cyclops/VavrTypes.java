@@ -1,8 +1,12 @@
 package cyclops;
 
+import com.oath.cyclops.types.persistent.PersistentList;
+import com.oath.cyclops.types.persistent.PersistentQueue;
+import com.oath.cyclops.types.persistent.PersistentSet;
+import com.oath.cyclops.types.persistent.PersistentSortedSet;
 import cyclops.collections.vavr.*;
 import cyclops.function.Reducer;
-import org.pcollections.*;
+
 
 import java.util.Comparator;
 
@@ -61,7 +65,7 @@ public class VavrTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Vavr List that implements PersistentQueue interface
      */
-    public static <T> Reducer<PersistentQueue<T>> queue() {
+    public static <T> Reducer<PersistentQueue<T>,T> queue() {
         return VavrQueueX.toPersistentQueue();
     }
     /**
@@ -79,10 +83,10 @@ public class VavrTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Vavr Set that implements PersistentSortedSet interface
      */
-    public static <T> Reducer<PersistentSortedSet<T>> treeSet(Comparator<T> ordering) {
+    public static <T> Reducer<PersistentSortedSet<T>,T> treeSet(Comparator<T> ordering) {
         return VavrTreeSetX.toPersistentSortedSet(ordering);
     }
-    public static <T extends Comparable<T>> Reducer<PersistentSortedSet<T>> treeSet() {
+    public static <T extends Comparable<T>> Reducer<PersistentSortedSet<T>,T> treeSet() {
         return VavrTreeSetX.toPersistentSortedSet(Comparator.naturalOrder());
     }
 
@@ -119,7 +123,7 @@ public class VavrTypes {
      *
      * @return Reducer to convert a sequence of data to a Scala Set that implements PersistentSortedSet interface
      */
-    public static Reducer<PersistentSortedSet<Integer>> bitset() {
+    public static Reducer<PersistentSortedSet<Integer>,Integer> bitset() {
         return VavrBitSetX.toPersistentSortedSet();
     }
 }

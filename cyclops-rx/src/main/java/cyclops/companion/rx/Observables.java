@@ -92,7 +92,7 @@ public class Observables {
 
         }
 
-        return next.filter(Either::isPrimary).map(Either::get);
+        return next.filter(Either::isRight).map(Either::get);
     }
     public static <T> Observable<T> raw(AnyM<observable,T> anyM){
         return RxWitness.observable(anyM);
@@ -1048,7 +1048,7 @@ public class Observables {
         public static Unfoldable<observable> unfoldable(){
             return new Unfoldable<observable>() {
                 @Override
-                public <R, T> Higher<observable, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<observable, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(Observables.fromStream(ReactiveSeq.unfold(b,fn)));
                 }
             };
@@ -1085,9 +1085,9 @@ public class Observables {
             ObservableKind<Higher<future,T>> y = (ObservableKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<observable,Higher<xor,S>, P> xor(Observable<Either<S, P>> nested){
+        public static <S, P> Nested<observable,Higher<Witness.either,S>, P> xor(Observable<Either<S, P>> nested){
             ObservableKind<Either<S, P>> x = widen(nested);
-            ObservableKind<Higher<Higher<xor,S>, P>> y = (ObservableKind)x;
+            ObservableKind<Higher<Higher<Witness.either,S>, P>> y = (ObservableKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<observable,Higher<reader,S>, T> reader(Observable<Reader<S, T>> nested, S defaultValue){
@@ -1143,7 +1143,7 @@ public class Observables {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,observable, P> xor(Either<S, Observable<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,observable, P> xor(Either<S, Observable<P>> nested){
             Either<S, Higher<observable,P>> x = nested.map(ObservableKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

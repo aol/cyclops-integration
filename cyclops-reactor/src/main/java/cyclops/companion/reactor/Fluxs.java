@@ -86,7 +86,7 @@ public class Fluxs {
 
         }
 
-        return next.filter(Either::isPrimary).map(Either::get);
+        return next.filter(Either::isRight).map(Either::get);
     }
     public static <T> Flux<T> narrow(Flux<? extends T> observable) {
         return (Flux<T>)observable;
@@ -905,7 +905,7 @@ public class Fluxs {
         public static Unfoldable<flux> unfoldable(){
             return new Unfoldable<flux>() {
                 @Override
-                public <R, T> Higher<flux, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<flux, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(Flux.from(ReactiveSeq.unfold(b,fn)));
 
                 }
@@ -948,9 +948,9 @@ public class Fluxs {
             FluxKind<Higher<Witness.future,T>> y = (FluxKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<flux,Higher<xor,S>, P> xor(Flux<Either<S, P>> nested){
+        public static <S, P> Nested<flux,Higher<Witness.either,S>, P> xor(Flux<Either<S, P>> nested){
             FluxKind<Either<S, P>> x = widen(nested);
-            FluxKind<Higher<Higher<xor,S>, P>> y = (FluxKind)x;
+            FluxKind<Higher<Higher<Witness.either,S>, P>> y = (FluxKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<flux,Higher<reader,S>, T> reader(Flux<Reader<S, T>> nested, S defaultValue){
@@ -1006,7 +1006,7 @@ public class Fluxs {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,flux, P> xor(Either<S, Flux<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,flux, P> xor(Either<S, Flux<P>> nested){
             Either<S, Higher<flux,P>> x = nested.map(FluxKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

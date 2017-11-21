@@ -106,7 +106,7 @@ public class HashSets {
 
         }
 
-        return next.filter(Either::isPrimary).map(Either::get);
+        return next.filter(Either::isRight).map(Either::get);
     }
 
 
@@ -731,7 +731,7 @@ public class HashSets {
         public static Unfoldable<hashSet> unfoldable(){
             return new Unfoldable<hashSet>() {
                 @Override
-                public <R, T> Higher<hashSet, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<hashSet, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(ReactiveSeq.unfold(b,fn).collect(HashSet.collector()));
 
                 }
@@ -793,9 +793,9 @@ public class HashSets {
             HashSetKind<Higher<Witness.future,T>> y = (HashSetKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<hashSet,Higher<xor,S>, P> xor(HashSet<Either<S, P>> nested){
+        public static <S, P> Nested<hashSet,Higher<Witness.either,S>, P> xor(HashSet<Either<S, P>> nested){
             HashSetKind<Either<S, P>> x = widen(nested);
-            HashSetKind<Higher<Higher<xor,S>, P>> y = (HashSetKind)x;
+            HashSetKind<Higher<Higher<Witness.either,S>, P>> y = (HashSetKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<hashSet,Higher<reader,S>, T> reader(HashSet<Reader<S, T>> nested,S defaultValue){
@@ -848,7 +848,7 @@ public class HashSets {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,hashSet, P> xor(Either<S, HashSet<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,hashSet, P> xor(Either<S, HashSet<P>> nested){
             Either<S, Higher<hashSet,P>> x = nested.map(HashSetKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

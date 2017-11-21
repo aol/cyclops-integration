@@ -6,13 +6,9 @@ import com.oath.cyclops.types.extensability.ValueAdapter;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
-import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.either;
-import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
-import cyclops.control.Either;
 import cyclops.monads.AnyM;
-import io.vavr.control.Either;
 import lombok.AllArgsConstructor;
 
 import java.util.function.Function;
@@ -35,7 +31,7 @@ public class EitherAdapter<L> implements ValueAdapter<either> {
     public <T, R> AnyM<either, R> ap(AnyM<either,? extends Function<? super T,? extends R>> fn, AnyM<either, T> apply) {
         Either<L,T> f = either(apply);
         Either<L,? extends Function<? super T, ? extends R>> fnF = either(fn);
-        Either<L,R> res = FromCyclopsReact.either(ToCyclopsReact.xor(fnF).combine(ToCyclopsReact.xor(f), (a, b) -> a.apply(b)));
+        Either<L,R> res = FromCyclopsReact.either(ToCyclopsReact.either(fnF).combine(ToCyclopsReact.either(f), (a, b) -> a.apply(b)));
         return Vavr.either(res);
 
     }

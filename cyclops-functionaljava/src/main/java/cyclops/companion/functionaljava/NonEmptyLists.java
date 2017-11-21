@@ -609,9 +609,9 @@ public class NonEmptyLists {
             NonEmptyListKind<Higher<Witness.future,T>> y = (NonEmptyListKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<nonEmptyList,Higher<xor,S>, P> xor(NonEmptyList<Either<S, P>> nested){
+        public static <S, P> Nested<nonEmptyList,Higher<Witness.either,S>, P> xor(NonEmptyList<Either<S, P>> nested){
             NonEmptyListKind<Either<S, P>> x = widen(nested);
-            NonEmptyListKind<Higher<Higher<xor,S>, P>> y = (NonEmptyListKind)x;
+            NonEmptyListKind<Higher<Higher<Witness.either,S>, P>> y = (NonEmptyListKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<nonEmptyList,Higher<reader,S>, T> reader(NonEmptyList<Reader<S, T>> nested, S defaultValue){
@@ -667,7 +667,7 @@ public class NonEmptyLists {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,nonEmptyList, P> xor(Either<S, NonEmptyList<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,nonEmptyList, P> xor(Either<S, NonEmptyList<P>> nested){
             Either<S, Higher<nonEmptyList,P>> x = nested.map(NonEmptyListKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

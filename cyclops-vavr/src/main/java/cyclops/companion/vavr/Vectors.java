@@ -89,7 +89,7 @@ public class Vectors {
 
         }
 
-        return next.filter(Either::isPrimary).map(Either::get);
+        return next.filter(Either::isRight).map(Either::get);
     }
 
     /**
@@ -711,7 +711,7 @@ public class Vectors {
         public static Unfoldable<vector> unfoldable(){
             return new Unfoldable<vector>() {
                 @Override
-                public <R, T> Higher<vector, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<vector, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(ReactiveSeq.unfold(b,fn).collect(Vector.collector()));
 
                 }

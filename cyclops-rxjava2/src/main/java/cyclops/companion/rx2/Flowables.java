@@ -86,7 +86,7 @@ public class Flowables {
 
         }
 
-        return next.filter(Either::isPrimary).map(Either::get);
+        return next.filter(Either::isRight).map(Either::get);
     }
 
     public static <T> Flowable<T> raw(AnyM<flowable,T> anyM){
@@ -873,7 +873,7 @@ public class Flowables {
             return new Unfoldable<flowable>() {
 
                 @Override
-                public <R, T> Higher<flowable, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<flowable, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(Flowables.fromStream(ReactiveSeq.unfold(b, fn)));
                 }
             };
@@ -928,9 +928,9 @@ public class Flowables {
             FlowableKind<Higher<Witness.future,T>> y = (FlowableKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<flowable,Higher<Witness.xor,S>, P> xor(Flowable<Either<S, P>> nested){
+        public static <S, P> Nested<flowable,Higher<Witness.either,S>, P> xor(Flowable<Either<S, P>> nested){
             FlowableKind<Either<S, P>> x = widen(nested);
-            FlowableKind<Higher<Higher<Witness.xor,S>, P>> y = (FlowableKind)x;
+            FlowableKind<Higher<Higher<Witness.either,S>, P>> y = (FlowableKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<flowable,Higher<Witness.reader,S>, T> reader(Flowable<Reader<S, T>> nested, S defaultValue){
@@ -986,7 +986,7 @@ public class Flowables {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<Witness.xor,S>,flowable, P> xor(Either<S, Flowable<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,flowable, P> xor(Either<S, Flowable<P>> nested){
             Either<S, Higher<flowable,P>> x = nested.map(FlowableKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

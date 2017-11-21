@@ -881,9 +881,9 @@ public class Lazys {
             LazyKind<Higher<Witness.future,T>> y = (LazyKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<lazy,Higher<xor,S>, P> xor(Lazy<Either<S, P>> nested){
+        public static <S, P> Nested<lazy,Higher<Witness.either,S>, P> xor(Lazy<Either<S, P>> nested){
             LazyKind<Either<S, P>> x = widen(nested);
-            LazyKind<Higher<Higher<xor,S>, P>> y = (LazyKind)x;
+            LazyKind<Higher<Higher<Witness.either,S>, P>> y = (LazyKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<lazy,Higher<reader,S>, T> reader(Lazy<Reader<S, T>> nested,S defaultValue){
@@ -938,7 +938,7 @@ public class Lazys {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,lazy, P> xor(Either<S, Lazy<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,lazy, P> xor(Either<S, Lazy<P>> nested){
             Either<S, Higher<lazy,P>> x = nested.map(LazyKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

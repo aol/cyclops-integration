@@ -861,7 +861,7 @@ public class Eithers {
         }
         public static <L,S, P> Nested<Higher<either,L>,Higher<Witness.either,S>, P> xor(Either<L,Either<S, P>> nested){
             EitherKind<L,Either<S, P>> x = widen(nested);
-            EitherKind<L,Higher<Higher<xor,S>, P>> y = (EitherKind)x;
+            EitherKind<L,Higher<Higher<Witness.either,S>, P>> y = (EitherKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.control.Either.Instances.definitions());
         }
         public static <L,S,T> Nested<Higher<either,L>,Higher<reader,S>, T> reader(Either<L,Reader<S, T>> nested,S defaultValue){
@@ -917,7 +917,7 @@ public class Eithers {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <L,S, P> Nested<Higher<xor,S>,Higher<either,L>, P> xor(Either<S, Either<L,P>> nested){
+        public static <L,S, P> Nested<Higher<Witness.either,S>,Higher<either,L>, P> xor(Either<S, Either<L,P>> nested){
             Either<S, Higher<Higher<either,L>,P>> x = nested.map(EitherKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

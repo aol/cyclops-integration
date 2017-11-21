@@ -1166,9 +1166,9 @@ public class Futures {
             FutureKind<Higher<Witness.future,T>> y = (FutureKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<future,Higher<xor,S>, P> xor(Future<Either<S, P>> nested){
+        public static <S, P> Nested<future,Higher<Witness.either,S>, P> xor(Future<Either<S, P>> nested){
             FutureKind<Either<S, P>> x = widen(nested);
-            FutureKind<Higher<Higher<xor,S>, P>> y = (FutureKind)x;
+            FutureKind<Higher<Higher<Witness.either,S>, P>> y = (FutureKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<future,Higher<reader,S>, T> reader(Future<Reader<S, T>> nested,S defaultValue){
@@ -1222,7 +1222,7 @@ public class Futures {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,future, P> xor(Either<S, Future<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,future, P> xor(Either<S, Future<P>> nested){
             Either<S, Higher<future,P>> x = nested.map(FutureKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

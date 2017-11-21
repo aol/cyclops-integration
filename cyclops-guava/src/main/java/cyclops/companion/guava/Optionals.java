@@ -1028,9 +1028,9 @@ public class Optionals {
             OptionalKind<Higher<Witness.future,T>> y = (OptionalKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<optional,Higher<xor,S>, P> xor(Optional<Either<S, P>> nested){
+        public static <S, P> Nested<optional,Higher<Witness.either,S>, P> xor(Optional<Either<S, P>> nested){
             OptionalKind<Either<S, P>> x = widen(nested);
-            OptionalKind<Higher<Higher<xor,S>, P>> y = (OptionalKind)x;
+            OptionalKind<Higher<Higher<Witness.either,S>, P>> y = (OptionalKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<optional,Higher<reader,S>, T> reader(Optional<Reader<S, T>> nested, S defaultValue){
@@ -1085,7 +1085,7 @@ public class Optionals {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,optional, P> xor(Either<S, Optional<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,optional, P> xor(Either<S, Optional<P>> nested){
             Either<S, Higher<optional,P>> x = nested.map(OptionalKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

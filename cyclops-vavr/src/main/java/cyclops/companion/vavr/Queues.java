@@ -109,7 +109,7 @@ public class Queues {
 
         }
 
-        return next.filter(Either::isPrimary).map(Either::get);
+        return next.filter(Either::isRight).map(Either::get);
     }
 
 
@@ -733,7 +733,7 @@ public class Queues {
         public static Unfoldable<queue> unfoldable(){
             return new Unfoldable<queue>() {
                 @Override
-                public <R, T> Higher<queue, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<queue, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(ReactiveSeq.unfold(b,fn).collect(Queue.collector()));
 
                 }
@@ -797,9 +797,9 @@ public class Queues {
             QueueKind<Higher<Witness.future,T>> y = (QueueKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<queue,Higher<xor,S>, P> xor(Queue<Either<S, P>> nested){
+        public static <S, P> Nested<queue,Higher<Witness.either,S>, P> xor(Queue<Either<S, P>> nested){
             QueueKind<Either<S, P>> x = widen(nested);
-            QueueKind<Higher<Higher<xor,S>, P>> y = (QueueKind)x;
+            QueueKind<Higher<Higher<Witness.either,S>, P>> y = (QueueKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<queue,Higher<reader,S>, T> reader(Queue<Reader<S, T>> nested, S defaultValue){
@@ -853,7 +853,7 @@ public class Queues {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,queue, P> xor(Either<S, Queue<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,queue, P> xor(Either<S, Queue<P>> nested){
             Either<S, Higher<queue,P>> x = nested.map(QueueKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

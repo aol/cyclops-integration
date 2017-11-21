@@ -13,13 +13,14 @@ import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentQueueX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
+import com.oath.cyclops.types.persistent.PersistentQueue;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.QueueX;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
-import org.pcollections.PersistentQueue;
+
 
 
 import io.vavr.collection.Queue;
@@ -137,7 +138,7 @@ public class VavrQueueX<T> extends AbstractQueue<T> implements PersistentQueue<T
      * </pre>
      * @return Reducer for PersistentQueue
      */
-    public static <T> Reducer<PersistentQueue<T>> toPersistentQueue() {
+    public static <T> Reducer<PersistentQueue<T>,T> toPersistentQueue() {
         return Reducer.<PersistentQueue<T>> of(VavrQueueX.emptyPersistentQueue(), (final PersistentQueue<T> a) -> b -> a.plusAll(b), (final T x) -> VavrQueueX.singleton(x));
     }
     public static <T> VavrQueueX<T> emptyPersistentQueue(){
@@ -148,7 +149,7 @@ public class VavrQueueX<T> extends AbstractQueue<T> implements PersistentQueue<T
         return fromPersistentQueue(new VavrQueueX<>(Queue.empty()),toPersistentQueue());
 
     }
-    private static <T> LazyPersistentQueueX<T> fromPersistentQueue(PersistentQueue<T> ts, Reducer<PersistentQueue<T>> pQueueReducer) {
+    private static <T> LazyPersistentQueueX<T> fromPersistentQueue(PersistentQueue<T> ts, Reducer<PersistentQueue<T>,T> pQueueReducer) {
         return new LazyPersistentQueueX<T>(ts,null,pQueueReducer, Evaluation.LAZY);
     }
     public static <T> LazyPersistentQueueX<T> singleton(T t){

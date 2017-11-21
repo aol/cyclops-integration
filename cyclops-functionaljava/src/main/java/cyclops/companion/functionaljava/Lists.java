@@ -736,7 +736,7 @@ public class Lists {
         public static Unfoldable<list> unfoldable(){
             return new Unfoldable<list>() {
                 @Override
-                public <R, T> Higher<list, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<list, R> unfold(T b, Function<? super T, cyclops.control.Option<Tuple2<R, T>>> fn) {
                     F<? super T, Option<P2<R, T>>> f = FromJDK.f1(fn.andThen(FromJDK::option).andThen(o ->o.map(FromJooqLambda::tuple)));
                     return widen(List.unfold((F<T,Option<P2<R,T>>>)f,b));
 
@@ -798,9 +798,9 @@ public class Lists {
             ListKind<Higher<Witness.future,T>> y = (ListKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<list,Higher<xor,S>, P> xor(List<Either<S, P>> nested){
+        public static <S, P> Nested<list,Higher<Witness.either,S>, P> xor(List<Either<S, P>> nested){
             ListKind<Either<S, P>> x = widen(nested);
-            ListKind<Higher<Higher<xor,S>, P>> y = (ListKind)x;
+            ListKind<Higher<Higher<Witness.either,S>, P>> y = (ListKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<list,Higher<reader,S>, T> reader(List<Reader<S, T>> nested, S defaultValue){
@@ -856,7 +856,7 @@ public class Lists {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,list, P> xor(Either<S, List<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,list, P> xor(Either<S, List<P>> nested){
             Either<S, Higher<list,P>> x = nested.map(ListKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

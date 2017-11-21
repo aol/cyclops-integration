@@ -1021,9 +1021,9 @@ public class Trys {
             TryKind<Higher<Witness.future,T>> y = (TryKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<tryType,Higher<xor,S>, P> xor(Try<Either<S, P>> nested){
+        public static <S, P> Nested<tryType,Higher<Witness.either,S>, P> xor(Try<Either<S, P>> nested){
             TryKind<Either<S, P>> x = widen(nested);
-            TryKind<Higher<Higher<xor,S>, P>> y = (TryKind)x;
+            TryKind<Higher<Higher<Witness.either,S>, P>> y = (TryKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<tryType,Higher<reader,S>, T> reader(Try<Reader<S, T>> nested, S defaultValue){
@@ -1076,7 +1076,7 @@ public class Trys {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,tryType, P> xor(Either<S, Try<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,tryType, P> xor(Either<S, Try<P>> nested){
             Either<S, Higher<tryType,P>> x = nested.map(TryKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

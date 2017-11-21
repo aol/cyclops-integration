@@ -7,7 +7,7 @@ import cyclops.control.Maybe;
 import cyclops.control.Try;
 import cyclops.control.Either;
 import io.vavr.Lazy;
-import io.vavr.control.Either;
+
 import io.vavr.control.Option;
 
 
@@ -28,8 +28,8 @@ public class ToCyclopsReact {
         return res;
     }
 
-    public static <L,R> Either<L,R> xor(Either<L,R> either){
-        return either.fold(Either::secondary,Either::primary);
+    public static <L,R> cyclops.control.Either<L,R> either(io.vavr.control.Either<L,R> either){
+        return either.fold(cyclops.control.Either::left, cyclops.control.Either::right);
     }
     public static <T> Try<T,Throwable> toTry(io.vavr.control.Try<T> t){
 
@@ -45,8 +45,8 @@ public class ToCyclopsReact {
     public static <T> Eval<T> eval(Lazy<T> opt){
         return Eval.later(opt);
     }
-    public static <R> cyclops.control.lazy.Either<Throwable,R> either(io.vavr.concurrent.Future<R> either){
-        return cyclops.control.lazy.Either.fromFuture(future(either));
+    public static <R> cyclops.control.LazyEither<Throwable,R> lazyEither(io.vavr.concurrent.Future<R> either){
+        return cyclops.control.LazyEither.fromFuture(future(either));
 
     }
 

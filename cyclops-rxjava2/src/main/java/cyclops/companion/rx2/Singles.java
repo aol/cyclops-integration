@@ -879,9 +879,9 @@ public class Singles {
             SingleKind<Higher<future,T>> y = (SingleKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<single,Higher<xor,S>, P> xor(Single<Either<S, P>> nested){
+        public static <S, P> Nested<single,Higher<Witness.either,S>, P> xor(Single<Either<S, P>> nested){
             SingleKind<Either<S, P>> x = widen(nested);
-            SingleKind<Higher<Higher<xor,S>, P>> y = (SingleKind)x;
+            SingleKind<Higher<Higher<Witness.either,S>, P>> y = (SingleKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<single,Higher<reader,S>, T> reader(Single<Reader<S, T>> nested, S defaultValue){
@@ -937,7 +937,7 @@ public class Singles {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,single, P> xor(Either<S, Single<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,single, P> xor(Either<S, Single<P>> nested){
             Either<S, Higher<single,P>> x = nested.map(SingleKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

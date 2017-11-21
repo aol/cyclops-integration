@@ -74,7 +74,7 @@ public class FluentIterables {
 
         }
 
-        return next.filter(Either::isPrimary).transform(Either::get);
+        return next.filter(Either::isRight).transform(Either::get);
     }
 
     /**
@@ -720,7 +720,7 @@ public class FluentIterables {
         public static Unfoldable<fluentIterable> unfoldable(){
             return new Unfoldable<fluentIterable>() {
                 @Override
-                public <R, T> Higher<fluentIterable, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<fluentIterable, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(FluentIterable.from(ReactiveSeq.unfold(b,fn)));
 
                 }
@@ -765,9 +765,9 @@ public class FluentIterables {
             FluentIterableKind<Higher<Witness.future,T>> y = (FluentIterableKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<fluentIterable,Higher<xor,S>, P> xor(FluentIterable<Either<S, P>> nested){
+        public static <S, P> Nested<fluentIterable,Higher<Witness.either,S>, P> xor(FluentIterable<Either<S, P>> nested){
             FluentIterableKind<Either<S, P>> x = widen(nested);
-            FluentIterableKind<Higher<Higher<xor,S>, P>> y = (FluentIterableKind)x;
+            FluentIterableKind<Higher<Higher<Witness.either,S>, P>> y = (FluentIterableKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<fluentIterable,Higher<reader,S>, T> reader(FluentIterable<Reader<S, T>> nested, S defaultValue){
@@ -827,7 +827,7 @@ public class FluentIterables {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,fluentIterable, P> xor(Either<S, FluentIterable<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,fluentIterable, P> xor(Either<S, FluentIterable<P>> nested){
             Either<S, Higher<fluentIterable,P>> x = nested.map(FluentIterableKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

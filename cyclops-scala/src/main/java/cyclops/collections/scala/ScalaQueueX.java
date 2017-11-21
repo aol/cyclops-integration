@@ -158,7 +158,7 @@ public class ScalaQueueX<T> extends AbstractQueue<T> implements PersistentQueue<
      * </pre>
      * @return Reducer for PersistentQueue
      */
-    public static <T> Reducer<PersistentQueue<T>> toPersistentQueue() {
+    public static <T> Reducer<PersistentQueue<T>,T> toPersistentQueue() {
         return Reducer.<PersistentQueue<T>> of(ScalaQueueX.emptyPersistentQueue(), (final PersistentQueue<T> a) -> b -> a.plusAll(b),
                                       (final T x) -> ScalaQueueX.singleton(x));
     }
@@ -171,7 +171,7 @@ public class ScalaQueueX<T> extends AbstractQueue<T> implements PersistentQueue<
         return fromPersistentQueue(fromQueue(queue), toPersistentQueue());
     }
 
-    private static <T> LazyPersistentQueueX<T> fromPersistentQueue(PersistentQueue<T> ts, Reducer<PersistentQueue<T>> pQueueReducer) {
+    private static <T> LazyPersistentQueueX<T> fromPersistentQueue(PersistentQueue<T> ts, Reducer<PersistentQueue<T>,T> pQueueReducer) {
         return new LazyPersistentQueueX<T>(ts,null,pQueueReducer,Evaluation.LAZY);
     }
 

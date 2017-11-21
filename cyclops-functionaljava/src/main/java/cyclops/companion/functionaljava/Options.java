@@ -1045,9 +1045,9 @@ public class Options {
             OptionKind<Higher<Witness.future,T>> y = (OptionKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<option,Higher<xor,S>, P> xor(Option<Either<S, P>> nested){
+        public static <S, P> Nested<option,Higher<Witness.either,S>, P> xor(Option<Either<S, P>> nested){
             OptionKind<Either<S, P>> x = widen(nested);
-            OptionKind<Higher<Higher<xor,S>, P>> y = (OptionKind)x;
+            OptionKind<Higher<Higher<Witness.either,S>, P>> y = (OptionKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<option,Higher<reader,S>, T> reader(Option<Reader<S, T>> nested, S defaultValue){
@@ -1103,7 +1103,7 @@ public class Options {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,option, P> xor(Either<S, Option<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,option, P> xor(Either<S, Option<P>> nested){
             Either<S, Higher<option,P>> x = nested.map(OptionKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

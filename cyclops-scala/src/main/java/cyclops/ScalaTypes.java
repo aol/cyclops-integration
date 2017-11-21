@@ -61,7 +61,7 @@ public class ScalaTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Scala List that implements PersistentQueue interface
      */
-    public static <T> Reducer<PersistentQueue<T>> queue() {
+    public static <T> Reducer<PersistentQueue<T>,T> queue() {
         return ScalaQueueX.toPersistentQueue();
     }
     /**

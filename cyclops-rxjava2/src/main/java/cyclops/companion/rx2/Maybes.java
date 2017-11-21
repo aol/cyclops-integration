@@ -897,9 +897,9 @@ public class Maybes {
             MaybeKind<Higher<future,T>> y = (MaybeKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<maybe,Higher<xor,S>, P> xor(Maybe<Either<S, P>> nested){
+        public static <S, P> Nested<maybe,Higher<Witness.either,S>, P> xor(Maybe<Either<S, P>> nested){
             MaybeKind<Either<S, P>> x = widen(nested);
-            MaybeKind<Higher<Higher<xor,S>, P>> y = (MaybeKind)x;
+            MaybeKind<Higher<Higher<Witness.either,S>, P>> y = (MaybeKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<maybe,Higher<reader,S>, T> reader(Maybe<Reader<S, T>> nested, S defaultValue){
@@ -955,7 +955,7 @@ public class Maybes {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,maybe, P> xor(Either<S, Maybe<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,maybe, P> xor(Either<S, Maybe<P>> nested){
             Either<S, Higher<maybe,P>> x = nested.map(MaybeKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

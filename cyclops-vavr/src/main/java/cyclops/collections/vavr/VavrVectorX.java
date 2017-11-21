@@ -13,12 +13,13 @@ import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyLinkedLis
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentListX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
+import com.oath.cyclops.types.persistent.PersistentList;
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import io.vavr.collection.List;
 import cyclops.data.tuple.Tuple2;
-import org.pcollections.PersistentList;
+
 
 
 import io.vavr.collection.Vector;

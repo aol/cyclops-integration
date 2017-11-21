@@ -32,6 +32,7 @@ import cyclops.typeclasses.monad.*;
 import fj.F;
 import fj.P2;
 import fj.data.*;
+import fj.data.Either;
 import lombok.experimental.UtilityClass;
 import cyclops.data.tuple.Tuple2;
 
@@ -80,15 +81,15 @@ public class Streams {
                 .iterator()
                 .next());
     }
-    public static  <T,R> Stream<R> tailRecEither(T initial, Function<? super T, ? extends Stream<? extends Either<T, R>>> fn) {
-        Stream<Either<T, R>> next = Stream.arrayStream(Either.left(initial));
+    public static  <T,R> Stream<R> tailRecEither(T initial, Function<? super T, ? extends Stream<? extends cyclops.control.Either<T, R>>> fn) {
+        Stream<cyclops.control.Either<T, R>> next = Stream.arrayStream(cyclops.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
 
             next = next.bind(e -> e.visit(s -> {
                         newValue[0]=true;
-                        return (Stream<Either<T,R>>)fn.apply(s); },
+                        return (Stream<cyclops.control.Either<T,R>>)fn.apply(s); },
                     p -> {
                         newValue[0]=false;
                         return Stream.arrayStream(e);
@@ -98,7 +99,7 @@ public class Streams {
 
         }
 
-        return next.filter(Either::isPrimary).map(Either::get);
+        return next.filter(cyclops.control.Either::isRight).map(e->e.orElse(null));
     }
 
     public static <T,R> R foldRight(Stream<T> stream,R identity, BiFunction<? super T, ? super R, ? extends R> p){
@@ -737,7 +738,7 @@ public class Streams {
         public static Unfoldable<stream> unfoldable(){
             return new Unfoldable<stream>() {
                 @Override
-                public <R, T> Higher<stream, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<stream, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     F<? super T, Option<P2<R, T>>> f = FromJDK.f1(fn.andThen(FromJDK::option).andThen(o ->o.map(FromJooqLambda::tuple)));
                     return StreamKind.widen(Stream.unfold((F<T,Option<P2<R,T>>>)f,b));
 
@@ -800,9 +801,9 @@ public class Streams {
             StreamKind<Higher<Witness.future,T>> y = (StreamKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<stream,Higher<xor,S>, P> xor(Stream<Either<S, P>> nested){
+        public static <S, P> Nested<stream,Higher<Witness.either,S>, P> xor(Stream<Either<S, P>> nested){
             StreamKind<Either<S, P>> x = widen(nested);
-            StreamKind<Higher<Higher<xor,S>, P>> y = (StreamKind)x;
+            StreamKind<Higher<Higher<Witness.either,S>, P>> y = (StreamKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<stream,Higher<reader,S>, T> reader(Stream<Reader<S, T>> nested, S defaultValue){
@@ -858,7 +859,7 @@ public class Streams {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,stream, P> xor(Either<S, Stream<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,stream, P> xor(Either<S, Stream<P>> nested){
             Either<S, Higher<stream,P>> x = nested.map(StreamKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());

@@ -33,7 +33,6 @@ import cyclops.typeclasses.monad.*;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
-import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
@@ -52,7 +51,7 @@ import static com.aol.cyclops.vavr.hkt.ArrayKind.widen;
 public class Arrays {
 
     public static  <W1,T> Coproduct<W1,array,T> coproduct(Array<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Either.right(widen(list)),def1, Instances.definitions());
+        return Coproduct.of(cyclops.control.Either.right(widen(list)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,array,T> coproduct(InstanceDefinitions<W1> def1,T... values){
         return coproduct(Array.of(values),def1);
@@ -65,8 +64,8 @@ public class Arrays {
         return AnyM.ofSeq(option, array.INSTANCE);
     }
 
-    public static  <T,R> Array<R> tailRec(T initial, Function<? super T, ? extends Array<? extends Either<T, R>>> fn) {
-        Array<Either<T, R>> next = Array.of(Either.left(initial));
+    public static  <T,R> Array<R> tailRec(T initial, Function<? super T, ? extends Array<? extends io.vavr.control.Either<T, R>>> fn) {
+        Array<io.vavr.control.Either<T, R>> next = Array.of(io.vavr.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -83,10 +82,10 @@ public class Arrays {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(io.vavr.control.Either::isRight).map(io.vavr.control.Either::get);
     }
-    public static  <T,R> Array<R> tailRecEither(T initial, Function<? super T, ? extends Array<? extends Either<T, R>>> fn) {
-        Array<Either<T, R>> next = Array.of(Either.left(initial));
+    public static  <T,R> Array<R> tailRecEither(T initial, Function<? super T, ? extends Array<? extends cyclops.control.Either<T, R>>> fn) {
+        Array<cyclops.control.Either<T, R>> next = Array.of(cyclops.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -103,7 +102,7 @@ public class Arrays {
 
         }
 
-        return next.filter(Either::isPrimary).map(Either::get);
+        return next.filter(cyclops.control.Either::isRight).map(e->e.orElse(null));
     }
 
 
@@ -581,7 +580,7 @@ public class Arrays {
             return new MonadRec<array>(){
 
                 @Override
-                public <T, R> Higher<array, R> tailRec(T initial, Function<? super T, ? extends Higher<array, ? extends Either<T, R>>> fn) {
+                public <T, R> Higher<array, R> tailRec(T initial, Function<? super T, ? extends Higher<array, ? extends cyclops.control.Either<T, R>>> fn) {
                     return widen(tailRecEither(initial,fn.andThen(ArrayKind::narrowK).andThen(a->a.narrow())));
                 }
             };
@@ -651,7 +650,7 @@ public class Arrays {
         public static Unfoldable<array> unfoldable(){
             return new Unfoldable<array>() {
                 @Override
-                public <R, T> Higher<array, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<array, R> unfold(T b, Function<? super T, cyclops.control.Option<Tuple2<R, T>>> fn) {
                     return widen(ReactiveSeq.unfold(b,fn).collect(Array.collector()));
 
                 }
@@ -749,7 +748,7 @@ public class Arrays {
         public static <T> Nested<array,lazy,T> lazy(Array<Lazy<T>> nested){
             return Nested.of(widen(nested.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
         }
-        public static <L, R> Nested<array,Higher<either,L>, R> either(Array<Either<L, R>> nested){
+        public static <L, R> Nested<array,Higher<either,L>, R> either(Array<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<array,VavrWitness.queue,T> queue(Array<Queue<T>> nested){
@@ -792,10 +791,10 @@ public class Arrays {
             ArrayKind<Higher<Witness.future,T>> y = (ArrayKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<array,Higher<xor,S>, P> xor(Array<Either<S, P>> nested){
-            ArrayKind<Either<S, P>> x = widen(nested);
-            ArrayKind<Higher<Higher<xor,S>, P>> y = (ArrayKind)x;
-            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
+        public static <S, P> Nested<array,Higher<Witness.either,S>, P> xor(Array<cyclops.control.Either<S, P>> nested){
+            ArrayKind<cyclops.control.Either<S, P>> x = widen(nested);
+            ArrayKind<Higher<Higher<Witness.either,S>, P>> y = (ArrayKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Either.Instances.definitions());
         }
         public static <S,T> Nested<array,Higher<reader,S>, T> reader(Array<Reader<S, T>> nested, S defaultValue){
             ArrayKind<Reader<S, T>> x = widen(nested);
@@ -847,10 +846,10 @@ public class Arrays {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,array, P> xor(Either<S, Array<P>> nested){
-            Either<S, Higher<array,P>> x = nested.map(ArrayKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,array, P> xor(cyclops.control.Either<S, Array<P>> nested){
+          cyclops.control.Either<S, Higher<array,P>> x = nested.map(ArrayKind::widenK);
 
-            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,cyclops.control.Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,array, T> reader(Reader<S, Array<T>> nested, S defaultValue){
 

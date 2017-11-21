@@ -1,6 +1,9 @@
 package cyclops.companion.vavr;
 
 import cyclops.control.*;
+import cyclops.control.Either;
+import cyclops.control.Option;
+import cyclops.monads.VavrWitness.either;
 import cyclops.monads.VavrWitness.queue;
 import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
@@ -64,15 +67,15 @@ public class Streams {
         return xorM(Stream.of(values));
     }
 
-    public static  <T,R> Stream<R> tailRec(T initial, Function<? super T, ? extends Stream<? extends Either<T, R>>> fn) {
-        Stream<Either<T, R>> next = Stream.of(Either.left(initial));
+    public static  <T,R> Stream<R> tailRec(T initial, Function<? super T, ? extends Stream<? extends io.vavr.control.Either<T, R>>> fn) {
+        Stream<io.vavr.control.Either<T, R>> next = Stream.of(io.vavr.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
 
-            Stream<Either<T, R>> rebuild = Stream.of();
-            for(Either<T,R> e : next){
-                Stream<? extends Either<T, R>> r = e.fold(s -> {
+            Stream<io.vavr.control.Either<T, R>> rebuild = Stream.of();
+            for(io.vavr.control.Either<T,R> e : next){
+                Stream<? extends io.vavr.control.Either<T, R>> r = e.fold(s -> {
                             newValue[0] = true;
 
                             return fn.apply(s);
@@ -89,7 +92,7 @@ public class Streams {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(io.vavr.control.Either::isRight).map(io.vavr.control.Either::get);
     }
     public static  <T,R> Stream<R> tailRecEither(T initial, Function<? super T, ? extends Stream<? extends Either<T, R>>> fn) {
         Stream<Either<T, R>> next = Stream.of(Either.left(initial));
@@ -117,7 +120,7 @@ public class Streams {
 
         }
 
-        return next.filter(Either::isPrimary).map(Either::get);
+        return next.filter(Either::isRight).map(e->e.orElse(null));
     }
     //not tail-recursive, may blow stack, but have better performance
     public static <T,R> R foldRightUnsafe(Stream<T> stream,R identity, BiFunction<? super T, ? super R, ? extends R> fn){
@@ -766,7 +769,7 @@ public class Streams {
         public static Unfoldable<stream> unfoldable(){
             return new Unfoldable<stream>() {
                 @Override
-                public <R, T> Higher<stream, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<stream, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(Stream.ofAll((Iterable)ReactiveSeq.unfold(b,fn)));
 
                 }
@@ -789,7 +792,7 @@ public class Streams {
         public static <T> Nested<stream,queue,T> queue(Stream<Queue<T>> nested){
             return Nested.of(widen(nested.map(QueueKind::widen)),Instances.definitions(),Queues.Instances.definitions());
         }
-        public static <L, R> Nested<stream,Higher<VavrWitness.either,L>, R> either(Stream<Either<L, R>> nested){
+        public static <L, R> Nested<stream,Higher<either,L>, R> either(Stream<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<stream,VavrWitness.stream,T> stream(Stream<Stream<T>> nested){
@@ -829,9 +832,9 @@ public class Streams {
             StreamKind<Higher<Witness.future,T>> y = (StreamKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<stream,Higher<xor,S>, P> xor(Stream<Either<S, P>> nested){
+        public static <S, P> Nested<stream,Higher<Witness.either,S>, P> cyclopsEither(Stream<Either<S, P>> nested){
             StreamKind<Either<S, P>> x = widen(nested);
-            StreamKind<Higher<Higher<xor,S>, P>> y = (StreamKind)x;
+            StreamKind<Higher<Higher<Witness.either,S>, P>> y = (StreamKind)x;
             return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<stream,Higher<reader,S>, T> reader(Stream<Reader<S, T>> nested, S defaultValue){
@@ -886,7 +889,7 @@ public class Streams {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,stream, P> xor(Either<S, Stream<P>> nested){
+        public static <S, P> Nested<Higher<Witness.either,S>,stream, P> cyclopsEither(Either<S, Stream<P>> nested){
             Either<S, Higher<stream,P>> x = nested.map(StreamKind::widenK);
 
             return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
