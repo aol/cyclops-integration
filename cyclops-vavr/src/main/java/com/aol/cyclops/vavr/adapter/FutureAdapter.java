@@ -3,6 +3,7 @@ package com.aol.cyclops.vavr.adapter;
 
 import com.oath.cyclops.types.anyM.AnyMValue;
 import com.oath.cyclops.types.extensability.ValueAdapter;
+import cyclops.control.Option;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
@@ -15,6 +16,7 @@ import cyclops.monads.AnyM;
 
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
+import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 
 import java.util.function.Function;
@@ -25,8 +27,9 @@ import java.util.function.Predicate;
 public class FutureAdapter implements ValueAdapter<future> {
 
 
-    public <T> T get(AnyMValue<future,T> t){
-        return future(t).get();
+    @Override
+    public <T> cyclops.control.Option<T> get(AnyMValue<future,T> t){
+       return ToCyclopsReact.option(future(t).getValue().flatMap(tr -> tr.isFailure() ? io.vavr.control.Option.<T>none() : io.vavr.control.Option.some(tr.get())));
     }
     @Override
     public <T> Iterable<T> toIterable(AnyM<future, T> t) {

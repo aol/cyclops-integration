@@ -1,6 +1,7 @@
 package cyclops.companion.vavr;
 
 import cyclops.control.*;
+import cyclops.control.Option;
 import cyclops.monads.VavrWitness.queue;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
@@ -68,8 +69,8 @@ public class HashSets {
         return AnyM.ofSeq(option, hashSet.INSTANCE);
     }
 
-    public static  <T,R> HashSet<R> tailRec(T initial, Function<? super T, ? extends HashSet<? extends Either<T, R>>> fn) {
-        HashSet<Either<T, R>> next = HashSet.of(Either.left(initial));
+    public static  <T,R> HashSet<R> tailRec(T initial, Function<? super T, ? extends HashSet<? extends io.vavr.control.Either<T, R>>> fn) {
+        HashSet<io.vavr.control.Either<T, R>> next = HashSet.of(io.vavr.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -86,7 +87,7 @@ public class HashSets {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(io.vavr.control.Either::isRight).map(io.vavr.control.Either::get);
     }
     public static  <T,R> HashSet<R> tailRecEither(T initial, Function<? super T, ? extends HashSet<? extends Either<T, R>>> fn) {
         HashSet<Either<T, R>> next = HashSet.of(Either.left(initial));
@@ -106,7 +107,7 @@ public class HashSets {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(Either::isRight).map(e->e.orElse(null));
     }
 
 
@@ -753,7 +754,7 @@ public class HashSets {
         public static <T> Nested<hashSet,queue,T>  queue(HashSet<Queue<T>> nested){
             return Nested.of(widen(nested.map(QueueKind::widen)),Instances.definitions(),Queues.Instances.definitions());
         }
-        public static <L, R> Nested<hashSet,Higher<VavrWitness.either,L>, R> either(HashSet<Either<L, R>> nested){
+        public static <L, R> Nested<hashSet,Higher<VavrWitness.either,L>, R> either(HashSet<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<hashSet,VavrWitness.stream,T> stream(HashSet<Stream<T>> nested){

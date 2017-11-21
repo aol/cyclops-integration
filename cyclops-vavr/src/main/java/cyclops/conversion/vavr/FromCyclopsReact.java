@@ -28,7 +28,11 @@ public class FromCyclopsReact {
     public static <T> io.vavr.collection.Stream<T> fromStream(Stream<T> s) {
         return io.vavr.collection.Stream.ofAll(() -> s.iterator());
     }
+  public static <T,X extends Throwable> Try<T> toTry(cyclops.control.Try<T,X> value) {
+    return value
+      .visit(s -> Try.success(s), f -> Try.failure(f));
 
+  }
     public static <T> Try<T> toTry(MonadicValue<T> value) {
         return value.toTry()
                     .visit(s -> Try.success(s), f -> Try.failure(f));

@@ -71,8 +71,8 @@ public class Queues {
         return AnyM.ofSeq(option, queue.INSTANCE);
     }
 
-    public static  <T,R> Queue<R> tailRec(T initial, Function<? super T, ? extends Queue<? extends Either<T, R>>> fn) {
-        Queue<Either<T, R>> next = Queue.of(Either.left(initial));
+    public static  <T,R> Queue<R> tailRec(T initial, Function<? super T, ? extends Queue<? extends io.vavr.control.Either<T, R>>> fn) {
+        Queue<io.vavr.control.Either<T, R>> next = Queue.of(io.vavr.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -89,7 +89,7 @@ public class Queues {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(io.vavr.control.Either::isRight).map(io.vavr.control.Either::get);
     }
     public static  <T,R> Queue<R> tailRecEither(T initial, Function<? super T, ? extends Queue<? extends Either<T, R>>> fn) {
         Queue<Either<T, R>> next = Queue.of(Either.left(initial));
@@ -109,7 +109,7 @@ public class Queues {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(Either::isRight).map(e->e.orElse(null));
     }
 
 
@@ -733,7 +733,7 @@ public class Queues {
         public static Unfoldable<queue> unfoldable(){
             return new Unfoldable<queue>() {
                 @Override
-                public <R, T> Higher<queue, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<queue, R> unfold(T b, Function<? super T, cyclops.control.Option<Tuple2<R, T>>> fn) {
                     return widen(ReactiveSeq.unfold(b,fn).collect(Queue.collector()));
 
                 }
@@ -757,7 +757,7 @@ public class Queues {
         public static <T> Nested<queue,queue,T> queue(Queue<Queue<T>> nested){
             return Nested.of(widen(nested.map(QueueKind::widen)),Instances.definitions(),Queues.Instances.definitions());
         }
-        public static <L, R> Nested<queue,Higher<VavrWitness.either,L>, R> either(Queue<Either<L, R>> nested){
+        public static <L, R> Nested<queue,Higher<VavrWitness.either,L>, R> either(Queue<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<queue,VavrWitness.stream,T> stream(Queue<Stream<T>> nested){

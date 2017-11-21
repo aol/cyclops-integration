@@ -3,6 +3,7 @@ package com.aol.cyclops.vavr.adapter;
 
 import com.oath.cyclops.types.anyM.AnyMValue;
 import com.oath.cyclops.types.extensability.ValueAdapter;
+import cyclops.control.Option;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
@@ -14,6 +15,8 @@ import cyclops.monads.AnyM;
 import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -21,8 +24,9 @@ import java.util.function.Predicate;
 @AllArgsConstructor
 public class TryAdapter implements ValueAdapter<tryType> {
 
-    public <T> T get(AnyMValue<tryType,T> t){
-         return tryType(t).get();
+    public <T> Option<T> get(AnyMValue<tryType,T> t){
+      Try<T> tr = tryType(t);
+      return tr.isSuccess() ? Option.some(tr.get()) :  Option.none();
     }
 
     @Override
@@ -35,7 +39,7 @@ public class TryAdapter implements ValueAdapter<tryType> {
         try {
             Try<T> f = tryType(apply);
             Try<? extends Function<? super T, ? extends R>> fnF = tryType(fn);
-            Try<R> res = FromCyclopsReact.toTry(ToCyclopsReact.toTry(fnF).combine(ToCyclopsReact.toTry(f), (a, b) -> a.apply(b)));
+            Try<R> res = FromCyclopsReact.toTry(ToCyclopsReact.toTry(fnF).zip(ToCyclopsReact.toTry(f), (a, b) -> a.apply(b)));
             return Vavr.tryM(res);
         }catch(Throwable t){
             return Vavr.tryM(Try.failure(t));
@@ -68,7 +72,11 @@ public class TryAdapter implements ValueAdapter<tryType> {
 
     @Override
     public <T> AnyM<tryType, T> unitIterable(Iterable<T> it)  {
-        return Vavr.tryM(FromCyclopsReact.toTry(cyclops.control.Try.fromIterable(it)));
+      Iterator<T> i  = it.iterator();
+      if(i.hasNext()){
+        return Vavr.tryM(Try.success(i.next()));
+      }
+      return Vavr.tryM(Try.failure(new NoSuchElementException()));
     }
 
     @Override

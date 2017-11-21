@@ -22,8 +22,8 @@ import java.util.function.Predicate;
 public class OptionAdapter implements ValueAdapter<option> {
 
 
-    public <T> T get(AnyMValue<option,T> t){
-        return option(t).get();
+    public <T> cyclops.control.Option<T> get(AnyMValue<option,T> t){
+        return ToCyclopsReact.option(option(t));
     }
     @Override
     public <T> Iterable<T> toIterable(AnyM<option, T> t) {

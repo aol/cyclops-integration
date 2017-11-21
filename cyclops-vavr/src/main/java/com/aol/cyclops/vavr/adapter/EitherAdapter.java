@@ -3,6 +3,8 @@ package com.aol.cyclops.vavr.adapter;
 
 import com.oath.cyclops.types.anyM.AnyMValue;
 import com.oath.cyclops.types.extensability.ValueAdapter;
+import cyclops.control.Either;
+import cyclops.control.Option;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.conversion.vavr.ToCyclopsReact;
 import cyclops.monads.Vavr;
@@ -18,8 +20,12 @@ import java.util.function.Predicate;
 @AllArgsConstructor
 public class EitherAdapter<L> implements ValueAdapter<either> {
 
-    public <T> T get(AnyMValue<either,T> t){
-        return either(t).get();
+    public <T> Option<T> get(AnyMValue<either,T> t){
+
+      io.vavr.control.Either<L, T> e = either(t);
+      if(e.isRight())
+        return Option.some(e.get());
+      return Option.none();
     }
 
     @Override
@@ -29,9 +35,9 @@ public class EitherAdapter<L> implements ValueAdapter<either> {
 
     @Override
     public <T, R> AnyM<either, R> ap(AnyM<either,? extends Function<? super T,? extends R>> fn, AnyM<either, T> apply) {
-        Either<L,T> f = either(apply);
-        Either<L,? extends Function<? super T, ? extends R>> fnF = either(fn);
-        Either<L,R> res = FromCyclopsReact.either(ToCyclopsReact.either(fnF).combine(ToCyclopsReact.either(f), (a, b) -> a.apply(b)));
+      io.vavr.control.Either<L,T> f = either(apply);
+      io.vavr.control.Either<L,? extends Function<? super T, ? extends R>> fnF = either(fn);
+      io.vavr.control.Either<L,R> res = FromCyclopsReact.either(ToCyclopsReact.either(fnF).zip(ToCyclopsReact.either(f), (a, b) -> a.apply(b)));
         return Vavr.either(res);
 
     }
@@ -41,13 +47,13 @@ public class EitherAdapter<L> implements ValueAdapter<either> {
         return t;
     }
 
-    <T> Either<L,T> either(AnyM<either,T> anyM){
+    <T> io.vavr.control.Either<L,T> either(AnyM<either,T> anyM){
         return anyM.unwrap();
     }
 
     @Override
     public <T> AnyM<either, T> empty() {
-        return Vavr.either(Either.left(null));
+        return Vavr.either(io.vavr.control.Either.left(null));
     }
 
 
@@ -67,7 +73,7 @@ public class EitherAdapter<L> implements ValueAdapter<either> {
 
     @Override
     public <T> AnyM<either, T> unit(T o) {
-        return Vavr.either(Either.right(o));
+        return Vavr.either(io.vavr.control.Either.right(o));
     }
 
     @Override

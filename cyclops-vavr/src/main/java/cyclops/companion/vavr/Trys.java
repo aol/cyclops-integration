@@ -1,6 +1,7 @@
 package cyclops.companion.vavr;
 
 
+import com.oath.cyclops.types.MonadicValue;
 import cyclops.monads.VavrWitness.queue;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
@@ -83,9 +84,9 @@ public class Trys {
     public static <T> AnyMValue<tryType,T> anyM(Try<T> tryType) {
         return AnyM.ofValue(tryType, VavrWitness.tryType.INSTANCE);
     }
-    public static <L, T, R> Try<R> tailRec(T initial, Function<? super T, ? extends Try<? extends Either<T, R>>> fn) {
-        Try<? extends Either<T, R>> next[] = new Try[1];
-        next[0] = Try.success(Either.left(initial));
+    public static <L, T, R> Try<R> tailRec(T initial, Function<? super T, ? extends Try<? extends io.vavr.control.Either<T, R>>> fn) {
+        Try<? extends io.vavr.control.Either<T, R>> next[] = new Try[1];
+        next[0] = Try.success(io.vavr.control.Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.fold(s -> {
@@ -93,7 +94,7 @@ public class Trys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(io.vavr.control.Either::get);
     }
     public static <T, R> Try< R> tailRecEither(T initial, Function<? super T, ? extends Try<? extends Either<T, R>>> fn) {
         Try<? extends Either<T, R>> next[] = new Try[1];
@@ -105,7 +106,7 @@ public class Trys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(e->e.orElse(null));
     }
     /**
      * Perform a For Comprehension over a Try, accepting 3 generating function.
@@ -460,7 +461,7 @@ public class Trys {
      * @param reducer Reducer to accumulate values with
      * @return Try with reduced value
      */
-    public static <T, R> Try<R> accumulatePresent(final CollectionX<Try<T>> tryTypeals, final Reducer<R> reducer) {
+    public static <T, R> Try<R> accumulatePresent(final CollectionX<Try<T>> tryTypeals, final Reducer<R,T> reducer) {
         return sequencePresent(tryTypeals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -535,10 +536,9 @@ public class Trys {
      * @param fn Combining function
      * @return Try combined with supplied value
      */
-    public static <T1, T2, R> Try<R> combine(final Try<? extends T1> f, final Value<? extends T2> v,
+    public static <T1, T2, R> Try<R> combine(final Try<? extends T1> f, final MonadicValue<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.toTry(ToCyclopsReact.toTry(f)
-                .combine(v, fn)));
+      return combine(f,FromCyclopsReact.toTry(v),fn);
     }
     /**
      * Combine an Try with the provided Try using the supplied BiFunction
@@ -562,32 +562,13 @@ public class Trys {
      */
     public static <T1, T2, R> Try<R> combine(final Try<? extends T1> f, final Try<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return combine(f,ToCyclopsReact.toTry(v),fn);
+      cyclops.control.Try<? extends R, Throwable> x = ToCyclopsReact.toTry(f)
+        .zip(ToCyclopsReact.toTry(v), fn);
+      return narrow(FromCyclopsReact.toTry(x));
+
     }
 
-    /**
-     * Combine an Try with the provided Iterable (selecting one element if present) using the supplied BiFunction
-     * <pre>
-     * {@code
-     *  Trys.zip(Try.of(10),Arrays.asList(20), this::add)
-     *  //Try[30]
-     *
-     *  private int add(int a, int b) {
-    return a + b;
-    }
-     *
-     * }
-     * </pre>
-     * @param f Try to combine with first element in Iterable (if present)
-     * @param v Iterable to combine
-     * @param fn Combining function
-     * @return Try combined with supplied Iterable, or empty Try if no value present
-     */
-    public static <T1, T2, R> Try<R> zip(final Try<? extends T1> f, final Iterable<? extends T2> v,
-                                            final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.toTry(ToCyclopsReact.toTry(f)
-                .zip(v, fn)));
-    }
+
 
     /**
      * Combine an Try with the provided Publisher (selecting one element if present) using the supplied BiFunction
@@ -611,7 +592,7 @@ public class Trys {
     public static <T1, T2, R> Try<R> zip(final Publisher<? extends T2> p, final Try<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
         return narrow(FromCyclopsReact.toTry(ToCyclopsReact.toTry(f)
-                .zipP(p, fn)));
+                .zip(cyclops.control.Try.fromPublisher(p), fn)));
     }
     /**
      * Narrow covariant type parameter
@@ -947,7 +928,7 @@ public class Trys {
             return widen(Try.success(value));
         }
         private static <T,R> TryKind<R> ap(TryKind<Function< T, R>> lt, TryKind<T> list){
-            return widen(ToCyclopsReact.toTry(lt).combine(ToCyclopsReact.toTry(list), (a, b)->a.apply(b)));
+            return widen(ToCyclopsReact.toTry(lt).zip(ToCyclopsReact.toTry(list), (a, b)->a.apply(b)));
 
         }
         private static <T,R> Higher<tryType,R> flatMap(Higher<tryType,T> lt, Function<? super T, ? extends  Higher<tryType,R>> fn){
@@ -981,7 +962,7 @@ public class Trys {
         public static <T> Nested<tryType,queue,T> queue(Try<Queue<T>> nested){
             return Nested.of(widen(nested.map(QueueKind::widen)),Instances.definitions(),Queues.Instances.definitions());
         }
-        public static <L, R> Nested<tryType,Higher<VavrWitness.either,L>, R> either(Try<Either<L, R>> nested){
+        public static <L, R> Nested<tryType,Higher<VavrWitness.either,L>, R> either(Try<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<tryType,VavrWitness.stream,T> stream(Try<Stream<T>> nested){

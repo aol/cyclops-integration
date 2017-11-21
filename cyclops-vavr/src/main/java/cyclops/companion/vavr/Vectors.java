@@ -4,6 +4,7 @@ import com.aol.cyclops.vavr.hkt.ListKind;
 import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
 import cyclops.control.Either;
+import cyclops.control.Option;
 import cyclops.conversion.vavr.FromCyclopsReact;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.vector;
@@ -30,7 +31,6 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import io.vavr.collection.List;
 import io.vavr.collection.Vector;
-import io.vavr.control.Either;
 import lombok.experimental.UtilityClass;
 import cyclops.data.tuple.Tuple2;
 
@@ -51,8 +51,8 @@ public class Vectors {
         return AnyM.ofSeq(option, vector.INSTANCE);
     }
 
-    public static  <T,R> Vector<R> tailRec(T initial, Function<? super T, ? extends Vector<? extends Either<T, R>>> fn) {
-        Vector<Either<T, R>> next = Vector.of(Either.left(initial));
+    public static  <T,R> Vector<R> tailRec(T initial, Function<? super T, ? extends Vector<? extends io.vavr.control.Either<T, R>>> fn) {
+        Vector<io.vavr.control.Either<T, R>> next = Vector.of(io.vavr.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -69,10 +69,10 @@ public class Vectors {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(io.vavr.control.Either::isRight).map(io.vavr.control.Either::get);
     }
-    public static  <T,R> Vector<R> tailRecEither(T initial, Function<? super T, ? extends Vector<? extends Either<T, R>>> fn) {
-        Vector<Either<T, R>> next = Vector.of(Either.left(initial));
+    public static  <T,R> Vector<R> tailRecEither(T initial, Function<? super T, ? extends Vector<? extends cyclops.control.Either<T, R>>> fn) {
+        Vector<cyclops.control.Either<T, R>> next = Vector.of(cyclops.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -89,7 +89,7 @@ public class Vectors {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(cyclops.control.Either::isRight).map(e->e.orElse(null));
     }
 
     /**
@@ -628,7 +628,7 @@ public class Vectors {
             return new MonadRec<vector>(){
 
                 @Override
-                public <T, R> Higher<vector, R> tailRec(T initial, Function<? super T, ? extends Higher<vector, ? extends Either<T, R>>> fn) {
+                public <T, R> Higher<vector, R> tailRec(T initial, Function<? super T, ? extends Higher<vector, ? extends cyclops.control.Either<T, R>>> fn) {
                     return widen(tailRecEither(initial,fn.andThen(VectorKind::narrowK).andThen(v->v.narrow())));
                 }
             };

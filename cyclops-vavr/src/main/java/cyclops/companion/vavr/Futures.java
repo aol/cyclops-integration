@@ -87,9 +87,9 @@ public class Futures {
         return AnyM.ofValue(future, VavrWitness.future.INSTANCE);
     }
 
-    public static <T, R> Future<R> tailRec(T initial, Function<? super T, ? extends Future<  ? extends Either<T, R>>> fn) {
-        Future<? extends Either<T, R>> next[] = new Future[1];
-        next[0] = Future.of(()->Either.left(initial));
+    public static <T, R> Future<R> tailRec(T initial, Function<? super T, ? extends Future<  ? extends io.vavr.control.Either<T, R>>> fn) {
+        Future<? extends io.vavr.control.Either<T, R>> next[] = new Future[1];
+        next[0] = Future.of(()->io.vavr.control.Either.left(initial));
         boolean cont = true;
         do {
 
@@ -105,7 +105,7 @@ public class Futures {
                 }, pr -> false);
             }
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(e->e.get());
     }
     public static <L, T, R> Future< R> tailRecEither(T initial, Function<? super T, ? extends Future< ? extends Either<T, R>>> fn) {
         Future<? extends Either<T, R>> next[] = new Future[1];
@@ -125,7 +125,7 @@ public class Futures {
                 }, pr -> false);
             }
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(e->e.orElse(null));
     }
 
     /**
@@ -597,7 +597,7 @@ public class Futures {
      * @param reducer Reducer to accumulate values with
      * @return Future with reduced value
      */
-    public static <T, R> Future<R> accumulatePresent(final CollectionX<Future<T>> futureals, final Reducer<R> reducer) {
+    public static <T, R> Future<R> accumulatePresent(final CollectionX<Future<T>> futureals, final Reducer<R,T> reducer) {
         return sequencePresent(futureals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -1123,7 +1123,7 @@ public class Futures {
         public static <T> Nested<future,lazy,T> lazy(Future<Lazy<T>> nested){
             return Nested.of(widen(nested.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
         }
-        public static <L, R> Nested<future,Higher<VavrWitness.either,L>, R> either(Future<Either<L, R>> nested){
+        public static <L, R> Nested<future,Higher<VavrWitness.either,L>, R> either(Future<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<future,VavrWitness.queue,T> queue(Future<Queue<T>> nested){

@@ -42,6 +42,9 @@ public class ToCyclopsReact {
     public static <T> Maybe<T> maybe(Option<T> opt){
         return opt.isDefined() ? Maybe.just(opt.get()) : Maybe.nothing();
     }
+  public static <T> cyclops.control.Option<T> option(Option<T> opt){
+    return opt.isDefined() ? cyclops.control.Option.some(opt.get()) : cyclops.control.Option.none();
+  }
     public static <T> Eval<T> eval(Lazy<T> opt){
         return Eval.later(opt);
     }

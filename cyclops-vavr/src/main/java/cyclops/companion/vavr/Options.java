@@ -91,9 +91,9 @@ public class Options {
     public static <T> AnyMValue<option,T> anyM(Option<T> option) {
         return AnyM.ofValue(option, VavrWitness.option.INSTANCE);
     }
-    public static <L, T, R> Option<R> tailRec(T initial, Function<? super T, ? extends Option<? extends Either<T, R>>> fn) {
-        Option<? extends Either<T, R>> next[] = new Option[1];
-        next[0] = Option.some(Either.left(initial));
+    public static <L, T, R> Option<R> tailRec(T initial, Function<? super T, ? extends Option<? extends io.vavr.control.Either<T, R>>> fn) {
+        Option<? extends io.vavr.control.Either<T, R>> next[] = new Option[1];
+        next[0] = Option.some(io.vavr.control.Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.fold(s -> {
@@ -101,7 +101,7 @@ public class Options {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(io.vavr.control.Either::get);
     }
     public static <T, R> Option< R> tailRecEither(T initial, Function<? super T, ? extends Option<? extends Either<T, R>>> fn) {
         Option<? extends Either<T, R>> next[] = new Option[1];
@@ -113,7 +113,7 @@ public class Options {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(e->e.orElse(null));
     }
 
     /**
@@ -481,7 +481,7 @@ public class Options {
      * @param reducer Reducer to accumulate values with
      * @return Option with reduced value
      */
-    public static <T, R> Option<R> accumulatePresent(final CollectionX<Option<T>> optionals, final Reducer<R> reducer) {
+    public static <T, R> Option<R> accumulatePresent(final CollectionX<Option<T>> optionals, final Reducer<R,T> reducer) {
         return sequencePresent(optionals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -1004,7 +1004,7 @@ public class Options {
         public static <T> Nested<option,option,T> option(Option<Option<T>> nested){
             return Nested.of(widen(nested.map(OptionKind::widen)),Instances.definitions(),Options.Instances.definitions());
         }
-        public static <L, R> Nested<option,Higher<VavrWitness.either,L>, R> either(Option<Either<L, R>> nested){
+        public static <L, R> Nested<option,Higher<VavrWitness.either,L>, R> either(Option<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<option,VavrWitness.queue,T> queue(Option<Queue<T>> nested){

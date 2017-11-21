@@ -39,7 +39,6 @@ import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import io.vavr.Lazy;
-import io.vavr.control.Either;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
@@ -56,15 +55,15 @@ import static com.aol.cyclops.vavr.hkt.LazyKind.widen;
 public class Lazys {
 
     public static  <W1,T> Coproduct<W1,lazy,T> coproduct(Lazy<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(cyclops.control.Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,lazy,T> coproduct(Supplier<T> type, InstanceDefinitions<W1> def1){
         return coproduct(Lazy.of(type),def1);
     }
 
-    public static <L, T, R> Lazy<R> tailRec(T initial, Function<? super T, ? extends Lazy<? extends Either<T, R>>> fn) {
-        Lazy<? extends Either<T, R>> next[] = new Lazy[1];
-        next[0] = Lazy.of(()->Either.left(initial));
+    public static <L, T, R> Lazy<R> tailRec(T initial, Function<? super T, ? extends Lazy<? extends io.vavr.control.Either<T, R>>> fn) {
+        Lazy<? extends io.vavr.control.Either<T, R>> next[] = new Lazy[1];
+        next[0] = Lazy.of(()->io.vavr.control.Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.fold(s -> {
@@ -72,11 +71,11 @@ public class Lazys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(io.vavr.control.Either::get);
     }
-    public static <T, R> Lazy< R> tailRecEither(T initial, Function<? super T, ? extends Lazy<? extends Either<T, R>>> fn) {
-        Lazy<? extends Either<T, R>> next[] = new Lazy[1];
-        next[0] = Lazy.of(()->Either.left(initial));
+    public static <T, R> Lazy< R> tailRecEither(T initial, Function<? super T, ? extends Lazy<? extends cyclops.control.Either<T, R>>> fn) {
+        Lazy<? extends cyclops.control.Either<T, R>> next[] = new Lazy[1];
+        next[0] = Lazy.of(()-> cyclops.control.Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -84,7 +83,7 @@ public class Lazys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(e->e.orElse(null));
     }
 
 
@@ -318,7 +317,7 @@ public class Lazys {
      * @param reducer Reducer to accumulate values with
      * @return Lazy with reduced value
      */
-    public static <T, R> Lazy<R> accumulatePresent(final CollectionX<Lazy<T>> futureals, final Reducer<R> reducer) {
+    public static <T, R> Lazy<R> accumulatePresent(final CollectionX<Lazy<T>> futureals, final Reducer<R,T> reducer) {
         return sequencePresent(futureals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -787,7 +786,7 @@ public class Lazys {
         public static <T> MonadRec<lazy> monadRec(){
             return new MonadRec<lazy>() {
                 @Override
-                public <T, R> Higher<lazy, R> tailRec(T initial, Function<? super T, ? extends Higher<lazy, ? extends Either<T, R>>> fn) {
+                public <T, R> Higher<lazy, R> tailRec(T initial, Function<? super T, ? extends Higher<lazy, ? extends cyclops.control.Either<T, R>>> fn) {
                     return widen(Lazys.tailRecEither(initial, fn.andThen(l ->  narrowK(l).narrow())));
 
                 }
@@ -838,7 +837,7 @@ public class Lazys {
         public static <T> Nested<lazy,lazy,T> lazy(Lazy<Lazy<T>> nested){
             return Nested.of(widen(nested.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
         }
-        public static <L, R> Nested<lazy,Higher<VavrWitness.either,L>, R> either(Lazy<Either<L, R>> nested){
+        public static <L, R> Nested<lazy,Higher<VavrWitness.either,L>, R> either(Lazy<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<lazy,VavrWitness.queue,T> queue(Lazy<Queue<T>> nested){
@@ -881,10 +880,10 @@ public class Lazys {
             LazyKind<Higher<Witness.future,T>> y = (LazyKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<lazy,Higher<Witness.either,S>, P> xor(Lazy<Either<S, P>> nested){
-            LazyKind<Either<S, P>> x = widen(nested);
+        public static <S, P> Nested<lazy,Higher<Witness.either,S>, P> xor(Lazy<cyclops.control.Either<S, P>> nested){
+            LazyKind<cyclops.control.Either<S, P>> x = widen(nested);
             LazyKind<Higher<Higher<Witness.either,S>, P>> y = (LazyKind)x;
-            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
+            return Nested.of(y,Instances.definitions(), cyclops.control.Either.Instances.definitions());
         }
         public static <S,T> Nested<lazy,Higher<reader,S>, T> reader(Lazy<Reader<S, T>> nested,S defaultValue){
             LazyKind<Reader<S, T>> x = widen(nested);
@@ -938,10 +937,10 @@ public class Lazys {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<Witness.either,S>,lazy, P> xor(Either<S, Lazy<P>> nested){
-            Either<S, Higher<lazy,P>> x = nested.map(LazyKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,lazy, P> xor(cyclops.control.Either<S, Lazy<P>> nested){
+            cyclops.control.Either<S, Higher<lazy,P>> x = nested.map(LazyKind::widenK);
 
-            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
+            return Nested.of(x, cyclops.control.Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,lazy, T> reader(Reader<S, Lazy<T>> nested,S defaultValue){
 
