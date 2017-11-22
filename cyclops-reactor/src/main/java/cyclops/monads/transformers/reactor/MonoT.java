@@ -91,8 +91,8 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
     @Override
     public MonoT<W,T> filter(final Predicate<? super T> test) {
         return of(run.map(f->f.map(in->Tuple.tuple(in,test.test(in))))
-                .filter( f->f.block().v2 )
-                .map( f->f.map(in->in.v1)));
+                .filter( f->f.block()._2() )
+                .map( f->f.map(in->in._1())));
     }
 
     /**
@@ -162,13 +162,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
         return (AnyM) run;
     }
 
-    @Override
-    public <B> MonoT<W,B> flatMap(final Function<? super T, ? extends MonadicValue<? extends B>> f) {
 
-        final AnyM<W,Mono<? extends B>> mapped = run.map(o -> Mono.from(o.flatMap(f)));
-        return of(narrow(mapped));
-
-    }
 
     /**
      * Lift a function into one that accepts and returns an MonoWT
@@ -323,24 +317,6 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
     }
 
 
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#iterate(java.util.function.UnaryOperator)
-     */
-    @Override
-    public AnyM<W, ? extends ReactiveSeq<T>> iterate(UnaryOperator<T> fn) {
-
-        return super.iterate(fn);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#generate()
-     */
-    @Override
-    public AnyM<W, ? extends ReactiveSeq<T>> generate() {
-
-        return super.generate();
-    }
 
     /* (non-Javadoc)
      * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.lang.Iterable, java.util.function.BiFunction)
@@ -532,10 +508,6 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
         return toString();
     }
 
-    @Override
-    public <U> MonoT<W,U> cast(Class<? extends U> type) {
-        return (MonoT<W,U>)super.cast(type);
-    }
 
     @Override
     public <U> MonoT<W,U> ofType(Class<? extends U> type) {

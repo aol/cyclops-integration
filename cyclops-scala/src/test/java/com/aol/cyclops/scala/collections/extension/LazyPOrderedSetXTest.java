@@ -11,7 +11,7 @@ import java.util.function.UnaryOperator;
 
 
 import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
-import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentSortedSetX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.data.tuple.Tuple2;
@@ -22,7 +22,7 @@ import cyclops.collections.scala.ScalaTreeSetX;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest {
+public class LazyPOrderedSetXTest extends AbstractCollectionXTest {
 
     @Test
     public void forEach2() {
@@ -43,8 +43,8 @@ public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest {
 
     @Test
     public void onEmptySwitch() {
-        assertThat((LazyPersistentSortedSetX) ScalaTreeSetX.empty()
-                          .onEmptySwitch(() -> (LazyPersistentSortedSetX) ScalaTreeSetX.of(1, 2, 3)),
+        assertThat((LazyPOrderedSetX) ScalaTreeSetX.empty()
+                          .onEmptySwitch(() -> (LazyPOrderedSetX) ScalaTreeSetX.of(1, 2, 3)),
                    equalTo(OrderedSetX.of(1, 2, 3)));
     }
 
@@ -57,7 +57,7 @@ public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return (LazyPersistentSortedSetX) ScalaTreeSetX.empty();
+        return (LazyPOrderedSetX) ScalaTreeSetX.empty();
     }
 
 

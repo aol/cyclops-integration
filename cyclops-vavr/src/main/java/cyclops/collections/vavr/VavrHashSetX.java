@@ -22,7 +22,7 @@ import cyclops.reactive.ReactiveSeq;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
 import cyclops.data.tuple.Tuple2;
-import org.pcollections.PSet;
+
 
 
 
@@ -160,31 +160,27 @@ public class VavrHashSetX<T>  implements PersistentSet<T>, Unwrapable {
     private final Set<T> set;
 
     @Override
-    public PersistentSet<T> plus(T e) {
+    public VavrHashSetX<T> plus(T e) {
         return withSet(set.add(e));
     }
 
-    @Override
-    public PersistentSet<T> plusAll(Collection<? extends T> l) {
-        return withSet(set.addAll(l));
-    }
+  @Override
+  public VavrHashSetX<T> plusAll(Iterable<? extends T> list) {
+    return withSet(set.addAll(list));
+  }
+
+  @Override
+  public VavrHashSetX<T> removeValue(T e) {
+    return withSet(set.remove(e));
+  }
+
+  @Override
+  public VavrHashSetX<T> removeAll(Iterable<? extends T> list) {
+    return withSet(set.removeAll(list));
+  }
 
 
-
-    @Override
-    public PersistentSet<T> minus(Object e) {
-        return withSet(set.remove((T)e));
-    }
-
-    @Override
-    public PersistentSet<T> minusAll(Collection<?> l) {
-        return withSet(set.removeAll((Collection)l));
-    }
-
-
-
-
-    @Override
+  @Override
     public int size() {
         return set.size();
     }

@@ -78,7 +78,7 @@ public class Optionals {
                 return true;
             }, pr -> false)).or(false);
         } while (cont);
-        return next[0].transform(Either::get);
+        return next[0].transform(e->e.orElse(null));
     }
     /**
      * <pre>
@@ -467,7 +467,7 @@ public class Optionals {
      * @param reducer Reducer to accumulate values with
      * @return Optional with reduced value
      */
-    public static <T, R> Optional<R> accumulatePresent(final CollectionX<Optional<T>> optionals, final Reducer<R> reducer) {
+    public static <T, R> Optional<R> accumulatePresent(final CollectionX<Optional<T>> optionals, final Reducer<R,T> reducer) {
         return FromCyclopsReact.optional(ToCyclopsReact.maybe(sequencePresent(optionals)).map(s -> s.mapReduce(reducer)));
     }
     /**

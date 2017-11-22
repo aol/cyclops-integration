@@ -29,7 +29,7 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrQueueX<T> extends AbstractQueue<T> implements PersistentQueue<T>, Unwrapable {
+public class VavrQueueX<T>  implements PersistentQueue<T>, Unwrapable {
     public static <T> PersistentQueueX<T> queueX(ReactiveSeq<T> stream){
         return fromStream(stream);
     }

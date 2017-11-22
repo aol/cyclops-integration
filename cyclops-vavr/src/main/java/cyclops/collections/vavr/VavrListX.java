@@ -17,6 +17,7 @@ import com.oath.cyclops.types.foldable.Evaluation;
 import com.oath.cyclops.types.persistent.PersistentList;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.PersistentQueueX;
+import cyclops.control.Option;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
@@ -29,7 +30,7 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrListX<T> extends AbstractList<T> implements PersistentList<T>, Unwrapable {
+public class VavrListX<T>  implements PersistentList<T>, Unwrapable {
     public static <T> LinkedListX<T> listX(ReactiveSeq<T> stream){
         return fromStream(stream);
     }
@@ -146,7 +147,7 @@ public class VavrListX<T> extends AbstractList<T> implements PersistentList<T>, 
      * @return Reducer for PersistentList
      */
     public static <T> Reducer<PersistentList<T>,T> toPersistentList() {
-        return Reducer.<PersistentList<T>> of(VavrListX.emptyPersistentList(), (final PersistentList<T> a) -> b -> a.plusAll(b), (final T x) -> VavrListX.singleton(x));
+        return Reducer.<PersistentList<T>,T> of(VavrListX.emptyPersistentList(), (final PersistentList<T> a) -> b -> a.plusAll(b), (final T x) -> VavrListX.singleton(x));
     }
 
     public static <T> VavrListX<T> emptyPersistentList(){
@@ -181,73 +182,75 @@ public class VavrListX<T> extends AbstractList<T> implements PersistentList<T>, 
     private final List<T> list;
 
     @Override
-    public PersistentList<T> plus(T e) {
+    public VavrListX<T> plus(T e) {
         return withList(list.prepend(e));
     }
 
     @Override
-    public PersistentList<T> plusAll(Collection<? extends T> l) {
+    public VavrListX<T> plusAll(Iterable<? extends T> l) {
         List<T> use = list;
         for(T next :  l)
             use = use.prepend(next);
         return withList(use);
     }
 
-    @Override
-    public PersistentList<T> with(int i, T e) {
-        List<T> front = list.take(i);
-        List<T> back = list.drop(i);
+  @Override
+  public VavrListX<T> updateAt(int i, T e) {
+    return withList(list.update(i,e));
+  }
 
-        return withList(back.prepend(e).prependAll(front));
+  @Override
+  public VavrListX<T> insertAt(int i, T e) {
+    return withList(list.insert(i,e));
+  }
+
+  @Override
+  public VavrListX<T> insertAt(int i, Iterable<? extends T> it) {
+    return withList(list.insertAll(i,it));
+  }
+
+  @Override
+  public VavrListX<T> removeValue(T e) {
+    return withList(list.remove(e));
+  }
+
+  @Override
+  public VavrListX<T> removeAll(Iterable<? extends T> it) {
+    return withList(list.removeAll(it));
+  }
+
+  @Override
+  public VavrListX<T> removeAt(int i) {
+    return withList(list.removeAt(i));
+  }
+
+
+
+    @Override
+    public Option<T> get(int index) {
+      if(index>=0 && index<list.size())
+        return Option.some(list.get(index));
+      return Option.none();
     }
 
-    @Override
-    public PersistentList<T> plus(int i, T e) {
-        return withList(list.insert(i,e));
-    }
+  @Override
+  public T getOrElse(int index, T alt) {
+    return get(index).orElse(alt);
+  }
 
-    @Override
-    public PersistentList<T> plusAll(int i, Collection<? extends T> l) {
-       //use same behaviour as pCollections
-        List<T> use = list;
-        for(T next :  l)
-            use = use.insert(i,next);
-        return withList(use);
-    }
+  @Override
+  public Iterator<T> iterator() {
+    return list.iterator();
+  }
 
-    @Override
-    public PersistentList<T> minus(Object e) {
-        return withList(list.remove((T)e));
-    }
+  @Override
+  public T getOrElseGet(int index, Supplier<? extends T> alt) {
+    return get(index).orElseGet(alt);
+  }
 
-    @Override
-    public PersistentList<T> minusAll(Collection<?> l) {
-        return withList(list.removeAll((Collection)l));
-    }
-
-    @Override
-    public PersistentList<T> minus(int i) {
-        return withList(list.removeAt(i));
-    }
-
-    @Override
-    public PersistentList<T> subList(int start, int end) {
-        return withList(list.subSequence(start, end));
-    }
-
-    @Override
-    public T get(int index) {
-        return list.get(index);
-    }
-
-    @Override
+  @Override
     public int size() {
         return list.size();
-    }
-
-    @Override
-    public org.pcollections.PersistentList<T> subList(int start) {
-       return withList(list.subSequence(start));
     }
 
 

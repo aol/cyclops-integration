@@ -8,10 +8,7 @@ import cyclops.companion.CompletableFutures.CompletableFutureKind;
 import cyclops.companion.Optionals.OptionalKind;
 import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
-import cyclops.control.Either;
+import cyclops.control.*;
 import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
 import com.aol.cyclops.reactor.hkt.FluxKind;
@@ -86,7 +83,7 @@ public class Fluxs {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(Either::isRight).map(e->e.orElse(null));
     }
     public static <T> Flux<T> narrow(Flux<? extends T> observable) {
         return (Flux<T>)observable;

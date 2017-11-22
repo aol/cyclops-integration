@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
-import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentSortedSetX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.vavr.VavrTreeSetX;
@@ -20,11 +20,11 @@ import org.junit.Test;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest  {
+public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
-        OrderedSetX<T> list = (LazyPersistentSortedSetX) VavrTreeSetX.empty();
+        OrderedSetX<T> list = (LazyPOrderedSetX) VavrTreeSetX.empty();
         for (T next : values) {
             list = list.plus(next);
         }
@@ -35,8 +35,8 @@ public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest  {
 
     @Test
     public void onEmptySwitch() {
-        assertThat((LazyPersistentSortedSetX) VavrTreeSetX.empty()
-                          .onEmptySwitch(() -> (LazyPersistentSortedSetX) VavrTreeSetX.of(1, 2, 3)),
+        assertThat((LazyPOrderedSetX) VavrTreeSetX.empty()
+                          .onEmptySwitch(() -> (LazyPOrderedSetX) VavrTreeSetX.of(1, 2, 3)),
                    equalTo(OrderedSetX.of(1, 2, 3)));
     }
 
@@ -55,7 +55,7 @@ public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest  {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return (LazyPersistentSortedSetX) VavrTreeSetX.empty();
+        return (LazyPOrderedSetX) VavrTreeSetX.empty();
     }
 
 

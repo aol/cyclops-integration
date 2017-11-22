@@ -21,7 +21,7 @@ import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Either;
-import cyclops.control.lazy.Either;
+
 import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
 import cyclops.monads.ReactorWitness.mono;
@@ -88,7 +88,7 @@ public class Monos {
                 return true;
             }, pr -> false)).block();
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(e->e.orElse(null));
     }
     public static <W extends WitnessType<W>,T> MonoT<W,T> liftM(AnyM<W,Mono<T>> nested){
         return MonoT.of(nested);
@@ -110,7 +110,7 @@ public class Monos {
     }
 
     public static <R> Either<Throwable,R> either(Mono<R> either){
-        return Either.fromFuture(future(either));
+        return Either.fromPublisher(either);
 
     }
 
@@ -439,17 +439,7 @@ public class Monos {
         return res;
     }
 
-    /**
-     * Test if value is equal to the value inside this Mono
-     *
-     * @param mono Mono to test
-     * @param test Value to test
-     * @return true if equal
-     */
-    public static <T> boolean test(Mono<T> mono, T test) {
-        return Future.of(mono.toFuture())
-                      .test(test);
-    }
+
 
     /**
      * Construct a Mono from Iterable by taking the first value from Iterable

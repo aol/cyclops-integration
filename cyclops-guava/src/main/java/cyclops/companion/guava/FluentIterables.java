@@ -5,10 +5,7 @@ import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
 import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
-import cyclops.control.Either;
+import cyclops.control.*;
 import cyclops.monads.*;
 import cyclops.monads.GuavaWitness.fluentIterable;
 import com.aol.cyclops.guava.hkt.FluentIterableKind;
@@ -74,7 +71,7 @@ public class FluentIterables {
 
         }
 
-        return next.filter(Either::isRight).transform(Either::get);
+        return next.filter(Either::isRight).transform(e->e.orElse(null));
     }
 
     /**

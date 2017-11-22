@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 import cyclops.collections.clojure.ClojureQueueX;
 import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
-import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentSortedSetX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.data.tuple.Tuple2;
@@ -29,13 +29,13 @@ import cyclops.collections.clojure.ClojureTreeSetX;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest  {
+public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
         ClojureQueueX.of(1,2,3).printOut();
-        OrderedSetX<T> list = (LazyPersistentSortedSetX) ClojureTreeSetX.empty((Comparator)Comparator.naturalOrder());
+        OrderedSetX<T> list = (LazyPOrderedSetX) ClojureTreeSetX.empty((Comparator)Comparator.naturalOrder());
         for (T next : values) {
             list = list.plus(next);
         }
@@ -51,8 +51,8 @@ public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest  {
     }
     @Test
     public void onEmptySwitch() {
-        assertThat((LazyPersistentSortedSetX) ClojureTreeSetX.empty((Comparator)Comparator.naturalOrder())
-                          .onEmptySwitch(() -> (LazyPersistentSortedSetX) ClojureTreeSetX.of((Comparator)Comparator.naturalOrder(),1, 2, 3)),
+        assertThat((LazyPOrderedSetX) ClojureTreeSetX.empty((Comparator)Comparator.naturalOrder())
+                          .onEmptySwitch(() -> (LazyPOrderedSetX) ClojureTreeSetX.of((Comparator)Comparator.naturalOrder(),1, 2, 3)),
                    equalTo(OrderedSetX.of(1, 2, 3)));
     }
 
@@ -65,7 +65,7 @@ public class LazyPersistentSortedSetXTest extends AbstractCollectionXTest  {
      */
     @Override
     public <T> FluentCollectionX<T> empty() {
-        return (LazyPersistentSortedSetX) ClojureTreeSetX.empty( (Comparator)Comparator.naturalOrder());
+        return (LazyPOrderedSetX) ClojureTreeSetX.empty( (Comparator)Comparator.naturalOrder());
     }
 
 

@@ -10,7 +10,7 @@ import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx.Observables;
 import cyclops.control.Maybe;
-import cyclops.control.lazy.Either;
+import cyclops.control.Option;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
@@ -19,7 +19,6 @@ import cyclops.monads.Witness.reactiveSeq;
 import cyclops.monads.Witness.stream;
 import cyclops.monads.transformers.ListT;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Spouts;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Wither;
@@ -111,52 +110,52 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> duplicate() {
-        return Observables.connectToReactiveSeq(observable).duplicate().map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).duplicate().bimap((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> duplicate(Supplier<Deque<T>> bufferFactory) {
-        return Observables.connectToReactiveSeq(observable).duplicate(bufferFactory).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).duplicate(bufferFactory).bimap((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple3<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> triplicate() {
-        return Observables.connectToReactiveSeq(observable).triplicate().map((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
+        return Observables.connectToReactiveSeq(observable).triplicate().map3((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
     }
 
     @Override
     public Tuple3<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> triplicate(Supplier<Deque<T>> bufferFactory) {
-        return Observables.connectToReactiveSeq(observable).triplicate(bufferFactory).map((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
+        return Observables.connectToReactiveSeq(observable).triplicate(bufferFactory).map3((s1, s2, s3)->Tuple.tuple(observable(s1),observable(s2),observable(s3)));
     }
 
     @Override
     public Tuple4<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> quadruplicate() {
-        return Observables.connectToReactiveSeq(observable).quadruplicate().map((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
+        return Observables.connectToReactiveSeq(observable).quadruplicate().map4((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
     }
 
     @Override
     public Tuple4<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> quadruplicate(Supplier<Deque<T>> bufferFactory) {
-        return Observables.connectToReactiveSeq(observable).quadruplicate(bufferFactory).map((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
+        return Observables.connectToReactiveSeq(observable).quadruplicate(bufferFactory).map4((s1, s2, s3, s4)->Tuple.tuple(observable(s1),observable(s2),observable(s3),observable(s4)));
     }
 
     @Override
-    public Tuple2<Optional<T>, ReactiveSeq<T>> splitAtHead() {
-        return Observables.connectToReactiveSeq(observable).splitAtHead().map((s1, s2)->Tuple.tuple(s1,observable(s2)));
+    public Tuple2<Option<T>, ReactiveSeq<T>> splitAtHead() {
+        return Observables.connectToReactiveSeq(observable).splitAtHead().bimap((s1, s2)->Tuple.tuple(s1,observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> splitAt(int where) {
-        return Observables.connectToReactiveSeq(observable).splitAt(where).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).splitAt(where).bimap((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> splitBy(Predicate<T> splitter) {
-        return Observables.connectToReactiveSeq(observable).splitBy(splitter).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).splitBy(splitter).bimap((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> partition(Predicate<? super T> splitter) {
-        return Observables.connectToReactiveSeq(observable).partition(splitter).map((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
+        return Observables.connectToReactiveSeq(observable).partition(splitter).bimap((s1, s2)->Tuple.tuple(observable(s1),observable(s2)));
     }
 
     @Override
@@ -167,13 +166,13 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <S, U> ReactiveSeq<Tuple3<T, S, U>> zip3(Iterable<? extends S> second, Iterable<? extends U> third) {
-        return zip(second,Tuple::tuple).zip(third,(a,b)->Tuple.tuple(a.v1,a.v2,b));
+        return zip(second,Tuple::tuple).zip(third,(a,b)->Tuple.tuple(a._1(),a._2(),b));
     }
 
     @Override
     public <T2, T3, T4> ReactiveSeq<Tuple4<T, T2, T3, T4>> zip4(Iterable<? extends T2> second, Iterable<? extends T3> third, Iterable<? extends T4> fourth) {
-        return zip(second,Tuple::tuple).zip(third,(a,b)->Tuple.tuple(a.v1,a.v2,b))
-                .zip(fourth,(a,b)->(Tuple4<T,T2,T3,T4>)Tuple.tuple(a.v1,a.v2,a.v3,b));
+        return zip(second,Tuple::tuple).zip(third,(a,b)->Tuple.tuple(a._1(),a._2(),b))
+                .zip(fourth,(a,b)->(Tuple4<T,T2,T3,T4>)Tuple.tuple(a._1(),a._2(),a._3(),b));
     }
 
     @Override
