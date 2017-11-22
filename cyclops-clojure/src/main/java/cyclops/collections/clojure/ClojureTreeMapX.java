@@ -10,14 +10,15 @@ import java.util.Set;
 import com.oath.cyclops.data.collections.extensions.ExtensiblePMapX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.To;
-import com.oath.cyclops.types.mixins.TupleWrapper;
+
+import com.oath.cyclops.types.persistent.PersistentMap;
 import cyclops.collections.immutable.PersistentMapX;
 import cyclops.companion.MapXs;
 import cyclops.control.Eval;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
-import org.pcollections.PMap;
+
 
 
 
@@ -28,7 +29,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements PersistentMap<K,V>, Unwrapable, To<ClojureTreeMapX<K,V>> {
+public class ClojureTreeMapX<K,V>  implements PersistentMap<K,V>, Unwrapable, To<ClojureTreeMapX<K,V>> {
 
     @Wither
     PersistentTreeMap map;
@@ -36,18 +37,24 @@ public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements Persistent
     public <R> R unwrap() {
         return (R)map;
     }
-    public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX() {
-        return Reducer.<PersistentMapX<K, V>> of(empty(), (final PersistentMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
-            final List w = ((TupleWrapper) () -> in).values();
-            return singleton((K) w.get(0), (V) w.get(1));
-        });
-    }
-    public static <K, V> Reducer<PersistentMapX<K, V>> toPersistentMapX(@NonNull Comparator<K> comp) {
-        return Reducer.<PersistentMapX<K, V>> of(empty(comp), (final PersistentMapX<K, V> a) -> b -> a.plusAll(b), (in) -> {
-            final List w = ((TupleWrapper) () -> in).values();
-            return singleton(comp,(K) w.get(0), (V) w.get(1));
-        });
-    }
+  public static <K extends Comparable<? extends K>, V> Reducer<PersistentMapX<K, V>, Tuple2<K,V>> toPersistentMapX() {
+    return Reducer.of(empty(), (final PersistentMapX<K, V> a) -> b -> a.putAll(b), (in) -> {
+      Tuple2<K, V> w = in;
+      return singleton((K) w._1(), (V) w._2());
+    });
+
+
+  }
+  public static <K, V> Reducer<PersistentMapX<K, V>, Tuple2<K,V>> toPersistentMapX(@NonNull Comparator<K> comp) {
+    return Reducer.of(empty(comp), (final PersistentMapX<K, V> a) -> b -> a.putAll(b), (in) -> {
+      Tuple2<K, V> w = in;
+      return singleton(comp, w._1(), w._2());
+    });
+
+
+  }
+
+
     public static <K,V> ClojureTreeMapX<K,V> fromMap(PersistentTreeMap map){
         return new ClojureTreeMapX<>(map);
     }
@@ -59,22 +66,22 @@ public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements Persistent
     public static <K,V> ClojureTreeMapX<K,V> fromJavaMap(@NonNull Comparator<K> comp, @NonNull Map<K,V> map){
         PersistentTreeMap res = ( PersistentTreeMap)new PersistentTreeMap(null,comp);
         for(Object o : map.entrySet()) {
-         Map.Entry e = (Entry) o;
+         Map.Entry e = (Map.Entry) o;
          res = res.assoc(e.getKey(), e.getValue());
         }
         return fromMap(res);
     }
-    public static <K,V> PersistentMapX<K,V> empty(){
+    public static <K extends Comparable<? extends K>,V> PersistentMapX<K,V> empty(){
        return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY), Eval.later(()->toPersistentMapX()));
     }
     public static <K,V> PersistentMapX<K,V> empty(@NonNull Comparator<K> comp){
         return new ExtensiblePMapX<K,V>(fromMap(PersistentTreeMap.EMPTY),Eval.later(()->toPersistentMapX(comp)));
      }
-    public static <K,V> PersistentMap<K,V> singletonPMap(K key,V value){
+    public static <K extends Comparable<? extends K>,V> PersistentMap<K,V> singletonPMap(K key,V value){
         PersistentTreeMap map = ( PersistentTreeMap)PersistentTreeMap.create(MapXs.of(key, value));
         return fromMap(map);
      }
-    public static <K,V> PersistentMapX<K,V> singleton(K key,V value){
+    public static <K extends Comparable<? extends K>,V> PersistentMapX<K,V> singleton(K key,V value){
         PersistentTreeMap map = ( PersistentTreeMap)PersistentTreeMap.create(MapXs.of(key, value));
         return new ExtensiblePMapX<K,V>(fromMap(map),Eval.later(()-> ClojureTreeMapX.<K,V>toPersistentMapX()));
      }
@@ -84,7 +91,7 @@ public class ClojureTreeMapX<K,V> extends AbstractMap<K,V> implements Persistent
      }
 
 
-    public static <K,V> PersistentMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){
+    public static <K extends Comparable<? extends K>,V> PersistentMapX<K,V> fromStream(@NonNull ReactiveSeq<Tuple2<K,V>> stream){
         return stream.mapReduce(toPersistentMapX());
     }
 
