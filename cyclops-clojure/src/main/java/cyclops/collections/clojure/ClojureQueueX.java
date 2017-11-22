@@ -10,6 +10,8 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import clojure.lang.PersistentList;
+import clojure.lang.RT;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPQueueX;
 import com.oath.cyclops.types.Unwrapable;
@@ -53,7 +55,7 @@ public class ClojureQueueX<T>  implements com.oath.cyclops.types.persistent.Pers
      * @return LazyPQueueX
      */
     public static <T> LazyPQueueX<T> fromStream(Stream<T> stream) {
-        Reducer<PersistentQueue<T>,T> q = toPersistentQueue();
+        Reducer<com.oath.cyclops.types.persistent.PersistentQueue<T>,T> q = toPersistentQueue();
         return new LazyPQueueX<T>(null, ReactiveSeq.fromStream(stream), q, Evaluation.LAZY);
     }
 
@@ -235,6 +237,27 @@ public class ClojureQueueX<T>  implements com.oath.cyclops.types.persistent.Pers
     public Iterator<T> iterator() {
         return queue.iterator();
     }
+
+  private final Object NOT_FOUND = new Object();
+  @Override
+  public Option<T> get(int index) {
+    PersistentQueue nel = (PersistentQueue) queue;
+
+    Object res = RT.nth(nel,index,NOT_FOUND);
+    if(res==NOT_FOUND)
+      return Option.none();
+    return Option.some((T)res);
+  }
+  @Override
+  public T getOrElse(int index, T alt) {
+    PersistentQueue nel = ( PersistentQueue) queue;
+
+    return (T)RT.nth(nel,index,alt);
+
+  }
+  public T getOrElseGet(int index, Supplier<? extends T> alt){
+    return getOrElse(index,alt.get());
+  }
 
 
 

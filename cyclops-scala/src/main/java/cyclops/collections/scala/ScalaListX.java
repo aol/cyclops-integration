@@ -230,7 +230,7 @@ public class ScalaListX<T> extends AbstractList<T>implements PersistentList<T>, 
     }
 
     @Override
-    public ScalaListX<T> plusAll(Collection<? extends T> l) {
+    public ScalaListX<T> plusAll(Iterable<? extends T> l) {
         if(l instanceof ScalaListX){ //if a ScalaList is passed in use ScalaTypes diretly
             final CanBuildFrom<List<?>, T, List<T>> builder = List.<T> canBuildFrom();
             final CanBuildFrom<List<T>, T, List<T>> builder2 = (CanBuildFrom) builder;
