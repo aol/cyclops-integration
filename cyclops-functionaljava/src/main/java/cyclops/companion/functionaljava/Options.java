@@ -54,7 +54,7 @@ import java.util.stream.Stream;
 import static com.aol.cyclops.functionaljava.hkt.OptionKind.widen;
 
 /**
- * Utility class for working with JDK Optionals
+ * Utility class for working with Options
  *
  * @author johnmcclean
  *

@@ -1,11 +1,7 @@
 package cyclops.collections.clojure;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Supplier;
 
 import com.oath.cyclops.data.collections.extensions.ExtensiblePMapX;
 import com.oath.cyclops.types.Unwrapable;
@@ -150,4 +146,62 @@ public class ClojureTreeMapX<K,V>  implements PersistentMap<K,V>, Unwrapable, To
     }
 
 
+  @Override
+  public ClojureTreeMapX<K, V> put(K key, V value) {
+    return withMap(map.assoc(key,value));
+  }
+
+  @Override
+  public ClojureTreeMapX<K, V> put(Tuple2<K, V> keyAndValue) {
+    return put(keyAndValue._1(),keyAndValue._2());
+  }
+
+  @Override
+  public ClojureTreeMapX<K, V> putAll(PersistentMap<? extends K, ? extends V> map) {
+    PersistentTreeMap m =this.map;
+    for(Object next : map){
+      m = (PersistentTreeMap)m.cons(next);
+    }
+    return withMap(m);
+  }
+
+  @Override
+  public ClojureTreeMapX<K, V> remove(K key) {
+    return withMap((PersistentTreeMap)map.without(key));
+  }
+
+  @Override
+  public ClojureTreeMapX<K, V> removeAll(Iterable<? extends K> keys) {
+    PersistentTreeMap m = map;
+    for(Object key : keys){
+
+      m = (PersistentTreeMap)m.without(key);
+    }
+    return withMap(m);
+  }
+
+  @Override
+  public V getOrElse(K key, V alt) {
+    return null;
+  }
+
+  @Override
+  public V getOrElseGet(K key, Supplier<? extends V> alt) {
+    return null;
+  }
+
+  @Override
+  public int size() {
+    return map.size();
+  }
+
+  @Override
+  public boolean containsKey(K key) {
+    return map.containsKey(key);
+  }
+
+  @Override
+  public Iterator<Tuple2<K, V>> iterator() {
+    return null;
+  }
 }
