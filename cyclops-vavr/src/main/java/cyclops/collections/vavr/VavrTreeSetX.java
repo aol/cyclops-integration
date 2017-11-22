@@ -11,11 +11,13 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
 import com.oath.cyclops.types.persistent.PersistentSortedSet;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.immutable.VectorX;
+import cyclops.control.Option;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
@@ -144,12 +146,12 @@ public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
      * </pre>
      * @return Reducer for PersistentSortedSet
      */
-    public static <T extends Comparable<? super T>> Reducer<PersistentSortedSet<T>> toPersistentSortedSet() {
-        return Reducer.<PersistentSortedSet<T>> of(VavrTreeSetX.emptyPersistentSortedSet(), (final PersistentSortedSet<T> a) -> b -> a.plusAll(b),
+    public static <T extends Comparable<? super T>> Reducer<PersistentSortedSet<T>,T> toPersistentSortedSet() {
+        return Reducer.<PersistentSortedSet<T>,T> of(VavrTreeSetX.emptyPersistentSortedSet(), (final PersistentSortedSet<T> a) -> b -> a.plusAll(b),
                                            (final T x) -> VavrTreeSetX.singleton(x));
     }
-    public static <T> Reducer<PersistentSortedSet<T>> toPersistentSortedSet(Comparator<? super T> comparator) {
-        return Reducer.<PersistentSortedSet<T>> of(VavrTreeSetX.emptyPersistentSortedSet(comparator), (final PersistentSortedSet<T> a) -> b -> a.plusAll(b),
+    public static <T> Reducer<PersistentSortedSet<T>,T> toPersistentSortedSet(Comparator<? super T> comparator) {
+        return Reducer.<PersistentSortedSet<T>,T> of(VavrTreeSetX.emptyPersistentSortedSet(comparator), (final PersistentSortedSet<T> a) -> b -> a.plusAll(b),
                                            (final T x) -> VavrTreeSetX.singleton(comparator,x));
     }
     public static <T extends Comparable<? super T>> VavrTreeSetX<T> emptyPersistentSortedSet() {
@@ -162,7 +164,7 @@ public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
         return fromPersistentSortedSet(new VavrTreeSetX<T>(
                 TreeSet.empty()),toPersistentSortedSet());
     }
-    private static <T> LazyPOrderedSetX<T> fromPersistentSortedSet(PersistentSortedSet<T> ordered, Reducer<PersistentSortedSet<T>> reducer) {
+    private static <T> LazyPOrderedSetX<T> fromPersistentSortedSet(PersistentSortedSet<T> ordered, Reducer<PersistentSortedSet<T>,T> reducer) {
         return  new LazyPOrderedSetX<T>(ordered,null,reducer, Evaluation.LAZY);
     }
     public static <T> LazyPOrderedSetX<T> empty(Comparator<? super T> comparator) {
@@ -199,26 +201,27 @@ public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
     private final SortedSet<T> set;
 
     @Override
-    public PersistentSortedSet<T> plus(T e) {
+    public VavrTreeSetX<T> plus(T e) {
         return withSet(set.add(e));
     }
 
-    @Override
-    public PersistentSortedSet<T> plusAll(Collection<? extends T> l) {
-        return withSet(set.addAll(l));
-    }
+  @Override
+  public VavrTreeSetX<T> plusAll(Iterable<? extends T> list) {
+    return withSet(set.addAll(list));
+  }
 
-    @Override
-    public PersistentSortedSet<T> minus(Object e) {
-        return withSet(set.remove((T) e));
-    }
+  @Override
+  public VavrTreeSetX<T> removeValue(T e) {
+    return withSet(set.remove(e));
+  }
 
-    @Override
-    public PersistentSortedSet<T> minusAll(Collection<?> l) {
-        return withSet(set.removeAll((Collection) l));
-    }
+  @Override
+  public VavrTreeSetX<T> removeAll(Iterable<? extends T> list) {
+    return withSet(set.removeAll(list));
+  }
 
-    @Override
+
+  @Override
     public int size() {
         return set.size();
     }
@@ -229,18 +232,20 @@ public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
     }
 
     @Override
-    public T get(int index) {
+    public Option<T> get(int index) {
         if (index > set.size() || index < 0)
-            throw new IndexOutOfBoundsException();
-        T result = set.get();
+            return Option.none();
+
+        T result = null;
+        Iterator<T> it = set.iterator();
         for (int i = 0; i < index; i++) {
-            result = set.get();
+            result = it.next();
         }
-        return result;
+        return Option.some(result);
     }
 
-    @Override
-    public int indexOf(Object o) {
+
+    public int indexOf(T o) {
         return set.toStream()
                   .zipWithIndex()
                   .find(t -> t._1.equals(o))

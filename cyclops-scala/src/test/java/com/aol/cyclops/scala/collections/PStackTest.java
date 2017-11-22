@@ -9,7 +9,7 @@ import cyclops.collections.scala.ScalaListX;
 import org.junit.Before;
 import org.junit.Test;
 import org.pcollections.ConsPersistentList;
-import org.pcollections.PersistentList;
+import com.oath.cyclops.types.persistent.PersistentList;
 public class PersistentListTest {
 
     ConsPersistentList<Integer> org = null;

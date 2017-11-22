@@ -30,7 +30,7 @@ public class ClojureHashMapX<K,V> implements PersistentMap<K,V> , Unwrapable{
     }
 
   public static <K, V> Reducer<PersistentMapX<K, V>, Tuple2<K,V>> toPersistentMapX() {
-    return Reducer.of(PersistentMapX.empty(), (final PersistentMapX<K, V> a) -> b -> a.putAll(b), (in) -> {
+    return Reducer.of(empty(), (final PersistentMapX<K, V> a) -> b -> a.putAll(b), (in) -> {
       Tuple2<K, V> w = in;
       return singleton((K) w._1(), (V) w._2());
     });

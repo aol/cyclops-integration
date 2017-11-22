@@ -44,7 +44,7 @@ import static com.aol.cyclops.vavr.hkt.VectorKind.widen;
 public class Vectors {
 
     public static <T,W extends WitnessType<W>> ListT<W, T> liftM(Vector<T> opt, W witness) {
-        return ListT.ofList(witness.adapter().unit(VavrVectorX.ofAll(opt)));
+        return ListT.of(witness.adapter().unit(VavrVectorX.ofAll(opt)));
     }
 
     public static <T> AnyMSeq<vector,T> anyM(Vector<T> option) {

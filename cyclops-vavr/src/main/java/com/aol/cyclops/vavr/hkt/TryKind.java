@@ -51,7 +51,7 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
         return Trys.mapM(this,fn,defs);
     }
     default <W extends WitnessType<W>> EitherT<W,Throwable, T> liftM(W witness) {
-        return EitherT.of(witness.adapter().unit(ToCyclopsReact.toTry(this).asEither()));
+        return EitherT.of(witness.adapter().unit(ToCyclopsReact.toTry(this).asXor()));
     }
     default <R> TryKind<R> fold(Function<? super Try<? super T>,? extends Try<R>> op){
         return widen(op.apply(this));

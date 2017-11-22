@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 
 import cyclops.collections.immutable.PersistentMapX;
-import cyclops.collections.vavr.VavrTreeMapX;
 import cyclops.companion.MapXs;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,12 +15,12 @@ import org.junit.Test;
 public class JavaSlangTreePMapTest {
     PersistentMapX<Integer,String> org;
     PersistentMapX<Integer,String> test;
-    
+
     @Before
     public void setup(){
        org = PersistentMapX.fromMap(MapXs.of(1, "hello"));
        test = VavrTreeMapX.singleton(1, "hello");
-     
+
     }
     @Test
     public void same(){
@@ -40,7 +39,7 @@ public class JavaSlangTreePMapTest {
         assertThat(org.plus(2, "world").minusAll(Arrays.asList(1,2)),
                    equalTo(test.plus(2,"world").minusAll(Arrays.asList(1,2))));
     }
-    
+
     @Test
     public void map(){
         assertThat(test.map(s->s+" world").toListX(t->t.v2).get(0),equalTo("hello world"));

@@ -1,6 +1,7 @@
 package cyclops.companion.vavr;
 
 import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -48,7 +49,8 @@ import static com.aol.cyclops.vavr.hkt.ListKind.widen;
 
 public class Lists {
     public static <T,W extends WitnessType<W>> ListT<W, T> liftM(List<T> opt, W witness) {
-        return ListT.ofList(witness.adapter().unit(VavrListX.ofAll(opt)));
+        AnyM<W, LazyLinkedListX<T>> x = witness.adapter().unit(VavrListX.ofAll(opt));
+        return ListT.of(x);
     }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,list,T> xorM(List<T> type){
         return XorM.right(anyM(type));

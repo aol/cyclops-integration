@@ -3,8 +3,8 @@ package com.aol.cyclops.vavr;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.pcollections.ConsPersistentList;
-import org.pcollections.PersistentList;
-import org.pcollections.PersistentList;
+import com.oath.cyclops.types.persistent.PersistentList;
+import com.oath.cyclops.types.persistent.PersistentList;
 import org.pcollections.TreePersistentList;
 
 import io.vavr.collection.Array;

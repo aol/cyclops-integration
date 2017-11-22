@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPersistentListXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {

@@ -34,27 +34,7 @@ public interface VavrConverters {
     return cyclops.data.tuple.Tuple.tuple(t._1(),t._2());
   }
 
-    public static <K,V> HashMap<K,V> HashMap(PersistentMapX<K,V> vec){
-        return vec.unwrapNested(HashMap.class,
-                ()->{
-                    VavrHashMapX<K,V> map = VavrHashMapX.copyFromMap(vec).unwrap();
-                    return map.unwrap();
-                } );
-    }
-    public static <K extends Comparable<K>,V> TreeMap<K,V> TreeMap(PersistentMapX<K,V> vec){
-        return vec.unwrapNested(TreeMap.class,
-                ()->{
-                    VavrTreeMapX<K,V> map = VavrTreeMapX.copyFromMap(vec,(Comparator<K>) Comparator.naturalOrder()).unwrap();
-                    return map.unwrap();
-                } );
-    }
-    public static <K,V> TreeMap<K,V> TreeMap(PersistentMapX<K,V> vec, Comparator<K> comp){
-        return vec.unwrapNested(TreeMap.class,
-                ()->{
-                    VavrTreeMapX<K,V> map = VavrTreeMapX.copyFromMap(vec,comp).unwrap();
-                    return map.unwrap();
-                } );
-    }
+
     public static <T extends Comparable<? extends T>> TreeSet<T> TreeSet(CollectionX<T> vec){
         return vec.unwrapNested(TreeSet.class,
                 ()->{
@@ -77,13 +57,7 @@ public interface VavrConverters {
                 });
     }
 
-    public static  BitSet BitSet(CollectionX<Integer> vec){
-        return vec.unwrapNested(BitSet.class,
-                ()->{
-                    VavrBitSetX set = VavrBitSetX.copyFromCollection(vec).unwrap();
-                    return set.unwrap();
-                } );
-    }
+
     public static <T> Queue<T> Queue(CollectionX<T> vec){
         return vec.unwrapNested(Queue.class,
                 ()-> {

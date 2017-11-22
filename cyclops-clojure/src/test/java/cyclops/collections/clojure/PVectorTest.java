@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.pcollections.PersistentList;
+import com.oath.cyclops.types.persistent.PersistentList;
 import org.pcollections.TreePersistentList;
 public class PersistentListTest {
 

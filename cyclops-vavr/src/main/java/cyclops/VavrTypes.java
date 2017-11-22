@@ -109,21 +109,5 @@ public class VavrTypes {
         return VavrHashSetX.toPSet();
     }
 
-    /**
-     * Use to set the type of an OrderedSetX to Scala TreeSet
-     * <pre>
-     *     {@code
-     *     BitSet set =  OrderedSetX.of(1,2,3)
-     *                                        .type(VavrTypes.bitSet())
-     *                                        .map(i->i*2)
-     *                                        .to(VavrConverters::BitSet);
-     *     }
-     *
-     * </pre>
-     *
-     * @return Reducer to convert a sequence of data to a Scala Set that implements PersistentSortedSet interface
-     */
-    public static Reducer<PersistentSortedSet<Integer>,Integer> bitset() {
-        return VavrBitSetX.toPersistentSortedSet();
-    }
+
 }

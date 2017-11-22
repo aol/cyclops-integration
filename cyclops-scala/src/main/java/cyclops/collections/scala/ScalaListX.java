@@ -22,7 +22,7 @@ import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
 import org.pcollections.ConsPersistentList;
-import org.pcollections.PersistentList;
+import com.oath.cyclops.types.persistent.PersistentList;
 
 
 
