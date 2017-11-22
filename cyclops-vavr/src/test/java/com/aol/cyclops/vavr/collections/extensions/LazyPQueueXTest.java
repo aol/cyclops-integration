@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
-import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPersistentQueueX;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPQueueX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.collections.immutable.PersistentSetX;
@@ -36,7 +36,7 @@ import org.junit.Test;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPersistentQueueXTest extends AbstractCollectionXTest  {
+public class LazyPQueueXTest extends AbstractCollectionXTest  {
 
 
     @Override

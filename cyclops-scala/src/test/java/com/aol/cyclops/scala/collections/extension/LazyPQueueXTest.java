@@ -18,7 +18,7 @@ import java.util.function.UnaryOperator;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class LazyPersistentQueueXTest extends AbstractCollectionXTest {
+public class LazyPQueueXTest extends AbstractCollectionXTest {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
