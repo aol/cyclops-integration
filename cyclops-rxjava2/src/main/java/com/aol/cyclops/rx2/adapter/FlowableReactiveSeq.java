@@ -7,7 +7,8 @@ import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Functions;
 import cyclops.control.Maybe;
-import cyclops.control.lazy.Either;
+import cyclops.control.LazyEither;
+import cyclops.control.Option;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
@@ -15,7 +16,8 @@ import cyclops.monads.Witness.reactiveSeq;
 import cyclops.monads.Witness.stream;
 import cyclops.monads.transformers.ListT;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Spouts;
+
+import cyclops.reactive.Spouts;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import lombok.AllArgsConstructor;
@@ -98,52 +100,52 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> duplicate() {
-        return Spouts.from(flowable).duplicate().map((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Spouts.from(flowable).duplicate().transform((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> duplicate(Supplier<Deque<T>> bufferFactory) {
-        return Spouts.from(flowable).duplicate(bufferFactory).map((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Spouts.from(flowable).duplicate(bufferFactory).transform((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
     }
 
     @Override
     public Tuple3<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> triplicate() {
-        return Spouts.from(flowable).triplicate().map((s1, s2, s3)->Tuple.tuple(flux(s1),flux(s2),flux(s3)));
+        return Spouts.from(flowable).triplicate().transform((s1, s2, s3)->Tuple.tuple(flux(s1),flux(s2),flux(s3)));
     }
 
     @Override
     public Tuple3<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> triplicate(Supplier<Deque<T>> bufferFactory) {
-        return Spouts.from(flowable).triplicate(bufferFactory).map((s1, s2, s3)->Tuple.tuple(flux(s1),flux(s2),flux(s3)));
+        return Spouts.from(flowable).triplicate(bufferFactory).transform((s1, s2, s3)->Tuple.tuple(flux(s1),flux(s2),flux(s3)));
     }
 
     @Override
     public Tuple4<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> quadruplicate() {
-        return Spouts.from(flowable).quadruplicate().map((s1, s2, s3, s4)->Tuple.tuple(flux(s1),flux(s2),flux(s3),flux(s4)));
+        return Spouts.from(flowable).quadruplicate().to(t4->Tuple.tuple(flux(t4._1()),flux(t4._2()),flux(t4._3()),flux(t4._4())));
     }
 
     @Override
     public Tuple4<ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>, ReactiveSeq<T>> quadruplicate(Supplier<Deque<T>> bufferFactory) {
-        return Spouts.from(flowable).quadruplicate(bufferFactory).map((s1, s2, s3, s4)->Tuple.tuple(flux(s1),flux(s2),flux(s3),flux(s4)));
+        return Spouts.from(flowable).quadruplicate(bufferFactory).to(t4->Tuple.tuple(flux(t4._1()),flux(t4._2()),flux(t4._3()),flux(t4._4())));
     }
 
     @Override
-    public Tuple2<Optional<T>, ReactiveSeq<T>> splitAtHead() {
-        return Spouts.from(flowable).splitAtHead().map((s1, s2)->Tuple.tuple(s1,flux(s2)));
+    public Tuple2<Option<T>, ReactiveSeq<T>> splitAtHead() {
+        return Spouts.from(flowable).splitAtHead().transform((s1, s2)->Tuple.tuple(s1,flux(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> splitAt(int where) {
-        return Spouts.from(flowable).splitAt(where).map((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Spouts.from(flowable).splitAt(where).transform((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> splitBy(Predicate<T> splitter) {
-        return Spouts.from(flowable).splitBy(splitter).map((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Spouts.from(flowable).splitBy(splitter).transform((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
     }
 
     @Override
     public Tuple2<ReactiveSeq<T>, ReactiveSeq<T>> partition(Predicate<? super T> splitter) {
-        return Spouts.from(flowable).partition(splitter).map((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
+        return Spouts.from(flowable).partition(splitter).transform((s1, s2)->Tuple.tuple(flux(s1),flux(s2)));
     }
 
     @Override
@@ -156,13 +158,13 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
 
     @Override
     public <S, U> ReactiveSeq<Tuple3<T, S, U>> zip3(Iterable<? extends S> second, Iterable<? extends U> third) {
-        return zip(second,Tuple::tuple).zip(third,(a,b)->Tuple.tuple(a.v1,a.v2,b));
+        return zip(second,Tuple::tuple).zip(third,(a,b)->Tuple.tuple(a._1(),a._2(),b));
     }
 
     @Override
     public <T2, T3, T4> ReactiveSeq<Tuple4<T, T2, T3, T4>> zip4(Iterable<? extends T2> second, Iterable<? extends T3> third, Iterable<? extends T4> fourth) {
-        return zip(second,Tuple::tuple).zip(third,(a,b)->Tuple.tuple(a.v1,a.v2,b))
-                .zip(fourth,(a,b)->(Tuple4<T,T2,T3,T4>)Tuple.tuple(a.v1,a.v2,a.v3,b));
+        return zip(second,Tuple::tuple).zip(third,(a,b)->Tuple.tuple(a._1(),a._2(),b))
+                .zip(fourth,(a,b)->(Tuple4<T,T2,T3,T4>)Tuple.tuple(a._1(),a._2(),a._3(),b));
     }
 
     @Override
@@ -361,12 +363,12 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public Maybe<T> findOne() {
-        return Spouts.from(flowable).findOne();
+    public Maybe<T> takeOne() {
+        return Spouts.from(flowable).takeOne();
     }
 
     @Override
-    public Either<Throwable, T> findFirstOrError() {
+    public LazyEither<Throwable, T> findFirstOrError() {
         return Spouts.from(flowable).findFirstOrError();
     }
 
@@ -376,7 +378,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <R> R mapReduce(Reducer<R> reducer) {
+    public <R> R mapReduce(Reducer<R,T> reducer) {
         return Spouts.from(flowable).mapReduce(reducer);
     }
 
@@ -426,7 +428,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <T1> T1 foldRightMapToType(Reducer<T1> reducer) {
+    public <T1> T1 foldRightMapToType(Reducer<T1,T> reducer) {
         return Spouts.from(flowable).foldRightMapToType(reducer);
     }
 
@@ -436,7 +438,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <U> Traversable<U> unitIterator(Iterator<U> U) {
+    public <U> FlowableReactiveSeq<U> unitIterator(Iterator<U> U) {
         return new FlowableReactiveSeq<>(Flowable.fromIterable(()->U));
     }
 
@@ -579,8 +581,8 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public ReactiveSeq<T> prepend(T... values) {
-        return flux(Spouts.from(flowable).prepend(values));
+    public ReactiveSeq<T> prependAll(T... values) {
+        return flux(Spouts.from(flowable).prependAll(values));
     }
 
     @Override
@@ -614,8 +616,8 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public T firstValue() {
-        return flowable.blockingFirst();
+    public T firstValue(T alt) {
+        return flowable.blockingFirst(alt);
     }
 
     @Override
@@ -629,8 +631,8 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <X extends Throwable> ReactiveSeq<T> onEmptyThrow(Supplier<? extends X> supplier) {
-        return flux(Spouts.from(flowable).onEmptyThrow(supplier));
+    public <X extends Throwable> ReactiveSeq<T> onEmptyError(Supplier<? extends X> supplier) {
+        return flux(Spouts.from(flowable).onEmptyError(supplier));
     }
 
     @Override
@@ -664,7 +666,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public ReactiveSeq<T> complete(Runnable fn) {
+    public ReactiveSeq<T> onComplete(Runnable fn) {
         return flux(flowable.doOnComplete(()->fn.run()));
     }
 
@@ -708,18 +710,10 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
         return flux(Spouts.from(flowable).skipWhileClosed(predicate));
     }
 
-
-    @Override
-    public String format() {
-        return Spouts.from(flowable).format();
-    }
-
     @Override
     public ReactiveSeq<T> changes() {
         return flux(Spouts.from(flowable).changes());
     }
-
-
 
     @Override
     public <X extends Throwable> Subscription forEachSubscribe(Consumer<? super T> consumer) {
@@ -743,7 +737,7 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <R, A> ReactiveSeq<R> collectStream(Collector<? super T, A, R> collector) {
+    public <R, A> ReactiveSeq<R> collectAll(Collector<? super T, A, R> collector) {
         Single<A> inter = flowable.collect(()->collector.supplier().get(), (a,b)->collector.accumulator().accept(a,b));
         return flux(inter.toFlowable().map(Functions.rxFunction(collector.finisher())));
     }
@@ -755,11 +749,6 @@ public class FlowableReactiveSeq<T> implements ReactiveSeq<T> {
         return collector.finisher().apply(inter);
     }
 
-
-    @Override
-    public T singleUnsafe() {
-        return single().get();
-    }
 
     @Override
     public Maybe<T> single(Predicate<? super T> predicate) {
