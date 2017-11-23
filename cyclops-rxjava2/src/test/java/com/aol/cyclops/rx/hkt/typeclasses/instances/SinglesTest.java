@@ -71,7 +71,7 @@ public class SinglesTest {
                                      .applyHKT(h-> Instances.applicative().ap(optFn, h))
                                      .convert(SingleKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()*2).join()));
+        assertThat(opt.toFuture().orElse(-1),equalTo(Future.ofResult("hello".length()*2).orElse(10000)));
     }
     @Test
     public void monadSimple(){
@@ -87,7 +87,7 @@ public class SinglesTest {
                                      .applyHKT(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(SingleKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
+        assertThat(opt.toFuture().orElse(-1),equalTo(Future.ofResult("hello".length()).orElse(10000)));
     }
     @Test
     public void monadZeroFilter(){
@@ -97,7 +97,7 @@ public class SinglesTest {
                                      .applyHKT(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(SingleKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
+        assertThat(opt.toFuture().orElse("boo!"),equalTo(Future.ofResult("hello").orElse("no")));
     }
     @Test
     public void monadZeroFilterOut(){

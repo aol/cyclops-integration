@@ -3,7 +3,8 @@ package cyclops.monads.transformers;
 
 import com.oath.cyclops.types.mixins.Printable;
 
-import cyclops.collections.box.Mutable;
+
+import com.oath.cyclops.util.box.Mutable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Reducers;
@@ -61,28 +62,6 @@ public class MonoTTest implements Printable {
 
 
 
-	@Test
-	public void testFiltering(){
-	    assertThat(ReactiveSeq.of(Maybe.just(1), Try.success(1)).filter(Either.right(1))
-	                .toListX(),equalTo(ListX.of(Maybe.just(1), Try.success(1))));
-	}
-	@Test
-    public void testFilteringNoValue(){
-        assertThat(ReactiveSeq.of(1,1).filter(Either.right(1))
-                    .toListX(),equalTo(ListX.of(1,1)));
-    }
-    /**
-	@Test
-	public void testToMaybe() {
-		assertThat(just.toMaybe(),equalTo(Maybe.just(10)));
-		assertThat(none.toMaybe().isPresent(),equalTo(false));
-	}
-	@Test
-    public void testToOptional2() {
-        assertThat(just.toOptional(),equalTo(Optional.of(10)));
-
-    }
-	**/
 
 	private int add1(int i){
 		return i+1;
@@ -127,8 +106,8 @@ public class MonoTTest implements Printable {
 	@Test
 	public void testFlatMap() {
 
-		assertThat(just.flatMap(i-> Maybe.of(i+5)).get(),equalTo(15));
-		assertThat(none.flatMap(i-> Maybe.of(i+5)).orElse(-1),equalTo(-1));
+		assertThat(just.flatMapIterable(i-> Maybe.of(i+5)).get(),equalTo(15));
+		assertThat(none.flatMapIterable(i-> Maybe.of(i+5)).orElse(-1),equalTo(-1));
 	}
 
 	@Test
@@ -159,17 +138,6 @@ public class MonoTTest implements Printable {
     }
 
 
-
-
-	@Test
-	public void testIterate() {
-		assertThat(just.iterate(i->i+1).to(Witness::optional).get().limit(10).sumInt(i->(int)i),equalTo(145));
-	}
-
-	@Test
-	public void testGenerate() {
-		assertThat(just.generate().to(Witness::optional).get().limit(10).sumInt(i->i),equalTo(100));
-	}
 
 	@Test
 	public void testMapReduceReducerOfE() {

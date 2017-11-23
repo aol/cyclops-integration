@@ -142,14 +142,14 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
     public void groupedFunction(){
         assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").count(),equalTo((2L)));
         assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").filter(t->t._1().equals("a"))
-                        .map(t->t._2()).map(s->s.toList()).singleUnsafe(),
+                        .map(t->t._2()).map(s->s.toList()).single().orElse(null),
                             equalTo((Arrays.asList(1,2))));
     }
     @Test
     public void groupedFunctionCollector(){
         assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b",Collectors.toList()).count(),equalTo((2L)));
         assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b",Collectors.toList()).filter(t->t._1().equals("a"))
-                .map(t->t._2()).singleUnsafe(),
+                .map(t->t._2()).single().orElse(null),
                     equalTo((Arrays.asList(1,2))));
     }
 	@Test

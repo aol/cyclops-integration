@@ -3,6 +3,7 @@ package com.aol.cyclops.reactor.adapter;
 import com.oath.cyclops.types.anyM.AnyMValue;
 import com.oath.cyclops.types.extensability.ValueAdapter;
 import cyclops.companion.reactor.Monos;
+import cyclops.control.Option;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.mono;
 import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
@@ -84,7 +85,12 @@ public class MonoAdapter implements ValueAdapter<mono> {
     }
 
     @Override
-    public <T> T get(AnyMValue<mono, T> t) {
-        return future(t).block();
+    public <T> Option<T> get(AnyMValue<mono, T> t) {
+      try {
+        return Option.some(future(t).block());
+      }catch (Exception e){
+        return Option.none();
+      }
+
     }
 }

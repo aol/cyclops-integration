@@ -109,13 +109,13 @@ public class SyncSequentialTest extends BaseSequentialTest {
     }
     @Test
     public void prependPlay(){
-        System.out.println(of(1,2,3).prepend(100,200,300).collect(Collectors.toList()));
+        System.out.println(of(1,2,3).prependAll(100,200,300).collect(Collectors.toList()));
 
 
     }
     @Test
     public void splitAtExp(){
-        of(1, 2, 3).peek(e->System.out.println("Peeking! " +e)).splitAt(0).map( (a,b)->{
+        of(1, 2, 3).peek(e->System.out.println("Peeking! " +e)).splitAt(0).transform( (a,b)->{
             a.printOut();
             b.printOut();
             return null;

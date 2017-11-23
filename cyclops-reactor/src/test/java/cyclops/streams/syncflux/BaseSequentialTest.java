@@ -7,8 +7,9 @@ import cyclops.collections.mutable.ListX;
 import cyclops.collections.mutable.SetX;
 import cyclops.companion.Semigroups;
 import cyclops.companion.reactor.Fluxs;
+import cyclops.control.Either;
 import cyclops.control.Maybe;
-import cyclops.control.lazy.Either;
+
 import cyclops.reactive.ReactiveSeq;
 import org.hamcrest.Matchers;
 import cyclops.data.tuple.Tuple2;
@@ -532,7 +533,7 @@ public class BaseSequentialTest {
     public void combine() {
         assertThat(of(1, 2, 3, 4, 5, 6, 7, 8)
                 .combine((a, b) -> a < 5, Semigroups.intSum)
-                .findOne(), Matchers.equalTo(Maybe.of(6)));
+                .takeOne(), Matchers.equalTo(Maybe.of(6)));
     }
 
     @Test
@@ -546,21 +547,21 @@ public class BaseSequentialTest {
     public void combineOne() {
         assertThat(of(1)
                 .combine((a, b) -> a < 5, Semigroups.intSum)
-                .findOne(), Matchers.equalTo(Maybe.of(1)));
+                .takeOne(), Matchers.equalTo(Maybe.of(1)));
     }
 
     @Test
     public void combineTwo() {
         assertThat(of(1, 2)
                 .combine((a, b) -> a < 5, Semigroups.intSum)
-                .findOne(), Matchers.equalTo(Maybe.of(3)));
+                .takeOne(), Matchers.equalTo(Maybe.of(3)));
     }
 
     @Test
     public void combineEmpty() {
         assertThat(this.<Integer>of()
                 .combine((a, b) -> a < 5, Semigroups.intSum)
-                .findOne(), Matchers.equalTo(Maybe.nothing()));
+                .takeOne(), Matchers.equalTo(Maybe.nothing()));
     }
 
     @Test
@@ -715,21 +716,7 @@ public class BaseSequentialTest {
         return a + b + c + d + e;
     }
 
-    @Test
-    public void groupedFunction() {
-        assertThat(of(1, 2, 3).grouped(f -> f < 3 ? "a" : "b").count(), equalTo((2L)));
-        assertThat(of(1, 2, 3).grouped(f -> f < 3 ? "a" : "b").filter(t -> t._1().equals("a"))
-                        .map(t -> t._2()).map(s -> s.toList()).singleUnsafe(),
-                equalTo((Arrays.asList(1, 2))));
-    }
 
-    @Test
-    public void groupedFunctionCollector() {
-        assertThat(of(1, 2, 3).grouped(f -> f < 3 ? "a" : "b", Collectors.toList()).count(), equalTo((2L)));
-        assertThat(of(1, 2, 3).grouped(f -> f < 3 ? "a" : "b", Collectors.toList()).filter(t -> t._1().equals("a"))
-                        .map(t -> t._2()).singleUnsafe(),
-                equalTo((Arrays.asList(1, 2))));
-    }
 
     @Test
     public void batchBySize() {
@@ -741,7 +728,7 @@ public class BaseSequentialTest {
     @Test
     public void prepend() {
         for(int k=0;k<ITERATIONS;k++){
-            List<String> result = of(1, 2, 3).prepend(100, 200, 300)
+            List<String> result = of(1, 2, 3).prependAll(100, 200, 300)
                     .map(it -> it + "!!").collect(Collectors.toList());
 
             assertThat(result, equalTo(Arrays.asList("100!!", "200!!", "300!!", "1!!", "2!!", "3!!")));
@@ -1255,11 +1242,11 @@ public class BaseSequentialTest {
     public void testMinByMaxBy() {
         Supplier<ReactiveSeq<Integer>> s = () -> of(1, 2, 3, 4, 5, 6);
 
-        assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).get());
-        assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).get());
+        assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).orElse(-1));
+        assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).orElse(-1));
 
-        assertEquals(6, (int) s.get().maxBy(t -> "" + t).get());
-        assertEquals(1, (int) s.get().minBy(t -> "" + t).get());
+        assertEquals(6, (int) s.get().maxBy(t -> "" + t).orElse(-1));
+        assertEquals(1, (int) s.get().minBy(t -> "" + t).orElse(-1));
     }
 
     @Test

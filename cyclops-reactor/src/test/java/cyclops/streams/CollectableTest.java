@@ -1,6 +1,7 @@
 package cyclops.streams;
 
-import org.jooq.lambda.Collectable;
+
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,15 +16,15 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.jooq.lambda.Agg.*;
+
 import static cyclops.data.tuple.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public abstract class CollectableTest {
-    public abstract <T> Collectable<T> of(T... values);
-    Collectable<Integer> empty;
-    Collectable<Integer> nonEmpty;
+    public abstract <T> ReactiveSeq<T> of(T... values);
+    ReactiveSeq<Integer> empty;
+    ReactiveSeq<Integer> nonEmpty;
     static final Executor exec = Executors.newFixedThreadPool(1);
     @Before
     public void setup(){
@@ -119,13 +120,13 @@ public abstract class CollectableTest {
 
         @Test
         public void testMinByMaxBy() {
-            Supplier<Collectable<Integer>> s = () -> of(1, 2, 3, 4, 5, 6);
+            Supplier<ReactiveSeq<Integer>> s = () -> of(1, 2, 3, 4, 5, 6);
 
-            assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).get());
-            assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).get());
+            assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).orElse(-1));
+            assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).orElse(-1));
 
-            assertEquals(6, (int) s.get().maxBy(t -> "" + t).get());
-            assertEquals(1, (int) s.get().minBy(t -> "" + t).get());
+            assertEquals(6, (int) s.get().maxBy(t -> "" + t).orElse(-1));
+            assertEquals(1, (int) s.get().minBy(t -> "" + t).orElse(-1));
         }
 
 
@@ -143,112 +144,7 @@ public abstract class CollectableTest {
         }
         return i;
     }
-    @Test
-    public void testCount2() {
-        assertEquals(0L, of().count());
-        assertEquals(0L, of().countDistinct());
-        assertEquals(0L, this.<Integer>of().countDistinctBy(l -> l % 3));
 
-        assertEquals(1L, of(1).count());
-        assertEquals(1L, of(1).countDistinct());
-        assertEquals(1L, of(1).countDistinctBy(l -> l % 3L));
 
-        assertEquals(2L, of(1, 2).count());
-        assertEquals(2L, of(1, 2).countDistinct());
-        assertEquals(2L, of(1, 2).countDistinctBy(l -> l % 3L));
-
-        assertEquals(3L, of(1, 2, 2).count());
-        assertEquals(2L, of(1, 2, 2).countDistinct());
-        assertEquals(2L, of(1, 2, 2).countDistinctBy(l -> l % 3L));
-
-        assertEquals(4L, of(1, 2, 2, 4).count());
-        assertEquals(3L, of(1, 2, 2, 4).countDistinct());
-        assertEquals(2L, of(1, 2, 2, 4).countDistinctBy(l -> l % 3L));
-    }
-
-    @Test
-    public void testCountWithPredicate() {
-        Predicate<Integer> pi = i -> i % 2 == 0;
-        Predicate<Long> pl = l -> l % 2 == 0;
-
-        assertEquals(0L, this.<Integer>of().count(pi));
-        assertEquals(0L, this.<Integer>of().countDistinct(pi));
-        assertEquals(0L, this.<Integer>of().countDistinctBy(l -> l % 3, pi));
-
-        assertEquals(0L, of(1).count(pi));
-        assertEquals(0L, of(1).countDistinct(pi));
-        assertEquals(0L, of(1).countDistinctBy(l -> l % 3L, pl));
-
-        assertEquals(1L, of(1, 2).count(pi));
-        assertEquals(1L, of(1, 2).countDistinct(pi));
-        assertEquals(1L, of(1, 2).countDistinctBy(l -> l % 3L, pl));
-
-        assertEquals(2L, of(1, 2, 2).count(pi));
-        assertEquals(1L, of(1, 2, 2).countDistinct(pi));
-        assertEquals(1L, of(1, 2, 2).countDistinctBy(l -> l % 3L, pl));
-
-        assertEquals(3L, of(1, 2, 2, 4).count(pi));
-        assertEquals(2L, of(1, 2, 2, 4).countDistinct(pi));
-        assertEquals(1L, of(1, 2, 2, 4).countDistinctBy(l -> l % 3L, pl));
-    }
-
-    @Test
-    public void testSum() {
-        assertEquals(Optional.empty(), of().sum());
-
-        assertEquals(Optional.of(1), of(1).sum());
-        assertEquals(Optional.of(3), of(1, 2).sum());
-        assertEquals(Optional.of(6), of(1, 2, 3).sum());
-
-        assertEquals(Optional.of(1.0), of(1.0).sum());
-        assertEquals(Optional.of(3.0), of(1.0, 2.0).sum());
-        assertEquals(Optional.of(6.0), of(1.0, 2.0, 3.0).sum());
-    }
-
-    @Test
-    public void testAvg() {
-        assertEquals(Optional.empty(), of().avg());
-
-        assertEquals(Optional.of(1), of(1).avg());
-        assertEquals(Optional.of(1), of(1, 2).avg());
-        assertEquals(Optional.of(2), of(1, 2, 3).avg());
-
-        assertEquals(Optional.of(1.0), of(1.0).avg());
-        assertEquals(Optional.of(1.5), of(1.0, 2.0).avg());
-        assertEquals(Optional.of(2.0), of(1.0, 2.0, 3.0).avg());
-    }
-
-    @Test
-    public void testCollect() {
-        assertEquals(
-            tuple(0L, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()),
-           this.<Integer>of().collect(count(), min(), min(i -> -i), max(), max(i -> -i))
-        );
-
-        assertEquals(
-            tuple(1L, Optional.of(1), Optional.of(-1), Optional.of(1), Optional.of(-1)),
-            of(1).collect(count(), min(), min(i -> -i), max(), max(i -> -i))
-        );
-
-        assertEquals(
-            tuple(2L, Optional.of(1), Optional.of(-2), Optional.of(2), Optional.of(-1)),
-            of(1, 2).collect(count(), min(), min(i -> -i), max(), max(i -> -i))
-        );
-
-        assertEquals(
-            tuple(3L, Optional.of(1), Optional.of(-3), Optional.of(3), Optional.of(-1)),
-            of(1, 2, 3).collect(count(), min(), min(i -> -i), max(), max(i -> -i))
-        );
-
-        assertEquals(
-            tuple(4L, Optional.of(1), Optional.of(-4), Optional.of(4), Optional.of(-1)),
-            of(1, 2, 3, 4).collect(count(), min(), min(i -> -i), max(), max(i -> -i))
-        );
-
-        assertEquals(
-            Arrays.asList("a", "b", "c"),
-            of("a", "b", "c").collect(Collectors.toList())
-        );
-    }
 
 }

@@ -2,7 +2,8 @@ package cyclops.streams;
 
 import cyclops.async.LazyReact;
 import cyclops.collections.mutable.ListX;
-import cyclops.stream.FutureStream;
+
+import cyclops.reactive.FutureStream;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
 import org.junit.Before;
@@ -144,7 +145,7 @@ public class BaseSequentialTest {
 
 		@Test
 		public void prepend(){
-		List<String> result = 	of(1,2,3).prepend(100,200,300)
+		List<String> result = 	of(1,2,3).prependAll(100,200,300)
 				.map(it ->it+"!!").collect(Collectors.toList());
 
 			assertThat(result,equalTo(Arrays.asList("100!!","200!!","300!!","1!!","2!!","3!!")));
@@ -549,11 +550,11 @@ public class BaseSequentialTest {
 		    public void testMinByMaxBy() {
 		        Supplier<ReactiveSeq<Integer>> s = () -> of(1, 2, 3, 4, 5, 6);
 
-		        assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).get());
-		        assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).get());
+		        assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).orElse(-1));
+		        assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).orElse(-1));
 
-		        assertEquals(6, (int) s.get().maxBy(t -> "" + t).get());
-		        assertEquals(1, (int) s.get().minBy(t -> "" + t).get());
+		        assertEquals(6, (int) s.get().maxBy(t -> "" + t).orElse(-1));
+		        assertEquals(1, (int) s.get().minBy(t -> "" + t).orElse(-1));
 		    }
 
 		    @Test

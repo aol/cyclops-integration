@@ -275,24 +275,8 @@ public  class AsyncReactiveStreamXTest {
 		assertThat(Arrays.asList(1,2,3,4,5,6),hasItem(left.get(0)));
 
 	}
-	@Test
-	public void cast(){
-        AtomicReference<Throwable> error = new AtomicReference<>(null);
-        AtomicBoolean complete=  new AtomicBoolean(false);
-		of(1,2,3).cast(String.class).forEach(System.out::println,e->{error.set(e); complete.set(true);},()->complete.set(true));
-		while(!complete.get()){
-            LockSupport.parkNanos(100l);
-        }
-		System.out.println(error.get());
-		assertTrue(error.get() instanceof ClassCastException);
-	}
-	@Test(expected=ClassCastException.class)
-	public void castList(){
 
-		of(1,2,3).cast(String.class).toList();
-
-	}
-    @Test
+  @Test
 	public void dropRight(){
 		System.out.println(of(1,2,3).skipLast(1).toList());
 		assertThat(of(1,2,3).dropRight(1).toList(),hasItems(1,2));
@@ -399,17 +383,10 @@ public  class AsyncReactiveStreamXTest {
 		 assertTrue(copies._3().limit(3).toList().size()==3);
 		 assertTrue(copies._4().limit(3).toList().size()==3);
 	}
-	    @Test(expected=ClassCastException.class)
-	    public void testCastException() {
-	    	of(1, "a", 2, "b", 3, null)
-	    			.peek(it ->System.out.println(it))
-	    			.cast(Integer.class)
-	    				.peek(it ->System.out.println(it)).toList();
 
-	    }
 
 	public void prepend(){
-		List<String> result = 	of(1,2,3).prepend(100,200,300)
+		List<String> result = 	of(1,2,3).prependAll(100,200,300)
 				.map(it ->it+"!!").collect(Collectors.toList());
 
 		assertThat(result,equalTo(Arrays.asList("100!!","200!!","300!!","1!!","2!!","3!!")));
@@ -531,11 +508,11 @@ public  class AsyncReactiveStreamXTest {
 	    public void testMinByMaxBy() {
 	        Supplier<ReactiveSeq<Integer>> s = () -> of(1, 2, 3, 4, 5, 6);
 
-	        assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).get());
-	        assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).get());
+	        assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).orElse(-1));
+	        assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).orElse(-1));
 
-	        assertEquals(6, (int) s.get().maxBy(t -> "" + t).get());
-	        assertEquals(1, (int) s.get().minBy(t -> "" + t).get());
+	        assertEquals(6, (int) s.get().maxBy(t -> "" + t).orElse(-1));
+	        assertEquals(1, (int) s.get().minBy(t -> "" + t).orElse(-1));
 	    }
 
 

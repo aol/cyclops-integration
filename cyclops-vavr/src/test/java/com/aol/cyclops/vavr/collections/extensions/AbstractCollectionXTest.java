@@ -930,19 +930,19 @@ public abstract class AbstractCollectionXTest {
 	}
 	@Test
 	public void singleTest(){
-		assertThat(of(1).single().orElse(-1),equalTo(1));
+		assertThat(of(1).single().orElse(null),equalTo(1));
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void singleEmpty(){
-		of().single().orElse(-1);
+		of().single().orElse(null);
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void single2(){
-		of(1,2).single().orElse(-1);
+		of(1,2).single().orElse(null);
 	}
 	@Test
 	public void singleOptionalTest(){
-		assertThat(of(1).single().orElse(-1),equalTo(1));
+		assertThat(of(1).single().orElse(null),equalTo(1));
 	}
 	@Test
 	public void singleOptionalEmpty(){
@@ -1626,14 +1626,14 @@ public abstract class AbstractCollectionXTest {
 	        public void groupedFunctionNoOrder(){
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").count(),equalTo((2L)));
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").filter(t->t._1().equals("a"))
-	                            .map(t->t._2()).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).single().get(),
+	                            .map(t->t._2()).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).single().orElse(null),
 	                                equalTo((ListX.of(1,2))));
 	        }
 	        @Test
 	        public void groupedFunctionCollectorNoOrder(){
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).count(),equalTo((2L)));
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).filter(t->t._1().equals("a"))
-	                    .map(t->t._2()).single().get(),
+	                    .map(t->t._2()).single().orElse(null),
 	                        equalTo((Arrays.asList(1,2))));
 	        }
 	        @Test

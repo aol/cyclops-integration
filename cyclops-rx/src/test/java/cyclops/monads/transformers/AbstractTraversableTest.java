@@ -488,7 +488,7 @@ public abstract class AbstractTraversableTest {
         public void batchBySizeCollection(){
 
 
-            assertThat(of(1,2,3,4,5,6).grouped(3,()-> ListX.<Integer>empty()).stream().get(0).get().size(),is(3));
+            assertThat(of(1,2,3,4,5,6).grouped(3,()-> ListX.<Integer>empty()).stream().elementAt(0).orElse(null).size(),is(3));
 
            // assertThat(of(1,1,1,1,1,1).grouped(3,()->new ListXImpl<>()).get(1).get().size(),is(1));
         }
@@ -621,7 +621,7 @@ public abstract class AbstractTraversableTest {
 
             @Test
             public void slidingIncrementNoOrder() {
-                List<List<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).stream().collect(java.util.stream.Collectors.toList());
+                List<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).stream().collect(java.util.stream.Collectors.toList());
 
                 System.out.println(list);
 
@@ -635,20 +635,7 @@ public abstract class AbstractTraversableTest {
                            .toListX(),equalTo(ListX.of(1,2,3)));
 
             }
-            @Test
-            public void groupedFunctionNoOrder(){
-                assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").stream().count(),equalTo((2L)));
-                assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").stream().filter(t->t._1().equals("a"))
-                                .map(t->t._2()).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).singleUnsafe(),
-                                    equalTo((ListX.of(1,2))));
-            }
-            @Test
-            public void groupedFunctionCollectorNoOrder(){
-                assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).stream().count(),equalTo((2L)));
-                assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).stream().filter(t->t._1().equals("a"))
-                        .map(t->t._2()).singleUnsafe(),
-                            equalTo((Arrays.asList(1,2))));
-            }
+
             @Test
             public void zip3NoOrder(){
                 List<Tuple3<Integer,Integer,Character>> list =

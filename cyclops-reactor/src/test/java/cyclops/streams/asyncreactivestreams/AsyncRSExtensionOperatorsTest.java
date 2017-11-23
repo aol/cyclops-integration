@@ -158,7 +158,7 @@ public class AsyncRSExtensionOperatorsTest {
 
     @Test
     public void singleOptionalTest(){
-        assertThat(of(1).single().orElse(-1),equalTo(1));
+        assertThat(of(1).single().orElse(null),equalTo(1));
     }
     @Test
     public void singleOptionalEmpty(){

@@ -118,16 +118,13 @@ public class SyncRSExtensionOperatorsTest {
 	}
 	@Test
 	public void elementAt0(){
-		assertThat(of(1).elementAt(0)._1(),equalTo(1));
+		assertThat(of(1).elementAt(0),equalTo(1));
 	}
 	@Test
 	public void getMultple(){
-		assertThat(of(1,2,3,4,5).elementAt(2)._1(),equalTo(3));
+		assertThat(of(1,2,3,4,5).elementAt(2),equalTo(3));
 	}
-	@Test
-	public void getMultpleStream(){
-		assertThat(of(1,2,3,4,5).elementAt(2)._2().toList(),equalTo(Arrays.asList(1,2,3,4,5)));
-	}
+
 	@Test(expected=NoSuchElementException.class)
 	public void getMultiple1(){
 		of(1).elementAt(1);
@@ -138,35 +135,35 @@ public class SyncRSExtensionOperatorsTest {
 	}
 	@Test
 	public void get0(){
-		assertTrue(of(1).get(0).isPresent());
+		assertTrue(of(1).elementAt(0).isPresent());
 	}
 	@Test
 	public void getAtMultple(){
-		assertThat(of(1,2,3,4,5).get(2).get(),equalTo(3));
+		assertThat(of(1,2,3,4,5).elementAt(2).orElse(-1),equalTo(3));
 	}
 	@Test
 	public void getAt1(){
-		assertFalse(of(1).get(1).isPresent());
+		assertFalse(of(1).elementAt(1).isPresent());
 	}
 	@Test
 	public void elementAtEmpty(){
-		assertFalse(of().get(0).isPresent());
+		assertFalse(of().elementAt(0).isPresent());
 	}
 	@Test
 	public void singleTest(){
-		assertThat(of(1).singleUnsafe(),equalTo(1));
+		assertThat(of(1).single().orElse(null),equalTo(1));
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void singleEmpty(){
-		of().singleUnsafe();
+		of().single().orElse(null);
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void single2(){
-		of(1,2).singleUnsafe();
+		of(1,2).single().orElse(null);
 	}
 	@Test
 	public void singleOptionalTest(){
-		assertThat(of(1).single().get(),equalTo(1));
+		assertThat(of(1).single().orElse(null),equalTo(1));
 	}
 	@Test
 	public void singleOptionalEmpty(){
@@ -408,14 +405,6 @@ public class SyncRSExtensionOperatorsTest {
 
 	}
 
-	@Test
-	public void testCastPast() {
-		of(1, "a", 2, "b", 3, null).cast(Date.class).map(d -> d.getTime());
-
-
-
-
-	}
 
 	@Test
 	public void flatMapCompletableFuture(){
@@ -438,10 +427,7 @@ public class SyncRSExtensionOperatorsTest {
 
 
 	}
-	@Test(expected=ClassCastException.class)
-	public void cast(){
-		of(1,2,3).cast(String.class).collect(Collectors.toList());
-	}
+
 	@Test
 	public void xMatch(){
 		assertTrue(of(1,2,3,5,6,7).xMatch(3, i-> i>4 ));
