@@ -13,7 +13,7 @@ import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Either;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
@@ -26,7 +26,7 @@ import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.ArrayKind;
 import com.aol.cyclops.vavr.hkt.ListKind;
 import com.oath.cyclops.react.Status;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness.future;
 import com.aol.cyclops.vavr.hkt.FutureKind;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
@@ -81,7 +81,7 @@ public class Futures {
          asPublisher(f).subscribe(sub);
     }
     public static <T> Publisher<T> asPublisher(Future<T> f){
-        return ToCyclopsReact.future(f);
+        return ToCyclops.future(f);
     }
     public static <T> AnyMValue<future,T> anyM(Future<T> future) {
         return AnyM.ofValue(future, VavrWitness.future.INSTANCE);
@@ -134,7 +134,7 @@ public class Futures {
      *
      */
     public static <T,W extends WitnessType<W>> FutureT<W, T> liftM(Future<T> opt, W witness) {
-        return FutureT.of(witness.adapter().unit(ToCyclopsReact.future(opt)));
+        return FutureT.of(witness.adapter().unit(ToCyclops.future(opt)));
     }
 
 
@@ -147,7 +147,7 @@ public class Futures {
      * @return First Future to complete
      */
     public static <T> Future<T> anyOf(Future<T>... fts) {
-        return FromCyclopsReact.future(cyclops.async.Future.anyOf(ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.anyOf(ToCyclops.futures(fts)));
 
     }
     /**
@@ -161,7 +161,7 @@ public class Futures {
      */
     public static <T> Future<T> allOf(Future<T>... fts) {
 
-        return FromCyclopsReact.future(cyclops.async.Future.allOf(ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.allOf(ToCyclops.futures(fts)));
     }
     /**
      * Block until a Quorum of results have returned as determined by the provided Predicate
@@ -188,7 +188,7 @@ public class Futures {
     @SafeVarargs
     public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Consumer<Throwable> errorHandler, Future<T>... fts) {
 
-        return FromCyclopsReact.future(cyclops.async.Future.quorum(breakout,errorHandler,ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.quorum(breakout,errorHandler, ToCyclops.futures(fts)));
 
 
     }
@@ -216,7 +216,7 @@ public class Futures {
     @SafeVarargs
     public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Future<T>... fts) {
 
-        return FromCyclopsReact.future(cyclops.async.Future.quorum(breakout,ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.quorum(breakout, ToCyclops.futures(fts)));
 
 
     }
@@ -238,7 +238,7 @@ public class Futures {
      */
     @SafeVarargs
     public static <T> Future<T> firstSuccess(Future<T>... fts) {
-        return FromCyclopsReact.future(cyclops.async.Future.firstSuccess(ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.firstSuccess(ToCyclops.futures(fts)));
 
     }
 
@@ -674,7 +674,7 @@ public class Futures {
      */
     public static <T1, T2, R> Future<R> combine(final Future<? extends T1> f, final Value<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.future(ToCyclopsReact.future(f)
+        return narrow(FromCyclops.future(ToCyclops.future(f)
                 .combine(v, fn)));
     }
     /**
@@ -699,7 +699,7 @@ public class Futures {
      */
     public static <T1, T2, R> Future<R> combine(final Future<? extends T1> f, final Future<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return combine(f,ToCyclopsReact.future(v),fn);
+        return combine(f, ToCyclops.future(v),fn);
     }
 
     /**
@@ -722,7 +722,7 @@ public class Futures {
      */
     public static <T1, T2, R> Future<R> zip(final Future<? extends T1> f, final Iterable<? extends T2> v,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.future(ToCyclopsReact.future(f)
+        return narrow(FromCyclops.future(ToCyclops.future(f)
                 .zip(v, fn)));
     }
 
@@ -747,7 +747,7 @@ public class Futures {
      */
     public static <T1, T2, R> Future<R> zip(final Publisher<? extends T2> p, final Future<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.future(ToCyclopsReact.future(f)
+        return narrow(FromCyclops.future(ToCyclops.future(f)
                 .zipP(p, fn)));
     }
     /**
@@ -1007,7 +1007,7 @@ public class Futures {
         public static <T> MonadPlus<future> monadPlus(){
             Monoid<cyclops.async.Future<T>> mn = Monoids.firstSuccessfulFuture();
             Monoid<FutureKind<T>> m = Monoid.of(widen(mn.zero()), (f, g)-> widen(
-                    mn.apply(ToCyclopsReact.future(f), ToCyclopsReact.future(g))));
+                    mn.apply(ToCyclops.future(f), ToCyclops.future(g))));
 
             Monoid<Higher<future,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
@@ -1089,7 +1089,7 @@ public class Futures {
             return widen(Future.successful(value));
         }
         private static <T,R> FutureKind<R> ap(FutureKind<Function< T, R>> lt, FutureKind<T> list){
-            return widen(ToCyclopsReact.future(lt).combine(ToCyclopsReact.future(list), (a, b)->a.apply(b)));
+            return widen(ToCyclops.future(lt).combine(ToCyclops.future(list), (a, b)->a.apply(b)));
 
         }
         private static <T,R> Higher<future,R> flatMap(Higher<future,T> lt, Function<? super T, ? extends  Higher<future,R>> fn){

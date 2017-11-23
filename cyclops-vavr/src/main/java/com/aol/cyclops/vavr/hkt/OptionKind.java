@@ -4,29 +4,21 @@ import java.util.Optional;
 import java.util.function.Function;
 
 
-import cyclops.companion.Optionals;
-import cyclops.companion.vavr.Futures;
 import cyclops.companion.vavr.Options;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 
 import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.Optionals.OptionalKind;
 import cyclops.control.Eval;
 
-import cyclops.conversion.vavr.ToCyclopsReact;
-import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
-import cyclops.monads.Witness;
 import cyclops.monads.Witness.optional;
 import cyclops.monads.WitnessType;
-import cyclops.monads.transformers.FutureT;
 import cyclops.monads.transformers.OptionalT;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.collection.Iterator;
-import io.vavr.collection.List;
-import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -83,7 +75,7 @@ public interface OptionKind<T> extends Higher<option, T>, Option<T> {
      * @return Option populated with first value from Iterable (Option.empty if Publisher empty)
      */
     static <T> OptionKind<T> fromIterable(final Iterable<T> iterable) {
-        return widen(FromCyclopsReact.option(Eval.fromIterable(iterable)));
+        return widen(FromCyclops.option(Eval.fromIterable(iterable)));
     }
 
     /**

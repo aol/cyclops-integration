@@ -6,11 +6,13 @@ import com.oath.cyclops.types.MonadicValue;
 import com.oath.cyclops.types.Value;
 import com.oath.cyclops.types.Zippable;
 import com.oath.cyclops.types.anyM.transformers.ValueTransformer;
+import com.oath.cyclops.types.foldable.Folds;
 import com.oath.cyclops.types.foldable.To;
 import com.oath.cyclops.types.functor.Transformable;
 import cyclops.async.Future;
 import cyclops.companion.rx2.Functions;
 import cyclops.companion.rx2.Maybes;
+import cyclops.control.Option;
 import cyclops.control.Trampoline;
 import cyclops.function.Function3;
 import cyclops.function.Function4;
@@ -38,10 +40,7 @@ import java.util.stream.Stream;
  *
  * @param <T> Type of data stored inside the nested Maybe(s)
  */
-public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W,T>
-        implements To<MaybeT<W,T>>,
-        Transformable<T>,
-        Filters<T> {
+public final class MaybeT<W extends WitnessType<W>,T> implements To<MaybeT<W,T>>, Transformable<T>,Filters<T>, Folds<T> {
 
     private final AnyM<W,Maybe<T>> run;
 
@@ -60,7 +59,6 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
     /**
      * @return The wrapped AnyM
      */
-    @Override
     public AnyM<W,Maybe<T>> unwrap() {
         return run;
     }
@@ -73,18 +71,6 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
         this.run = run;
     }
 
-
-    @Override @Deprecated (/*DO NOT USE INTERNAL USE ONLY*/)
-    protected <R> MaybeT<W,R> unitAnyM(AnyM<W,? super MonadicValue<R>> traversable) {
-
-        return of((AnyM) traversable);
-    }
-
-    @Override
-    public AnyM<W,? extends MonadicValue<T>> transformerStream() {
-
-        return run.map(m-> Future.fromPublisher(m.toFlowable()));
-    }
 
     @Override
     public MaybeT<W,T> filter(final Predicate<? super T> test) {
@@ -280,17 +266,6 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
                 .map(i -> Maybe.just(i)));
     }
 
-    @Override
-    public <R> MaybeT<W,R> unit(final R value) {
-        return of(run.unit(Maybe.just(value)));
-    }
-
-    @Override
-    public <R> MaybeT<W,R> empty() {
-        return of(run.unit(Maybe.<R>just(null)));
-    }
-
-
 
 
     @Override
@@ -306,155 +281,7 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#combine(com.oath.cyclops.types.Value, java.util.function.BiFunction)
-     */
-    @Override
-    public <T2, R> MaybeT<W,R> combine(Value<? extends T2> app,
-                                       BiFunction<? super T, ? super T2, ? extends R> fn) {
-        return (MaybeT<W,R>)super.combine(app, fn);
-    }
 
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#combine(java.util.function.BinaryOperator, com.oath.cyclops.types.Combiner)
-     */
-    @Override
-    public MaybeT<W, T> zip(BinaryOperator<Zippable<T>> combiner, Zippable<T> app) {
-
-        return (MaybeT<W, T>)super.zip(combiner, app);
-    }
-
-
-
-
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.lang.Iterable, java.util.function.BiFunction)
-     */
-    @Override
-    public <T2, R> MaybeT<W, R> zip(Iterable<? extends T2> iterable,
-                                    BiFunction<? super T, ? super T2, ? extends R> fn) {
-
-        return (MaybeT<W, R>)super.zip(iterable, fn);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.util.function.BiFunction, org.reactivestreams.Publisher)
-     */
-    @Override
-    public <T2, R> MaybeT<W, R> zipP(Publisher<? extends T2> publisher, BiFunction<? super T, ? super T2, ? extends R> fn) {
-
-        return (MaybeT<W, R>)super.zipP(publisher,fn);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.util.reactiveStream.Stream)
-     */
-    @Override
-    public <U> MaybeT<W, Tuple2<T, U>> zipS(Stream<? extends U> other) {
-
-        return (MaybeT)super.zipS(other);
-    }
-
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.lang.Iterable)
-     */
-    @Override
-    public <U> MaybeT<W, Tuple2<T, U>> zip(Iterable<? extends U> other) {
-
-        return (MaybeT)super.zip(other);
-    }
-
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach4(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction, com.oath.cyclops.util.function.QuadFunction)
-     */
-    @Override
-    public <T2, R1, R2, R3, R> MaybeT<W, R> forEach4(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                                     BiFunction<? super T, ? super R1, ? extends MonadicValue<R2>> value2,
-                                                     Function3<? super T, ? super R1, ? super R2, ? extends MonadicValue<R3>> value3,
-                                                     Function4<? super T, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
-
-        return (MaybeT<W, R>)super.forEach4(value1, value2, value3, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach4(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction, com.oath.cyclops.util.function.QuadFunction, com.oath.cyclops.util.function.QuadFunction)
-     */
-    @Override
-    public <T2, R1, R2, R3, R> MaybeT<W, R> forEach4(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                                     BiFunction<? super T, ? super R1, ? extends MonadicValue<R2>> value2,
-                                                     Function3<? super T, ? super R1, ? super R2, ? extends MonadicValue<R3>> value3,
-                                                     Function4<? super T, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                     Function4<? super T, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
-
-        return (MaybeT<W, R>)super.forEach4(value1, value2, value3, filterFunction, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach3(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction)
-     */
-    @Override
-    public <T2, R1, R2, R> MaybeT<W, R> forEach3(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                                 BiFunction<? super T, ? super R1, ? extends MonadicValue<R2>> value2,
-                                                 Function3<? super T, ? super R1, ? super R2, ? extends R> yieldingFunction) {
-
-        return (MaybeT<W, R>)super.forEach3(value1, value2, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach3(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction, com.oath.cyclops.util.function.TriFunction)
-     */
-    @Override
-    public <T2, R1, R2, R> MaybeT<W, R> forEach3(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                                 BiFunction<? super T, ? super R1, ? extends MonadicValue<R2>> value2,
-                                                 Function3<? super T, ? super R1, ? super R2, Boolean> filterFunction,
-                                                 Function3<? super T, ? super R1, ? super R2, ? extends R> yieldingFunction) {
-
-        return (MaybeT<W, R>)super.forEach3(value1, value2, filterFunction, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach2(java.util.function.Function, java.util.function.BiFunction)
-     */
-    @Override
-    public <R1, R> MaybeT<W, R> forEach2(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                         BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
-
-        return (MaybeT<W, R>)super.forEach2(value1, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach2(java.util.function.Function, java.util.function.BiFunction, java.util.function.BiFunction)
-     */
-    @Override
-    public <R1, R> MaybeT<W, R> forEach2(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                         BiFunction<? super T, ? super R1, Boolean> filterFunction,
-                                         BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
-
-        return (MaybeT<W, R>)super.forEach2(value1, filterFunction, yieldingFunction);
-    }
-
-
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#flatMapI(java.util.function.Function)
-     */
-    @Override
-    public <R> MaybeT<W, R> flatMapIterable(Function<? super T, ? extends Iterable<? extends R>> mapper) {
-
-        return (MaybeT<W, R>)super.flatMapIterable(mapper);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#flatMapP(java.util.function.Function)
-     */
-    @Override
-    public <R> MaybeT<W, R> flatMapPublisher(Function<? super T, ? extends Publisher<? extends R>> mapper) {
-
-        return (MaybeT<W, R>)super.flatMapPublisher(mapper);
-    }
     public <T2, R1, R2, R3, R> MaybeT<W,R> forEach4M(Function<? super T, ? extends MaybeT<W,R1>> value1,
                                                      BiFunction<? super T, ? super R1, ? extends MaybeT<W,R2>> value2,
                                                      Function3<? super T, ? super R1, ? super R2, ? extends MaybeT<W,R3>> value3,
@@ -534,53 +361,15 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
         return (MaybeT<W,T>)Filters.super.notNull();
     }
 
-    @Override
-    public <R> MaybeT<W,R> zipWith(Iterable<Function<? super T, ? extends R>> fn) {
-        return (MaybeT<W,R>)super.zipWith(fn);
-    }
 
-    @Override
-    public <R> MaybeT<W,R> zipWithS(Stream<Function<? super T, ? extends R>> fn) {
-        return (MaybeT<W,R>)super.zipWithS(fn);
-    }
+  public Option<T> get(){
+    return stream().takeOne();
+  }
 
-    @Override
-    public <R> MaybeT<W,R> zipWithP(Publisher<Function<? super T, ? extends R>> fn) {
-        return (MaybeT<W,R>)super.zipWithP(fn);
-    }
-
-    @Override
-    public <R> MaybeT<W,R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
-        return (MaybeT<W,R>)super.trampoline(mapper);
-    }
-
-    @Override
-    public <U, R> MaybeT<W,R> zipS(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-        return (MaybeT<W,R>)super.zipS(other,zipper);
-    }
-
-    @Override
-    public <U> MaybeT<W,Tuple2<T, U>> zipP(Publisher<? extends U> other) {
-        return (MaybeT)super.zipP(other);
-    }
-
-    @Override
-    public <S, U> MaybeT<W,Tuple3<T, S, U>> zip3(Iterable<? extends S> second, Iterable<? extends U> third) {
-        return (MaybeT)super.zip3(second,third);
-    }
-
-    @Override
-    public <S, U, R> MaybeT<W,R> zip3(Iterable<? extends S> second, Iterable<? extends U> third, Function3<? super T, ? super S, ? super U, ? extends R> fn3) {
-        return (MaybeT<W,R>)super.zip3(second,third, fn3);
-    }
-
-    @Override
-    public <T2, T3, T4> MaybeT<W,Tuple4<T, T2, T3, T4>> zip4(Iterable<? extends T2> second, Iterable<? extends T3> third, Iterable<? extends T4> fourth) {
-        return (MaybeT)super.zip4(second,third,fourth);
-    }
-
-    @Override
-    public <T2, T3, T4, R> MaybeT<W,R> zip4(Iterable<? extends T2> second, Iterable<? extends T3> third, Iterable<? extends T4> fourth, Function4<? super T, ? super T2, ? super T3, ? super T4, ? extends R> fn) {
-        return (MaybeT<W,R>)super.zip4(second,third,fourth,fn);
-    }
+  public T orElse(T value){
+    return stream().findAny().orElse(value);
+  }
+  public T orElseGet(Supplier<? super T> s){
+    return stream().findAny().orElseGet((Supplier<T>)s);
+  }
 }

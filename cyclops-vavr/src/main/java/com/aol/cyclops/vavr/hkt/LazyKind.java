@@ -7,15 +7,13 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
-import cyclops.companion.vavr.Eithers;
 import cyclops.companion.vavr.Lazys;
-import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
+import cyclops.conversion.vavr.ToCyclops;
 
 import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Eval;
 
-import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.lazy;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.EvalT;
@@ -23,9 +21,7 @@ import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
 import io.vavr.Lazy;
-import io.vavr.collection.Array;
 import io.vavr.collection.Iterator;
-import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -59,7 +55,7 @@ public final  class LazyKind<T> implements Higher<lazy, T> {
         return widen(op.apply(boxed));
     }
     public <T,W extends WitnessType<W>> EvalT<W, T> liftM(Lazy<T> lazy, W witness) {
-        return EvalT.of(witness.adapter().unit(ToCyclopsReact.eval(lazy)));
+        return EvalT.of(witness.adapter().unit(ToCyclops.eval(lazy)));
     }
     /**
      * Convert the raw Higher Kinded Type for MaybeType types into the MaybeType type definition class
@@ -106,7 +102,7 @@ public final  class LazyKind<T> implements Higher<lazy, T> {
     }
     public static <T> LazyKind<T> widen(final Eval<T> eval) {
 
-        return new LazyKind<>(FromCyclopsReact.lazy(eval));
+        return new LazyKind<>(FromCyclops.lazy(eval));
     }
 
     /**
@@ -122,7 +118,7 @@ public final  class LazyKind<T> implements Higher<lazy, T> {
     }
     public static <T> Eval<T> narrowEval(final Higher<lazy, T> eval) {
 
-        return ToCyclopsReact.eval(((LazyKind) eval).boxed);
+        return ToCyclops.eval(((LazyKind) eval).boxed);
 
 }
 

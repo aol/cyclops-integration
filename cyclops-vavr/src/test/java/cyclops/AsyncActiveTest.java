@@ -53,7 +53,7 @@ public class AsyncActiveTest {
                 .groupedT(2)
                .reduce(0, (a, b) -> a + b);
         //[1, 5, 9, 13, 17]
-      
+
     }
 
     @Test

@@ -7,8 +7,7 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Either;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
@@ -723,7 +722,7 @@ public class Arrays {
         }
 
         private static <T,R> ArrayKind<R> ap(ArrayKind<Function< T, R>> lt, ArrayKind<T> list){
-            return widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toArray());
+            return widen(FromCyclops.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toArray());
         }
         private static <T,R> Higher<array,R> flatMap(Higher<array,T> lt, Function<? super T, ? extends  Higher<array,R>> fn){
             return widen(ArrayKind.narrow(lt).flatMap(fn.andThen(ArrayKind::narrow)));

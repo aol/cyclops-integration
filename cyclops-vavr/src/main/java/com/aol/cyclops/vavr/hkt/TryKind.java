@@ -2,29 +2,19 @@ package com.aol.cyclops.vavr.hkt;
 
 
 import com.oath.cyclops.hkt.Higher;
-import cyclops.companion.vavr.Futures;
 import cyclops.companion.vavr.Trys;
-import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.ToCyclopsReact;
-import cyclops.monads.VavrWitness;
-import cyclops.monads.VavrWitness.future;
+import cyclops.conversion.vavr.FromCyclops;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness.tryType;
 import cyclops.monads.WitnessType;
-import cyclops.monads.transformers.FutureT;
 import cyclops.monads.transformers.EitherT;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
-import io.vavr.collection.List;
-import io.vavr.concurrent.Future;
-import io.vavr.concurrent.Promise;
-import io.vavr.control.Option;
 import io.vavr.control.Try;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -51,7 +41,7 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
         return Trys.mapM(this,fn,defs);
     }
     default <W extends WitnessType<W>> EitherT<W,Throwable, T> liftM(W witness) {
-        return EitherT.of(witness.adapter().unit(ToCyclopsReact.toTry(this).asXor()));
+        return EitherT.of(witness.adapter().unit(ToCyclops.toTry(this).asXor()));
     }
     default <R> TryKind<R> fold(Function<? super Try<? super T>,? extends Try<R>> op){
         return widen(op.apply(this));
@@ -88,7 +78,7 @@ public interface TryKind<T> extends Higher<tryType, T>, Try<T> {
     }
     public static <T,X extends Throwable> TryKind<T> widen(final cyclops.control.Try<T,X> newTry) {
 
-        return new Box<>(FromCyclopsReact.toTry(
+        return new Box<>(FromCyclops.toTry(
                 newTry));
     }
 

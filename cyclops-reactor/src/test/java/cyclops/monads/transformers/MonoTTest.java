@@ -88,33 +88,12 @@ public class MonoTTest implements Printable {
 
 
 
-	@Test
-	public void testUnitT() {
-		assertThat(just.unit(20).get(),equalTo(20));
-	}
-
-
-
 
 
 	@Test
 	public void testMapFunctionOfQsuperTQextendsR() {
 		assertThat(just.map(i->i+5).get(),equalTo(15));
 		assertThat(none.map(i->i+5).orElse(1000),equalTo(1000));
-	}
-
-	@Test
-	public void testFlatMap() {
-
-		assertThat(just.flatMapIterable(i-> Maybe.of(i+5)).get(),equalTo(15));
-		assertThat(none.flatMapIterable(i-> Maybe.of(i+5)).orElse(-1),equalTo(-1));
-	}
-
-	@Test
-	public void testWhenFunctionOfQsuperTQextendsRSupplierOfQextendsR() {
-
-		assertThat(just.visit(i->i+1,()->20),equalTo(AnyM.ofNullable(11)));
-		assertThat(none.visit(i->i+1,()->20),equalTo(AnyM.ofNullable(null)));
 	}
 
 
@@ -130,12 +109,6 @@ public class MonoTTest implements Printable {
 
 	}
 
-	@Test
-    public void testConvertTo() {
-        AnyM<Witness.optional,Stream<Integer>> toStream = just.visit(m->Stream.of(m),()->Stream.of());
-
-        assertThat(toStream.stream().flatMap(i->i).collect(Collectors.toList()),equalTo(ListX.of(10)));
-    }
 
 
 
@@ -176,39 +149,6 @@ public class MonoTTest implements Printable {
 
 	}
 
-	@Test
-	public void testFilter() {
-
-		assertFalse(just.filter(i->i<5).isPresent());
-		assertTrue(just.filter(i->i>5).isPresent());
-		assertFalse(none.filter(i->i<5).isPresent());
-		assertFalse(none.filter(i->i>5).isPresent());
-
-	}
-
-	@Test
-	public void testOfType() {
-		assertFalse(just.ofType(String.class).isPresent());
-		assertTrue(just.ofType(Integer.class).isPresent());
-		assertFalse(none.ofType(String.class).isPresent());
-		assertFalse(none.ofType(Integer.class).isPresent());
-	}
-
-	@Test
-	public void testFilterNot() {
-
-		assertTrue(just.filterNot(i->i<5).isPresent());
-		assertFalse(just.filterNot(i->i>5).isPresent());
-		assertFalse(none.filterNot(i->i<5).isPresent());
-		assertFalse(none.filterNot(i->i>5).isPresent());
-	}
-
-	@Test
-	public void testNotNull() {
-		assertTrue(just.notNull().isPresent());
-		assertFalse(none.notNull().isPresent());
-
-	}
 
 
 
@@ -294,19 +234,6 @@ public class MonoTTest implements Printable {
 
 
 
-	@Test
-	public void testWhenFunctionOfQsuperMaybeOfTQextendsR() {
-
-
-	    String match = Maybe.just("data is present")
-	                        .visit(present->"hello", ()->"missing");
-
-
-
-		assertThat(just.visit(s->"hello", ()->"world"),equalTo(AnyM.ofNullable("hello")));
-		//none remains none as visit is on the Mono not the Optional
-		assertThat(none.visit(s->"hello", ()->"world"),equalTo(AnyM.ofNullable(null)));
-	}
 
 
 	@Test
@@ -322,17 +249,6 @@ public class MonoTTest implements Printable {
 		assertThat(none.orElse(20),equalTo(20));
 		assertThat(just.orElse(20),equalTo(10));
 	}
-
-	@Test(expected=RuntimeException.class)
-	public void testOrElseThrow() {
-		none.orElseThrow(()->new RuntimeException());
-	}
-	@Test
-	public void testOrElseThrowSome() {
-
-		assertThat(just.orElseThrow(()->new RuntimeException()),equalTo(10));
-	}
-
 
 
 
@@ -383,7 +299,7 @@ public class MonoTTest implements Printable {
 	}
 	@Test
 	public void testTrampoline() {
-		assertThat(just.trampoline(n ->sum(10,n)).get(),equalTo(65));
+		assertThat(just.trampoline(n ->sum(10,n)).orElse(-1),equalTo(65));
 	}
 
 

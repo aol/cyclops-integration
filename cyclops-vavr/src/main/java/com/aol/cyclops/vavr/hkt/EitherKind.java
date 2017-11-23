@@ -4,7 +4,7 @@ import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.hkt.Higher2;
 import com.oath.cyclops.types.foldable.To;
 import cyclops.companion.vavr.Eithers;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness.either;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.EitherT;
@@ -52,7 +52,7 @@ public interface EitherKind<L,R> extends Either<L,R>,To<EitherKind<L,R>>,
         return Nested.of(widen(bimap(l->l,r->fn.apply(r))), Eithers.Instances.definitions(), defs);
     }
     default <W extends WitnessType<W>> EitherT<W, L,R> liftM(W witness) {
-        return EitherT.of(witness.adapter().unit(ToCyclopsReact.either(this)));
+        return EitherT.of(witness.adapter().unit(ToCyclops.either(this)));
     }
     public static <L1, R1> Either<L1, R1> right(R1 right) {
         return Either.right(right);

@@ -77,7 +77,7 @@ public class SingleTTest implements Printable {
 
 	@Test
 	public void testOfNullable() {
-		assertFalse(Maybe.ofNullable(null).isPresent());
+		assertFalse(Maybe.ofNullable(null).stream().size()>0);
 		assertThat(Maybe.ofNullable(1),equalTo(Maybe.of(1)));
 
 	}
@@ -87,12 +87,6 @@ public class SingleTTest implements Printable {
 		assertThat(Maybe.ofNullable(1),equalTo(Maybe.narrow(Maybe.of(1))));
 	}
 
-
-
-	@Test
-	public void testUnitT() {
-		assertThat(just.unit(20).get(),equalTo(20));
-	}
 
 
 
@@ -111,13 +105,6 @@ public class SingleTTest implements Printable {
 		assertThat(none.flatMap(i-> Maybe.of(i+5)).orElse(-1),equalTo(-1));
 	}
 
-	@Test
-	public void testWhenFunctionOfQsuperTQextendsRSupplierOfQextendsR() {
-
-		assertThat(just.visit(i->i+1,()->20),equalTo(AnyM.ofNullable(11)));
-		assertThat(none.visit(i->i+1,()->20),equalTo(AnyM.ofNullable(null)));
-	}
-
 
 
 	@Test
@@ -130,13 +117,6 @@ public class SingleTTest implements Printable {
 	public void testOfSupplierOfT() {
 
 	}
-
-	@Test
-    public void testConvertTo() {
-        AnyM<Witness.optional,Stream<Integer>> toStream = just.visit(m->Stream.of(m),()->Stream.of());
-
-        assertThat(toStream.stream().flatMap(i->i).collect(Collectors.toList()),equalTo(ListX.of(10)));
-    }
 
 
 
@@ -180,34 +160,34 @@ public class SingleTTest implements Printable {
 	@Test
 	public void testFilter() {
 
-		assertFalse(just.filter(i->i<5).isPresent());
-		assertTrue(just.filter(i->i>5).isPresent());
-		assertFalse(none.filter(i->i<5).isPresent());
-		assertFalse(none.filter(i->i>5).isPresent());
+		assertFalse(just.filter(i->i<5).stream().size()>0);
+		assertTrue(just.filter(i->i>5).stream().size()>0);
+		assertFalse(none.filter(i->i<5).stream().size()>0);
+		assertFalse(none.filter(i->i>5).stream().size()>0);
 
 	}
 
 	@Test
 	public void testOfType() {
-		assertFalse(just.ofType(String.class).isPresent());
-		assertTrue(just.ofType(Integer.class).isPresent());
-		assertFalse(none.ofType(String.class).isPresent());
-		assertFalse(none.ofType(Integer.class).isPresent());
+		assertFalse(just.ofType(String.class).stream().size()>0);
+		assertTrue(just.ofType(Integer.class).stream().size()>0);
+		assertFalse(none.ofType(String.class).stream().size()>0);
+		assertFalse(none.ofType(Integer.class).stream().size()>0);
 	}
 
 	@Test
 	public void testFilterNot() {
 
-		assertTrue(just.filterNot(i->i<5).isPresent());
-		assertFalse(just.filterNot(i->i>5).isPresent());
-		assertFalse(none.filterNot(i->i<5).isPresent());
-		assertFalse(none.filterNot(i->i>5).isPresent());
+		assertTrue(just.filterNot(i->i<5).stream().size()>0);
+		assertFalse(just.filterNot(i->i>5).stream().size()>0);
+		assertFalse(none.filterNot(i->i<5).stream().size()>0);
+		assertFalse(none.filterNot(i->i>5).stream().size()>0);
 	}
 
 	@Test
 	public void testNotNull() {
-		assertTrue(just.notNull().isPresent());
-		assertFalse(none.notNull().isPresent());
+		assertTrue(just.notNull().stream().size()>0);
+		assertFalse(none.notNull().stream().size()>0);
 
 	}
 
@@ -295,20 +275,6 @@ public class SingleTTest implements Printable {
 
 
 
-	@Test
-	public void testWhenFunctionOfQsuperMaybeOfTQextendsR() {
-
-
-	    String match = Maybe.just("data is present")
-	                        .visit(present->"hello", ()->"missing");
-
-
-
-		assertThat(just.visit(s->"hello", ()->"world"),equalTo(AnyM.ofNullable("hello")));
-		//none remains none as visit is on the Single not the Optional
-		assertThat(none.visit(s->"hello", ()->"world"),equalTo(AnyM.ofNullable(null)));
-	}
-
 
 	@Test
 	public void testOrElseGet() {
@@ -323,18 +289,6 @@ public class SingleTTest implements Printable {
 		assertThat(none.orElse(20),equalTo(20));
 		assertThat(just.orElse(20),equalTo(10));
 	}
-
-	@Test(expected=RuntimeException.class)
-	public void testOrElseThrow() {
-		none.orElseThrow(()->new RuntimeException());
-	}
-	@Test
-	public void testOrElseThrowSome() {
-
-		assertThat(just.orElseThrow(()->new RuntimeException()),equalTo(10));
-	}
-
-
 
 
 
@@ -384,7 +338,7 @@ public class SingleTTest implements Printable {
 	}
 	@Test
 	public void testTrampoline() {
-		assertThat(just.trampoline(n ->sum(10,n)).get(),equalTo(65));
+		assertThat(just.trampoline(n ->sum(10,n)).orElse(-1),equalTo(65));
 	}
 
 

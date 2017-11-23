@@ -7,8 +7,7 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import cyclops.collections.vavr.VavrListX;
@@ -727,7 +726,7 @@ public class Lists {
             return new Unfoldable<list>() {
                 @Override
                 public <R, T> Higher<list, R> unfold(T b, Function<? super T, cyclops.control.Option<Tuple2<R, T>>> fn) {
-                    Function<? super T, Option<io.vavr.Tuple2<? extends R, ? extends T>>> f2 = fn.andThen(a -> FromCyclopsReact.option(a).map(t -> FromCyclopsReact.tuple(t)));
+                    Function<? super T, Option<io.vavr.Tuple2<? extends R, ? extends T>>> f2 = fn.andThen(a -> FromCyclops.option(a).map(t -> FromCyclops.tuple(t)));
                     return widen(List.<T,R>unfoldRight(b,f2));
                 }
             };

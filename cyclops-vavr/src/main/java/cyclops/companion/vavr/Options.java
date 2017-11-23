@@ -11,7 +11,7 @@ import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Either;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
@@ -22,7 +22,7 @@ import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.FutureKind;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
 import com.aol.cyclops.vavr.hkt.OptionKind;
@@ -558,7 +558,7 @@ public class Options {
      */
     public static <T1, T2, R> Option<R> combine(final Option<? extends T1> f, final Value<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.option(ToCyclopsReact.maybe(f)
+        return narrow(FromCyclops.option(ToCyclops.maybe(f)
                 .combine(v, fn)));
     }
     /**
@@ -583,7 +583,7 @@ public class Options {
      */
     public static <T1, T2, R> Option<R> combine(final Option<? extends T1> f, final Option<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return combine(f,ToCyclopsReact.maybe(v),fn);
+        return combine(f, ToCyclops.maybe(v),fn);
     }
 
     /**
@@ -606,7 +606,7 @@ public class Options {
      */
     public static <T1, T2, R> Option<R> zip(final Option<? extends T1> f, final Iterable<? extends T2> v,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.option(ToCyclopsReact.maybe(f)
+        return narrow(FromCyclops.option(ToCyclops.maybe(f)
                 .zip(v, fn)));
     }
 
@@ -631,7 +631,7 @@ public class Options {
      */
     public static <T1, T2, R> Option<R> zip(final Publisher<? extends T2> p, final Option<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.option(ToCyclopsReact.maybe(f)
+        return narrow(FromCyclops.option(ToCyclops.maybe(f)
                 .zipP(p, fn)));
     }
     /**
@@ -967,7 +967,7 @@ public class Options {
             return widen(Option.of(value));
         }
         private static <T,R> OptionKind<R> ap(OptionKind<Function< T, R>> lt, OptionKind<T> option){
-            return widen(FromCyclopsReact.option(ToCyclopsReact.maybe(lt).combine(ToCyclopsReact.maybe(option), (a, b)->a.apply(b))));
+            return widen(FromCyclops.option(ToCyclops.maybe(lt).combine(ToCyclops.maybe(option), (a, b)->a.apply(b))));
 
         }
         private static <T,R> Higher<option,R> flatMap(Higher<option,T> lt, Function<? super T, ? extends  Higher<option,R>> fn){
@@ -982,7 +982,7 @@ public class Options {
                                                                               Higher<option, T> ds){
 
             Option<T> option = OptionKind.narrow(ds);
-            Higher<C2, OptionKind<R>> res = ToCyclopsReact.maybe(option).visit(some-> applicative.map(m-> OptionKind.of(m), fn.apply(some)),
+            Higher<C2, OptionKind<R>> res = ToCyclops.maybe(option).visit(some-> applicative.map(m-> OptionKind.of(m), fn.apply(some)),
                     ()->applicative.unit(widen(OptionKind.<R>none())));
 
             return OptionKind.widen2(res);

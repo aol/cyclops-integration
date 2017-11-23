@@ -3,12 +3,10 @@ package com.aol.cyclops.vavr.adapter;
 
 import com.oath.cyclops.types.anyM.AnyMValue;
 import com.oath.cyclops.types.extensability.ValueAdapter;
-import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.Vavr;
-import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
-import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
 import io.vavr.control.Option;
@@ -23,7 +21,7 @@ public class OptionAdapter implements ValueAdapter<option> {
 
 
     public <T> cyclops.control.Option<T> get(AnyMValue<option,T> t){
-        return ToCyclopsReact.option(option(t));
+        return ToCyclops.option(option(t));
     }
     @Override
     public <T> Iterable<T> toIterable(AnyM<option, T> t) {
@@ -34,7 +32,7 @@ public class OptionAdapter implements ValueAdapter<option> {
     public <T, R> AnyM<option, R> ap(AnyM<option,? extends Function<? super T,? extends R>> fn, AnyM<option, T> apply) {
         Option<T> f = option(apply);
         Option<? extends Function<? super T, ? extends R>> fnF = option(fn);
-        Option<R> res = FromCyclopsReact.option(ToCyclopsReact.maybe(fnF).combine(ToCyclopsReact.maybe(f), (a, b) -> a.apply(b)));
+        Option<R> res = FromCyclops.option(ToCyclops.maybe(fnF).combine(ToCyclops.maybe(f), (a, b) -> a.apply(b)));
         return Vavr.option(res);
 
     }
@@ -64,7 +62,7 @@ public class OptionAdapter implements ValueAdapter<option> {
 
     @Override
     public <T> AnyM<option, T> unitIterable(Iterable<T> it)  {
-        return Vavr.option(FromCyclopsReact.option(Maybe.fromIterable(it)));
+        return Vavr.option(FromCyclops.option(Maybe.fromIterable(it)));
     }
 
     @Override

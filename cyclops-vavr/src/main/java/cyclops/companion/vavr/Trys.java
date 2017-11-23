@@ -6,7 +6,6 @@ import cyclops.monads.VavrWitness.queue;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
-import io.vavr.control.*;
 import com.aol.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
@@ -14,7 +13,7 @@ import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Either;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
@@ -26,10 +25,9 @@ import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.TryKind;
 import cyclops.companion.Monoids;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
-import com.oath.cyclops.types.Value;
 import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
@@ -538,7 +536,7 @@ public class Trys {
      */
     public static <T1, T2, R> Try<R> combine(final Try<? extends T1> f, final MonadicValue<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-      return combine(f,FromCyclopsReact.toTry(v),fn);
+      return combine(f, FromCyclops.toTry(v),fn);
     }
     /**
      * Combine an Try with the provided Try using the supplied BiFunction
@@ -562,9 +560,9 @@ public class Trys {
      */
     public static <T1, T2, R> Try<R> combine(final Try<? extends T1> f, final Try<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-      cyclops.control.Try<? extends R, Throwable> x = ToCyclopsReact.toTry(f)
-        .zip(ToCyclopsReact.toTry(v), fn);
-      return narrow(FromCyclopsReact.toTry(x));
+      cyclops.control.Try<? extends R, Throwable> x = ToCyclops.toTry(f)
+        .zip(ToCyclops.toTry(v), fn);
+      return narrow(FromCyclops.toTry(x));
 
     }
 
@@ -591,7 +589,7 @@ public class Trys {
      */
     public static <T1, T2, R> Try<R> zip(final Publisher<? extends T2> p, final Try<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.toTry(ToCyclopsReact.toTry(f)
+        return narrow(FromCyclops.toTry(ToCyclops.toTry(f)
                 .zip(cyclops.control.Try.fromPublisher(p), fn)));
     }
     /**
@@ -851,7 +849,7 @@ public class Trys {
         public static <T> MonadPlus<tryType> monadPlus(){
             Monoid<cyclops.control.Try<T,Throwable>> mn = Monoids.firstTrySuccess(new NoSuchElementException());
             Monoid<TryKind<T>> m = Monoid.of(widen(mn.zero()), (f, g)-> widen(
-                    mn.apply(ToCyclopsReact.toTry(f), ToCyclopsReact.toTry(g))));
+                    mn.apply(ToCyclops.toTry(f), ToCyclops.toTry(g))));
 
             Monoid<Higher<tryType,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
@@ -928,7 +926,7 @@ public class Trys {
             return widen(Try.success(value));
         }
         private static <T,R> TryKind<R> ap(TryKind<Function< T, R>> lt, TryKind<T> list){
-            return widen(ToCyclopsReact.toTry(lt).zip(ToCyclopsReact.toTry(list), (a, b)->a.apply(b)));
+            return widen(ToCyclops.toTry(lt).zip(ToCyclops.toTry(list), (a, b)->a.apply(b)));
 
         }
         private static <T,R> Higher<tryType,R> flatMap(Higher<tryType,T> lt, Function<? super T, ? extends  Higher<tryType,R>> fn){

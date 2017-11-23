@@ -13,8 +13,7 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Either;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import com.oath.cyclops.hkt.Higher;
 import cyclops.function.Function3;
@@ -25,7 +24,7 @@ import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 
 import com.aol.cyclops.vavr.hkt.EitherKind;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.ToCyclops;
 import com.aol.cyclops.vavr.hkt.LazyKind;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.types.Value;
@@ -93,7 +92,7 @@ public class Lazys {
      *
      */
     public static <T,W extends WitnessType<W>> EvalT<W, T> liftM(Lazy<T> opt, W witness) {
-        return EvalT.of(witness.adapter().unit(ToCyclopsReact.eval(opt)));
+        return EvalT.of(witness.adapter().unit(ToCyclops.eval(opt)));
     }
     /**
      * Perform a For Comprehension over a Lazy, accepting 3 generating function.
@@ -126,20 +125,20 @@ public class Lazys {
                                                                Function3<? super T1, ? super R1, ? super R2, ? extends Lazy<R3>> value4,
                                                                Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
-        Eval<R> res = ToCyclopsReact.eval(value1).flatMap(in -> {
+        Eval<R> res = ToCyclops.eval(value1).flatMap(in -> {
 
             Lazy<R1> a = value2.apply(in);
-            return ToCyclopsReact.eval(a).flatMap(ina -> {
+            return ToCyclops.eval(a).flatMap(ina -> {
                 Lazy<R2> b = value3.apply(in, ina);
-                return ToCyclopsReact.eval(b).flatMap(inb -> {
+                return ToCyclops.eval(b).flatMap(inb -> {
                     Lazy<R3> c = value4.apply(in, ina, inb);
-                    return ToCyclopsReact.eval(c).map(in2 -> yieldingFunction.apply(in, ina, inb, in2));
+                    return ToCyclops.eval(c).map(in2 -> yieldingFunction.apply(in, ina, inb, in2));
                 });
 
             });
 
         });
-        return FromCyclopsReact.eval(res);
+        return FromCyclops.eval(res);
     }
 
 
@@ -172,18 +171,18 @@ public class Lazys {
                                                        BiFunction<? super T1, ? super R1, ? extends Lazy<R2>> value3,
                                                        Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
-        Eval<? extends R> res = ToCyclopsReact.eval(value1).flatMap(in -> {
+        Eval<? extends R> res = ToCyclops.eval(value1).flatMap(in -> {
 
             Lazy<R1> a = value2.apply(in);
-            return ToCyclopsReact.eval(a).flatMap(ina -> {
+            return ToCyclops.eval(a).flatMap(ina -> {
                 Lazy<R2> b = value3.apply(in, ina);
-                return ToCyclopsReact.eval(b).map(in2 -> yieldingFunction.apply(in, ina, in2));
+                return ToCyclops.eval(b).map(in2 -> yieldingFunction.apply(in, ina, in2));
             });
 
 
         });
 
-        return FromCyclopsReact.eval(Eval.narrow(res));
+        return FromCyclops.eval(Eval.narrow(res));
 
     }
 
@@ -212,14 +211,14 @@ public class Lazys {
     public static <T, R1, R> Lazy<R> forEach2(Lazy<? extends T> value1, Function<? super T, Lazy<R1>> value2,
                                               BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
 
-        Eval<? extends R> res = ToCyclopsReact.eval(value1).flatMap(in -> {
+        Eval<? extends R> res = ToCyclops.eval(value1).flatMap(in -> {
 
             Lazy<R1> a = value2.apply(in);
-            return ToCyclopsReact.eval(a).map(in2 -> yieldingFunction.apply(in, in2));
+            return ToCyclops.eval(a).map(in2 -> yieldingFunction.apply(in, in2));
         });
 
 
-        return FromCyclopsReact.eval(Eval.narrow(res));
+        return FromCyclops.eval(Eval.narrow(res));
     }
 
 
@@ -293,7 +292,7 @@ public class Lazys {
      * @return  Lazy with a List of values
      */
     public static <T> Lazy<ReactiveSeq<T>> sequence(final java.util.stream.Stream<Lazy<T>> opts) {
-        return FromCyclopsReact.eval(AnyM.sequence(opts.map(ToCyclopsReact::eval).map(AnyM::fromEval), Witness.eval.INSTANCE)
+        return FromCyclops.eval(AnyM.sequence(opts.map(ToCyclops::eval).map(AnyM::fromEval), Witness.eval.INSTANCE)
                 .map(ReactiveSeq::fromStream)
                 .to(Witness::eval));
 
@@ -394,7 +393,7 @@ public class Lazys {
      */
     public static <T1, T2, R> Lazy<R> combine(final Lazy<? extends T1> f, final Value<? extends T2> v,
                                               final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.eval(ToCyclopsReact.eval(f)
+        return narrow(FromCyclops.eval(ToCyclops.eval(f)
                 .combine(v, fn)));
     }
     /**
@@ -419,7 +418,7 @@ public class Lazys {
      */
     public static <T1, T2, R> Lazy<R> combine(final Lazy<? extends T1> f, final Lazy<? extends T2> v,
                                               final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return combine(f,ToCyclopsReact.eval(v),fn);
+        return combine(f, ToCyclops.eval(v),fn);
     }
 
     /**
@@ -442,7 +441,7 @@ public class Lazys {
      */
     public static <T1, T2, R> Lazy<R> zip(final Lazy<? extends T1> f, final Iterable<? extends T2> v,
                                           final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.eval(ToCyclopsReact.eval(f)
+        return narrow(FromCyclops.eval(ToCyclops.eval(f)
                 .zip(v, fn)));
     }
 
@@ -467,7 +466,7 @@ public class Lazys {
      */
     public static <T1, T2, R> Lazy<R> zip(final Publisher<? extends T2> p, final Lazy<? extends T1> f,
                                           final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.eval(ToCyclopsReact.eval(f)
+        return narrow(FromCyclops.eval(ToCyclops.eval(f)
                 .zipP(p, fn)));
     }
     /**
@@ -801,7 +800,7 @@ public class Lazys {
             return widen(Lazy.of(()->value));
         }
         private static <T,R> LazyKind<R> ap(LazyKind<Function< T, R>> lt, LazyKind<T> lazy){
-            return widen(FromCyclopsReact.lazy(ToCyclopsReact.eval(lt.narrow()).combine(ToCyclopsReact.eval(lazy.narrow()), (a, b)->a.apply(b))));
+            return widen(FromCyclops.lazy(ToCyclops.eval(lt.narrow()).combine(ToCyclops.eval(lazy.narrow()), (a, b)->a.apply(b))));
 
         }
         private static <T,R> Higher<lazy,R> flatMap(Higher<lazy,T> lt, Function<? super T, ? extends  Higher<lazy,R>> fn){

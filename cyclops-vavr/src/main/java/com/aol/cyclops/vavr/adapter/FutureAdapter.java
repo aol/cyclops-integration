@@ -3,20 +3,16 @@ package com.aol.cyclops.vavr.adapter;
 
 import com.oath.cyclops.types.anyM.AnyMValue;
 import com.oath.cyclops.types.extensability.ValueAdapter;
-import cyclops.control.Option;
-import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.Vavr;
 
-import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.future;
-import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
 
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
-import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 
 import java.util.function.Function;
@@ -29,7 +25,7 @@ public class FutureAdapter implements ValueAdapter<future> {
 
     @Override
     public <T> cyclops.control.Option<T> get(AnyMValue<future,T> t){
-       return ToCyclopsReact.option(future(t).getValue().flatMap(tr -> tr.isFailure() ? io.vavr.control.Option.<T>none() : io.vavr.control.Option.some(tr.get())));
+       return ToCyclops.option(future(t).getValue().flatMap(tr -> tr.isFailure() ? io.vavr.control.Option.<T>none() : io.vavr.control.Option.some(tr.get())));
     }
     @Override
     public <T> Iterable<T> toIterable(AnyM<future, T> t) {
@@ -40,7 +36,7 @@ public class FutureAdapter implements ValueAdapter<future> {
     public <T, R> AnyM<future, R> ap(AnyM<future,? extends Function<? super T,? extends R>> fn, AnyM<future, T> apply) {
         Future<T> f = future(apply);
         Future<? extends Function<? super T, ? extends R>> fnF = future(fn);
-        Future<R> res = FromCyclopsReact.future(ToCyclopsReact.future(fnF).combine(ToCyclopsReact.future(f), (a, b) -> a.apply(b)));
+        Future<R> res = FromCyclops.future(ToCyclops.future(fnF).combine(ToCyclops.future(f), (a, b) -> a.apply(b)));
         return Vavr.future(res);
 
     }
@@ -71,7 +67,7 @@ public class FutureAdapter implements ValueAdapter<future> {
 
     @Override
     public <T> AnyM<future, T> unitIterable(Iterable<T> it)  {
-        return Vavr.future(FromCyclopsReact.future(Maybe.fromIterable(it)));
+        return Vavr.future(FromCyclops.future(Maybe.fromIterable(it)));
     }
 
     @Override

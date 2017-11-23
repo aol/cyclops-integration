@@ -1,6 +1,5 @@
 package cyclops.companion.vavr;
 
-import cyclops.collections.mutable.ListX;
 import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
@@ -13,7 +12,7 @@ import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
 import cyclops.control.Either;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
@@ -722,7 +721,7 @@ public class Queues {
         }
 
         private static <T,R> QueueKind<R> ap(QueueKind<Function< T, R>> lt, QueueKind<T> list){
-            return widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toQueue());
+            return widen(FromCyclops.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toQueue());
         }
         private static <T,R> Higher<queue,R> flatMap(Higher<queue,T> lt, Function<? super T, ? extends  Higher<queue,R>> fn){
             return widen(QueueKind.narrow(lt).flatMap(fn.andThen(QueueKind::narrow)));

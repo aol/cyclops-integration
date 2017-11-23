@@ -1,29 +1,23 @@
 package com.aol.cyclops.vavr.hkt;
 
 
-import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-import cyclops.companion.vavr.Arrays;
 import cyclops.companion.vavr.Futures;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 
 import com.oath.cyclops.hkt.Higher;
 
-import cyclops.conversion.vavr.ToCyclopsReact;
-import cyclops.monads.VavrWitness;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness.future;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.FutureT;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
-import io.vavr.collection.Array;
-import io.vavr.collection.List;
-import io.vavr.collection.Queue;
 import io.vavr.concurrent.Future;
 import io.vavr.concurrent.Promise;
 import io.vavr.control.Option;
@@ -55,7 +49,7 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
         return Futures.mapM(this,fn,defs);
     }
     default <W extends WitnessType<W>> FutureT<W, T> liftM(W witness) {
-        return FutureT.of(witness.adapter().unit(ToCyclopsReact.future(this)));
+        return FutureT.of(witness.adapter().unit(ToCyclops.future(this)));
     }
     default <R> FutureKind<R> fold(Function<? super Future<? super T>,? extends Future<R>> op){
         return widen(op.apply(this));
@@ -91,7 +85,7 @@ public interface FutureKind<T> extends Higher<future, T>, Future<T> {
     }
     public static <T> FutureKind<T> widen(final cyclops.async.Future<T> future) {
 
-        return widen(FromCyclopsReact.future(future));
+        return widen(FromCyclops.future(future));
     }
     public static <T> FutureKind<T> promise(){
         Promise<T> result =  Promise.make();

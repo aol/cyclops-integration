@@ -2,18 +2,16 @@ package cyclops.monads.transformers.reactor;
 
 
 import java.util.Iterator;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
+import java.util.concurrent.TimeUnit;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 
+import com.oath.cyclops.types.foldable.Folds;
 import com.oath.cyclops.types.foldable.To;
 import com.oath.cyclops.types.functor.Transformable;
 import cyclops.async.Future;
+import cyclops.control.Option;
 import cyclops.control.Trampoline;
 import com.oath.cyclops.types.*;
 import cyclops.data.tuple.Tuple;
@@ -40,29 +38,34 @@ import reactor.core.publisher.Mono;
  *
  * @param <T> Type of data stored inside the nested Mono(s)
  */
-public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,T>
-        implements To<MonoT<W,T>>,
-        Transformable<T>,
-        Filters<T> {
+public final class MonoT<W extends WitnessType<W>,T> implements To<MonoT<W,T>>, Transformable<T>, Filters<T>, Folds<T> {
 
     private final AnyM<W,Mono<T>> run;
 
-    @Override
+
     public Iterator<T> iterator() {
         return stream().iterator();
     }
 
-    @Override
+
     public ReactiveSeq<T> stream() {
         return run.stream().map(Mono::block);
     }
 
+    public Option<T> get(){
+    return stream().takeOne();
+  }
 
+    public T orElse(T value){
+    return stream().findAny().orElse(value);
+  }
+    public T orElseGet(Supplier<? super T> s){
+    return stream().findAny().orElseGet((Supplier<T>)s);
+  }
 
     /**
      * @return The wrapped AnyM
      */
-    @Override
     public AnyM<W,Mono<T>> unwrap() {
         return run;
     }
@@ -76,13 +79,8 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
     }
 
 
-    @Override @Deprecated (/*DO NOT USE INTERNAL USE ONLY*/)
-    protected <R> MonoT<W,R> unitAnyM(AnyM<W,? super MonadicValue<R>> traversable) {
 
-        return of((AnyM) traversable);
-    }
 
-    @Override
     public AnyM<W,? extends MonadicValue<T>> transformerStream() {
 
         return run.map(m-> Future.fromPublisher(m));
@@ -99,7 +97,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
      * Peek at the current value of the Mono
      * <pre>
      * {@code
-     *    MonoWT.of(AnyM.fromStream(Arrays.asMonoW(10))
+     *    MonoT.of(AnyM.fromStream(Arrays.asMonoW(10))
      *             .peek(System.out::println);
      *
      *     //prints 10
@@ -107,7 +105,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
      * </pre>
      *
      * @param peek  Consumer to accept current value of Mono
-     * @return MonoWT with peek call
+     * @return MonoT with peek call
      */
     @Override
     public MonoT<W,T> peek(final Consumer<? super T> peek) {
@@ -123,16 +121,16 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
      *
      * <pre>
      * {@code
-     *  MonoWT.of(AnyM.fromStream(Arrays.asMonoW(10))
+     *  MonoT.of(AnyM.fromStream(Arrays.asMonoW(10))
      *             .map(t->t=t+1);
      *
      *
-     *  //MonoWT<AnyMSeq<Stream<Mono[11]>>>
+     *  //MonoT<AnyMSeq<Stream<Mono[11]>>>
      * }
      * </pre>
      *
      * @param f Mapping function for the wrapped Mono
-     * @return MonoWT that applies the map function to the wrapped Mono
+     * @return MonoT that applies the map function to the wrapped Mono
      */
     @Override
     public <B> MonoT<W,B> map(final Function<? super T, ? extends B> f) {
@@ -164,90 +162,33 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
 
 
 
-    /**
-     * Lift a function into one that accepts and returns an MonoWT
-     * This allows multiple monad types to add functionality to existing function and methods
-     *
-     * e.g. to add list handling  / iteration (via Mono) and iteration (via Stream) to an existing function
-     * <pre>
-     * {@code
-    Function<Integer,Integer> add2 = i -> i+2;
-    Function<MonoWT<Integer>, MonoWT<Integer>> optTAdd2 = MonoWT.lift(add2);
 
-    Stream<Integer> withNulls = Stream.of(1,2,3);
-    AnyMSeq<Integer> reactiveStream = AnyM.fromStream(withNulls);
-    AnyMSeq<Mono<Integer>> streamOpt = reactiveStream.map(Mono::completedMono);
-    List<Integer> results = optTAdd2.apply(MonoWT.of(streamOpt))
-    .unwrap()
-    .<Stream<Mono<Integer>>>unwrap()
-    .map(Mono::join)
-    .collect(Collectors.toList());
-
-
-    //Mono.completedMono(List[3,4]);
-     *
-     *
-     * }</pre>
-     *
-     *
-     * @param fn Function to enhance with functionality from Mono and another monad type
-     * @return Function that accepts and returns an MonoWT
-     */
     public static <W extends WitnessType<W>,U, R> Function<MonoT<W,U>, MonoT<W,R>> lift(final Function<? super U, ? extends R> fn) {
         return optTu -> optTu.map(input -> fn.apply(input));
     }
 
-    /**
-     * Lift a BiFunction into one that accepts and returns  MonoWTs
-     * This allows multiple monad types to add functionality to existing function and methods
-     *
-     * e.g. to add list handling / iteration (via Mono), iteration (via Stream)  and asynchronous execution (Mono)
-     * to an existing function
-     *
-     * <pre>
-     * {@code
-    BiFunction<Integer,Integer,Integer> add = (a,b) -> a+b;
-    BiFunction<MonoWT<Integer>,MonoWT<Integer>,MonoWT<Integer>> optTAdd2 = MonoWT.lift2(add);
 
-    Stream<Integer> withNulls = Stream.of(1,2,3);
-    AnyMSeq<Integer> reactiveStream = AnyM.ofMonad(withNulls);
-    AnyMSeq<Mono<Integer>> streamOpt = reactiveStream.map(Mono::completedMono);
-
-    Mono<Mono<Integer>> two = Mono.completedMono(Mono.completedMono(2));
-    AnyMSeq<Mono<Integer>> Mono=  AnyM.fromMonoW(two);
-    List<Integer> results = optTAdd2.apply(MonoWT.of(streamOpt),MonoWT.of(Mono))
-    .unwrap()
-    .<Stream<Mono<Integer>>>unwrap()
-    .map(Mono::join)
-    .collect(Collectors.toList());
-
-    //Mono.completedMono(List[3,4,5]);
-    }
-     </pre>
-     * @param fn BiFunction to enhance with functionality from Mono and another monad type
-     * @return Function that accepts and returns an MonoWT
-     */
     public static <W extends WitnessType<W>, U1,  U2, R> BiFunction<MonoT<W,U1>, MonoT<W,U2>, MonoT<W,R>> lift2(
             final BiFunction<? super U1, ? super U2, ? extends R> fn) {
         return (optTu1, optTu2) -> optTu1.flatMapT(input1 -> optTu2.map(input2 -> fn.apply(input1, input2)));
     }
 
     /**
-     * Construct an MonoWT from an AnyM that contains a monad type that contains type other than Mono
+     * Construct an MonoT from an AnyM that contains a monad type that contains type other than Mono
      * The values in the underlying monad will be mapped to Mono<A>
      *
      * @param anyM AnyM that doesn't contain a monad wrapping an Mono
-     * @return MonoWT
+     * @return MonoT
      */
     public static <W extends WitnessType<W>,A> MonoT<W,A> fromAnyM(final AnyM<W,A> anyM) {
         return of(anyM.map(Mono::just));
     }
 
     /**
-     * Construct an MonoWT from an AnyM that wraps a monad containing  MonoWs
+     * Construct an MonoT from an AnyM that wraps a monad containing  MonoWs
      *
      * @param monads AnyM that contains a monad wrapping an Mono
-     * @return MonoWT
+     * @return MonoT
      */
     public static <W extends WitnessType<W>,A> MonoT<W,A> of(final AnyM<W,Mono<A>> monads) {
         return new MonoT<>(
@@ -272,18 +213,6 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
                 .map(i -> Mono.just(i)));
     }
 
-    @Override
-    public <R> MonoT<W,R> unit(final R value) {
-        return of(run.unit(Mono.just(value)));
-    }
-
-    @Override
-    public <R> MonoT<W,R> empty() {
-        return of(run.unit(Mono.<R>empty()));
-    }
-
-
-
 
     @Override
     public int hashCode() {
@@ -298,153 +227,7 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#combine(com.oath.cyclops.types.Value, java.util.function.BiFunction)
-     */
-    @Override
-    public <T2, R> MonoT<W,R> combine(Value<? extends T2> app,
-                                        BiFunction<? super T, ? super T2, ? extends R> fn) {
-        return (MonoT<W,R>)super.combine(app, fn);
-    }
 
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#combine(java.util.function.BinaryOperator, com.oath.cyclops.types.Combiner)
-     */
-    @Override
-    public MonoT<W, T> zip(BinaryOperator<Zippable<T>> combiner, Zippable<T> app) {
-
-        return (MonoT<W, T>)super.zip(combiner, app);
-    }
-
-
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.lang.Iterable, java.util.function.BiFunction)
-     */
-    @Override
-    public <T2, R> MonoT<W, R> zip(Iterable<? extends T2> iterable,
-                                     BiFunction<? super T, ? super T2, ? extends R> fn) {
-
-        return (MonoT<W, R>)super.zip(iterable, fn);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.util.function.BiFunction, org.reactivestreams.Publisher)
-     */
-    @Override
-    public <T2, R> MonoT<W, R> zipP(Publisher<? extends T2> publisher,BiFunction<? super T, ? super T2, ? extends R> fn) {
-
-        return (MonoT<W, R>)super.zipP(publisher,fn);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.util.reactiveStream.Stream)
-     */
-    @Override
-    public <U> MonoT<W, Tuple2<T, U>> zipS(Stream<? extends U> other) {
-
-        return (MonoT)super.zipS(other);
-    }
-
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.lang.Iterable)
-     */
-    @Override
-    public <U> MonoT<W, Tuple2<T, U>> zip(Iterable<? extends U> other) {
-
-        return (MonoT)super.zip(other);
-    }
-
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach4(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction, com.oath.cyclops.util.function.QuadFunction)
-     */
-    @Override
-    public <T2, R1, R2, R3, R> MonoT<W, R> forEach4(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                                      BiFunction<? super T, ? super R1, ? extends MonadicValue<R2>> value2,
-                                                      Function3<? super T, ? super R1, ? super R2, ? extends MonadicValue<R3>> value3,
-                                                      Function4<? super T, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
-
-        return (MonoT<W, R>)super.forEach4(value1, value2, value3, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach4(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction, com.oath.cyclops.util.function.QuadFunction, com.oath.cyclops.util.function.QuadFunction)
-     */
-    @Override
-    public <T2, R1, R2, R3, R> MonoT<W, R> forEach4(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                                      BiFunction<? super T, ? super R1, ? extends MonadicValue<R2>> value2,
-                                                      Function3<? super T, ? super R1, ? super R2, ? extends MonadicValue<R3>> value3,
-                                                      Function4<? super T, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                      Function4<? super T, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
-
-        return (MonoT<W, R>)super.forEach4(value1, value2, value3, filterFunction, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach3(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction)
-     */
-    @Override
-    public <T2, R1, R2, R> MonoT<W, R> forEach3(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                                  BiFunction<? super T, ? super R1, ? extends MonadicValue<R2>> value2,
-                                                  Function3<? super T, ? super R1, ? super R2, ? extends R> yieldingFunction) {
-
-        return (MonoT<W, R>)super.forEach3(value1, value2, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach3(java.util.function.Function, java.util.function.BiFunction, com.oath.cyclops.util.function.TriFunction, com.oath.cyclops.util.function.TriFunction)
-     */
-    @Override
-    public <T2, R1, R2, R> MonoT<W, R> forEach3(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                                  BiFunction<? super T, ? super R1, ? extends MonadicValue<R2>> value2,
-                                                  Function3<? super T, ? super R1, ? super R2, Boolean> filterFunction,
-                                                  Function3<? super T, ? super R1, ? super R2, ? extends R> yieldingFunction) {
-
-        return (MonoT<W, R>)super.forEach3(value1, value2, filterFunction, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach2(java.util.function.Function, java.util.function.BiFunction)
-     */
-    @Override
-    public <R1, R> MonoT<W, R> forEach2(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                          BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
-
-        return (MonoT<W, R>)super.forEach2(value1, yieldingFunction);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#forEach2(java.util.function.Function, java.util.function.BiFunction, java.util.function.BiFunction)
-     */
-    @Override
-    public <R1, R> MonoT<W, R> forEach2(Function<? super T, ? extends MonadicValue<R1>> value1,
-                                          BiFunction<? super T, ? super R1, Boolean> filterFunction,
-                                          BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
-
-        return (MonoT<W, R>)super.forEach2(value1, filterFunction, yieldingFunction);
-    }
-
-
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#flatMapI(java.util.function.Function)
-     */
-    @Override
-    public <R> MonoT<W, R> flatMapIterable(Function<? super T, ? extends Iterable<? extends R>> mapper) {
-
-        return (MonoT<W, R>)super.flatMapIterable(mapper);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#flatMapP(java.util.function.Function)
-     */
-    @Override
-    public <R> MonoT<W, R> flatMapPublisher(Function<? super T, ? extends Publisher<? extends R>> mapper) {
-
-        return (MonoT<W, R>)super.flatMapPublisher(mapper);
-    }
     public <T2, R1, R2, R3, R> MonoT<W,R> forEach4M(Function<? super T, ? extends MonoT<W,R1>> value1,
                                                       BiFunction<? super T, ? super R1, ? extends MonoT<W,R2>> value2,
                                                       Function3<? super T, ? super R1, ? super R2, ? extends MonoT<W,R3>> value3,
@@ -524,53 +307,20 @@ public final class MonoT<W extends WitnessType<W>,T> extends ValueTransformer<W,
         return (MonoT<W,T>)Filters.super.notNull();
     }
 
-    @Override
-    public <R> MonoT<W,R> zipWith(Iterable<Function<? super T, ? extends R>> fn) {
-        return (MonoT<W,R>)super.zipWith(fn);
-    }
+  @Override
+  public <R> MonoT<W,R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
+    return (MonoT<W,R>)Transformable.super.trampoline(mapper);
+  }
 
-    @Override
-    public <R> MonoT<W,R> zipWithS(Stream<Function<? super T, ? extends R>> fn) {
-        return (MonoT<W,R>)super.zipWithS(fn);
-    }
+  @Override
+  public <R> MonoT<W,R> retry(Function<? super T, ? extends R> fn) {
+    return (MonoT<W,R>)Transformable.super.retry(fn);
+  }
 
-    @Override
-    public <R> MonoT<W,R> zipWithP(Publisher<Function<? super T, ? extends R>> fn) {
-        return (MonoT<W,R>)super.zipWithP(fn);
-    }
+  @Override
+  public <R> MonoT<W,R> retry(Function<? super T, ? extends R> fn, int retries, long delay, TimeUnit timeUnit) {
+    return (MonoT<W,R>)Transformable.super.retry(fn,retries,delay,timeUnit);
+  }
 
-    @Override
-    public <R> MonoT<W,R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
-        return (MonoT<W,R>)super.trampoline(mapper);
-    }
 
-    @Override
-    public <U, R> MonoT<W,R> zipS(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
-        return (MonoT<W,R>)super.zipS(other,zipper);
-    }
-
-    @Override
-    public <U> MonoT<W,Tuple2<T, U>> zipP(Publisher<? extends U> other) {
-        return (MonoT)super.zipP(other);
-    }
-
-    @Override
-    public <S, U> MonoT<W,Tuple3<T, S, U>> zip3(Iterable<? extends S> second, Iterable<? extends U> third) {
-        return (MonoT)super.zip3(second,third);
-    }
-
-    @Override
-    public <S, U, R> MonoT<W,R> zip3(Iterable<? extends S> second, Iterable<? extends U> third, Function3<? super T, ? super S, ? super U, ? extends R> fn3) {
-        return (MonoT<W,R>)super.zip3(second,third, fn3);
-    }
-
-    @Override
-    public <T2, T3, T4> MonoT<W,Tuple4<T, T2, T3, T4>> zip4(Iterable<? extends T2> second, Iterable<? extends T3> third, Iterable<? extends T4> fourth) {
-        return (MonoT)super.zip4(second,third,fourth);
-    }
-
-    @Override
-    public <T2, T3, T4, R> MonoT<W,R> zip4(Iterable<? extends T2> second, Iterable<? extends T3> third, Iterable<? extends T4> fourth, Function4<? super T, ? super T2, ? super T3, ? super T4, ? extends R> fn) {
-        return (MonoT<W,R>)super.zip4(second,third,fourth,fn);
-    }
 }

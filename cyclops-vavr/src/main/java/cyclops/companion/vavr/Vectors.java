@@ -1,12 +1,8 @@
 package cyclops.companion.vavr;
 
-import com.aol.cyclops.vavr.hkt.ListKind;
-import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
-import cyclops.control.Either;
 import cyclops.control.Option;
-import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.monads.VavrWitness;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.VavrWitness.vector;
 import cyclops.collections.vavr.VavrVectorX;
 import com.aol.cyclops.vavr.hkt.VectorKind;
@@ -29,12 +25,10 @@ import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
-import io.vavr.collection.List;
 import io.vavr.collection.Vector;
 import lombok.experimental.UtilityClass;
 import cyclops.data.tuple.Tuple2;
 
-import java.util.Optional;
 import java.util.function.*;
 
 import static com.aol.cyclops.vavr.hkt.VectorKind.narrowK;
@@ -700,7 +694,7 @@ public class Vectors {
         }
 
         private static <T,R> VectorKind<R> ap(VectorKind<Function< T, R>> lt, VectorKind<T> list){
-            return widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toVector());
+            return widen(FromCyclops.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toVector());
         }
         private static <T,R> Higher<vector,R> flatMap(Higher<vector,T> lt, Function<? super T, ? extends  Higher<vector,R>> fn){
             return widen(VectorKind.narrow(lt).flatMap(fn.andThen(VectorKind::narrow)));

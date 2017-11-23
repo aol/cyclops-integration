@@ -5,8 +5,8 @@ import com.oath.cyclops.types.anyM.AnyMValue;
 import com.oath.cyclops.types.extensability.ValueAdapter;
 import cyclops.control.Either;
 import cyclops.control.Option;
-import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.Vavr;
 import cyclops.monads.VavrWitness.either;
 import cyclops.control.Maybe;
@@ -37,7 +37,7 @@ public class EitherAdapter<L> implements ValueAdapter<either> {
     public <T, R> AnyM<either, R> ap(AnyM<either,? extends Function<? super T,? extends R>> fn, AnyM<either, T> apply) {
       io.vavr.control.Either<L,T> f = either(apply);
       io.vavr.control.Either<L,? extends Function<? super T, ? extends R>> fnF = either(fn);
-      io.vavr.control.Either<L,R> res = FromCyclopsReact.either(ToCyclopsReact.either(fnF).zip(ToCyclopsReact.either(f), (a, b) -> a.apply(b)));
+      io.vavr.control.Either<L,R> res = FromCyclops.either(ToCyclops.either(fnF).zip(ToCyclops.either(f), (a, b) -> a.apply(b)));
         return Vavr.either(res);
 
     }
@@ -68,7 +68,7 @@ public class EitherAdapter<L> implements ValueAdapter<either> {
     @Override
     public <T> AnyM<either, T> unitIterable(Iterable<T> it)  {
 
-        return Vavr.either(FromCyclopsReact.either(Either.fromIterable(it)));
+        return Vavr.either(FromCyclops.either(Either.fromIterable(it)));
     }
 
     @Override

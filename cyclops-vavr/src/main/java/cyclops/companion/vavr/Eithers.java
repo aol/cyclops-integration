@@ -11,7 +11,7 @@ import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
@@ -24,9 +24,8 @@ import cyclops.typeclasses.*;
 import com.aol.cyclops.vavr.hkt.EitherKind;
 import com.aol.cyclops.vavr.hkt.ListKind;
 import cyclops.companion.Monoids;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.ToCyclops;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
-import com.oath.cyclops.types.Value;
 import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
@@ -40,7 +39,6 @@ import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.monad.*;
 import io.vavr.collection.List;
 import lombok.experimental.UtilityClass;
-import org.reactivestreams.Publisher;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -418,8 +416,8 @@ public class Eithers {
      */
     public static <T1, T2, L,R> Either<L,R> zip(final Either<L,? extends T1> f, final Either<L,? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-      return narrow(FromCyclopsReact.either(ToCyclopsReact.either(f)
-        .zip(ToCyclopsReact.either(v), fn)));
+      return narrow(FromCyclops.either(ToCyclops.either(f)
+        .zip(ToCyclops.either(v), fn)));
     }
 
 
@@ -444,7 +442,7 @@ public class Eithers {
         return Nested.of(ek, Eithers.Instances.definitions(), defs);
     }
     public <L,R,W extends WitnessType<W>> EitherT<W, L, R> liftM(Either<L,R> either, W witness) {
-        return EitherT.of(witness.adapter().unit(ToCyclopsReact.either(either)));
+        return EitherT.of(witness.adapter().unit(ToCyclops.either(either)));
     }
 
     public static class Instances {
@@ -542,7 +540,7 @@ public class Eithers {
                 public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
                     Either<L, T> either = narrowK(apply);
                     Either<L, ? extends Function<T, R>> eitherFn = narrowK(fn);
-                    return widen(Eithers.xor(ToCyclopsReact.either(eitherFn).zip(ToCyclopsReact.either(either), (a, b) -> a.apply(b))));
+                    return widen(Eithers.xor(ToCyclops.either(eitherFn).zip(ToCyclops.either(either), (a, b) -> a.apply(b))));
                 }
 
                 @Override
@@ -633,13 +631,13 @@ public class Eithers {
                 @Override
                 public <T> T foldRight(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
                     Either<L, T> either = narrowK(ds);
-                    return ToCyclopsReact.either(either).fold(monoid);
+                    return ToCyclops.either(either).fold(monoid);
                 }
 
                 @Override
                 public <T> T foldLeft(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
                     Either<L, T> either = narrowK(ds);
-                    return ToCyclopsReact.either(either).fold(monoid);
+                    return ToCyclops.either(either).fold(monoid);
                 }
 
                 @Override

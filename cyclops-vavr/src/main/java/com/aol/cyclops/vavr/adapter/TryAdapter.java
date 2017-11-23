@@ -4,12 +4,10 @@ package com.aol.cyclops.vavr.adapter;
 import com.oath.cyclops.types.anyM.AnyMValue;
 import com.oath.cyclops.types.extensability.ValueAdapter;
 import cyclops.control.Option;
-import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.Vavr;
-import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.tryType;
-import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.control.Maybe;
 import cyclops.monads.AnyM;
 import io.vavr.control.Try;
@@ -39,7 +37,7 @@ public class TryAdapter implements ValueAdapter<tryType> {
         try {
             Try<T> f = tryType(apply);
             Try<? extends Function<? super T, ? extends R>> fnF = tryType(fn);
-            Try<R> res = FromCyclopsReact.toTry(ToCyclopsReact.toTry(fnF).zip(ToCyclopsReact.toTry(f), (a, b) -> a.apply(b)));
+            Try<R> res = FromCyclops.toTry(ToCyclops.toTry(fnF).zip(ToCyclops.toTry(f), (a, b) -> a.apply(b)));
             return Vavr.tryM(res);
         }catch(Throwable t){
             return Vavr.tryM(Try.failure(t));

@@ -15,7 +15,7 @@ import io.vavr.control.Try;
 import io.vavr.control.Validation;
 
 
-public class FromCyclopsReact {
+public class FromCyclops {
     public static <T> Lazy<T> eval(Eval<T> opt){
         return Lazy.of(opt);
     }

@@ -11,7 +11,7 @@ import io.vavr.Lazy;
 import io.vavr.control.Option;
 
 
-public class ToCyclopsReact {
+public class ToCyclops {
 
     public static <T> Future[] futures(io.vavr.concurrent.Future<T>... futures){
 

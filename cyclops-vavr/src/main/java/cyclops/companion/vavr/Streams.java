@@ -9,11 +9,10 @@ import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
-import io.vavr.control.*;
 import com.aol.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import com.oath.cyclops.hkt.Higher;
@@ -758,7 +757,7 @@ public class Streams {
         }
 
         private static <T,R> StreamKind<R> ap(StreamKind<Function< T, R>> lt, StreamKind<T> list){
-            return widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt).zip(list, (a, b)->a.apply(b))).toStream());
+            return widen(FromCyclops.fromStream(ReactiveSeq.fromIterable(lt).zip(list, (a, b)->a.apply(b))).toStream());
         }
         private static <T,R> Higher<stream,R> flatMap(Higher<stream,T> lt, Function<? super T, ? extends  Higher<stream,R>> fn){
             return widen(StreamKind.narrow(lt).flatMap(fn.andThen(StreamKind::narrow)));
