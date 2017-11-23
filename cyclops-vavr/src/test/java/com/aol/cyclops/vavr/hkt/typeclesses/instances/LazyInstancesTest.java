@@ -10,7 +10,7 @@ import com.aol.cyclops.vavr.hkt.LazyKind;
 import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.vavr.Lazys.Instances;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Monoid;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.lazy;
@@ -53,7 +53,7 @@ public class LazyInstancesTest {
     @Test
     public void applicative(){
 
-        LazyKind<Fn1<Integer,Integer>> optFn = Instances.unit()
+        LazyKind<Function1<Integer,Integer>> optFn = Instances.unit()
                                                                   .unit(l1((Integer i) ->i*2))
                                                                   .convert(LazyKind::narrowK);
 

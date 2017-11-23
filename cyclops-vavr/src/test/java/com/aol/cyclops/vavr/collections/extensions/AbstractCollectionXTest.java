@@ -9,11 +9,12 @@ import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.*;
 import cyclops.control.Maybe;
+import cyclops.control.Option;
 import cyclops.control.Trampoline;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Streamable;
+import cyclops.reactive.Streamable;
 import cyclops.data.tuple.Tuple;
 import cyclops.data.tuple.Tuple2;
 import cyclops.data.tuple.Tuple3;
@@ -38,7 +39,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 import static org.hamcrest.Matchers.*;
-import static org.jooq.lambda.tuple.Tuple.tuple;
+import static cyclops.data.tuple.Tuple.tuple;
 import static org.junit.Assert.*;
 
 public abstract class AbstractCollectionXTest {
@@ -48,7 +49,7 @@ public abstract class AbstractCollectionXTest {
 	public abstract FluentCollectionX<Long> rangeLong(long start, long end);
 	public abstract <T> FluentCollectionX<T> iterate(int times, T seed, UnaryOperator<T> fn);
 	public abstract <T> FluentCollectionX<T> generate(int times, Supplier<T> fn);
-	public abstract <U,T> FluentCollectionX<T> unfold(U seed, Function<? super U,Optional<Tuple2<T,U>>> unfolder);
+	public abstract <U,T> FluentCollectionX<T> unfold(U seed, Function<? super U,Option<Tuple2<T,U>>> unfolder);
 	public static final LazyReact r = new LazyReact(10,10);
 
 	int captured=-1;
@@ -73,7 +74,7 @@ public abstract class AbstractCollectionXTest {
     @Test
     public void plusLoopOpt(){
         int[] i = {10};
-        assertThat(of(0,1,2).plusLoop(()->i[0]!=20? Optional.of(i[0]++) : Optional.empty()).size(),equalTo(13));
+        assertThat(of(0,1,2).plusLoop(()->i[0]!=20? Option.of(i[0]++) : Option.none()).size(),equalTo(13));
     }
     @Test
     public void subscribeEmpty(){
@@ -222,7 +223,7 @@ public abstract class AbstractCollectionXTest {
     }
 	@Test
     public void testUnfold(){
-	    Function<Integer,Optional<Tuple2<Integer,Integer>>> fn= i-> i<=6 ? Optional.of(Tuple.tuple(i,i+1)) : Optional.empty();
+	    Function<Integer,Option<Tuple2<Integer,Integer>>> fn= i-> i<=6 ? Option.of(Tuple.tuple(i,i+1)) : Option.none();
 
         assertThat(unfold(1,fn ).size(),equalTo(6));
     }
@@ -251,29 +252,31 @@ public abstract class AbstractCollectionXTest {
 
 	@Test
     public void minusOne(){
-        assertThat(of().minus(1).size(),equalTo(0));
+        assertThat(of().removeValue(1).size(),equalTo(0));
     }
 	@Test
     public void minusOneNotEmpty(){
-        assertThat(of(1).minus(1).size(),equalTo(0));
+        assertThat(of(1).removeValue(1).size(),equalTo(0));
     }
 	@Test
     public void minusOneTwoValues(){
-        assertThat(of(1,2).minus(1),hasItem(2));
-        assertThat(of(1,2).minus(1),not(hasItem(1)));
+        assertThat(of(1,2).removeValue(1),hasItem(2));
+        assertThat(of(1,2).removeValue(1),not(hasItem(1)));
     }
 	@Test
     public void minusAllOne(){
-        assertThat(of().minusAll(of(1)).size(),equalTo(0));
+
+
+      assertThat(of().removeAll((Iterable)of(1)).size(),equalTo(0));
     }
     @Test
     public void minusAllOneNotEmpty(){
-        assertThat(of(1).minusAll(of(1)).size(),equalTo(0));
+        assertThat(of(1).removeAll((Iterable)of(1)).size(),equalTo(0));
     }
     @Test
     public void minusAllOneTwoValues(){
-        assertThat(of(1,2).minusAll(of(1)),hasItem(2));
-        assertThat(of(1,2).minusAll(of(1)),not(hasItem(1)));
+        assertThat(of(1,2).removeAll((Iterable)of(1)),hasItem(2));
+        assertThat(of(1,2).removeAll((Iterable)of(1)),not(hasItem(1)));
     }
 
 	@Test
@@ -489,7 +492,7 @@ public abstract class AbstractCollectionXTest {
 
         assertEquals(asList(2), of(2).onEmpty(1).toListX());
         assertEquals(asList(2), of(2).onEmptyGet(() -> 1).toListX());
-        assertEquals(asList(2), of(2).onEmptyThrow(() -> new X()).toListX());
+        assertEquals(asList(2), of(2).onEmptyError(() -> new X()).toListX());
 
 
     }
@@ -516,7 +519,7 @@ public abstract class AbstractCollectionXTest {
 
 	@Test
 	public void testCollectable(){
-		assertThat(of(1,2,3).collectors().anyMatch(i->i==2),equalTo(true));
+		assertThat(of(1,2,3).anyMatch(i->i==2),equalTo(true));
 	}
 	@Test
 	public void dropRight(){
@@ -770,11 +773,11 @@ public abstract class AbstractCollectionXTest {
 	    public void testMinByMaxBy() {
 	        Supplier<CollectionX<Integer>> s = () -> of(1, 2, 3, 4, 5, 6);
 
-	        assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).get());
-	        assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).get());
+	        assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).orElse(-1));
+	        assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).orElse(-1));
 
-	        assertEquals(6, (int) s.get().maxBy(t -> "" + t).get());
-	        assertEquals(1, (int) s.get().minBy(t -> "" + t).get());
+	        assertEquals(6, (int) s.get().maxBy(t -> "" + t).orElse(-1));
+	        assertEquals(1, (int) s.get().minBy(t -> "" + t).orElse(-1));
 	    }
 
 
@@ -805,14 +808,14 @@ public abstract class AbstractCollectionXTest {
 													.collect(Collectors.toList());
 			System.out.println(list);
 
-			List<Integer> right = list.stream().map(t -> t.v2).collect(Collectors.toList());
+			List<Integer> right = list.stream().map(t -> t._2()).collect(Collectors.toList());
 
 			assertThat(right,hasItem(100));
 			assertThat(right,hasItem(200));
 			assertThat(right,hasItem(300));
 			assertThat(right,hasItem(400));
 
-			List<Integer> left = list.stream().map(t -> t.v1).collect(Collectors.toList());
+			List<Integer> left = list.stream().map(t -> t._1()).collect(Collectors.toList());
 			assertThat(Arrays.asList(1,2,3,4,5,6),hasItem(left.get(0)));
 
 
@@ -879,7 +882,7 @@ public abstract class AbstractCollectionXTest {
 	public void elapsedIsPositive(){
 
 
-		assertTrue(of(1,2,3,4,5).stream().elapsed().noneMatch(t->t.v2<0));
+		assertTrue(of(1,2,3,4,5).stream().elapsed().noneMatch(t->t._2()<0));
 	}
 	@Test
 	public void timeStamp(){
@@ -888,21 +891,18 @@ public abstract class AbstractCollectionXTest {
 		assertTrue(of(1,2,3,4,5)
 							.stream()
 							.timestamp()
-							.allMatch(t-> t.v2 <= System.currentTimeMillis()));
+							.allMatch(t-> t._2() <= System.currentTimeMillis()));
 
 
 	}
-	@Test
-	public void elementAt0(){
-		assertThat(of(1).stream().elementAt(0).v1,equalTo(1));
-	}
+
 	@Test
 	public void getMultple(){
-		assertThat(of(1,2,3,4,5).stream().elementAt(2).v1,equalTo(3));
+		assertThat(of(1,2,3,4,5).stream().elementAt(2).orElse(-1),equalTo(3));
 	}
 	@Test
 	public void getMultpleStream(){
-		assertThat(of(1,2,3,4,5).stream().elementAt(2).v2.toList(),equalTo(Arrays.asList(1,2,3,4,5)));
+		assertThat(of(1,2,3,4,5).stream().toList(),equalTo(Arrays.asList(1,2,3,4,5)));
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void getMultiple1(){
@@ -914,35 +914,35 @@ public abstract class AbstractCollectionXTest {
 	}
 	@Test
 	public void get0(){
-		assertTrue(of(1).get(0).isPresent());
+		assertTrue(of(1).elementAt(0).isPresent());
 	}
 	@Test
 	public void getAtMultple(){
-		assertThat(of(1,2,3,4,5).get(2).get(),equalTo(3));
+		assertThat(of(1,2,3,4,5).elementAt(2).orElse(-1),equalTo(3));
 	}
 	@Test
 	public void getAt1(){
-		assertFalse(of(1).get(1).isPresent());
+		assertFalse(of(1).elementAt(1).isPresent());
 	}
 	@Test
 	public void elementAtEmpty(){
-		assertFalse(of().get(0).isPresent());
+		assertFalse(of().elementAt(0).isPresent());
 	}
 	@Test
 	public void singleTest(){
-		assertThat(of(1).single().get(),equalTo(1));
+		assertThat(of(1).single().orElse(-1),equalTo(1));
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void singleEmpty(){
-		of().single().get();
+		of().single().orElse(-1);
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void single2(){
-		of(1,2).single().get();
+		of(1,2).single().orElse(-1);
 	}
 	@Test
 	public void singleOptionalTest(){
-		assertThat(of(1).single().get(),equalTo(1));
+		assertThat(of(1).single().orElse(-1),equalTo(1));
 	}
 	@Test
 	public void singleOptionalEmpty(){
@@ -1096,8 +1096,8 @@ public abstract class AbstractCollectionXTest {
 	/**
 	@Test
 	public void splitBy(){
-		assertThat( of(1, 2, 3, 4, 5, 6).reactiveStream().splitBy(i->i<4).v1.toList(),equalTo(Arrays.asList(1,2,3)));
-		assertThat( of(1, 2, 3, 4, 5, 6).splitBy(i->i<4).v2.toList(),equalTo(Arrays.asList(4,5,6)));
+		assertThat( of(1, 2, 3, 4, 5, 6).reactiveStream().splitBy(i->i<4)._1().toList(),equalTo(Arrays.asList(1,2,3)));
+		assertThat( of(1, 2, 3, 4, 5, 6).splitBy(i->i<4)._2().toList(),equalTo(Arrays.asList(4,5,6)));
 	}
 	**/
 	@Test
@@ -1150,19 +1150,6 @@ public abstract class AbstractCollectionXTest {
 	}
 
 
-	@Test(expected=ClassCastException.class)
-	public void testCastPast() {
-		of(1, "a", 2, "b", 3).cast(Date.class).map(d -> d.getTime()).join();
-
-
-
-
-	}
-
-	@Test(expected=ClassCastException.class)
-	public void cast(){
-		of(1,2,3).cast(String.class).join();
-	}
 	@Test
 	public void xMatch(){
 		assertTrue(of(1,2,3,5,6,7).xMatch(3, i-> i>4 ));
@@ -1178,13 +1165,13 @@ public abstract class AbstractCollectionXTest {
 											.toListX();
 
 
-		List<Integer> right = list.stream().map(t -> t.v2).collect(Collectors.toList());
+		List<Integer> right = list.stream().map(t -> t._2()).collect(Collectors.toList());
 		assertThat(right,hasItem(100));
 		assertThat(right,hasItem(200));
 		assertThat(right,hasItem(300));
 		assertThat(right,hasItem(400));
 
-		List<Integer> left = list.stream().map(t -> t.v1).collect(Collectors.toList());
+		List<Integer> left = list.stream().map(t -> t._1()).collect(Collectors.toList());
 		assertThat(Arrays.asList(1,2,3,4,5,6),hasItem(left.get(0)));
 
 	}
@@ -1195,8 +1182,8 @@ public abstract class AbstractCollectionXTest {
 													.zip( of(100,200,300,400).stream())
 													.toListX();
 
-		assertThat(asList(1,2,3,4,5,6),hasItem(list.get(0).v1));
-		assertThat(asList(100,200,300,400),hasItem(list.get(0).v2));
+		assertThat(asList(1,2,3,4,5,6),hasItem(list.get(0)._1()));
+		assertThat(asList(100,200,300,400),hasItem(list.get(0)._2()));
 
 
 
@@ -1270,10 +1257,10 @@ public abstract class AbstractCollectionXTest {
 		List<Tuple2<Integer, String>> list = of(1, 2).zip(of("a", "b", "c", "d")).toList();
 
 		assertEquals(2, list.size());
-		assertTrue(asList(1, 2).contains(list.get(0).v1));
-		assertTrue("" + list.get(1).v2, asList(1, 2).contains(list.get(1).v1));
-		assertTrue(asList("a", "b", "c", "d").contains(list.get(0).v2));
-		assertTrue(asList("a", "b", "c", "d").contains(list.get(1).v2));
+		assertTrue(asList(1, 2).contains(list.get(0)._1()));
+		assertTrue("" + list.get(1)._2(), asList(1, 2).contains(list.get(1)._1()));
+		assertTrue(asList("a", "b", "c", "d").contains(list.get(0)._2()));
+		assertTrue(asList("a", "b", "c", "d").contains(list.get(1)._2()));
 
 	}
 
@@ -1305,10 +1292,10 @@ public abstract class AbstractCollectionXTest {
 		List<Tuple2<Integer, String>> list = of(1, 2).zip(of("a", "b", "c", "d")).toList();
 
 		assertEquals(2, list.size());
-		assertTrue(asList(1, 2).contains(list.get(0).v1));
-		assertTrue("" + list.get(1).v2, asList(1, 2).contains(list.get(1).v1));
-		assertTrue(asList("a", "b", "c", "d").contains(list.get(0).v2));
-		assertTrue(asList("a", "b", "c", "d").contains(list.get(1).v2));
+		assertTrue(asList(1, 2).contains(list.get(0)._1()));
+		assertTrue("" + list.get(1)._2(), asList(1, 2).contains(list.get(1)._1()));
+		assertTrue(asList("a", "b", "c", "d").contains(list.get(0)._2()));
+		assertTrue(asList("a", "b", "c", "d").contains(list.get(1)._2()));
 
 	}
 
@@ -1338,8 +1325,8 @@ public abstract class AbstractCollectionXTest {
 	public void testZipWithIndex() {
 		assertEquals(asList(), of().zipWithIndex().toListX());
 
-        of("a").zipWithIndex().map(t -> t.v2).printOut();
-		assertThat(of("a").zipWithIndex().map(t -> t.v2).findFirst().get(), is(0l));
+        of("a").zipWithIndex().map(t -> t._2()).printOut();
+		assertThat(of("a").zipWithIndex().map(t -> t._2()).findFirst().get(), is(0l));
 		assertEquals(asList(new Tuple2("a", 0L)), of("a").zipWithIndex().toListX());
 
 	}
@@ -1400,7 +1387,7 @@ public abstract class AbstractCollectionXTest {
 	    public void batchBySizeCollection(){
 
 
-	        assertThat(of(1,2,3,4,5,6).grouped(3,()-> ListX.empty()).get(0).get().size(),is(3));
+	        assertThat(of(1,2,3,4,5,6).grouped(3,()-> ListX.empty()).elementAt(0).orElse(ListX.empty()).size(),is(3));
 
 	       // assertThat(of(1,1,1,1,1,1).grouped(3,()->new ListXImpl<>()).load(1).load().size(),is(1));
 	    }
@@ -1428,12 +1415,12 @@ public abstract class AbstractCollectionXTest {
 	        assertEquals(tuple(2, "two"), s1.get(1));
 
 	        CollectionX<Tuple2<Integer, String>> t2 = of(tuple(2, "two"), tuple(1, "one"));
-	        List<Tuple2<Integer, String>> s2 = t2.sorted(comparing(t -> t.v1())).toList();
+	        List<Tuple2<Integer, String>> s2 = t2.sorted(comparing(t -> t._1())).toList();
 	        assertEquals(tuple(1, "one"), s2.get(0));
 	        assertEquals(tuple(2, "two"), s2.get(1));
 
 	        CollectionX<Tuple2<Integer, String>> t3 = of(tuple(2, "two"), tuple(1, "one"));
-	        List<Tuple2<Integer, String>> s3 = t3.sorted(t -> t.v1()).toList();
+	        List<Tuple2<Integer, String>> s3 = t3.sorted(t -> t._1()).toList();
 	        assertEquals(tuple(1, "one"), s3.get(0));
 	        assertEquals(tuple(2, "two"), s3.get(1));
 	    }
@@ -1446,13 +1433,13 @@ public abstract class AbstractCollectionXTest {
 
 	                                                .collect(Collectors.toList());
 
-	        List<Integer> right = list.stream().map(t -> t.v2).collect(Collectors.toList());
+	        List<Integer> right = list.stream().map(t -> t._2()).collect(Collectors.toList());
 	        assertThat(right,hasItem(100));
 	        assertThat(right,hasItem(200));
 	        assertThat(right,hasItem(300));
 	        assertThat(right,hasItem(400));
 
-	        List<Integer> left = list.stream().map(t -> t.v1).collect(Collectors.toList());
+	        List<Integer> left = list.stream().map(t -> t._1()).collect(Collectors.toList());
 	        assertThat(Arrays.asList(1,2,3,4,5,6),hasItem(left.get(0)));
 
 
@@ -1491,31 +1478,6 @@ public abstract class AbstractCollectionXTest {
 
 
 
-
-
-
-	        @Test
-	        public void testCastNumber() {
-
-	            of(1,  2,  3)
-	                    .cast(Number.class)
-	                        .peek(it ->System.out.println(it)).toList();
-
-
-	        }
-
-
-
-
-
-
-
-
-
-
-
-
-
 	        @Test
 	        public void testSplitAtHead() {
 	            assertEquals(Optional.empty(), of().headAndTail().headOptional());
@@ -1539,11 +1501,11 @@ public abstract class AbstractCollectionXTest {
 	        public void testMinByMaxBy2() {
 	            Supplier<CollectionX<Integer>> s = () -> of(1, 2, 3, 4, 5, 6);
 
-	            assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).get());
-	            assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).get());
+	            assertEquals(1, (int) s.get().maxBy(t -> Math.abs(t - 5)).orElse(-1));
+	            assertEquals(5, (int) s.get().minBy(t -> Math.abs(t - 5)).orElse(-1));
 
-	            assertEquals(6, (int) s.get().maxBy(t -> "" + t).get());
-	            assertEquals(1, (int) s.get().minBy(t -> "" + t).get());
+	            assertEquals(6, (int) s.get().maxBy(t -> "" + t).orElse(-1));
+	            assertEquals(1, (int) s.get().minBy(t -> "" + t).orElse(-1));
 	        }
 
 
@@ -1663,15 +1625,15 @@ public abstract class AbstractCollectionXTest {
 	        @Test
 	        public void groupedFunctionNoOrder(){
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").count(),equalTo((2L)));
-	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").filter(t->t.v1.equals("a"))
-	                            .map(t->t.v2).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).single().get(),
+	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").filter(t->t._1().equals("a"))
+	                            .map(t->t._2()).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).single().get(),
 	                                equalTo((ListX.of(1,2))));
 	        }
 	        @Test
 	        public void groupedFunctionCollectorNoOrder(){
 	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).count(),equalTo((2L)));
-	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).filter(t->t.v1.equals("a"))
-	                    .map(t->t.v2).single().get(),
+	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).filter(t->t._1().equals("a"))
+	                    .map(t->t._2()).single().get(),
 	                        equalTo((Arrays.asList(1,2))));
 	        }
 	        @Test
@@ -1681,16 +1643,16 @@ public abstract class AbstractCollectionXTest {
 	                                                    .toListX();
 
 	            System.out.println(list);
-	            List<Integer> right = list.stream().map(t -> t.v2).collect(Collectors.toList());
+	            List<Integer> right = list.stream().map(t -> t._2()).collect(Collectors.toList());
 	            assertThat(right,hasItem(100));
 	            assertThat(right,hasItem(200));
 	            assertThat(right,hasItem(300));
 	            assertThat(right,hasItem(400));
 
-	            List<Integer> left = list.stream().map(t -> t.v1).collect(Collectors.toList());
+	            List<Integer> left = list.stream().map(t -> t._1()).collect(Collectors.toList());
 	            assertThat(Arrays.asList(1,2,3,4),hasItem(left.get(0)));
 
-	            List<Character> three = list.stream().map(t -> t.v3).collect(Collectors.toList());
+	            List<Character> three = list.stream().map(t -> t._3()).collect(Collectors.toList());
 	            assertThat(Arrays.asList('a','b','c','d'),hasItem(three.get(0)));
 
 
@@ -1701,19 +1663,19 @@ public abstract class AbstractCollectionXTest {
 	                    of(1,2,3,4).zip4(of(100,200,300,400).stream(),of('a','b','c','d').stream(),of("hello","world","boo!","2").stream())
 	                                                    .toListX();
 	            System.out.println(list);
-	            List<Integer> right = list.stream().map(t -> t.v2).collect(Collectors.toList());
+	            List<Integer> right = list.stream().map(t -> t._2()).collect(Collectors.toList());
 	            assertThat(right,hasItem(100));
 	            assertThat(right,hasItem(200));
 	            assertThat(right,hasItem(300));
 	            assertThat(right,hasItem(400));
 
-	            List<Integer> left = list.stream().map(t -> t.v1).collect(Collectors.toList());
+	            List<Integer> left = list.stream().map(t -> t._1()).collect(Collectors.toList());
 	            assertThat(Arrays.asList(1,2,3,4),hasItem(left.get(0)));
 
-	            List<Character> three = list.stream().map(t -> t.v3).collect(Collectors.toList());
+	            List<Character> three = list.stream().map(t -> t._3()).collect(Collectors.toList());
 	            assertThat(Arrays.asList('a','b','c','d'),hasItem(three.get(0)));
 
-	            List<String> four = list.stream().map(t -> t.v4).collect(Collectors.toList());
+	            List<String> four = list.stream().map(t -> t._4()).collect(Collectors.toList());
 	            assertThat(Arrays.asList("hello","world","boo!","2"),hasItem(four.get(0)));
 
 

@@ -5,7 +5,7 @@ import cyclops.companion.vavr.Arrays;
 import com.aol.cyclops.vavr.hkt.ArrayKind;
 import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Lambda;
 import cyclops.function.Monoid;
 import cyclops.monads.VavrWitness;
@@ -50,7 +50,7 @@ public class ArraysTest {
     @Test
     public void applicative(){
 
-        ArrayKind<Fn1<Integer,Integer>> listFn =Arrays.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(ArrayKind::narrowK);
+        ArrayKind<Function1<Integer,Integer>> listFn =Arrays.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(ArrayKind::narrowK);
 
         ArrayKind<Integer> list = Arrays.Instances.unit()
                                      .unit("hello")

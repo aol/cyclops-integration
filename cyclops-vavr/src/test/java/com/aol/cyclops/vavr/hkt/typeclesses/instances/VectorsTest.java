@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Lambda;
 import cyclops.function.Monoid;
 
@@ -52,7 +52,7 @@ public class VectorsTest {
     @Test
     public void applicative(){
 
-        VectorKind<Fn1<Integer,Integer>> listFn = Vectors.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(VectorKind::narrowK);
+        VectorKind<Function1<Integer,Integer>> listFn = Vectors.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(VectorKind::narrowK);
 
         VectorKind<Integer> list = Vectors.Instances.unit()
                                      .unit("hello")

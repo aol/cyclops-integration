@@ -2,7 +2,8 @@ package cyclops.monads.transformers;
 
 
 import com.oath.cyclops.types.mixins.Printable;
-import cyclops.collections.box.Mutable;
+
+import com.oath.cyclops.util.box.Mutable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Reducers;
@@ -68,7 +69,7 @@ public class MaybeTTest implements Printable {
     }
 	@Test
     public void testFilteringNoValue(){
-        assertThat(ReactiveSeq.of(1,1).filter(Either.right(1))
+        assertThat(ReactiveSeq.of(1,1).filter(i->i==1)
                     .toListX(),equalTo(ListX.of(1,1)));
     }
     /**
@@ -161,15 +162,7 @@ public class MaybeTTest implements Printable {
 
 
 
-	@Test
-	public void testIterate() {
-		assertThat(just.iterate(i->i+1).to(Witness::optional).get().limit(10).sumInt(i->(int)i),equalTo(145));
-	}
 
-	@Test
-	public void testGenerate() {
-		assertThat(just.generate().to(Witness::optional).get().limit(10).sumInt(i->i),equalTo(100));
-	}
 
 	@Test
 	public void testMapReduceReducerOfE() {

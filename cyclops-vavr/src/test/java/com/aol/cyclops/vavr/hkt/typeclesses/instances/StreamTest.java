@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Lambda;
 
 import io.vavr.collection.Stream;
@@ -69,7 +69,7 @@ public class StreamTest {
     @Test
     public void applicative(){
 
-        StreamKind<Fn1<Integer,Integer>> listFn =Streams.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(StreamKind::narrowK);
+        StreamKind<Function1<Integer,Integer>> listFn =Streams.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(StreamKind::narrowK);
 
         StreamKind<Integer> list = Streams.Instances.unit()
                                      .unit("hello")

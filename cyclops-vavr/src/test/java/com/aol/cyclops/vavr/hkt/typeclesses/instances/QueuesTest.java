@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Lambda;
 import cyclops.function.Monoid;
 
@@ -52,7 +52,7 @@ public class QueuesTest {
     @Test
     public void applicative(){
 
-        QueueKind<Fn1<Integer,Integer>> listFn =Queues.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(QueueKind::narrowK);
+        QueueKind<Function1<Integer,Integer>> listFn =Queues.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(QueueKind::narrowK);
 
         QueueKind<Integer> list = Queues.Instances.unit()
                                      .unit("hello")

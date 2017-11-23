@@ -203,7 +203,7 @@ AnyMSeq<obsvervable,Integer> monad = Observables.anyM(myObsevable);
 
 monad.map(i->i*2)
      .zipWithIndex();
-     .filter(t->t.v1()<100l);
+     .filter(t->t._1()<100l);
 ```
 
 Convert back to Observable via Observables.raw (or RxWitness.observable)

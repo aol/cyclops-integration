@@ -13,7 +13,7 @@ import com.oath.cyclops.hkt.Higher;
 import cyclops.async.Future;
 import cyclops.companion.reactor.Monos.Instances;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Monoid;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.mono;
@@ -58,7 +58,7 @@ public class MonosTest {
     @Test
     public void applicative(){
 
-        MonoKind<Fn1<Integer,Integer>> optFn = Instances.unit().unit(l1((Integer i) ->i*2)).convert(MonoKind::narrowK);
+        MonoKind<Function1<Integer,Integer>> optFn = Instances.unit().unit(l1((Integer i) ->i*2)).convert(MonoKind::narrowK);
 
         MonoKind<Integer> opt = Instances.unit()
                                      .unit("hello")

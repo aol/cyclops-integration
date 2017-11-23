@@ -19,9 +19,9 @@ import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 
+import cyclops.control.LazyEither;
 import cyclops.control.Reader;
 import cyclops.control.Either;
-import cyclops.control.lazy.Either;
 import cyclops.function.Function3;
 import cyclops.function.Function4;
 import cyclops.function.Monoid;
@@ -59,7 +59,7 @@ import java.util.function.Predicate;
 import static com.aol.cyclops.rx2.hkt.MaybeKind.widen;
 
 /**
- * Companion class for working with Reactor Maybe types
+ * Companion class for working with RxJava 2 Maybe types
  *
  * @author johnmcclean
  *
@@ -91,7 +91,7 @@ public class Maybes {
                 return true;
             }, pr -> false)).blockingGet(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(e->e.orElse(null));
     }
 
     public static <T> Maybe<T> fromPublisher(Publisher<T> maybe){
@@ -130,8 +130,8 @@ public class Maybes {
         return Future.fromPublisher(future.toFlowable());
     }
 
-    public static <R> Either<Throwable,R> either(Maybe<R> either){
-        return Either.fromFuture(future(either));
+    public static <R> LazyEither<Throwable,R> either(Maybe<R> either){
+        return LazyEither.fromFuture(future(either));
 
     }
 
@@ -463,17 +463,6 @@ public class Maybes {
         return res;
     }
 
-    /**
-     * Test if value is equal to the value inside this Maybe
-     *
-     * @param maybe Maybe to test
-     * @param test Value to test
-     * @return true if equal
-     */
-    public static <T> boolean test(Maybe<T> maybe, T test) {
-        return Future.fromPublisher(maybe.toFlowable())
-                      .test(test);
-    }
 
     /**
      * Construct a Maybe from Iterable by taking the first value from Iterable

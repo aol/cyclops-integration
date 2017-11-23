@@ -11,6 +11,7 @@ import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.companion.Streams;
 import cyclops.control.Eval;
+import cyclops.control.Option;
 import cyclops.control.Reader;
 import cyclops.control.Either;
 import cyclops.function.Function3;
@@ -86,7 +87,7 @@ public class Flowables {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(Either::isRight).map(e->e.orElse(null));
     }
 
     public static <T> Flowable<T> raw(AnyM<flowable,T> anyM){

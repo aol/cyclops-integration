@@ -31,9 +31,9 @@ public class FunctionTest {
     @Test
     public void memoization(){
 
-        Fn1<Long,Long> maybeExpensive = i-> ReactiveSeq.rangeLong(0,i)
+        Function1<Long,Long> maybeExpensive = i-> ReactiveSeq.rangeLong(0,i)
                                                          .foldLeft(0l,(a,b)->a+b);
-        Fn1<Long,Long> caching = maybeExpensive.memoize();
+        Function1<Long,Long> caching = maybeExpensive.memoize();
 
         //calculate and cache
         caching.apply(100000000l);
@@ -65,7 +65,7 @@ public class FunctionTest {
                                              .andThen(add1)
                                              .andThen(add1);
 
-        Fn1<Integer,Integer> add6 = a->add5.apply(a)+1;
+        Function1<Integer,Integer> add6 = a->add5.apply(a)+1;
         add6.apply(2);
         //8
 
@@ -76,7 +76,7 @@ public class FunctionTest {
     }
     @Test
     public void generate(){
-        Fn1<Integer,Integer> add10 = a->a+10;
+        Function1<Integer,Integer> add10 = a->a+10;
 
         add10.fanIn((String b)->b.length())
                 .apply(Either.left(10));
@@ -86,11 +86,11 @@ public class FunctionTest {
                 .apply(Either.right("ten"));
         //3
 
-        Fn1<Integer, Tuple2<Integer, Integer>> x = add10.product(this::mult10);
+        Function1<Integer, Tuple2<Integer, Integer>> x = add10.product(this::mult10);
         x.apply(10);
         //[20,100]
 
-        Fn1<Either<Integer, String>, Either<Integer, String>> r = add10.leftFn();
+        Function1<Either<Integer, String>, Either<Integer, String>> r = add10.leftFn();
         r.apply(Either.left(10));
         //Secondary[20]
 
@@ -103,16 +103,16 @@ public class FunctionTest {
         add.apply(10,20);
         //30
 
-        Fn1<? super Integer, Fn1<? super Integer, ? extends Integer>> curried = add.curry();
+        Function1<? super Integer, Function1<? super Integer, ? extends Integer>> curried = add.curry();
         curried.apply(10).apply(20);
         //30
 
-        Fn1<Integer, Fn1<Integer, Integer>> curried2 = Curry.curry2(add);
+        Function1<Integer, Function1<Integer, Integer>> curried2 = Curry.curry2(add);
         curried2.apply(10).apply(20);
         //30
 
 
-        Fn1<Integer,Integer> add1 = add.apply(1);
+        Function1<Integer,Integer> add1 = add.apply(1);
 
         Reader<Integer, String> reader = add1.reader()
                                              .map(i -> "hello " + i);
@@ -132,10 +132,10 @@ public class FunctionTest {
     }
 
 
-    public  <T> Fn2<T,Fn1<T,T>,T> applyTwice(){
+    public  <T> Fn2<T,Function1<T,T>,T> applyTwice(){
             return  (a,b) -> b.apply(b.apply(a));
     }
-    public static <T> T twice(T a,Fn1<T,T> fn){
+    public static <T> T twice(T a,Function1<T,T> fn){
         return   fn.apply(fn.apply(a));
     }
 
@@ -153,15 +153,15 @@ public class FunctionTest {
     }
     @Test
     public void compose(){
-        Fn1<Integer,String> fn1 = a->"hello " +a;
+        Function1<Integer,String> fn1 = a->"hello " +a;
         fn1.apply(10);
         //hello 10
 
-        Fn1<Integer,Integer> after = fn1.andThen(a->a.length()*2);
+        Function1<Integer,Integer> after = fn1.andThen(a->a.length()*2);
         after.apply(10);
         //16
 
-        Fn1<String,Integer> before = after.compose(d->d.length());
+        Function1<String,Integer> before = after.compose(d->d.length());
         before.apply("ten");
         //14
 

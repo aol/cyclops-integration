@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import static cyclops.CircularTest.TotalAndLength.totalAndLength;
 import static cyclops.collections.mutable.ListX.empty;
-import static org.jooq.lambda.tuple.Tuple.tuple;
+import static cyclops.data.tuple.Tuple.tuple;
 
 /**
  * Created by johnmcclean on 27/07/2017.
@@ -45,7 +45,7 @@ public class CircularTest {
 
         return ints.map(a -> {
             state[0] =state[0].map(b -> (a < b) ? a : b);
-            return Eval.later(()->state[0].run(new Unit()).v2);
+            return Eval.later(()->state[0].run(new Unit())._2());
         }).map(s->s.get());
 
     }
@@ -54,12 +54,12 @@ public class CircularTest {
 
         Tuple2<Integer,ListX<Eval<Integer>>> data[] = new Tuple2[1];
 
-        Eval<Integer> minimum = Eval.later(()->data[0].v1);
+        Eval<Integer> minimum = Eval.later(()->data[0]._1());
 
         data[0] = ints.map(i -> tuple(i, minimum)).foldLeft(tuple(Integer.MAX_VALUE, empty()), (a, b) ->
-                a.v1 < b.v1 ? tuple(a.v1, a.v2.plus(minimum)) : tuple(b.v1,  a.v2.plus(minimum))
+                a._1() < b._1() ? tuple(a._1(), a._2().plus(minimum)) : tuple(b._1(),  a._2().plus(minimum))
         );
-        return data[0].v2.map(Eval::get);
+        return data[0]._2().map(Eval::get);
     }
     @Value
     static class TotalAndLength {
@@ -73,27 +73,27 @@ public class CircularTest {
 
         Tuple2<TotalAndLength,ListX<Eval<Double>>> data[] = new Tuple2[1];
 
-        Eval<Double> average = Eval.later(()->(double)data[0].v1.total / data[0].v1.length);
+        Eval<Double> average = Eval.later(()->(double)data[0]._1().total / data[0]._1().length);
 
         data[0] = ints.map(i -> tuple(totalAndLength(i,1), average)).foldLeft(tuple(totalAndLength(0,0), empty()), (a, b) ->
-               tuple(totalAndLength(a.v1.total+b.v1.total,a.v1.length+1), a.v2.plus(average))
+               tuple(totalAndLength(a._1().total+b._1().total,a._1().length+1), a._2().plus(average))
         );
-        return data[0].v2.map(Eval::get);
+        return data[0]._2().map(Eval::get);
     }
 
     public ListX<Double> subAverage(ListX<Integer> ints){
 
         Tuple2<TotalAndLength,ListX<Eval<Double>>> data[] = new Tuple2[1];
 
-        Eval<Double> average = Eval.later(()->(double)data[0].v1.total / data[0].v1.length);
+        Eval<Double> average = Eval.later(()->(double)data[0]._1().total / data[0]._1().length);
 
 
         data[0] = ints.map(i -> tuple(totalAndLength(i,1), average)).foldLeft(tuple(totalAndLength(0,0), empty()),
                             (acc, current) ->
-                                    tuple(totalAndLength(acc.v1.total+current.v1.total,acc.v1.length+1),
-                                            acc.v2.plus(average.map(avgValue->current.v1.total-avgValue)))
+                                    tuple(totalAndLength(acc._1().total+current._1().total,acc._1().length+1),
+                                            acc._2().plus(average.map(avgValue->current._1().total-avgValue)))
         );
-        return data[0].v2.map(Eval::get);
+        return data[0]._2().map(Eval::get);
     }
 
 }

@@ -128,8 +128,8 @@ public class AsyncActiveTest {
                                                         .zip(ListX.of('a', 'b', 'c'))
                                                         .materialize();
 
-        ListX<Integer> nums = zipped.map(t2-> t2.v1);
-        ListX<Character> chars = zipped.map(t2->t2.v2);
+        ListX<Integer> nums = zipped.map(t2-> t2._1());
+        ListX<Character> chars = zipped.map(t2->t2._2());
 
         ListX.of(1,2,3)
                 .peek(System.out::println)

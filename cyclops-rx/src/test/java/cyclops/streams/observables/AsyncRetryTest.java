@@ -3,7 +3,7 @@ package cyclops.streams.observables;
 import com.oath.cyclops.util.ExceptionSoftener;
 import cyclops.companion.rx.Observables;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Spouts;
+import cyclops.reactive.Spouts;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

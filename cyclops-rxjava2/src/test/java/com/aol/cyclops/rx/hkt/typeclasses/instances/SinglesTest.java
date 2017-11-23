@@ -7,7 +7,7 @@ import cyclops.async.Future;
 import cyclops.companion.rx2.Singles;
 import cyclops.companion.rx2.Singles.Instances;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 
 import cyclops.function.Monoid;
 import cyclops.monads.Rx2Witness;
@@ -15,7 +15,7 @@ import cyclops.monads.Rx2Witness.single;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.maybe;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Spouts;
+import cyclops.reactive.Spouts;
 import cyclops.typeclasses.monad.Applicative;
 import cyclops.typeclasses.monad.Traverse;
 import io.reactivex.Single;
@@ -40,7 +40,7 @@ public class SinglesTest {
                                             .unit("hello")
                                             .convert(SingleKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
+      assertThat(opt.toFuture().orElse(""),equalTo(Future.ofResult("hello").orElse("1")));
     }
     @Test
     public void functor(){
@@ -50,7 +50,7 @@ public class SinglesTest {
                                      .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(SingleKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
+      assertThat(opt.toFuture().orElse(-1),equalTo(Future.ofResult("hello".length()).orElse(10000)));
     }
     @Test
     public void apSimple(){
@@ -63,7 +63,7 @@ public class SinglesTest {
     @Test
     public void applicative(){
 
-        SingleKind<Fn1<Integer,Integer>> optFn = Instances.unit().unit(l1((Integer i) ->i*2)).convert(SingleKind::narrowK);
+        SingleKind<Function1<Integer,Integer>> optFn = Instances.unit().unit(l1((Integer i) ->i*2)).convert(SingleKind::narrowK);
 
         SingleKind<Integer> opt = Instances.unit()
                                      .unit("hello")

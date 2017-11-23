@@ -43,6 +43,6 @@ public class HashPMapTest {
 
     @Test
     public void map(){
-        assertThat(test.map(s->s+" world").toListX(t->t.v2).get(0),equalTo("hello world"));
+        assertThat(test.map(s->s+" world").toListX(t->t._2()).get(0),equalTo("hello world"));
     }
 }

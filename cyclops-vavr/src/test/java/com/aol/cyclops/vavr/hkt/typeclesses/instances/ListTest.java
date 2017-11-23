@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Lambda;
 import io.vavr.collection.List;
 
@@ -54,7 +54,7 @@ public class ListTest {
     @Test
     public void applicative(){
 
-        ListKind<Fn1<Integer,Integer>> listFn = Lists.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(ListKind::narrowK);
+        ListKind<Function1<Integer,Integer>> listFn = Lists.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(ListKind::narrowK);
 
         ListKind<Integer> list = Lists.Instances.unit()
                                      .unit("hello")

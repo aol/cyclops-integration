@@ -19,7 +19,7 @@ import cyclops.collections.mutable.ListX;
 import cyclops.collections.vavr.VavrHashSetX;
 import cyclops.companion.Reducers;
 import cyclops.companion.Semigroups;
-import cyclops.stream.Streamable;
+import cyclops.reactive.Streamable;
 import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 

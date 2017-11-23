@@ -3,7 +3,7 @@ package cyclops.streams.observables;
 import cyclops.companion.Reducers;
 import cyclops.companion.rx.Observables;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Spouts;
+import cyclops.reactive.Spouts;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;

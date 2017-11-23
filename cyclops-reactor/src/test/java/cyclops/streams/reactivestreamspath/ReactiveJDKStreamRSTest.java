@@ -2,8 +2,8 @@ package cyclops.streams.reactivestreamspath;
 
 import cyclops.companion.reactor.Fluxs;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Spouts;
-import cyclops.stream.Streamable;
+import cyclops.reactive.Spouts;
+import cyclops.reactive.Streamable;
 import org.junit.Test;
 
 import java.util.ArrayList;

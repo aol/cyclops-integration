@@ -89,8 +89,8 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
     @Override
     public MaybeT<W,T> filter(final Predicate<? super T> test) {
         return of(run.map(f->f.map(in->Tuple.tuple(in,test.test(in))))
-                .filter( f->f.blockingGet().v2 )
-                .map( f->f.map(in->in.v1)));
+                .filter( f->f.blockingGet()._2() )
+                .map( f->f.map(in->in._1())));
     }
 
     /**
@@ -160,7 +160,7 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
         return (AnyM) run;
     }
 
-    @Override
+
     public <B> MaybeT<W,B> flatMap(final Function<? super T, ? extends MonadicValue<? extends B>> f) {
 
         final AnyM<W,Maybe<? extends B>> mapped = run.map(o -> o.flatMap(in->{
@@ -326,23 +326,7 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
 
 
 
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#iterate(java.util.function.UnaryOperator)
-     */
-    @Override
-    public AnyM<W, ? extends ReactiveSeq<T>> iterate(UnaryOperator<T> fn) {
 
-        return super.iterate(fn);
-    }
-
-    /* (non-Javadoc)
-     * @see cyclops2.monads.transformers.values.ValueTransformer#generate()
-     */
-    @Override
-    public AnyM<W, ? extends ReactiveSeq<T>> generate() {
-
-        return super.generate();
-    }
 
     /* (non-Javadoc)
      * @see cyclops2.monads.transformers.values.ValueTransformer#zip(java.lang.Iterable, java.util.function.BiFunction)
@@ -534,10 +518,6 @@ public final class MaybeT<W extends WitnessType<W>,T> extends ValueTransformer<W
         return toString();
     }
 
-    @Override
-    public <U> MaybeT<W,U> cast(Class<? extends U> type) {
-        return (MaybeT<W,U>)super.cast(type);
-    }
 
     @Override
     public <U> MaybeT<W,U> ofType(Class<? extends U> type) {

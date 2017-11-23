@@ -4,7 +4,7 @@ import com.oath.cyclops.util.SimpleTimer;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Observables;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Spouts;
+import cyclops.reactive.Spouts;
 import lombok.Value;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static cyclops.stream.Spouts.iterate;
+import static cyclops.reactive.Spouts.iterate;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;

@@ -12,7 +12,7 @@ import com.oath.cyclops.hkt.Higher;
 
 import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Lambda;
 import cyclops.monads.RxWitness;
 import cyclops.monads.RxWitness.observable;
@@ -59,7 +59,7 @@ public class ObservableTest {
     @Test
     public void applicative(){
 
-        ObservableKind<Fn1<Integer,Integer>> listFn =Observables.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(ObservableKind::narrowK);
+        ObservableKind<Function1<Integer,Integer>> listFn =Observables.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(ObservableKind::narrowK);
 
         ObservableKind<Integer> list = Observables.Instances.unit()
                                      .unit("hello")

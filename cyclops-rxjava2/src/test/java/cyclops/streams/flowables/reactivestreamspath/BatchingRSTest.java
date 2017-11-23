@@ -4,7 +4,7 @@ import com.oath.cyclops.util.SimpleTimer;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Flowables;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Streamable;
+import cyclops.reactive.Streamable;
 import lombok.Value;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import static cyclops.companion.rx2.Flowables.just;
 import static cyclops.companion.rx2.Flowables.of;
-import static cyclops.stream.Spouts.iterate;
+import static cyclops.reactive.Spouts.iterate;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;

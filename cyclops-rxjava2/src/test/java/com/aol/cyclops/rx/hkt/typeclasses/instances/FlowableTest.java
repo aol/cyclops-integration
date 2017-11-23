@@ -5,7 +5,7 @@ import com.oath.cyclops.hkt.Higher;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Flowables;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Lambda;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.flowable;
@@ -53,7 +53,7 @@ public class FlowableTest {
     @Test
     public void applicative(){
 
-        FlowableKind<Fn1<Integer,Integer>> listFn =Flowables.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(FlowableKind::narrowK);
+        FlowableKind<Function1<Integer,Integer>> listFn =Flowables.Instances.unit().unit(Lambda.l1((Integer i) ->i*2)).convert(FlowableKind::narrowK);
 
         FlowableKind<Integer> list = Flowables.Instances.unit()
                                      .unit("hello")

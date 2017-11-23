@@ -15,11 +15,7 @@ import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.companion.Streams;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
-import cyclops.control.Either;
-import cyclops.control.lazy.Either;
+import cyclops.control.*;
 import cyclops.function.Function3;
 import cyclops.function.Function4;
 import cyclops.function.Monoid;
@@ -98,7 +94,7 @@ public class Singles {
                 return true;
             }, pr -> false)).blockingGet();
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(e->e.orElse(null));
     }
 
     public static <T> Future[] futures(Single<T>... futures){
@@ -113,8 +109,8 @@ public class Singles {
         return Future.fromPublisher(future.toFlowable());
     }
 
-    public static <R> Either<Throwable,R> either(Single<R> either){
-        return Either.fromFuture(future(either));
+    public static <R> LazyEither<Throwable,R> either(Single<R> either){
+        return LazyEither.fromFuture(future(either));
 
     }
 
@@ -444,17 +440,6 @@ public class Singles {
         return res;
     }
 
-    /**
-     * Test if value is equal to the value inside this Single
-     *
-     * @param single Single to test
-     * @param test Value to test
-     * @return true if equal
-     */
-    public static <T> boolean test(Single<T> single, T test) {
-        return Future.fromPublisher(single.toFlowable())
-                      .test(test);
-    }
 
     /**
      * Construct a Single from Iterable by taking the first value from Iterable

@@ -136,7 +136,7 @@ import static com.aol.cyclops.functionaljava.ListKind;
 import static cyclops.companion.functionaljava.Lists.Instances.functor;
 import static cyclops.companion.functionaljava.Lists.Instances.zippingApplicative;
 
-ListKind<Fn1<Integer,Integer>> listFn = ListKind.widen(List.list((Lambda.λ((Integer i) ->i*2))
+ListKind<Function1<Integer,Integer>> listFn = ListKind.widen(List.list((Lambda.λ((Integer i) ->i*2))
                                                 .convert(ListKind::narrowK);
         
 List<Integer> list =  zippingApplicative().ap(listFn,functor().map((String v)->v.length(),

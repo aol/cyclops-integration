@@ -29,7 +29,7 @@ import cyclops.monads.transformers.StreamT;
 import cyclops.reactive.ReactiveSeq;
 
 
-import cyclops.stream.Spouts;
+import cyclops.reactive.Spouts;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -89,7 +89,7 @@ public class Observables {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(Either::isRight).map(e->e.orElse(null));
     }
     public static <T> Observable<T> raw(AnyM<observable,T> anyM){
         return Rx2Witness.observable(anyM);

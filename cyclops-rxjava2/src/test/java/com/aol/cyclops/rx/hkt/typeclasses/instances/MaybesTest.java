@@ -5,7 +5,7 @@ import com.oath.cyclops.hkt.Higher;
 import cyclops.async.Future;
 import cyclops.companion.rx2.Maybes.Instances;
 
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Monoid;
 import cyclops.monads.Rx2Witness;
 import cyclops.monads.Rx2Witness.maybe;
@@ -30,7 +30,7 @@ public class MaybesTest {
                                             .unit("hello")
                                             .convert(MaybeKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
+        assertThat(opt.toFuture().orElse(""),equalTo(Future.ofResult("hello").orElse("1")));
     }
     @Test
     public void functor(){
@@ -40,7 +40,7 @@ public class MaybesTest {
                                      .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(MaybeKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
+        assertThat(opt.toFuture().orElse(-1),equalTo(Future.ofResult("hello".length()).orElse(10000)));
     }
     @Test
     public void apSimple(){
@@ -53,7 +53,7 @@ public class MaybesTest {
     @Test
     public void applicative(){
 
-        MaybeKind<Fn1<Integer,Integer>> optFn = Instances.unit().unit(l1((Integer i) ->i*2)).convert(MaybeKind::narrowK);
+        MaybeKind<Function1<Integer,Integer>> optFn = Instances.unit().unit(l1((Integer i) ->i*2)).convert(MaybeKind::narrowK);
 
         MaybeKind<Integer> opt = Instances.unit()
                                      .unit("hello")

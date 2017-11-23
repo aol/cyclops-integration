@@ -31,7 +31,7 @@ import cyclops.monads.transformers.StreamT;
 import cyclops.reactive.ReactiveSeq;
 
 
-import cyclops.stream.Spouts;
+import cyclops.reactive.Spouts;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;

@@ -3,7 +3,7 @@ package cyclops.streams.observables;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx2.Observables;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Spouts;
+import cyclops.reactive.Spouts;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;

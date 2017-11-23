@@ -7,7 +7,7 @@ import cyclops.companion.Streams;
 import cyclops.companion.rx2.Flowables;
 import cyclops.monads.AnyM;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Streamable;
+import cyclops.reactive.Streamable;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -98,7 +98,7 @@ public class ExtensionOperatorsRSTest {
 	public void elapsedIsPositive(){
 
 
-		assertTrue(Flowables.of(1,2,3,4,5).elapsed().noneMatch(t->t.v2<0));
+		assertTrue(Flowables.of(1,2,3,4,5).elapsed().noneMatch(t->t._2()<0));
 	}
 	@Test
 	public void timeStamp(){
@@ -106,21 +106,21 @@ public class ExtensionOperatorsRSTest {
 
 		assertTrue(Flowables.of(1,2,3,4,5)
 							.timestamp()
-							.allMatch(t-> t.v2 <= System.currentTimeMillis()));
+							.allMatch(t-> t._2() <= System.currentTimeMillis()));
 
 
 	}
 	@Test
 	public void elementAt0(){
-		assertThat(Flowables.of(1).elementAt(0).v1,equalTo(1));
+		assertThat(Flowables.of(1).elementAt(0)._1(),equalTo(1));
 	}
 	@Test
 	public void getMultple(){
-		assertThat(Flowables.of(1,2,3,4,5).elementAt(2).v1,equalTo(3));
+		assertThat(Flowables.of(1,2,3,4,5).elementAt(2)._1(),equalTo(3));
 	}
 	@Test
 	public void getMultpleStream(){
-		assertThat(Flowables.of(1,2,3,4,5).elementAt(2).v2.toList(),equalTo(Arrays.asList(1,2,3,4,5)));
+		assertThat(Flowables.of(1,2,3,4,5).elementAt(2)._2().toList(),equalTo(Arrays.asList(1,2,3,4,5)));
 	}
 	@Test(expected=NoSuchElementException.class)
 	public void getMultiple1(){
@@ -336,8 +336,8 @@ public class ExtensionOperatorsRSTest {
 	}
 	@Test
 	public void splitBy(){
-		assertThat( Flowables.of(1, 2, 3, 4, 5, 6).splitBy(i->i<4).v1.toList(),equalTo(Arrays.asList(1,2,3)));
-		assertThat( Flowables.of(1, 2, 3, 4, 5, 6).splitBy(i->i<4).v2.toList(),equalTo(Arrays.asList(4,5,6)));
+		assertThat( Flowables.of(1, 2, 3, 4, 5, 6).splitBy(i->i<4)._1().toList(),equalTo(Arrays.asList(1,2,3)));
+		assertThat( Flowables.of(1, 2, 3, 4, 5, 6).splitBy(i->i<4)._2().toList(),equalTo(Arrays.asList(4,5,6)));
 	}
 	@Test
 	public void testLazy(){

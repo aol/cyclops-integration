@@ -12,7 +12,7 @@ import com.aol.cyclops.reactor.hkt.FluxKind;
 import com.oath.cyclops.hkt.Higher;
 import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
-import cyclops.function.Fn1;
+import cyclops.function.Function1;
 import cyclops.function.Lambda;
 import cyclops.monads.ReactorWitness;
 import cyclops.monads.ReactorWitness.flux;
@@ -54,7 +54,7 @@ public class FluxTest {
     @Test
     public void applicative(){
 
-        FluxKind<Fn1<Integer, Integer>> listFn = Fluxs.Instances.unit()
+        FluxKind<Function1<Integer, Integer>> listFn = Fluxs.Instances.unit()
                                                               .unit(Lambda.l1((Integer i) -> i * 2))
                                                               .convert(FluxKind::narrowK);
 

@@ -5,7 +5,7 @@ import static java.util.Comparator.comparing;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.jooq.lambda.tuple.Tuple.tuple;
+import static cyclops.data.tuple.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -29,7 +29,8 @@ import cyclops.collections.vavr.VavrHashSetX;
 import cyclops.collections.vavr.VavrQueueX;
 import cyclops.companion.Reducers;
 import cyclops.companion.Semigroups;
-import cyclops.stream.Streamable;
+import cyclops.control.Option;
+import cyclops.reactive.Streamable;
 import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
@@ -126,12 +127,12 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
         assertEquals(tuple(2, "two"), s1.get(0));
 
         CollectionX<Tuple2<Integer, String>> t2 = of(tuple(2, "two"), tuple(1, "one"));
-        List<Tuple2<Integer, String>> s2 = t2.sorted(comparing(t -> t.v1())).toList();
+        List<Tuple2<Integer, String>> s2 = t2.sorted(comparing(t -> t._1())).toList();
         assertEquals(tuple(1, "one"), s2.get(1));
         assertEquals(tuple(2, "two"), s2.get(0));
 
         CollectionX<Tuple2<Integer, String>> t3 = of(tuple(2, "two"), tuple(1, "one"));
-        List<Tuple2<Integer, String>> s3 = t3.sorted(t -> t.v1()).toList();
+        List<Tuple2<Integer, String>> s3 = t3.sorted(t -> t._1()).toList();
         assertEquals(tuple(1, "one"), s3.get(1));
         assertEquals(tuple(2, "two"), s3.get(0));
     }

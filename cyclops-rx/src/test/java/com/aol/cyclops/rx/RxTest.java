@@ -11,7 +11,7 @@ import cyclops.monads.RxWitness.observable;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx.Observables;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.stream.Spouts;
+import cyclops.reactive.Spouts;
 import org.junit.Test;
 
 
