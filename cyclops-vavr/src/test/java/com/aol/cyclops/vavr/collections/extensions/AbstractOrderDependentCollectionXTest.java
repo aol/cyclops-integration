@@ -83,11 +83,11 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
 
         assertEquals(asList(2), of(2).onEmpty(1).toListX());
         assertEquals(asList(2), of(2).onEmptyGet(() -> 1).toListX());
-        assertEquals(asList(2), of(2).onEmptyThrow(() -> new X()).toListX());
+        assertEquals(asList(2), of(2).onEmptyError(() -> new X()).toListX());
 
         assertEquals(asList(2, 3), of(2, 3).onEmpty(1).toListX());
         assertEquals(asList(2, 3), of(2, 3).onEmptyGet(() -> 1).toListX());
-        assertEquals(asList(2, 3), of(2, 3).onEmptyThrow(() -> new X()).toListX());
+        assertEquals(asList(2, 3), of(2, 3).onEmptyError(() -> new X()).toListX());
     }
     @Test
     public void testCycle() {
@@ -124,7 +124,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
 
     @Test
     public void slidingIncrement() {
-        List<List<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).collect(Collectors.toList());
+        List<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).collect(Collectors.toList());
 
         System.out.println(list);
         assertThat(list.get(0), hasItems(1, 2, 3));
@@ -138,20 +138,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
                    .toListX(),equalTo(ListX.of(4,3)));
 
     }
-    @Test
-    public void groupedFunction(){
-        assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").count(),equalTo((2L)));
-        assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").filter(t->t._1().equals("a"))
-                        .map(t->t._2()).map(s->s.toList()).single().orElse(null),
-                            equalTo((Arrays.asList(1,2))));
-    }
-    @Test
-    public void groupedFunctionCollector(){
-        assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b",Collectors.toList()).count(),equalTo((2L)));
-        assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b",Collectors.toList()).filter(t->t._1().equals("a"))
-                .map(t->t._2()).single().orElse(null),
-                    equalTo((Arrays.asList(1,2))));
-    }
+
 	@Test
 	public void zip3(){
 		List<Tuple3<Integer,Integer,Character>> list =

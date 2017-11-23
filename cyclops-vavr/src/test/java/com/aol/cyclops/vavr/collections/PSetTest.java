@@ -5,47 +5,47 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import com.oath.cyclops.types.persistent.PersistentSet;
 import cyclops.collections.vavr.VavrHashSetX;
+import cyclops.data.HashSet;
 import org.junit.Before;
 import org.junit.Test;
-import org.pcollections.HashTreePSet;
-import org.pcollections.MapPSet;
-import org.pcollections.PSet;
+
 public class PSetTest {
 
-    MapPersistentSet<Integer> org = null;
+    HashSet<Integer> org = null;
     PersistentSet<Integer> test=null;
 
     @Before
     public void setup(){
-       org = HashTreePSet.empty();
+       org = HashSet.empty();
        test = VavrHashSetX.empty();
 
     }
 
     @Test
     public void empty(){
-        assertThat(HashTreePSet.empty(),equalTo(VavrHashSetX.empty()));
+        assertThat(HashSet.empty(),equalTo(VavrHashSetX.empty()));
     }
     @Test
     public void singleton(){
-        assertThat(HashTreePSet.singleton(1),equalTo(VavrHashSetX.singleton(1)));
+        assertThat(HashSet.singleton(1),equalTo(VavrHashSetX.singleton(1)));
     }
 
     @Test
     public void plusMinus(){
         System.out.println(test.plusAll(Arrays.asList(1,2,3)));
-        System.out.println(test.plusAll(Arrays.asList(1,2,3)).minus(1));
+        System.out.println(test.plusAll(Arrays.asList(1,2,3)).removeValue(1));
 
         assertThat(org.plus(1),equalTo(test.plus(1)));
         assertThat(org.plusAll(Arrays.asList(1,2,3)),equalTo(test.plusAll(Arrays.asList(1,2,3))));
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minus((Object)1),equalTo(test.plusAll(Arrays.asList(1,2,3)).minus((Object)1)));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeValue(1),equalTo(test.plusAll(Arrays.asList(1,2,3)).removeValue(1)));
         //index 1
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minus(1),equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(1)));
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minus(0),equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(0)));
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minus(2),equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(2)));
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minusAll(Arrays.asList(2,3)),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3)).minusAll(Arrays.asList(2,3))));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeValue(1),equalTo(test.plusAll(Arrays.asList(1,2,3)).removeValue(1)));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeValue(0),equalTo(test.plusAll(Arrays.asList(1,2,3)).removeValue(0)));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeValue(2),equalTo(test.plusAll(Arrays.asList(1,2,3)).removeValue(2)));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeAll(Arrays.asList(2,3)),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).removeAll(Arrays.asList(2,3))));
 
 
 

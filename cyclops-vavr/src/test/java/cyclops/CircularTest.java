@@ -5,7 +5,7 @@ import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Maybe.Nothing;
 import cyclops.control.State;
-import cyclops.control.lazy.Either;
+
 import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -30,7 +30,7 @@ public class CircularTest {
 
         System.out.println(subAverage(ListX.of(1,2,3,4,5,6,7)));
 
-        System.out.println(ListX.of(1,2,3,4,5,6,7).collectors().avgDouble(i->i));
+        System.out.println(ListX.of(1,2,3,4,5,6,7).doubleStats(d->d).getAverage());
     }
 
     static class Unit{

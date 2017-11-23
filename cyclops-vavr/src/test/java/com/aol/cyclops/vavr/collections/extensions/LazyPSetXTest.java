@@ -19,6 +19,7 @@ import cyclops.collections.mutable.ListX;
 import cyclops.collections.vavr.VavrHashSetX;
 import cyclops.companion.Reducers;
 import cyclops.companion.Semigroups;
+import cyclops.control.Option;
 import cyclops.reactive.Streamable;
 import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
@@ -123,7 +124,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
     public void remove() {
 
         VavrHashSetX.of(1, 2, 3)
-               .minusAll(BagX.of(2, 3))
+               .removeAll((Iterable<Integer>)BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }

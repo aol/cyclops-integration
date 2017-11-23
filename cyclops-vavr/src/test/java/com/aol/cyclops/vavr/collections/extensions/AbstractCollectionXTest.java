@@ -275,8 +275,8 @@ public abstract class AbstractCollectionXTest {
     }
     @Test
     public void minusAllOneTwoValues(){
-        assertThat(of(1,2).removeAll((Iterable)of(1)),hasItem(2));
-        assertThat(of(1,2).removeAll((Iterable)of(1)),not(hasItem(1)));
+        assertThat(of(1,2).removeAll((Iterable<Integer>)of(1)),hasItem(2));
+        assertThat(of(1,2).removeAll((Iterable<Integer>)of(1)),not(hasItem(1)));
     }
 
 	@Test
@@ -1608,7 +1608,7 @@ public abstract class AbstractCollectionXTest {
 
 	        @Test
 	        public void slidingIncrementNoOrder() {
-	            List<List<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).collect(Collectors.toList());
+	            List<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).collect(Collectors.toList());
 
 	            System.out.println(list);
 
@@ -1622,20 +1622,7 @@ public abstract class AbstractCollectionXTest {
 	                       .toListX(),equalTo(ListX.of(1,2,3)));
 
 	        }
-	        @Test
-	        public void groupedFunctionNoOrder(){
-	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").count(),equalTo((2L)));
-	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b").filter(t->t._1().equals("a"))
-	                            .map(t->t._2()).map(ReactiveSeq::fromStream).map(ReactiveSeq::toListX).single().orElse(null),
-	                                equalTo((ListX.of(1,2))));
-	        }
-	        @Test
-	        public void groupedFunctionCollectorNoOrder(){
-	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).count(),equalTo((2L)));
-	            assertThat(of(1,2,3).grouped(f-> f<3? "a" : "b", CyclopsCollectors.toListX()).filter(t->t._1().equals("a"))
-	                    .map(t->t._2()).single().orElse(null),
-	                        equalTo((Arrays.asList(1,2))));
-	        }
+
 	        @Test
 	        public void zip3NoOrder(){
 	            List<Tuple3<Integer,Integer,Character>> list =

@@ -4,12 +4,13 @@ import cyclops.collections.mutable.ListX;
 import cyclops.control.Eval;
 import cyclops.control.Reader;
 import cyclops.control.Either;
-import cyclops.control.lazy.Either;
+
+import cyclops.free.Free;
 import cyclops.function.*;
 import cyclops.monads.Witness;
 import cyclops.monads.Witness.supplier;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.typeclasses.free.Free;
+
 
 import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
@@ -99,7 +100,7 @@ public class FunctionTest {
     @Test
     public void curry(){
 
-        Fn2<Integer,Integer,Integer> add = (a, b)->a+b;
+        Function2<Integer,Integer,Integer> add = (a, b)->a+b;
         add.apply(10,20);
         //30
 
@@ -132,7 +133,7 @@ public class FunctionTest {
     }
 
 
-    public  <T> Fn2<T,Function1<T,T>,T> applyTwice(){
+    public  <T> Function2<T,Function1<T,T>,T> applyTwice(){
             return  (a,b) -> b.apply(b.apply(a));
     }
     public static <T> T twice(T a,Function1<T,T> fn){
@@ -166,7 +167,7 @@ public class FunctionTest {
         //14
 
 
-        BinaryFn<Stream<Integer>> fn = Stream::concat;
+        BinaryFunction<Stream<Integer>> fn = Stream::concat;
 
         fn.curry()
                 .compose((Integer a) -> ReactiveSeq.range(0, a))
@@ -182,7 +183,7 @@ public class FunctionTest {
 
     @Test
     public void zip(){
-        Fn2<Integer,Integer,String> fn2 = (a,b)->"hello " +a * b;
+        Function2<Integer,Integer,String> fn2 = (a,b)->"hello " +a * b;
 
         fn2.fnOps()
            .listXZip().apply(ListX.of(1,2,3),ListX.of(10,20,30));
@@ -191,11 +192,11 @@ public class FunctionTest {
 
     @Test
     public void fn0(){
-        Fn0<Integer> s = ()->10;
-        Fn0<String> mapped = Eval.later(s)
+        Function0<Integer> s = ()->10;
+        Function0<String> mapped = Eval.later(s)
                                  .map(i->"hello " +i);
 
-        Fn0<Integer> flatMapped = Eval.later(s)
+        Function0<Integer> flatMapped = Eval.later(s)
                                      .flatMap(i->Eval.later(()->i+2));
 
 
@@ -214,15 +215,15 @@ public class FunctionTest {
 
     private static Free<supplier, Long> fibonacci(long n, long a, long b) {
         return n == 0 ? Free.done(b) : λK( ()->fibonacci(n-1, a+b, a))
-                .kindTo(Fn0::suspend)
+                .kindTo(Function0::suspend)
                 .flatMap(i->λK( ()->fibonacci(n-1, a+b, a))
-                        .kindTo(Fn0::suspend));
+                        .kindTo(Function0::suspend));
     }
     @Test
     public void testFib(){
 
         long time = System.currentTimeMillis();
-        assertThat(1597l,equalTo(Fn0.run(fibonacci(17L))));
+        assertThat(1597l,equalTo(Function0.run(fibonacci(17L))));
         System.out.println("Taken "  +(System.currentTimeMillis()-time));
     }
 }

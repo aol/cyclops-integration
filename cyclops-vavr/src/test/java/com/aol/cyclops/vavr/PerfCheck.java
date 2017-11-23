@@ -1,11 +1,12 @@
 package com.aol.cyclops.vavr;
 
+import cyclops.data.Seq;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.pcollections.ConsPersistentList;
+
 import com.oath.cyclops.types.persistent.PersistentList;
 import com.oath.cyclops.types.persistent.PersistentList;
-import org.pcollections.TreePersistentList;
+
 
 import io.vavr.collection.Array;
 import io.vavr.collection.List;
@@ -40,13 +41,13 @@ public class PerfCheck {
     }
 
     @Test
-    public void pstackInsert() {
+    public void cyclopsInsert() {
         long start = System.currentTimeMillis();
-        PersistentList<Integer> list = ConsPersistentList.empty();
+        PersistentList<Integer> list = Seq.empty();
         for (int i = 0; i < 1_000_000; i++) {
             list = list.plus(1);
         }
-        System.out.println("PCollections PersistentList took " + (System.currentTimeMillis() - start));
+        System.out.println("Cyclops PersistentList took " + (System.currentTimeMillis() - start));
         System.out.println(list.size());
 
     }
@@ -67,11 +68,11 @@ public class PerfCheck {
     public void pvectorInsert() {
 
         long start = System.currentTimeMillis();
-        PersistentList<Integer> list = TreePersistentList.empty();
+        PersistentList<Integer> list = cyclops.data.Vector.empty();
         for (int i = 0; i < 1_00_000; i++) {
             list = list.plus(1);
         }
-        System.out.println("PCollections PersistentList took " + (System.currentTimeMillis() - start));
+        System.out.println("Cyclops PersistentList took " + (System.currentTimeMillis() - start));
         System.out.println(list.size());
 
     }

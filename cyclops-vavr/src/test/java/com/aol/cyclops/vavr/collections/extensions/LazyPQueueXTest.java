@@ -154,7 +154,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
     public void remove() {
 
         VavrQueueX.of(1, 2, 3)
-               .minusAll(BagX.of(2, 3))
+               .removeAll((Iterable<Integer>)BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }

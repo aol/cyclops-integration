@@ -35,7 +35,7 @@ public class MonosTest {
                                             .unit("hello")
                                             .convert(MonoKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
+      assertThat(opt.toFuture().orElse(""),equalTo(Future.ofResult("hello").orElse("1")));
     }
     @Test
     public void functor(){
@@ -45,7 +45,7 @@ public class MonosTest {
                                      .applyHKT(h-> Instances.functor().map((String v) ->v.length(), h))
                                      .convert(MonoKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
+      assertThat(opt.toFuture().orElse(-1),equalTo(Future.ofResult("hello".length()).orElse(10000)));
     }
     @Test
     public void apSimple(){
@@ -66,7 +66,7 @@ public class MonosTest {
                                      .applyHKT(h-> Instances.applicative().ap(optFn, h))
                                      .convert(MonoKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()*2).join()));
+      assertThat(opt.toFuture().orElse(-1),equalTo(Future.ofResult("hello".length()*2).orElse(10000)));
     }
     @Test
     public void monadSimple(){
@@ -82,7 +82,7 @@ public class MonosTest {
                                      .applyHKT(h-> Instances.monad().flatMap((String v) -> Instances.unit().unit(v.length()), h))
                                      .convert(MonoKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello".length()).join()));
+      assertThat(opt.toFuture().orElse(-1),equalTo(Future.ofResult("hello".length()).orElse(10000)));
     }
     @Test
     public void monadZeroFilter(){
@@ -92,7 +92,7 @@ public class MonosTest {
                                      .applyHKT(h-> Instances.monadZero().filter((String t)->t.startsWith("he"), h))
                                      .convert(MonoKind::narrowK);
 
-        assertThat(opt.toFuture().join(),equalTo(Future.ofResult("hello").join()));
+      assertThat(opt.toFuture().orElse("boo!"),equalTo(Future.ofResult("hello").orElse("no")));
     }
     @Test
     public void monadZeroFilterOut(){

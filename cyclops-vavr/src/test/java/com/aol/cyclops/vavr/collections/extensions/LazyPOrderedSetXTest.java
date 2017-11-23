@@ -14,6 +14,7 @@ import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPOrderedS
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.vavr.VavrTreeSetX;
+import cyclops.control.Option;
 import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
@@ -64,7 +65,7 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     public void remove() {
 
         VavrTreeSetX.of(1, 2, 3)
-               .minusAll(BagX.of(2, 3))
+               .removeAll((Iterable<Integer>)BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }

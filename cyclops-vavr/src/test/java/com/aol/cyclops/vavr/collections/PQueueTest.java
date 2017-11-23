@@ -5,51 +5,52 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 
+import com.oath.cyclops.types.persistent.PersistentQueue;
 import cyclops.collections.vavr.VavrQueueX;
+import cyclops.data.BankersQueue;
 import org.junit.Before;
 import org.junit.Test;
-import org.pcollections.AmortizedPersistentQueue;
-import org.pcollections.PersistentQueue;
-public class PersistentQueueTest {
 
-    AmortizedPersistentQueue<Integer> org = null;
+public class PQueueTest {
+
+    BankersQueue<Integer> org = null;
     PersistentQueue<Integer> test=null;
 
     @Before
     public void setup(){
-       org = AmortizedPersistentQueue.empty();
+       org = BankersQueue.empty();
        test = VavrQueueX.empty();
 
     }
 
     @Test
     public void empty(){
-        assertThat(AmortizedPersistentQueue.empty().toArray(),equalTo(VavrQueueX.empty().toArray()));
+        assertThat(BankersQueue.empty().toArray(),equalTo(VavrQueueX.empty().toArray()));
     }
     @Test
     public void singleton(){
-        assertThat(AmortizedPersistentQueue.empty().plus(1).toArray(),equalTo(VavrQueueX.singleton(1).toArray()));
+        assertThat(BankersQueue.empty().plus(1).toArray(),equalTo(VavrQueueX.singleton(1).toArray()));
     }
 
     @Test
     public void plusMinus(){
         System.out.println(test.plusAll(Arrays.asList(1,2,3)));
-        System.out.println(test.plusAll(Arrays.asList(1,2,3)).minus(1));
+        System.out.println(test.plusAll(Arrays.asList(1,2,3)).removeValue(1));
 
-        assertThat(org.plus(1).toArray(),equalTo(test.plus(1).toArray()));
+        assertThat(org.plus(1).toArray(),equalTo(test.plus(1).stream().toArray()));
         assertThat(org.plusAll(Arrays.asList(1,2,3)).toArray(),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3)).toArray()));
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minus((Object)1).toArray(),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3)).minus((Object)1).toArray()));
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).stream().toArray()));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeValue(1).toArray(),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).removeValue(1).stream().toArray()));
         //index 1
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minus(1).toArray(),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(1).toArray()));
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minus(0).toArray(),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(0).toArray()));
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minus(2).toArray(),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3)).minus(2).toArray()));
-        assertThat(org.plusAll(Arrays.asList(1,2,3)).minusAll(Arrays.asList(2,3)).toArray(),
-                   equalTo(test.plusAll(Arrays.asList(1,2,3)).minusAll(Arrays.asList(2,3)).toArray()));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeValue(1).toArray(),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).removeValue(1).stream().toArray()));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeValue(0).toArray(),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).removeValue(0).stream().toArray()));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeValue(2).toArray(),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).removeValue(2).stream().toArray()));
+        assertThat(org.plusAll(Arrays.asList(1,2,3)).removeAll(Arrays.asList(2,3)).toArray(),
+                   equalTo(test.plusAll(Arrays.asList(1,2,3)).removeAll(Arrays.asList(2,3)).stream().toArray()));
 
 
 

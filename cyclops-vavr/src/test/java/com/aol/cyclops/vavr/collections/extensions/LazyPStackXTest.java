@@ -11,6 +11,7 @@ import java.util.function.UnaryOperator;
 import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
 import cyclops.collections.immutable.BagX;
 import cyclops.collections.immutable.LinkedListX;
+import cyclops.control.Option;
 import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
@@ -20,13 +21,13 @@ import cyclops.collections.vavr.VavrListX;
 
 import reactor.core.publisher.Flux;
 
-public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
+public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
 
     @Override
     public <T> FluentCollectionX<T> of(T... values) {
         LinkedListX<T> list = VavrListX.empty();
         for (T next : values) {
-            list = list.plus(list.size(), next);
+            list = list.insertAt(list.size(), next);
         }
         System.out.println("List " + list);
         return list;
@@ -58,7 +59,7 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
     public void remove() {
 
         VavrListX.of(1, 2, 3)
-               .minusAll(BagX.of(2, 3))
+               .removeAll((Iterable<Integer>)BagX.of(2, 3))
                .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }

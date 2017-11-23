@@ -30,7 +30,7 @@ public class ListTTest {
     @Test
     public void vector(){
 
-        ListT<option,Integer> vectorInOption = ListT.ofList(Vavr.option(Option.some(VavrVectorX.of(10))));
+        ListT<option,Integer> vectorInOption = ListT.of(Vavr.option(Option.some(VavrVectorX.of(10))));
 
 
         ListT<option,Integer> doubled = vectorInOption.map(i->i*2);

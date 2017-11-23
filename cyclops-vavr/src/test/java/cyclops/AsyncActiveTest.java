@@ -13,6 +13,7 @@ import cyclops.collections.vavr.VavrVectorX;
 import cyclops.companion.Monoids;
 import cyclops.companion.vavr.Futures;
 import cyclops.companion.vavr.Trys;
+import cyclops.control.Option;
 import cyclops.monads.AnyM;
 import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.tryType;
@@ -52,8 +53,7 @@ public class AsyncActiveTest {
                 .groupedT(2)
                .reduce(0, (a, b) -> a + b);
         //[1, 5, 9, 13, 17]
-
-
+      
     }
 
     @Test
@@ -74,7 +74,7 @@ public class AsyncActiveTest {
 
 
 
-        ListX.unfold(1,i->i<10 ? Optional.of(Tuple.tuple(i,i+1)) : Optional.empty());
+        ListX.unfold(1,i->i<10 ? Option.of(Tuple.tuple(i,i+1)) : Option.none());
         //[1, 2, 3, 4, 5, 6, 7, 8, 9]
 
         ListX.iterate(Long.MAX_VALUE,1,i->i+1)
@@ -162,7 +162,7 @@ public class AsyncActiveTest {
        //[2,3]
 
        ListX.of(1,2,3)
-               .minus(1);
+               .removeValue((Object)1);
        //[2,3]
     }
     int times =0;
