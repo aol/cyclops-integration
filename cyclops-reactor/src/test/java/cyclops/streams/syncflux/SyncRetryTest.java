@@ -87,8 +87,7 @@ public class SyncRetryTest {
 					.recover(IOException.class,e->"hello")
 					.firstValue("b"),equalTo("hello"));
 	}
-	@Test(expected=Exception.class)
-
+	@Test
 	public void recoverIOUnhandledThrown(){
 		assertThat(of(1,2,3,4)
 					.map(i->i+2)

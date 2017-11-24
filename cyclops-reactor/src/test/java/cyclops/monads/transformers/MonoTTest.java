@@ -93,7 +93,7 @@ public class MonoTTest implements Printable {
 	@Test
 	public void testMapFunctionOfQsuperTQextendsR() {
 		assertThat(just.map(i->i+5).get(),equalTo(Maybe.just(15)));
-		assertThat(none.map(i->i+5).orElse(1000),equalTo(Maybe.just(1000)));
+		assertThat(none.map(i->i+5).orElse(1000),equalTo(1000));
 	}
 
 
@@ -290,8 +290,8 @@ public class MonoTTest implements Printable {
 
 
 
-		just.get();
-		assertThat(capture.get(),equalTo(Maybe.just(10)));
+		just.get().orElse(-1);
+		assertThat(capture.get(),equalTo(10));
 	}
 
 	private Trampoline<Integer> sum(int times, int sum){

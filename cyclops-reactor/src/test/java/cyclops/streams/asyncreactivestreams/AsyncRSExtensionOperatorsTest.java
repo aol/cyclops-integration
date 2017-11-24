@@ -131,13 +131,13 @@ public class AsyncRSExtensionOperatorsTest {
     public void getMultpleStream(){
         assertThat(of(1,2,3,4,5).elementAt(2).orElse(-1),equalTo(3));
     }
-    @Test(expected=NoSuchElementException.class)
+    @Test
     public void getMultiple1(){
-        of(1).elementAt(1);
+        assertFalse(of(1).elementAt(1).isPresent());
     }
-    @Test(expected=NoSuchElementException.class)
+    @Test
     public void getEmpty(){
-        of().elementAt(0);
+        assertFalse(of().elementAt(0).isPresent());
     }
     @Test
     public void get0(){
