@@ -6,6 +6,7 @@ import cyclops.companion.Semigroups;
 import cyclops.companion.Streams;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.control.Maybe;
+import cyclops.control.Option;
 import cyclops.monads.AnyM;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.reactive.Streamable;
@@ -113,20 +114,20 @@ public class ExtensionOperatorsRSTest {
 	}
 	@Test
 	public void elementAt0(){
-		assertThat(Fluxs.of(1).elementAt(0),equalTo(1));
+		assertThat(Fluxs.of(1).elementAt(0),equalTo(Option.some(1)));
 	}
 	@Test
 	public void getMultple(){
-		assertThat(Fluxs.of(1,2,3,4,5).elementAt(2),equalTo(3));
+		assertThat(Fluxs.of(1,2,3,4,5).elementAt(2),equalTo(Maybe.just(3)));
 	}
 
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void getMultiple1(){
-		Fluxs.of(1).elementAt(1);
+		assertFalse(Fluxs.of(1).elementAt(1).isPresent());
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void getEmpty(){
-		Fluxs.of().elementAt(0);
+    assertFalse(Fluxs.of().elementAt(0).isPresent());
 	}
 	@Test
 	public void get0(){
@@ -148,13 +149,13 @@ public class ExtensionOperatorsRSTest {
 	public void singleTest(){
 		assertThat(Fluxs.of(1).single().orElse(null),equalTo(1));
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void singleEmpty(){
-		Fluxs.of().single().orElse(null);
+		assertNull(Fluxs.of().single().orElse(null));
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void single2(){
-		Fluxs.of(1,2).single().orElse(null);
+		assertNull(Fluxs.of(1,2).single().orElse(null));
 	}
 	@Test
 	public void singleOptionalTest(){

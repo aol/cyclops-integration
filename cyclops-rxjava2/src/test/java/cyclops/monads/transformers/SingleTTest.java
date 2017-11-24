@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static cyclops.control.Maybe.just;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
@@ -56,7 +57,7 @@ public class SingleTTest implements Printable {
 	    Optional.of(10)
 	            .map(i->print("optional " + (i+10)));
 
-	    Maybe.just(10)
+	    just(10)
 	         .map(i->print("maybe " + (i+10)));
 
 	}
@@ -94,14 +95,14 @@ public class SingleTTest implements Printable {
 
 	@Test
 	public void testMapFunctionOfQsuperTQextendsR() {
-		assertThat(just.map(i->i+5).get(),equalTo(15));
+		assertThat(just.map(i->i+5).get(),equalTo(just(15)));
 		assertThat(none.map(i->i+5).orElse(1000),equalTo(1000));
 	}
 
 	@Test
 	public void testFlatMap() {
 
-		assertThat(just.flatMap(i-> Maybe.of(i+5)).get(),equalTo(15));
+		assertThat(just.flatMap(i-> Maybe.of(i+5)).get(),equalTo(just(15)));
 		assertThat(none.flatMap(i-> Maybe.of(i+5)).orElse(-1),equalTo(-1));
 	}
 
@@ -149,11 +150,11 @@ public class SingleTTest implements Printable {
 
 	@Test
 	public void testGet() {
-		assertThat(just.get(),equalTo(10));
+		assertThat(just.get(),equalTo(just(10)));
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void testGetNone() {
-		none.get();
+		assertFalse(none.get().isPresent());
 
 	}
 
@@ -319,7 +320,7 @@ public class SingleTTest implements Printable {
 
 	@Test
 	public void testMapFunctionOfQsuperTQextendsR1() {
-		assertThat(just.map(i->i+5).get(),equalTo(15));
+		assertThat(just.map(i->i+5).get(),equalTo(just(15)));
 	}
 
 	@Test
@@ -329,7 +330,7 @@ public class SingleTTest implements Printable {
 
 
 
-		just.get();
+		just.get().orElse(-1);
 		assertThat(capture.get(),equalTo(10));
 	}
 

@@ -96,7 +96,7 @@ public class SyncRetryTest {
                         ExceptionSoftener.throwSoftenedException( new IOException()); return null;})
 					.map(i->"x!"+i)
 					.recover(IllegalStateException.class,e->"hello")
-					.firstValue("b"),equalTo("hello"));
+					.firstValue("b"),equalTo("b"));
 	}
 
 	@Test

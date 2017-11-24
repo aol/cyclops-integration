@@ -27,6 +27,7 @@ import cyclops.data.tuple.Tuple4;
 import org.reactivestreams.Publisher;
 
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.stream.Stream;
 
@@ -371,5 +372,19 @@ public final class MaybeT<W extends WitnessType<W>,T> implements To<MaybeT<W,T>>
   }
   public T orElseGet(Supplier<? super T> s){
     return stream().findAny().orElseGet((Supplier<T>)s);
+  }
+  @Override
+  public <R> MaybeT<W,R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
+    return (MaybeT<W,R>)Transformable.super.trampoline(mapper);
+  }
+
+  @Override
+  public <R> MaybeT<W,R> retry(Function<? super T, ? extends R> fn) {
+    return (MaybeT<W,R>)Transformable.super.retry(fn);
+  }
+
+  @Override
+  public <R> MaybeT<W,R> retry(Function<? super T, ? extends R> fn, int retries, long delay, TimeUnit timeUnit) {
+    return (MaybeT<W,R>)Transformable.super.retry(fn,retries,delay,timeUnit);
   }
 }

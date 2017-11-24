@@ -30,6 +30,7 @@ import org.reactivestreams.Publisher;
 
 
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.stream.Stream;
 
@@ -320,4 +321,19 @@ public final class SingleT<W extends WitnessType<W>,T> implements To<SingleT<W,T
      public T orElseGet(Supplier<? super T> s){
     return stream().findAny().orElseGet((Supplier<T>)s);
   }
+
+     @Override
+     public <R> SingleT<W,R> trampoline(Function<? super T, ? extends Trampoline<? extends R>> mapper) {
+        return (SingleT<W,R>)Transformable.super.trampoline(mapper);
+     }
+
+     @Override
+     public <R> SingleT<W,R> retry(Function<? super T, ? extends R> fn) {
+        return (SingleT<W,R>)Transformable.super.retry(fn);
+     }
+
+     @Override
+     public <R> SingleT<W,R> retry(Function<? super T, ? extends R> fn, int retries, long delay, TimeUnit timeUnit) {
+        return (SingleT<W,R>)Transformable.super.retry(fn,retries,delay,timeUnit);
+     }
 }

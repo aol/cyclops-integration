@@ -90,8 +90,7 @@ public class AsyncRSRetryTest {
 					.recover(IOException.class,e->"hello")
 					.firstValue(null),equalTo("hello"));
 	}
-	@Test(expected=Exception.class)
-
+	@Test
 	public void recoverIOUnhandledThrown(){
 		assertThat(of(1,2,3,4)
 					.map(i->i+2)
@@ -99,7 +98,7 @@ public class AsyncRSRetryTest {
                         ExceptionSoftener.throwSoftenedException( new IOException()); return null;})
 					.map(i->"x!"+i)
 					.recover(IllegalStateException.class,e->"hello")
-					.firstValue(null),equalTo("hello"));
+					.firstValue("boo1"),equalTo("boo1"));
 	}
 
 	@Test

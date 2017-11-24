@@ -4,6 +4,7 @@ import cyclops.async.adapters.Topic;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.control.Maybe;
+import cyclops.control.Option;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.reactive.Streamable;
 
@@ -260,23 +261,23 @@ public class AsyncRSSequentialTest extends BaseSequentialTest {
         assertThat(of(1,2,3).to().optional(),equalTo(Optional.of(ListX.of(1,2,3))));
        // System.out.println(of(1, 2, 3).splitAtHead()._2().listX());
         System.out.println("split " + of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().toListX());
-        assertEquals(Optional.of(3), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().splitAtHead()._1());
+        assertEquals(Option.some(3), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().splitAtHead()._1());
     }
     @Test
     public void testSplitAtHead() {
 
-        assertEquals(Optional.empty(), of().splitAtHead()._1());
+        assertEquals(Option.none(), of().splitAtHead()._1());
         assertEquals(asList(), of().splitAtHead()._2().toList());
 
-        assertEquals(Optional.of(1), of(1).splitAtHead()._1());
+        assertEquals(Option.some(1), of(1).splitAtHead()._1());
         assertEquals(asList(), of(1).splitAtHead()._2().toList());
 
-        assertEquals(Optional.of(1), of(1, 2).splitAtHead()._1());
+        assertEquals(Option.some(1), of(1, 2).splitAtHead()._1());
         assertEquals(asList(2), of(1, 2).splitAtHead()._2().toList());
 
-        assertEquals(Optional.of(1), of(1, 2, 3).splitAtHead()._1());
-        assertEquals(Optional.of(2), of(1, 2, 3).splitAtHead()._2().splitAtHead()._1());
-        assertEquals(Optional.of(3), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().splitAtHead()._1());
+        assertEquals(Option.some(1), of(1, 2, 3).splitAtHead()._1());
+        assertEquals(Option.some(2), of(1, 2, 3).splitAtHead()._2().splitAtHead()._1());
+        assertEquals(Option.some(3), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().splitAtHead()._1());
         assertEquals(asList(2, 3), of(1, 2, 3).splitAtHead()._2().toList());
          assertEquals(asList(3), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().toList());
         assertEquals(asList(), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().splitAtHead()._2().toList());
