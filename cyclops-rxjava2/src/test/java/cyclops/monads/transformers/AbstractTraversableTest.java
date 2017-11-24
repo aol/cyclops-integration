@@ -6,6 +6,7 @@ import cyclops.collections.mutable.ListX;
 import cyclops.companion.CyclopsCollectors;
 import cyclops.companion.Reducers;
 import cyclops.companion.Semigroups;
+import cyclops.control.Option;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.reactive.ReactiveSeq;
@@ -488,7 +489,7 @@ public abstract class AbstractTraversableTest {
         public void batchBySizeCollection(){
 
 
-            assertThat(of(1,2,3,4,5,6).grouped(3,()-> ListX.<Integer>empty()).stream().elementAt(0),is(VectorX.of(1,2,3)));
+            assertThat(of(1,2,3,4,5,6).grouped(3,()-> ListX.<Integer>empty()).stream().elementAt(0),is(Option.some(ListX.of(1,2,3))));
 
            // assertThat(of(1,1,1,1,1,1).grouped(3,()->new ListXImpl<>()).get(1).get().size(),is(1));
         }

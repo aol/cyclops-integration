@@ -10,6 +10,7 @@ import cyclops.companion.rx2.Flowables;
 import cyclops.control.Either;
 import cyclops.control.Maybe;
 
+import cyclops.control.Option;
 import cyclops.reactive.ReactiveSeq;
 import org.hamcrest.Matchers;
 import cyclops.data.tuple.Tuple2;
@@ -213,7 +214,7 @@ public class BaseSequentialTest {
         assertThat(of(1, 2, 3).to().optional(), equalTo(Optional.of(ListX.of(1, 2, 3))));
         // System.out.println(of(1, 2, 3).splitAtHead()._2().listX());
         System.out.println("split " + of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().toListX());
-        assertEquals(Optional.of(3), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().splitAtHead()._1());
+        assertEquals(Option.of(3), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().splitAtHead()._1());
     }
 
     @Test
@@ -790,7 +791,7 @@ public class BaseSequentialTest {
             List<String> result = of().insertAt(1, 100, 200, 300)
                     .map(it -> it + "!!").collect(Collectors.toList());
 
-            assertThat(result, equalTo(Arrays.asList()));
+            assertThat(result, equalTo(Arrays.asList("100!!", "200!!", "300!!")));
         }
     }
 
@@ -819,7 +820,7 @@ public class BaseSequentialTest {
         List<String> result = of().insertAtS(1, Stream.of(100, 200, 300))
                 .map(it -> it + "!!").collect(Collectors.toList());
 
-        assertThat(result, equalTo(Arrays.asList()));
+        assertThat(result, equalTo(Arrays.asList("100!!", "200!!", "300!!")));
     }
 
     @Test
