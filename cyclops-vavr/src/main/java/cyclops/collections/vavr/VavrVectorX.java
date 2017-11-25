@@ -235,6 +235,6 @@ public class VavrVectorX<T> implements PersistentList<T>, Unwrapable {
 
   @Override
   public Iterator<T> iterator() {
-    return null;
+    return vector.iterator();
   }
 }

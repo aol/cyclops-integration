@@ -37,7 +37,7 @@ public class ComprehensionTest {
         String s = Lists.forEach2(List.of(1, 2, 3), a -> List.<Integer> of(a + 10), Tuple::tuple)
                                            .toString();
 
-        assertThat(s, equalTo("List((1, 11), (2, 12), (3, 13))"));
+        assertThat(s, equalTo("List([1,11], [2,12], [3,13])"));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class ComprehensionTest {
         String s = Streams.forEach2(Stream.of(1, 2, 3), a -> Stream.<Integer> of(a + 10), Tuple::tuple)
                                            .toString();
 
-        assertThat(s, equalTo("Stream((1, 11), ?)"));
+        assertThat(s, equalTo("Stream([1,11], ?)"));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class ComprehensionTest {
         String s = Lists.forEach2(List.of(1, 2, 3), a -> List.<Integer> of(a + 10), Tuple::tuple)
                                            .toString();
 
-        assertThat(s, equalTo("List((1, 11), (2, 12), (3, 13))"));
+        assertThat(s, equalTo("List([1,11], [2,12], [3,13])"));
     }
 
 
