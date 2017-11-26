@@ -11,6 +11,7 @@ import cyclops.companion.*;
 import cyclops.control.Maybe;
 import cyclops.control.Option;
 import cyclops.control.Trampoline;
+import cyclops.control.Try;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.reactive.ReactiveSeq;
@@ -57,7 +58,7 @@ public abstract class AbstractCollectionXTest {
 	static Executor ex = Executors.newFixedThreadPool(1);
     @Test
     public void foldFuture(){
-        assertThat(of(1,2,3).foldFuture(ex, l->l.reduce(Monoids.intSum)).get(),equalTo(6));
+        assertThat(of(1,2,3).foldFuture(ex, l->l.reduce(Monoids.intSum)).get(),equalTo(Try.success(6)));
     }
     @Test
     public void foldLazy(){
@@ -65,7 +66,7 @@ public abstract class AbstractCollectionXTest {
     }
     @Test
     public void foldTry(){
-        assertThat(of(1,2,3).foldTry(l->l.reduce(Monoids.intSum), Throwable.class).get(),equalTo(6));
+        assertThat(of(1,2,3).foldTry(l->l.reduce(Monoids.intSum), Throwable.class).get(),equalTo(Option.some(6)));
     }
     @Test
     public void plusLoop(){
@@ -904,13 +905,13 @@ public abstract class AbstractCollectionXTest {
 	public void getMultpleStream(){
 		assertThat(of(1,2,3,4,5).stream().toList(),equalTo(Arrays.asList(1,2,3,4,5)));
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void getMultiple1(){
-		of(1).stream().elementAt(1);
+		assertFalse(of(1).stream().elementAt(1).isPresent());
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void getEmpty(){
-		of().stream().elementAt(0);
+		assertFalse(of().stream().elementAt(0).isPresent());
 	}
 	@Test
 	public void get0(){
@@ -932,13 +933,13 @@ public abstract class AbstractCollectionXTest {
 	public void singleTest(){
 		assertThat(of(1).single().orElse(null),equalTo(1));
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void singleEmpty(){
-		of().single().orElse(null);
+		assertTrue(of().single().orElse(null)==null);
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void single2(){
-		of(1,2).single().orElse(null);
+		assertTrue(of(1,2).single().orElse(null)==null);
 	}
 	@Test
 	public void singleOptionalTest(){
