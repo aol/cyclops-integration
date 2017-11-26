@@ -1,17 +1,15 @@
 package cyclops.companion.reactor;
 
-import com.aol.cyclops.reactor.adapter.FluxReactiveSeq;
-import com.aol.cyclops.reactor.hkt.MonoKind;
-import com.oath.cyclops.internal.stream.ReactiveStreamX;
+import com.oath.cyclops.reactor.adapter.FluxReactiveSeq;
+import com.oath.cyclops.reactor.hkt.MonoKind;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
 import cyclops.companion.Optionals.OptionalKind;
-import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
 import cyclops.control.*;
 import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
-import com.aol.cyclops.reactor.hkt.FluxKind;
+import com.oath.cyclops.reactor.hkt.FluxKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.function.Function3;
@@ -40,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 import java.util.stream.Stream;
 
-import static com.aol.cyclops.reactor.hkt.FluxKind.widen;
+import static com.oath.cyclops.reactor.hkt.FluxKind.widen;
 
 /**
  * Companion class for working with Reactor Flux types
@@ -680,8 +678,8 @@ public class Fluxs {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FluxKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.FluxKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Fluxs.zippingApplicative()
         .ap(widen(Flux.of(l1(this::multiplyByTwo))),widen(Flux.of(1,2,3)));
@@ -720,7 +718,7 @@ public class Fluxs {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FluxKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.FluxKind.widen;
          * FluxKind<Integer> flux  = Fluxs.monad()
         .flatMap(i->widen(FluxX.range(0,i)), widen(Flux.of(1,2,3)))
         .convert(FluxKind::narrowK);

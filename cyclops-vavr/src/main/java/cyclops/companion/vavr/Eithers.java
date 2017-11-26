@@ -5,7 +5,7 @@ import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -21,8 +21,8 @@ import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.EitherKind;
-import com.aol.cyclops.vavr.hkt.ListKind;
+import com.oath.cyclops.vavr.hkt.EitherKind;
+import com.oath.cyclops.vavr.hkt.ListKind;
 import cyclops.companion.Monoids;
 import cyclops.conversion.vavr.ToCyclops;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
@@ -46,8 +46,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-import static com.aol.cyclops.vavr.hkt.EitherKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.EitherKind.widen;
+import static com.oath.cyclops.vavr.hkt.EitherKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.EitherKind.widen;
 
 /**
  * Utility class for working with Eithers

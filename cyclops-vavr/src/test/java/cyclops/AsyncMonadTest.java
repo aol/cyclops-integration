@@ -1,16 +1,13 @@
 package cyclops;
 
-import com.aol.cyclops.vavr.hkt.FutureKind;
-import com.aol.cyclops.vavr.hkt.TryKind;
+import com.oath.cyclops.vavr.hkt.FutureKind;
+import com.oath.cyclops.vavr.hkt.TryKind;
 import com.oath.cyclops.hkt.Higher;
-import cyclops.companion.vavr.Futures;
 import cyclops.companion.vavr.Trys;
 import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.tryType;
-import cyclops.typeclasses.Active;
 import cyclops.typeclasses.monad.Monad;
 import io.vavr.concurrent.Future;
-import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 import org.testng.annotations.Test;
 
@@ -18,8 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static cyclops.companion.vavr.Futures.Instances.monad;
-import static cyclops.companion.vavr.Futures.allTypeclasses;
-import static cyclops.companion.vavr.Futures.anyM;
 import static org.junit.Assert.assertTrue;
 
 

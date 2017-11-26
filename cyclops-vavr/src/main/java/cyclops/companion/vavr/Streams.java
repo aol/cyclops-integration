@@ -9,7 +9,7 @@ import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.conversion.vavr.FromCyclops;
@@ -23,10 +23,10 @@ import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.ListKind;
+import com.oath.cyclops.vavr.hkt.ListKind;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.stream;
-import com.aol.cyclops.vavr.hkt.StreamKind;
+import com.oath.cyclops.vavr.hkt.StreamKind;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.XorM;
@@ -48,8 +48,8 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import static com.aol.cyclops.vavr.hkt.StreamKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.StreamKind.widen;
+import static com.oath.cyclops.vavr.hkt.StreamKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.StreamKind.widen;
 
 
 public class Streams {
@@ -549,8 +549,8 @@ public class Streams {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.StreamKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.StreamKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asStream;
          *
         Streams.zippingApplicative()
@@ -590,7 +590,7 @@ public class Streams {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.StreamKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.StreamKind.widen;
          * StreamKind<Integer> list  = Streams.monad()
         .flatMap(i->widen(StreamX.range(0,i)), widen(Arrays.asStream(1,2,3)))
         .convert(StreamKind::narrowK);

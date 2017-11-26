@@ -1,22 +1,14 @@
 package cyclops;
 
-import com.aol.cyclops.vavr.hkt.ListKind;
-import com.oath.cyclops.hkt.Higher;
-import cyclops.async.Future;
-
 import cyclops.companion.vavr.Lists;
 import cyclops.companion.vavr.Streams;
 import cyclops.control.Either;
-import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.list;
 import cyclops.monads.VavrWitness.stream;
-import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.monad.MonadRec;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import org.junit.Test;
-
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;

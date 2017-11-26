@@ -5,7 +5,7 @@ import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -23,10 +23,10 @@ import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.ListKind;
+import com.oath.cyclops.vavr.hkt.ListKind;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.queue;
-import com.aol.cyclops.vavr.hkt.QueueKind;
+import com.oath.cyclops.vavr.hkt.QueueKind;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.XorM;
@@ -47,8 +47,8 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import static com.aol.cyclops.vavr.hkt.QueueKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.QueueKind.widen;
+import static com.oath.cyclops.vavr.hkt.QueueKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.QueueKind.widen;
 
 
 public class Queues {
@@ -514,8 +514,8 @@ public class Queues {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.QueueKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.QueueKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asQueue;
          *
         Queues.zippingApplicative()
@@ -555,7 +555,7 @@ public class Queues {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.QueueKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.QueueKind.widen;
          * QueueKind<Integer> list  = Queues.monad()
         .flatMap(i->widen(QueueX.range(0,i)), widen(Arrays.asQueue(1,2,3)))
         .convert(QueueKind::narrowK);

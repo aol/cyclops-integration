@@ -1,10 +1,10 @@
 package cyclops.companion.rx2;
 
 
-import com.aol.cyclops.rx2.hkt.FlowableKind;
-import com.aol.cyclops.rx2.hkt.MaybeKind;
-import com.aol.cyclops.rx2.hkt.ObservableKind;
-import com.aol.cyclops.rx2.hkt.SingleKind;
+import com.oath.cyclops.rx2.hkt.FlowableKind;
+import com.oath.cyclops.rx2.hkt.MaybeKind;
+import com.oath.cyclops.rx2.hkt.ObservableKind;
+import com.oath.cyclops.rx2.hkt.SingleKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.react.Status;
 import com.oath.cyclops.types.MonadicValue;
@@ -52,7 +52,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.aol.cyclops.rx2.hkt.SingleKind.widen;
+import static com.oath.cyclops.rx2.hkt.SingleKind.widen;
 
 /**
  * Companion class for working with Reactor Single types
@@ -600,8 +600,8 @@ public class Singles {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.SingleKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.SingleKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asSingle;
          *
         Singles.applicative()
@@ -641,7 +641,7 @@ public class Singles {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.SingleKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.SingleKind.widen;
          * SingleKind<Integer> ft  = Singles.monad()
         .flatMap(i->widen(Single.just(i)), widen(Single.just(3)))
         .convert(SingleKind::narrowK);

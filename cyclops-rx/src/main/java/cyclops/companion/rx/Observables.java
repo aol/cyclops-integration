@@ -7,17 +7,15 @@ import java.util.function.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.aol.cyclops.rx.adapter.ObservableReactiveSeq;
+import com.oath.cyclops.rx.adapter.ObservableReactiveSeq;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
-import cyclops.companion.Optionals;
 import cyclops.companion.Optionals.OptionalKind;
-import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
 import cyclops.control.*;
 import cyclops.monads.*;
 import cyclops.monads.RxWitness.observable;
-import com.aol.cyclops.rx.hkt.ObservableKind;
+import com.oath.cyclops.rx.hkt.ObservableKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.function.Function3;
@@ -47,7 +45,7 @@ import rx.observables.AsyncOnSubscribe;
 import rx.observables.SyncOnSubscribe;
 import rx.schedulers.Schedulers;
 
-import static com.aol.cyclops.rx.hkt.ObservableKind.widen;
+import static com.oath.cyclops.rx.hkt.ObservableKind.widen;
 
 /**
  * Companion class for working with RxJava Observable types
@@ -428,7 +426,7 @@ public class Observables {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops.reactor.Observables.forEach4;
+     *   import static com.oath.cyclops.reactor.Observables.forEach4;
      *
     forEach4(Observable.range(1,10),
     a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -476,7 +474,7 @@ public class Observables {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops.reactor.Observables.forEach4;
+     *  import static com.oath.cyclops.reactor.Observables.forEach4;
      *
      *  forEach4(Observable.range(1,10),
     a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -526,7 +524,7 @@ public class Observables {
      * <pre>
      * {@code
      *
-     * import static com.aol.cyclops.reactor.Observables.forEach;
+     * import static com.oath.cyclops.reactor.Observables.forEach;
      *
      * forEach(Observable.range(1,10),
     a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -566,7 +564,7 @@ public class Observables {
      * <pre>
      * {@code
      *
-     * import static com.aol.cyclops.reactor.Observables.forEach;
+     * import static com.oath.cyclops.reactor.Observables.forEach;
      *
      * forEach(Observable.range(1,10),
     a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -611,7 +609,7 @@ public class Observables {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops.reactor.Observables.forEach;
+     *  import static com.oath.cyclops.reactor.Observables.forEach;
      *  forEach(Observable.range(1, 10), i -> Observable.range(i, 10), Tuple::tuple)
     .subscribe(System.out::println);
 
@@ -644,7 +642,7 @@ public class Observables {
      * <pre>
      * {@code
      *
-     *   import static com.aol.cyclops.reactor.Observables.forEach;
+     *   import static com.oath.cyclops.reactor.Observables.forEach;
      *
      *   forEach(Observable.range(1, 10), i -> Observable.range(i, 10),(a,b) -> a>2 && b<10,Tuple::tuple)
     .subscribe(System.out::println);
@@ -815,8 +813,8 @@ public class Observables {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ObservableKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.ObservableKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Observables.zippingApplicative()
         .ap(widen(Observable.of(l1(this::multiplyByTwo))),widen(Observable.of(1,2,3)));
@@ -855,7 +853,7 @@ public class Observables {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ObservableKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.ObservableKind.widen;
          * ObservableKind<Integer> observable  = Observables.monad()
         .flatMap(i->widen(ObservableX.range(0,i)), widen(Observable.of(1,2,3)))
         .convert(ObservableKind::narrowK);

@@ -8,14 +8,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.aol.cyclops.reactor.hkt.FluxKind;
+import com.oath.cyclops.reactor.hkt.FluxKind;
 import com.oath.cyclops.react.Status;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
-import cyclops.companion.Optionals;
 import cyclops.companion.Optionals.OptionalKind;
-import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
@@ -25,7 +23,7 @@ import cyclops.control.Either;
 import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
 import cyclops.monads.ReactorWitness.mono;
-import com.aol.cyclops.reactor.hkt.MonoKind;
+import com.oath.cyclops.reactor.hkt.MonoKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.Value;
 import com.oath.cyclops.types.anyM.AnyMValue;
@@ -34,7 +32,6 @@ import cyclops.function.Function3;
 import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.monads.transformers.StreamT;
 import cyclops.monads.transformers.reactor.MonoT;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
@@ -52,8 +49,7 @@ import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.aol.cyclops.reactor.hkt.MonoKind.widen;
-import static cyclops.companion.Streams.StreamKind.*;
+import static com.oath.cyclops.reactor.hkt.MonoKind.widen;
 
 /**
  * Companion class for working with Reactor Mono types
@@ -598,8 +594,8 @@ public class Monos {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.MonoKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.MonoKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asMono;
          *
         Monos.applicative()
@@ -639,7 +635,7 @@ public class Monos {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.MonoKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.MonoKind.widen;
          * MonoKind<Integer> ft  = Monos.monad()
         .flatMap(i->widen(Mono.just(i)), widen(Mono.just(3)))
         .convert(MonoKind::narrowK);

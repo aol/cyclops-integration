@@ -6,7 +6,7 @@ import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -23,12 +23,12 @@ import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.ArrayKind;
-import com.aol.cyclops.vavr.hkt.ListKind;
+import com.oath.cyclops.vavr.hkt.ArrayKind;
+import com.oath.cyclops.vavr.hkt.ListKind;
 import com.oath.cyclops.react.Status;
 import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness.future;
-import com.aol.cyclops.vavr.hkt.FutureKind;
+import com.oath.cyclops.vavr.hkt.FutureKind;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.types.Value;
 import com.oath.cyclops.types.anyM.AnyMValue;
@@ -58,8 +58,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 
-import static com.aol.cyclops.vavr.hkt.FutureKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.FutureKind.widen;
+import static com.oath.cyclops.vavr.hkt.FutureKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.FutureKind.widen;
 
 /**
  * Utilty methods for working with JDK CompletableFutures
@@ -896,8 +896,8 @@ public class Futures {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FutureKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.FutureKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Futures.applicative()
         .ap(widen(Future.successful(l1(this::multiplyByTwo))),widen(asFuture(1,2,3)));
@@ -936,7 +936,7 @@ public class Futures {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FutureKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.FutureKind.widen;
          * FutureKind<Integer> ft  = Futures.monad()
         .flatMap(i->widen(Future.successful(i), widen(Future.successful(3))
         .convert(FutureKind::narrowK);

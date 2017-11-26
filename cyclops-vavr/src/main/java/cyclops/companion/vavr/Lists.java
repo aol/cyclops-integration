@@ -1,6 +1,6 @@
 package cyclops.companion.vavr;
 
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
@@ -42,8 +42,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 
-import static com.aol.cyclops.vavr.hkt.ListKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.ListKind.widen;
+import static com.oath.cyclops.vavr.hkt.ListKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.ListKind.widen;
 
 
 public class Lists {
@@ -507,8 +507,8 @@ public class Lists {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ListKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.ListKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Lists.zippingApplicative()
         .ap(widen(List.of(l1(this::multiplyByTwo))),widen(List.of(1,2,3)));
@@ -547,7 +547,7 @@ public class Lists {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ListKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.ListKind.widen;
          * ListKind<Integer> list  = Lists.monad()
         .flatMap(i->widen(ListX.range(0,i)), widen(List.of(1,2,3)))
         .convert(ListKind::narrowK);

@@ -2,8 +2,8 @@ package cyclops.monads;
 
 
 
-import com.aol.cyclops.rx.adapter.ObservableAdapter;
-import com.aol.cyclops.rx.adapter.ObservableReactiveSeq;
+import com.oath.cyclops.rx.adapter.ObservableAdapter;
+import com.oath.cyclops.rx.adapter.ObservableReactiveSeq;
 import com.oath.cyclops.types.extensability.FunctionalAdapter;
 import rx.Observable;
 

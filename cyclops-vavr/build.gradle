@@ -36,11 +36,6 @@ dependencies {
   compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   compile group: 'io.vavr', name: 'vavr', version: vavrVersion
-  provided "org.functionaljava:functionaljava:" + functionalJavaVersion
-  provided "org.functionaljava:functionaljava-java8:" + functionalJavaVersion
-  provided 'com.google.guava:guava:' + guavaVersion
-  provided "org.functionaljava:functionaljava:4.5"
-  provided "org.functionaljava:functionaljava-java8:4.5"
   testCompile 'commons-io:commons-io:2.4'
   testCompile group: 'junit', name: 'junit', version: '4.12'
   testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -66,12 +61,12 @@ test {
 modifyPom {
   project {
     name 'cyclops-vavr'
-    description 'Converters and Comprehenders for Javaslang'
-    url 'https://github.com/aol/cyclops'
+    description 'Cyclops integration for Vavr'
+    url 'https://github.com/oath/cyclops'
     inceptionYear '2015'
 
-    groupId 'com.aol.cyclops'
-    artifactId 'cyclops-vavr'
+    groupId 'com.oath.cyclops'
+    artifactId 'cyclops-vavr-integration'
     version "$version"
 
     scm {
@@ -83,16 +78,16 @@ modifyPom {
     licenses {
       license {
         name 'The MIT License (MIT)'
-        url 'https://github.com/aol/cyclops/blob/master/licence.txt'
+        url 'https://github.com/oath/cyclops/blob/master/licence.txt'
         distribution 'repo'
       }
     }
 
     developers {
       developer {
-        id 'johnmcclean-aol'
+        id 'johnmcclean'
         name 'John McClean'
-        email 'john.mcclean@teamaol.com'
+        email 'john.mcclean@oath.com'
       }
     }
   }

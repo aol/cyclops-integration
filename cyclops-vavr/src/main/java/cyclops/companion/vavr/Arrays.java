@@ -1,7 +1,7 @@
 package cyclops.companion.vavr;
 
 
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -43,8 +43,8 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import static com.aol.cyclops.vavr.hkt.ArrayKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.ArrayKind.widen;
+import static com.oath.cyclops.vavr.hkt.ArrayKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.ArrayKind.widen;
 
 
 public class Arrays {
@@ -506,8 +506,8 @@ public class Arrays {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ArrayKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.ArrayKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asArray;
          *
         Arrays.zippingApplicative()
@@ -547,7 +547,7 @@ public class Arrays {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ArrayKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.ArrayKind.widen;
          * ArrayKind<Integer> list  = Arrays.monad()
         .flatMap(i->widen(ArrayX.range(0,i)), widen(Arrays.asArray(1,2,3)))
         .convert(ArrayKind::narrowK);

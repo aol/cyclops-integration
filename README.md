@@ -132,7 +132,7 @@ E.g. Using a functor and applicative type classes on FunctionalJava Lists (Highe
 
 ```java
 
-import static com.aol.cyclops.functionaljava.ListKind;
+import static com.oath.cyclops.functionaljava.ListKind;
 import static cyclops.companion.functionaljava.Lists.Instances.functor;
 import static cyclops.companion.functionaljava.Lists.Instances.zippingApplicative;
 
@@ -166,13 +166,13 @@ This screencast gives an overview of how cyclops can help integrate and provide 
 
 where x.y.z represents the latest version
 
-compile 'com.aol.simplereact:cyclops-react:x.y.z'
+compile 'com.oath.simplereact:cyclops-react:x.y.z'
 
 ## Maven
 
 ```xml
 <dependency>
-    <groupId>com.aol.simplereact</groupId>
+    <groupId>com.oath.simplereact</groupId>
     <artifactId>cyclops-react</artifactId>
     <version>x.y.z</version>
 </dependency>

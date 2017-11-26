@@ -6,7 +6,7 @@ import cyclops.monads.VavrWitness.queue;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -23,7 +23,7 @@ import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.TryKind;
+import com.oath.cyclops.vavr.hkt.TryKind;
 import cyclops.companion.Monoids;
 import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness;
@@ -52,8 +52,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-import static com.aol.cyclops.vavr.hkt.TryKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.TryKind.widen;
+import static com.oath.cyclops.vavr.hkt.TryKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.TryKind.widen;
 
 /**
  * Utility class for working with JDK Tryals
@@ -738,8 +738,8 @@ public class Trys {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.TryKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.TryKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Trys.applicative()
         .ap(widen(Try.successful(l1(this::multiplyByTwo))),widen(asTry(1,2,3)));
@@ -778,7 +778,7 @@ public class Trys {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.TryKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.TryKind.widen;
          * TryKind<Integer> ft  = Trys.monad()
         .flatMap(i->widen(Try.successful(i), widen(Try.successful(3))
         .convert(TryKind::narrowK);

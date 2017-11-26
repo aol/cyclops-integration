@@ -4,7 +4,7 @@ import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -21,11 +21,11 @@ import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.FutureKind;
+import com.oath.cyclops.vavr.hkt.FutureKind;
 import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
-import com.aol.cyclops.vavr.hkt.OptionKind;
+import com.oath.cyclops.vavr.hkt.OptionKind;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.types.Value;
 import com.oath.cyclops.types.anyM.AnyMValue;
@@ -56,8 +56,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-import static com.aol.cyclops.vavr.hkt.OptionKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.OptionKind.widen;
+import static com.oath.cyclops.vavr.hkt.OptionKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.OptionKind.widen;
 
 /**
  * Utility class for working with JDK Optionals
@@ -777,8 +777,8 @@ public class Options {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.OptionKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.OptionKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Option.just;
          *
         Options.zippingApplicative()
@@ -818,7 +818,7 @@ public class Options {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.OptionKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.OptionKind.widen;
          * OptionKind<Integer> option  = Options.monad()
         .flatMap(i->widen(OptionX.range(0,i)), widen(Option.just(1,2,3)))
         .convert(OptionKind::narrowK);

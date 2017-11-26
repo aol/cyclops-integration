@@ -1,10 +1,10 @@
 package cyclops.companion.rx2;
 
-import com.aol.cyclops.rx2.adapter.FlowableReactiveSeq;
-import com.aol.cyclops.rx2.hkt.FlowableKind;
-import com.aol.cyclops.rx2.hkt.MaybeKind;
-import com.aol.cyclops.rx2.hkt.ObservableKind;
-import com.aol.cyclops.rx2.hkt.SingleKind;
+import com.oath.cyclops.rx2.adapter.FlowableReactiveSeq;
+import com.oath.cyclops.rx2.hkt.FlowableKind;
+import com.oath.cyclops.rx2.hkt.MaybeKind;
+import com.oath.cyclops.rx2.hkt.ObservableKind;
+import com.oath.cyclops.rx2.hkt.SingleKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.companion.CompletableFutures;
@@ -39,15 +39,12 @@ import lombok.experimental.UtilityClass;
 import cyclops.data.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 
-import java.time.Duration;
-
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 import java.util.stream.Stream;
 
-import static com.aol.cyclops.rx2.hkt.FlowableKind.widen;
+import static com.oath.cyclops.rx2.hkt.FlowableKind.widen;
 
 
 /**
@@ -649,8 +646,8 @@ public class Flowables {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FlowableKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.FlowableKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Flowables.zippingApplicative()
         .ap(widen(Flowable.of(l1(this::multiplyByTwo))),widen(Flowable.of(1,2,3)));
@@ -689,7 +686,7 @@ public class Flowables {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FlowableKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.FlowableKind.widen;
          * FlowableKind<Integer> flowable  = Flowables.monad()
         .flatMap(i->widen(FlowableX.range(0,i)), widen(Flowable.of(1,2,3)))
         .convert(FlowableKind::narrowK);

@@ -7,7 +7,7 @@ import cyclops.monads.VavrWitness.tryType;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
@@ -23,9 +23,9 @@ import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 
-import com.aol.cyclops.vavr.hkt.EitherKind;
+import com.oath.cyclops.vavr.hkt.EitherKind;
 import cyclops.conversion.vavr.ToCyclops;
-import com.aol.cyclops.vavr.hkt.LazyKind;
+import com.oath.cyclops.vavr.hkt.LazyKind;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.types.Value;
 import cyclops.collections.mutable.ListX;
@@ -48,8 +48,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 
-import static com.aol.cyclops.vavr.hkt.LazyKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.LazyKind.widen;
+import static com.oath.cyclops.vavr.hkt.LazyKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.LazyKind.widen;
 
 public class Lazys {
 
@@ -608,8 +608,8 @@ public class Lazys {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.LazyKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.LazyKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Lazy.just;
          *
         Lazys.zippingApplicative()
@@ -649,7 +649,7 @@ public class Lazys {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.LazyKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.LazyKind.widen;
          * LazyKind<Integer> lazy  = Lazys.monad()
         .flatMap(i->widen(LazyX.range(0,i)), widen(Lazy.just(1,2,3)))
         .convert(LazyKind::narrowK);

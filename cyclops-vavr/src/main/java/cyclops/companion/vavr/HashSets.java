@@ -7,8 +7,7 @@ import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.collection.Stream;
 import io.vavr.concurrent.Future;
-import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.monads.*;
@@ -21,7 +20,7 @@ import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.HashSetKind;
+import com.oath.cyclops.vavr.hkt.HashSetKind;
 
 import cyclops.control.Maybe;
 import cyclops.control.Either;
@@ -47,8 +46,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 
-import static com.aol.cyclops.vavr.hkt.HashSetKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.HashSetKind.widen;
+import static com.oath.cyclops.vavr.hkt.HashSetKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.HashSetKind.widen;
 
 
 public class HashSets {
@@ -514,8 +513,8 @@ public class HashSets {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.HashSetKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.HashSetKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         HashSets.zippingApplicative()
         .ap(widen(Set.of(l1(this::multiplyByTwo))),widen(Set.of(1,2,3)));
@@ -554,7 +553,7 @@ public class HashSets {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.HashSetKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.HashSetKind.widen;
          * HashSetKind<Integer> hashSet  = HashSets.monad()
         .flatMap(i->widen(SetX.range(0,i)), widen(Set.of(1,2,3)))
         .convert(HashSetKind::narrowK);

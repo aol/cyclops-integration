@@ -1,10 +1,10 @@
 package cyclops.companion.rx2;
 
 
-import com.aol.cyclops.rx2.hkt.FlowableKind;
-import com.aol.cyclops.rx2.hkt.MaybeKind;
-import com.aol.cyclops.rx2.hkt.ObservableKind;
-import com.aol.cyclops.rx2.hkt.SingleKind;
+import com.oath.cyclops.rx2.hkt.FlowableKind;
+import com.oath.cyclops.rx2.hkt.MaybeKind;
+import com.oath.cyclops.rx2.hkt.ObservableKind;
+import com.oath.cyclops.rx2.hkt.SingleKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.react.Status;
 import com.oath.cyclops.types.MonadicValue;
@@ -13,9 +13,7 @@ import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.async.Future;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
-import cyclops.companion.Optionals;
 import cyclops.companion.Optionals.OptionalKind;
-import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 
@@ -56,7 +54,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.aol.cyclops.rx2.hkt.MaybeKind.widen;
+import static com.oath.cyclops.rx2.hkt.MaybeKind.widen;
 
 /**
  * Companion class for working with RxJava 2 Maybe types
@@ -622,8 +620,8 @@ public class Maybes {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.MaybeKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.MaybeKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asMaybe;
          *
         Maybes.applicative()
@@ -663,7 +661,7 @@ public class Maybes {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.MaybeKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.MaybeKind.widen;
          * MaybeKind<Integer> ft  = Maybes.monad()
         .flatMap(i->widen(Maybe.just(i)), widen(Maybe.just(3)))
         .convert(MaybeKind::narrowK);

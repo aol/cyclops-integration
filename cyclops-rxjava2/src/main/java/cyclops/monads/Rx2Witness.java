@@ -1,6 +1,6 @@
 package cyclops.monads;
 
-import com.aol.cyclops.rx2.adapter.*;
+import com.oath.cyclops.rx2.adapter.*;
 import com.oath.cyclops.types.extensability.FunctionalAdapter;
 
 import io.reactivex.Flowable;

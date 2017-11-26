@@ -68,12 +68,12 @@ test {
 modifyPom {
   project {
     name 'cyclops-rxjava2'
-    description 'Converters and Comprehenders for RxJava 2'
-    url 'https://github.com/aol/cyclops'
+    description 'Cyclops integration with RxJava 2'
+    url 'https://github.com/oath/cyclops'
     inceptionYear '2017'
 
-    groupId 'com.aol.cyclops'
-    artifactId 'cyclops-rxjava2'
+    groupId 'com.oath.cyclops'
+    artifactId 'cyclops-rx2-integration'
     version "$version"
 
     scm {
@@ -92,9 +92,9 @@ modifyPom {
 
     developers {
       developer {
-        id 'johnmcclean-aol'
+        id 'johnmcclean'
         name 'John McClean'
-        email 'john.mcclean@teamaol.com'
+        email 'john.mcclean@oath.com'
       }
     }
   }

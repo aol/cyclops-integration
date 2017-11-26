@@ -1,10 +1,6 @@
 package cyclops;
 
-import com.aol.cyclops.vavr.hkt.FutureKind;
-import com.aol.cyclops.vavr.hkt.OptionKind;
 import com.oath.cyclops.data.collections.extensions.IndexedSequenceX;
-import com.oath.cyclops.hkt.Higher;
-import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
@@ -14,15 +10,10 @@ import cyclops.companion.Monoids;
 import cyclops.companion.vavr.Futures;
 import cyclops.companion.vavr.Trys;
 import cyclops.control.Option;
-import cyclops.monads.AnyM;
 import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.tryType;
-import cyclops.monads.Witness;
-import cyclops.monads.Witness.stream;
-import cyclops.monads.WitnessType;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
-import fj.Monoid;
 import io.vavr.concurrent.Future;
 import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
@@ -30,14 +21,10 @@ import cyclops.data.tuple.Tuple;
 import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static cyclops.companion.vavr.Futures.allTypeclasses;
-import static cyclops.companion.vavr.Futures.anyM;
 import static org.junit.Assert.assertTrue;
 
 

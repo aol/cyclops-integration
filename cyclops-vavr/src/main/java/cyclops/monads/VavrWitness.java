@@ -2,7 +2,7 @@ package cyclops.monads;
 
 
 
-import com.aol.cyclops.vavr.adapter.*;
+import com.oath.cyclops.vavr.adapter.*;
 import com.oath.cyclops.types.extensability.FunctionalAdapter;
 
 import io.vavr.collection.*;

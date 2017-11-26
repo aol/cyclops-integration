@@ -5,7 +5,7 @@ import cyclops.control.Option;
 import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.VavrWitness.vector;
 import cyclops.collections.vavr.VavrVectorX;
-import com.aol.cyclops.vavr.hkt.VectorKind;
+import com.oath.cyclops.vavr.hkt.VectorKind;
 import com.oath.cyclops.hkt.Higher;
 import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.function.Function3;
@@ -31,8 +31,8 @@ import cyclops.data.tuple.Tuple2;
 
 import java.util.function.*;
 
-import static com.aol.cyclops.vavr.hkt.VectorKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.VectorKind.widen;
+import static com.oath.cyclops.vavr.hkt.VectorKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.VectorKind.widen;
 
 
 public class Vectors {
@@ -488,8 +488,8 @@ public class Vectors {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.VectorKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.VectorKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asVector;
          *
         Vectors.zippingApplicative()
@@ -529,7 +529,7 @@ public class Vectors {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.VectorKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.VectorKind.widen;
          * VectorKind<Integer> list  = Vectors.monad()
         .flatMap(i->widen(VectorX.range(0,i)), widen(Arrays.asVector(1,2,3)))
         .convert(VectorKind::narrowK);
