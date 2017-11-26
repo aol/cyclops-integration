@@ -42,9 +42,8 @@ configurations {
 }
 
 dependencies {
-  doc 'com.aol.simplereact:cyclops-react:' + cyclopsReactVersion + ':sources'
+  compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
   compile 'io.projectreactor:reactor-core:' + reactorVersion
-  compile group: 'com.aol.simplereact', name: 'cyclops-react', version: cyclopsReactVersion
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
   testCompile 'commons-io:commons-io:2.4'
@@ -88,12 +87,12 @@ artifacts {
 modifyPom {
   project {
     name 'cyclops-reactor'
-    description 'Converters and Comprehenders for Reactor'
+    description 'Cyclops integrations for Reactor'
     url 'https://github.com/aol/cyclops'
     inceptionYear '2016'
 
-    groupId 'com.aol.cyclops'
-    artifactId 'cyclops-reactor'
+    groupId 'com.oath.cyclops'
+    artifactId 'cyclops-reactor-integration'
     version "$version"
 
     scm {
@@ -105,16 +104,16 @@ modifyPom {
     licenses {
       license {
         name 'The MIT License (MIT)'
-        url 'https://github.com/aol/cyclops/blob/master/licence.txt'
+        url 'https://github.com/oath/cyclops/blob/master/licence.txt'
         distribution 'repo'
       }
     }
 
     developers {
       developer {
-        id 'johnmcclean-aol'
+        id 'johnmcclean'
         name 'John McClean'
-        email 'john.mcclean@teamaol.com'
+        email 'john.mcclean@oath.com'
       }
     }
   }

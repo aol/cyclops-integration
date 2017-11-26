@@ -7,10 +7,11 @@ import cyclops.companion.Streams;
 
 import cyclops.companion.rx2.Flowables;
 import cyclops.control.Maybe;
+import cyclops.control.Option;
 import cyclops.monads.AnyM;
-import cyclops.stream.ReactiveSeq;
-import cyclops.stream.Spouts;
-import cyclops.stream.Streamable;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.Spouts;
+import cyclops.reactive.Streamable;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static cyclops.control.Option.some;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -111,7 +113,7 @@ public class AsyncRSExtensionOperatorsTest {
     public void elapsedIsPositive(){
 
 
-        assertTrue(of(1,2,3,4,5).elapsed().noneMatch(t->t.v2<0));
+        assertTrue(of(1,2,3,4,5).elapsed().noneMatch(t->t._2()<0));
     }
     @Test
     public void timeStamp(){
@@ -119,61 +121,61 @@ public class AsyncRSExtensionOperatorsTest {
 
         assertTrue(of(1,2,3,4,5)
                 .timestamp()
-                .allMatch(t-> t.v2 <= System.currentTimeMillis()));
+                .allMatch(t-> t._2() <= System.currentTimeMillis()));
 
 
     }
     @Test
     public void elementAt0(){
-        assertThat(of(1).elementAt(0).v1,equalTo(1));
+        assertThat(of(1).elementAt(0),equalTo(some(1)));
     }
     @Test
     public void getMultple(){
-        assertThat(of(1,2,3,4,5).elementAt(2).v1,equalTo(3));
+        assertThat(of(1,2,3,4,5).elementAt(2),equalTo(some(3)));
     }
     @Test
     public void getMultpleStream(){
-        assertThat(of(1,2,3,4,5).elementAt(2).v2.toList(),equalTo(Arrays.asList(1,2,3,4,5)));
+        assertThat(of(1,2,3,4,5).elementAt(2),equalTo(some(3)));
     }
-    @Test(expected=NoSuchElementException.class)
+    @Test
     public void getMultiple1(){
-        of(1).elementAt(1);
+        assertFalse(of(1).elementAt(1).isPresent());
     }
-    @Test(expected=NoSuchElementException.class)
+    @Test
     public void getEmpty(){
-        of().elementAt(0);
+        assertFalse(of().elementAt(0).isPresent());
     }
     @Test
     public void get0(){
-        assertTrue(of(1).get(0).isPresent());
+        assertTrue(of(1).elementAt(0).isPresent());
     }
     @Test
     public void getAtMultple(){
-        assertThat(of(1,2,3,4,5).get(2).get(),equalTo(3));
+        assertThat(of(1,2,3,4,5).elementAt(2).orElse(-1),equalTo(3));
     }
     @Test
     public void getAt1(){
-        assertFalse(of(1).get(1).isPresent());
+        assertFalse(of(1).elementAt(1).isPresent());
     }
     @Test
     public void elementAtEmpty(){
-        assertFalse(of().get(0).isPresent());
+        assertFalse(of().elementAt(0).isPresent());
     }
     @Test
     public void singleTest(){
-        assertThat(of(1).singleUnsafe(),equalTo(1));
+        assertThat(of(1).single().orElse(null),equalTo(1));
     }
-    @Test(expected=NoSuchElementException.class)
+    @Test
     public void singleEmpty(){
-        of().singleUnsafe();
+        assertTrue(of().single().orElse(null)==null);
     }
-    @Test(expected=NoSuchElementException.class)
+    @Test
     public void single2(){
-        of(1,2).singleUnsafe();
+        assertFalse(of(1,2).single().isPresent());
     }
     @Test
     public void singleOptionalTest(){
-        assertThat(of(1).single().get(),equalTo(1));
+        assertThat(of(1).single().orElse(null),equalTo(1));
     }
     @Test
     public void singleOptionalEmpty(){
@@ -353,8 +355,8 @@ public class AsyncRSExtensionOperatorsTest {
     }
     @Test
     public void splitBy(){
-        assertThat( of(1, 2, 3, 4, 5, 6).splitBy(i->i<4).v1.toList(),equalTo(Arrays.asList(1,2,3)));
-        assertThat( of(1, 2, 3, 4, 5, 6).splitBy(i->i<4).v2.toList(),equalTo(Arrays.asList(4,5,6)));
+        assertThat( of(1, 2, 3, 4, 5, 6).splitBy(i->i<4)._1().toList(),equalTo(Arrays.asList(1,2,3)));
+        assertThat( of(1, 2, 3, 4, 5, 6).splitBy(i->i<4)._2().toList(),equalTo(Arrays.asList(4,5,6)));
     }
     @Test
     public void testLazy(){
@@ -420,15 +422,6 @@ public class AsyncRSExtensionOperatorsTest {
     }
 
     @Test
-    public void testCastPast() {
-        of(1, "a", 2, "b", 3, null).cast(Date.class).map(d -> d.getTime());
-
-
-
-
-    }
-
-    @Test
     public void flatMapCompletableFuture(){
         assertThat(of(1,2,3).flatMapAnyM(i-> AnyM.fromArray(i+2))
                         .collect(Collectors.toList()),
@@ -449,10 +442,7 @@ public class AsyncRSExtensionOperatorsTest {
 
 
     }
-    @Test(expected=ClassCastException.class)
-    public void cast(){
-        of(1,2,3).cast(String.class).collect(Collectors.toList());
-    }
+
     @Test
     public void xMatch(){
         assertTrue(of(1,2,3,5,6,7).xMatch(3, i-> i>4 ));

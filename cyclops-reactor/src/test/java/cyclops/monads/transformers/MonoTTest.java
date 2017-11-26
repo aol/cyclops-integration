@@ -1,9 +1,10 @@
 package cyclops.monads.transformers;
 
 
-import com.aol.cyclops2.types.mixins.Printable;
+import com.oath.cyclops.types.mixins.Printable;
 
-import cyclops.collections.box.Mutable;
+
+import com.oath.cyclops.util.box.Mutable;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Reducers;
@@ -12,12 +13,12 @@ import cyclops.companion.Streams;
 import cyclops.control.Maybe;
 import cyclops.control.Trampoline;
 import cyclops.control.Try;
-import cyclops.control.Xor;
+import cyclops.control.Either;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.monads.Witness;
 import cyclops.monads.transformers.reactor.MonoT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Mono;
@@ -46,43 +47,21 @@ public class MonoTTest implements Printable {
 		none = MonoT.of(AnyM.ofNullable(null));
 		one = MonoT.of(AnyM.ofNullable(Mono.just(1)));
 	}
-	
+
 	@Test
 	public void optionalVMaybe(){
 
 
 	    Optional.of(10)
 	            .map(i->print("optional " + (i+10)));
-	            
+
 	    Maybe.just(10)
 	         .map(i->print("maybe " + (i+10)));
-	    
+
 	}
-	
 
 
-	@Test
-	public void testFiltering(){
-	    assertThat(ReactiveSeq.of(Maybe.just(1), Try.success(1)).filter(Xor.primary(1))
-	                .toListX(),equalTo(ListX.of(Maybe.just(1), Try.success(1))));
-	}
-	@Test
-    public void testFilteringNoValue(){
-        assertThat(ReactiveSeq.of(1,1).filter(Xor.primary(1))
-                    .toListX(),equalTo(ListX.of(1,1)));
-    }
-    /**
-	@Test
-	public void testToMaybe() {
-		assertThat(just.toMaybe(),equalTo(Maybe.just(10)));
-		assertThat(none.toMaybe().isPresent(),equalTo(false));
-	}
-	@Test
-    public void testToOptional2() {
-        assertThat(just.toOptional(),equalTo(Optional.of(10)));
-       
-    }
-	**/
+
 
 	private int add1(int i){
 		return i+1;
@@ -93,13 +72,13 @@ public class MonoTTest implements Printable {
 		assertThat(Maybe.of(1),equalTo(Maybe.of(1)));
 	}
 
-	
+
 
 	@Test
 	public void testOfNullable() {
 		assertFalse(Maybe.ofNullable(null).isPresent());
 		assertThat(Maybe.ofNullable(1),equalTo(Maybe.of(1)));
-		
+
 	}
 
 	@Test
@@ -107,35 +86,14 @@ public class MonoTTest implements Printable {
 		assertThat(Maybe.ofNullable(1),equalTo(Maybe.narrow(Maybe.of(1))));
 	}
 
-	
 
-	@Test
-	public void testUnitT() {
-		assertThat(just.unit(20).get(),equalTo(20));
-	}
-
-	
 
 
 
 	@Test
 	public void testMapFunctionOfQsuperTQextendsR() {
-		assertThat(just.map(i->i+5).get(),equalTo(15));
+		assertThat(just.map(i->i+5).get(),equalTo(Maybe.just(15)));
 		assertThat(none.map(i->i+5).orElse(1000),equalTo(1000));
-	}
-
-	@Test
-	public void testFlatMap() {
-	    
-		assertThat(just.flatMap(i-> Maybe.of(i+5)).get(),equalTo(15));
-		assertThat(none.flatMap(i-> Maybe.of(i+5)).orElse(-1),equalTo(-1));
-	}
-	
-	@Test
-	public void testWhenFunctionOfQsuperTQextendsRSupplierOfQextendsR() {
-
-		assertThat(just.visit(i->i+1,()->20),equalTo(AnyM.ofNullable(11)));
-		assertThat(none.visit(i->i+1,()->20),equalTo(AnyM.ofNullable(null)));
 	}
 
 
@@ -148,28 +106,11 @@ public class MonoTTest implements Printable {
 
 	@Test
 	public void testOfSupplierOfT() {
-		
+
 	}
 
-	@Test
-    public void testConvertTo() {
-        AnyM<Witness.optional,Stream<Integer>> toStream = just.visit(m->Stream.of(m),()->Stream.of());
-
-        assertThat(toStream.stream().flatMap(i->i).collect(Collectors.toList()),equalTo(ListX.of(10)));
-    }
 
 
-
-
-	@Test
-	public void testIterate() {
-		assertThat(just.iterate(i->i+1).to(Witness::optional).get().limit(10).sumInt(i->(int)i),equalTo(145));
-	}
-
-	@Test
-	public void testGenerate() {
-		assertThat(just.generate().to(Witness::optional).get().limit(10).sumInt(i->i),equalTo(100));
-	}
 
 	@Test
 	public void testMapReduceReducerOfE() {
@@ -200,49 +141,16 @@ public class MonoTTest implements Printable {
 
 	@Test
 	public void testGet() {
-		assertThat(just.get(),equalTo(10));
+		assertThat(just.get(),equalTo(Maybe.just(10)));
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void testGetNone() {
-		none.get();
-		
+		assertFalse(none.get().isPresent());
+
 	}
 
-	@Test
-	public void testFilter() {
 
-		assertFalse(just.filter(i->i<5).isPresent());
-		assertTrue(just.filter(i->i>5).isPresent());
-		assertFalse(none.filter(i->i<5).isPresent());
-		assertFalse(none.filter(i->i>5).isPresent());
-		
-	}
 
-	@Test
-	public void testOfType() {
-		assertFalse(just.ofType(String.class).isPresent());
-		assertTrue(just.ofType(Integer.class).isPresent());
-		assertFalse(none.ofType(String.class).isPresent());
-		assertFalse(none.ofType(Integer.class).isPresent());
-	}
-
-	@Test
-	public void testFilterNot() {
-
-		assertTrue(just.filterNot(i->i<5).isPresent());
-		assertFalse(just.filterNot(i->i>5).isPresent());
-		assertFalse(none.filterNot(i->i<5).isPresent());
-		assertFalse(none.filterNot(i->i>5).isPresent());
-	}
-
-	@Test
-	public void testNotNull() {
-		assertTrue(just.notNull().isPresent());
-		assertFalse(none.notNull().isPresent());
-		
-	}
-
-	
 
 
 
@@ -263,7 +171,7 @@ public class MonoTTest implements Printable {
 		return a+b+c+d+e;
 	}
 
-	
+
 
 	@Test
 	public void testMapReduceReducerOfR() {
@@ -307,7 +215,7 @@ public class MonoTTest implements Printable {
 		assertThat(countAndTotal,equalTo(ListX.of(1,10)));
 	}
 
-	
+
 
 	@Test
 	public void testFoldRightMonoidOfT() {
@@ -324,23 +232,10 @@ public class MonoTTest implements Printable {
 		assertThat(just.foldRightMapToType(Reducers.toLinkedListX()),equalTo(LinkedListX.of(10)));
 	}
 
-	
-	
-	@Test
-	public void testWhenFunctionOfQsuperMaybeOfTQextendsR() {
-	    
-	    
-	    String match = Maybe.just("data is present")
-	                        .visit(present->"hello", ()->"missing");
-	    
-	    
-	    
-		assertThat(just.visit(s->"hello", ()->"world"),equalTo(AnyM.ofNullable("hello")));
-		//none remains none as visit is on the Mono not the Optional
-		assertThat(none.visit(s->"hello", ()->"world"),equalTo(AnyM.ofNullable(null)));
-	}
 
-	
+
+
+
 	@Test
 	public void testOrElseGet() {
 		assertThat(none.orElseGet(()->2),equalTo(2));
@@ -355,19 +250,8 @@ public class MonoTTest implements Printable {
 		assertThat(just.orElse(20),equalTo(10));
 	}
 
-	@Test(expected=RuntimeException.class)
-	public void testOrElseThrow() {
-		none.orElseThrow(()->new RuntimeException());
-	}
-	@Test
-	public void testOrElseThrowSome() {
-		
-		assertThat(just.orElseThrow(()->new RuntimeException()),equalTo(10));
-	}
 
 
-
-	
 
 
 
@@ -392,21 +276,21 @@ public class MonoTTest implements Printable {
 				equalTo(Arrays.asList(10)));
 	}
 
-	
+
 
 	@Test
 	public void testMapFunctionOfQsuperTQextendsR1() {
-		assertThat(just.map(i->i+5).get(),equalTo(15));
+		assertThat(just.map(i->i+5).get(),equalTo(Maybe.just(15)));
 	}
-	
+
 	@Test
 	public void testPeek() {
 		Mutable<Integer> capture = Mutable.of(null);
 		just = just.peek(c->capture.set(c)).map(i->i+2);
-		
-		
-		
-		just.get();
+
+
+
+		just.get().orElse(-1);
 		assertThat(capture.get(),equalTo(10));
 	}
 
@@ -415,10 +299,10 @@ public class MonoTTest implements Printable {
 	}
 	@Test
 	public void testTrampoline() {
-		assertThat(just.trampoline(n ->sum(10,n)).get(),equalTo(65));
+		assertThat(just.trampoline(n ->sum(10,n)).orElse(-1),equalTo(65));
 	}
 
-	
+
 
 
 }

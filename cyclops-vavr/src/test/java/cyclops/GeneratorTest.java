@@ -1,15 +1,15 @@
 package cyclops;
 
 import cyclops.collections.mutable.ListX;
-import cyclops.stream.Generator;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.Generator;
+import cyclops.reactive.ReactiveSeq;
 import io.vavr.collection.Vector;
 import org.junit.Test;
 
 
-import static com.aol.cyclops2.types.foldable.Evaluation.LAZY;
-import static cyclops.stream.Generator.suspend;
-import static cyclops.stream.Generator.times;
+import static com.oath.cyclops.types.foldable.Evaluation.LAZY;
+import static cyclops.reactive.Generator.suspend;
+import static cyclops.reactive.Generator.times;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 

@@ -33,7 +33,7 @@ configurations {
 
 dependencies {
   compile 'io.reactivex:rxjava:' + rxJavaVersion
-  compile group: 'com.aol.simplereact', name: 'cyclops-react', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
   compile 'io.reactivex:rxjava-reactive-streams:1.0.1'
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   testCompile 'io.projectreactor:reactor-core:' + reactorVersion
@@ -63,33 +63,33 @@ test {
 modifyPom {
   project {
     name 'cyclops-rx'
-    description 'Converters and Comprehenders for RxJava'
-    url 'https://github.com/aol/cyclops'
+    description 'Cyclops integration with RxJava'
+    url 'https://github.com/oath/cyclops'
     inceptionYear '2016'
 
-    groupId 'com.aol.cyclops'
-    artifactId 'cyclops-rx'
+    groupId 'com.oath.cyclops'
+    artifactId 'cyclops-rx-integration'
     version "$version"
 
     scm {
-      url 'ssh://git@github.com:aol/cyclops.git'
-      connection 'ssh://git@github.com:aol/cyclops.git'
-      developerConnection 'ssh://git@github.com:aol/cyclops.git'
+      url 'ssh://git@github.com:oath/cyclops.git'
+      connection 'ssh://git@github.com:oath/cyclops.git'
+      developerConnection 'ssh://git@github.com:oath/cyclops.git'
     }
 
     licenses {
       license {
         name 'The MIT License (MIT)'
-        url 'https://github.com/aol/cyclops/blob/master/licence.txt'
+        url 'https://github.com/oath/cyclops/blob/master/licence.txt'
         distribution 'repo'
       }
     }
 
     developers {
       developer {
-        id 'johnmcclean-aol'
+        id 'johnmcclean'
         name 'John McClean'
-        email 'john.mcclean@teamaol.com'
+        email 'john.mcclean@oath.com'
       }
     }
   }

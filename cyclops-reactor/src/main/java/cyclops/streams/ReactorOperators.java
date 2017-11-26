@@ -4,8 +4,9 @@ import cyclops.async.Future;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.companion.reactor.Monos;
 
-import cyclops.stream.ReactiveSeq;
-import cyclops.stream.Spouts;
+import cyclops.reactive.ReactiveSeq;
+
+import cyclops.reactive.Spouts;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

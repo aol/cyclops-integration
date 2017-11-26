@@ -1,21 +1,20 @@
 package cyclops.companion.vavr;
 
-import com.aol.cyclops.vavr.hkt.*;
-import cyclops.collections.mutable.ListX;
+import com.oath.cyclops.vavr.hkt.*;
+import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromJooqLambda;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
 import cyclops.collections.vavr.VavrListX;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.VavrWitness.either;
 import cyclops.monads.VavrWitness.future;
@@ -23,7 +22,7 @@ import cyclops.monads.VavrWitness.list;
 import cyclops.monads.VavrWitness.tryType;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.ListT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -34,24 +33,23 @@ import cyclops.typeclasses.monad.*;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
-import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
-import io.vavr.control.Validation;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 
-import static com.aol.cyclops.vavr.hkt.ListKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.ListKind.widen;
+import static com.oath.cyclops.vavr.hkt.ListKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.ListKind.widen;
 
 
 public class Lists {
     public static <T,W extends WitnessType<W>> ListT<W, T> liftM(List<T> opt, W witness) {
-        return ListT.ofList(witness.adapter().unit(VavrListX.ofAll(opt)));
+        AnyM<W, LazyLinkedListX<T>> x = witness.adapter().unit(VavrListX.ofAll(opt));
+        return ListT.of(x);
     }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,list,T> xorM(List<T> type){
         return XorM.right(anyM(type));
@@ -64,8 +62,8 @@ public class Lists {
         return AnyM.ofSeq(option, list.INSTANCE);
     }
 
-    public static  <T,R> List<R> tailRec(T initial, Function<? super T, ? extends List<? extends Either<T, R>>> fn) {
-        List<Either<T, R>> next = List.of(Either.left(initial));
+    public static  <T,R> List<R> tailRec(T initial, Function<? super T, ? extends List<? extends io.vavr.control.Either<T, R>>> fn) {
+        List<io.vavr.control.Either<T, R>> next = List.of(io.vavr.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -82,10 +80,10 @@ public class Lists {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(io.vavr.control.Either::isRight).map(io.vavr.control.Either::get);
     }
-    public static  <T,R> List<R> tailRecXor(T initial, Function<? super T, ? extends List<? extends Xor<T, R>>> fn) {
-        List<Xor<T, R>> next = List.of(Xor.secondary(initial));
+    public static  <T,R> List<R> tailRecEither(T initial, Function<? super T, ? extends List<? extends cyclops.control.Either<T, R>>> fn) {
+        List<cyclops.control.Either<T, R>> next = List.of(cyclops.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -102,7 +100,7 @@ public class Lists {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(cyclops.control.Either::isRight).map(e->e.orElse(null));
     }
     /**
      * Perform a For Comprehension over a List, accepting 3 generating functions.
@@ -132,8 +130,8 @@ public class Lists {
     public static <T1, T2, T3, R1, R2, R3, R> List<R> forEach4(List<? extends T1> value1,
                                                                Function<? super T1, ? extends List<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends List<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends List<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends List<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -158,7 +156,7 @@ public class Lists {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Listes.forEach4;
+     *  import static com.oath.cyclops.reactor.Listes.forEach4;
      *
      *  forEach4(IntList.range(1,10).boxed(),
     a-> List.iterate(a,i->i+1).limit(10),
@@ -181,9 +179,9 @@ public class Lists {
     public static <T1, T2, T3, R1, R2, R3, R> List<R> forEach4(List<? extends T1> value1,
                                                                  Function<? super T1, ? extends List<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends List<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends List<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends List<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -229,7 +227,7 @@ public class Lists {
     public static <T1, T2, R1, R2, R> List<R> forEach3(List<? extends T1> value1,
                                                          Function<? super T1, ? extends List<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends List<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -272,8 +270,8 @@ public class Lists {
     public static <T1, T2, R1, R2, R> List<R> forEach3(List<? extends T1> value1,
                                                          Function<? super T1, ? extends List<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends List<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -444,7 +442,7 @@ public class Lists {
 
                 @Override
                 public <T> Maybe<Comonad<list>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -509,8 +507,8 @@ public class Lists {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ListKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.ListKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Lists.zippingApplicative()
         .ap(widen(List.of(l1(this::multiplyByTwo))),widen(List.of(1,2,3)));
@@ -549,7 +547,7 @@ public class Lists {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ListKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.ListKind.widen;
          * ListKind<Integer> list  = Lists.monad()
         .flatMap(i->widen(ListX.range(0,i)), widen(List.of(1,2,3)))
         .convert(ListKind::narrowK);
@@ -618,8 +616,8 @@ public class Lists {
         public static <T> MonadRec<list> monadRec(){
             return new MonadRec<list>() {
                 @Override
-                public <T, R> Higher<list, R> tailRec(T initial, Function<? super T, ? extends Higher<list, ? extends Xor<T, R>>> fn) {
-                    return widen(Lists.tailRecXor(initial, fn.andThen(l -> narrowK(l))));
+                public <T, R> Higher<list, R> tailRec(T initial, Function<? super T, ? extends Higher<list, ? extends cyclops.control.Either<T, R>>> fn) {
+                    return widen(Lists.tailRecEither(initial, fn.andThen(l -> narrowK(l))));
                 }
             };
         }
@@ -727,8 +725,8 @@ public class Lists {
         public static Unfoldable<list> unfoldable(){
             return new Unfoldable<list>() {
                 @Override
-                public <R, T> Higher<list, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
-                    Function<? super T, Option<io.vavr.Tuple2<? extends R, ? extends T>>> f2 = fn.andThen(a -> Option.ofOptional(a).map(t -> FromJooqLambda.tuple(t)));
+                public <R, T> Higher<list, R> unfold(T b, Function<? super T, cyclops.control.Option<Tuple2<R, T>>> fn) {
+                    Function<? super T, Option<io.vavr.Tuple2<? extends R, ? extends T>>> f2 = fn.andThen(a -> FromCyclops.option(a).map(t -> FromCyclops.tuple(t)));
                     return widen(List.<T,R>unfoldRight(b,f2));
                 }
             };
@@ -736,10 +734,10 @@ public class Lists {
     }
 
     public static  <W1,T> Coproduct<W1,list,T> coproduct(List<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(ListKind.widen(list)),def1, Instances.definitions());
+        return Coproduct.of(cyclops.control.Either.right(ListKind.widen(list)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,list,T> coproduct(InstanceDefinitions<W1> def1,T... values){
-        return Coproduct.of(Xor.primary(ListKind.just(values)),def1, Instances.definitions());
+        return Coproduct.of(cyclops.control.Either.right(ListKind.just(values)),def1, Instances.definitions());
     }
 
     public static interface ListNested{
@@ -757,7 +755,7 @@ public class Lists {
         public static <T> Nested<list,lazy,T> lazy(List<Lazy<T>> nested){
             return Nested.of(widen(nested.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
         }
-        public static <L, R> Nested<list,Higher<either,L>, R> either(List<Either<L, R>> nested){
+        public static <L, R> Nested<list,Higher<either,L>, R> either(List<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<list,VavrWitness.stream,T> stream(List<Stream<T>> nested){
@@ -800,10 +798,10 @@ public class Lists {
             ListKind<Higher<Witness.future,T>> y = (ListKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<list,Higher<xor,S>, P> xor(List<Xor<S, P>> nested){
-            ListKind<Xor<S, P>> x = widen(nested);
-            ListKind<Higher<Higher<xor,S>, P>> y = (ListKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<list,Higher<Witness.either,S>, P> xor(List<cyclops.control.Either<S, P>> nested){
+            ListKind<cyclops.control.Either<S, P>> x = widen(nested);
+            ListKind<Higher<Higher<Witness.either,S>, P>> y = (ListKind)x;
+            return Nested.of(y,Instances.definitions(),cyclops.control.Either.Instances.definitions());
         }
         public static <S,T> Nested<list,Higher<reader,S>, T> reader(List<Reader<S, T>> nested,S defaultValue){
             ListKind<Reader<S, T>> x = widen(nested);
@@ -856,10 +854,10 @@ public class Lists {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,list, P> xor(Xor<S, List<P>> nested){
-            Xor<S, Higher<list,P>> x = nested.map(ListKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,list, P> xor(cyclops.control.Either<S, List<P>> nested){
+            cyclops.control.Either<S, Higher<list,P>> x = nested.map(ListKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,cyclops.control.Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,list, T> reader(Reader<S, List<T>> nested,S defaultValue){
 

@@ -7,28 +7,27 @@ import cyclops.monads.VavrWitness.tryType;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
-import com.aol.cyclops2.hkt.Higher;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import com.oath.cyclops.hkt.Higher;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 
-import com.aol.cyclops.vavr.hkt.EitherKind;
-import cyclops.conversion.vavr.ToCyclopsReact;
-import com.aol.cyclops.vavr.hkt.LazyKind;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.Value;
+import com.oath.cyclops.vavr.hkt.EitherKind;
+import cyclops.conversion.vavr.ToCyclops;
+import com.oath.cyclops.vavr.hkt.LazyKind;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.Value;
 import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.monads.transformers.EvalT;
@@ -39,7 +38,6 @@ import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import io.vavr.Lazy;
-import io.vavr.control.Either;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
@@ -50,21 +48,21 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 
-import static com.aol.cyclops.vavr.hkt.LazyKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.LazyKind.widen;
+import static com.oath.cyclops.vavr.hkt.LazyKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.LazyKind.widen;
 
 public class Lazys {
 
     public static  <W1,T> Coproduct<W1,lazy,T> coproduct(Lazy<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(cyclops.control.Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,lazy,T> coproduct(Supplier<T> type, InstanceDefinitions<W1> def1){
         return coproduct(Lazy.of(type),def1);
     }
 
-    public static <L, T, R> Lazy<R> tailRec(T initial, Function<? super T, ? extends Lazy<? extends Either<T, R>>> fn) {
-        Lazy<? extends Either<T, R>> next[] = new Lazy[1];
-        next[0] = Lazy.of(()->Either.left(initial));
+    public static <L, T, R> Lazy<R> tailRec(T initial, Function<? super T, ? extends Lazy<? extends io.vavr.control.Either<T, R>>> fn) {
+        Lazy<? extends io.vavr.control.Either<T, R>> next[] = new Lazy[1];
+        next[0] = Lazy.of(()->io.vavr.control.Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.fold(s -> {
@@ -72,11 +70,11 @@ public class Lazys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(io.vavr.control.Either::get);
     }
-    public static <T, R> Lazy< R> tailRecXor(T initial, Function<? super T, ? extends Lazy<? extends Xor<T, R>>> fn) {
-        Lazy<? extends Xor<T, R>> next[] = new Lazy[1];
-        next[0] = Lazy.of(()->Xor.secondary(initial));
+    public static <T, R> Lazy< R> tailRecEither(T initial, Function<? super T, ? extends Lazy<? extends cyclops.control.Either<T, R>>> fn) {
+        Lazy<? extends cyclops.control.Either<T, R>> next[] = new Lazy[1];
+        next[0] = Lazy.of(()-> cyclops.control.Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -84,7 +82,7 @@ public class Lazys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(e->e.orElse(null));
     }
 
 
@@ -94,7 +92,7 @@ public class Lazys {
      *
      */
     public static <T,W extends WitnessType<W>> EvalT<W, T> liftM(Lazy<T> opt, W witness) {
-        return EvalT.of(witness.adapter().unit(ToCyclopsReact.eval(opt)));
+        return EvalT.of(witness.adapter().unit(ToCyclops.eval(opt)));
     }
     /**
      * Perform a For Comprehension over a Lazy, accepting 3 generating function.
@@ -103,7 +101,7 @@ public class Lazys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Lazys.forEach4;
+     *   import static com.oath.cyclops.reactor.Lazys.forEach4;
      *
     forEach4(Lazy.just(1),
     a-> Lazy.just(a+1),
@@ -124,23 +122,23 @@ public class Lazys {
     public static <T1, T2, T3, R1, R2, R3, R> Lazy<R> forEach4(Lazy<? extends T1> value1,
                                                                Function<? super T1, ? extends Lazy<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends Lazy<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends Lazy<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends Lazy<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
-        Eval<R> res = ToCyclopsReact.eval(value1).flatMap(in -> {
+        Eval<R> res = ToCyclops.eval(value1).flatMap(in -> {
 
             Lazy<R1> a = value2.apply(in);
-            return ToCyclopsReact.eval(a).flatMap(ina -> {
+            return ToCyclops.eval(a).flatMap(ina -> {
                 Lazy<R2> b = value3.apply(in, ina);
-                return ToCyclopsReact.eval(b).flatMap(inb -> {
+                return ToCyclops.eval(b).flatMap(inb -> {
                     Lazy<R3> c = value4.apply(in, ina, inb);
-                    return ToCyclopsReact.eval(c).map(in2 -> yieldingFunction.apply(in, ina, inb, in2));
+                    return ToCyclops.eval(c).map(in2 -> yieldingFunction.apply(in, ina, inb, in2));
                 });
 
             });
 
         });
-        return FromCyclopsReact.eval(res);
+        return FromCyclops.eval(res);
     }
 
 
@@ -152,7 +150,7 @@ public class Lazys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Lazys.forEach3;
+     *   import static com.oath.cyclops.reactor.Lazys.forEach3;
      *
     forEach3(Lazy.just(1),
     a-> Lazy.just(a+1),
@@ -171,20 +169,20 @@ public class Lazys {
     public static <T1, T2, R1, R2, R> Lazy<R> forEach3(Lazy<? extends T1> value1,
                                                        Function<? super T1, ? extends Lazy<R1>> value2,
                                                        BiFunction<? super T1, ? super R1, ? extends Lazy<R2>> value3,
-                                                       Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                       Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
-        Eval<? extends R> res = ToCyclopsReact.eval(value1).flatMap(in -> {
+        Eval<? extends R> res = ToCyclops.eval(value1).flatMap(in -> {
 
             Lazy<R1> a = value2.apply(in);
-            return ToCyclopsReact.eval(a).flatMap(ina -> {
+            return ToCyclops.eval(a).flatMap(ina -> {
                 Lazy<R2> b = value3.apply(in, ina);
-                return ToCyclopsReact.eval(b).map(in2 -> yieldingFunction.apply(in, ina, in2));
+                return ToCyclops.eval(b).map(in2 -> yieldingFunction.apply(in, ina, in2));
             });
 
 
         });
 
-        return FromCyclopsReact.eval(Eval.narrow(res));
+        return FromCyclops.eval(Eval.narrow(res));
 
     }
 
@@ -196,7 +194,7 @@ public class Lazys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Lazys.forEach;
+     *   import static com.oath.cyclops.reactor.Lazys.forEach;
      *
     forEach(Lazy.just(1),
     a-> Lazy.just(a+1),
@@ -213,14 +211,14 @@ public class Lazys {
     public static <T, R1, R> Lazy<R> forEach2(Lazy<? extends T> value1, Function<? super T, Lazy<R1>> value2,
                                               BiFunction<? super T, ? super R1, ? extends R> yieldingFunction) {
 
-        Eval<? extends R> res = ToCyclopsReact.eval(value1).flatMap(in -> {
+        Eval<? extends R> res = ToCyclops.eval(value1).flatMap(in -> {
 
             Lazy<R1> a = value2.apply(in);
-            return ToCyclopsReact.eval(a).map(in2 -> yieldingFunction.apply(in, in2));
+            return ToCyclops.eval(a).map(in2 -> yieldingFunction.apply(in, in2));
         });
 
 
-        return FromCyclopsReact.eval(Eval.narrow(res));
+        return FromCyclops.eval(Eval.narrow(res));
     }
 
 
@@ -294,7 +292,7 @@ public class Lazys {
      * @return  Lazy with a List of values
      */
     public static <T> Lazy<ReactiveSeq<T>> sequence(final java.util.stream.Stream<Lazy<T>> opts) {
-        return FromCyclopsReact.eval(AnyM.sequence(opts.map(ToCyclopsReact::eval).map(AnyM::fromEval), Witness.eval.INSTANCE)
+        return FromCyclops.eval(AnyM.sequence(opts.map(ToCyclops::eval).map(AnyM::fromEval), Witness.eval.INSTANCE)
                 .map(ReactiveSeq::fromStream)
                 .to(Witness::eval));
 
@@ -318,7 +316,7 @@ public class Lazys {
      * @param reducer Reducer to accumulate values with
      * @return Lazy with reduced value
      */
-    public static <T, R> Lazy<R> accumulatePresent(final CollectionX<Lazy<T>> futureals, final Reducer<R> reducer) {
+    public static <T, R> Lazy<R> accumulatePresent(final CollectionX<Lazy<T>> futureals, final Reducer<R,T> reducer) {
         return sequencePresent(futureals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -395,7 +393,7 @@ public class Lazys {
      */
     public static <T1, T2, R> Lazy<R> combine(final Lazy<? extends T1> f, final Value<? extends T2> v,
                                               final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.eval(ToCyclopsReact.eval(f)
+        return narrow(FromCyclops.eval(ToCyclops.eval(f)
                 .combine(v, fn)));
     }
     /**
@@ -420,7 +418,7 @@ public class Lazys {
      */
     public static <T1, T2, R> Lazy<R> combine(final Lazy<? extends T1> f, final Lazy<? extends T2> v,
                                               final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return combine(f,ToCyclopsReact.eval(v),fn);
+        return combine(f, ToCyclops.eval(v),fn);
     }
 
     /**
@@ -443,7 +441,7 @@ public class Lazys {
      */
     public static <T1, T2, R> Lazy<R> zip(final Lazy<? extends T1> f, final Iterable<? extends T2> v,
                                           final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.eval(ToCyclopsReact.eval(f)
+        return narrow(FromCyclops.eval(ToCyclops.eval(f)
                 .zip(v, fn)));
     }
 
@@ -468,7 +466,7 @@ public class Lazys {
      */
     public static <T1, T2, R> Lazy<R> zip(final Publisher<? extends T2> p, final Lazy<? extends T1> f,
                                           final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.eval(ToCyclopsReact.eval(f)
+        return narrow(FromCyclops.eval(ToCyclops.eval(f)
                 .zipP(p, fn)));
     }
     /**
@@ -552,7 +550,7 @@ public class Lazys {
 
                 @Override
                 public <T> Maybe<Unfoldable<lazy>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         };
@@ -610,8 +608,8 @@ public class Lazys {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.LazyKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.LazyKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Lazy.just;
          *
         Lazys.zippingApplicative()
@@ -651,7 +649,7 @@ public class Lazys {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.LazyKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.LazyKind.widen;
          * LazyKind<Integer> lazy  = Lazys.monad()
         .flatMap(i->widen(LazyX.range(0,i)), widen(Lazy.just(1,2,3)))
         .convert(LazyKind::narrowK);
@@ -787,8 +785,8 @@ public class Lazys {
         public static <T> MonadRec<lazy> monadRec(){
             return new MonadRec<lazy>() {
                 @Override
-                public <T, R> Higher<lazy, R> tailRec(T initial, Function<? super T, ? extends Higher<lazy, ? extends Xor<T, R>>> fn) {
-                    return widen(Lazys.tailRecXor(initial, fn.andThen(l ->  narrowK(l).narrow())));
+                public <T, R> Higher<lazy, R> tailRec(T initial, Function<? super T, ? extends Higher<lazy, ? extends cyclops.control.Either<T, R>>> fn) {
+                    return widen(Lazys.tailRecEither(initial, fn.andThen(l ->  narrowK(l).narrow())));
 
                 }
             };
@@ -802,7 +800,7 @@ public class Lazys {
             return widen(Lazy.of(()->value));
         }
         private static <T,R> LazyKind<R> ap(LazyKind<Function< T, R>> lt, LazyKind<T> lazy){
-            return widen(FromCyclopsReact.lazy(ToCyclopsReact.eval(lt.narrow()).combine(ToCyclopsReact.eval(lazy.narrow()), (a, b)->a.apply(b))));
+            return widen(FromCyclops.lazy(ToCyclops.eval(lt.narrow()).combine(ToCyclops.eval(lazy.narrow()), (a, b)->a.apply(b))));
 
         }
         private static <T,R> Higher<lazy,R> flatMap(Higher<lazy,T> lt, Function<? super T, ? extends  Higher<lazy,R>> fn){
@@ -838,7 +836,7 @@ public class Lazys {
         public static <T> Nested<lazy,lazy,T> lazy(Lazy<Lazy<T>> nested){
             return Nested.of(widen(nested.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
         }
-        public static <L, R> Nested<lazy,Higher<VavrWitness.either,L>, R> either(Lazy<Either<L, R>> nested){
+        public static <L, R> Nested<lazy,Higher<VavrWitness.either,L>, R> either(Lazy<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<lazy,VavrWitness.queue,T> queue(Lazy<Queue<T>> nested){
@@ -881,10 +879,10 @@ public class Lazys {
             LazyKind<Higher<Witness.future,T>> y = (LazyKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<lazy,Higher<xor,S>, P> xor(Lazy<Xor<S, P>> nested){
-            LazyKind<Xor<S, P>> x = widen(nested);
-            LazyKind<Higher<Higher<xor,S>, P>> y = (LazyKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<lazy,Higher<Witness.either,S>, P> xor(Lazy<cyclops.control.Either<S, P>> nested){
+            LazyKind<cyclops.control.Either<S, P>> x = widen(nested);
+            LazyKind<Higher<Higher<Witness.either,S>, P>> y = (LazyKind)x;
+            return Nested.of(y,Instances.definitions(), cyclops.control.Either.Instances.definitions());
         }
         public static <S,T> Nested<lazy,Higher<reader,S>, T> reader(Lazy<Reader<S, T>> nested,S defaultValue){
             LazyKind<Reader<S, T>> x = widen(nested);
@@ -938,10 +936,10 @@ public class Lazys {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,lazy, P> xor(Xor<S, Lazy<P>> nested){
-            Xor<S, Higher<lazy,P>> x = nested.map(LazyKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,lazy, P> xor(cyclops.control.Either<S, Lazy<P>> nested){
+            cyclops.control.Either<S, Higher<lazy,P>> x = nested.map(LazyKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x, cyclops.control.Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,lazy, T> reader(Reader<S, Lazy<T>> nested,S defaultValue){
 

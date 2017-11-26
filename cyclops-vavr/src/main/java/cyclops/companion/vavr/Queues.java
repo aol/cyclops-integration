@@ -1,33 +1,32 @@
 package cyclops.companion.vavr;
 
-import cyclops.collections.mutable.ListX;
 import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.control.Either;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.ListKind;
+import com.oath.cyclops.vavr.hkt.ListKind;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.queue;
-import com.aol.cyclops.vavr.hkt.QueueKind;
+import com.oath.cyclops.vavr.hkt.QueueKind;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.XorM;
@@ -40,7 +39,7 @@ import cyclops.typeclasses.monad.*;
 import io.vavr.collection.List;
 import io.vavr.collection.Queue;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -48,14 +47,14 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import static com.aol.cyclops.vavr.hkt.QueueKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.QueueKind.widen;
+import static com.oath.cyclops.vavr.hkt.QueueKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.QueueKind.widen;
 
 
 public class Queues {
 
     public static  <W1,T> Coproduct<W1,queue,T> coproduct(Queue<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,queue,T> coproduct(InstanceDefinitions<W1> def1,T... values){
         return  coproduct(Queue.of(values),def1);
@@ -71,8 +70,8 @@ public class Queues {
         return AnyM.ofSeq(option, queue.INSTANCE);
     }
 
-    public static  <T,R> Queue<R> tailRec(T initial, Function<? super T, ? extends Queue<? extends Either<T, R>>> fn) {
-        Queue<Either<T, R>> next = Queue.of(Either.left(initial));
+    public static  <T,R> Queue<R> tailRec(T initial, Function<? super T, ? extends Queue<? extends io.vavr.control.Either<T, R>>> fn) {
+        Queue<io.vavr.control.Either<T, R>> next = Queue.of(io.vavr.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -89,10 +88,10 @@ public class Queues {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(io.vavr.control.Either::isRight).map(io.vavr.control.Either::get);
     }
-    public static  <T,R> Queue<R> tailRecXor(T initial, Function<? super T, ? extends Queue<? extends Xor<T, R>>> fn) {
-        Queue<Xor<T, R>> next = Queue.of(Xor.secondary(initial));
+    public static  <T,R> Queue<R> tailRecEither(T initial, Function<? super T, ? extends Queue<? extends Either<T, R>>> fn) {
+        Queue<Either<T, R>> next = Queue.of(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -109,7 +108,7 @@ public class Queues {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(Either::isRight).map(e->e.orElse(null));
     }
 
 
@@ -141,8 +140,8 @@ public class Queues {
     public static <T1, T2, T3, R1, R2, R3, R> Queue<R> forEach4(Queue<? extends T1> value1,
                                                                Function<? super T1, ? extends Queue<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends Queue<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends Queue<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends Queue<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -167,7 +166,7 @@ public class Queues {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Queuees.forEach4;
+     *  import static com.oath.cyclops.reactor.Queuees.forEach4;
      *
      *  forEach4(IntQueue.range(1,10).boxed(),
     a-> Queue.iterate(a,i->i+1).limit(10),
@@ -190,9 +189,9 @@ public class Queues {
     public static <T1, T2, T3, R1, R2, R3, R> Queue<R> forEach4(Queue<? extends T1> value1,
                                                                  Function<? super T1, ? extends Queue<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Queue<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Queue<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Queue<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -238,7 +237,7 @@ public class Queues {
     public static <T1, T2, R1, R2, R> Queue<R> forEach3(Queue<? extends T1> value1,
                                                          Function<? super T1, ? extends Queue<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Queue<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -281,8 +280,8 @@ public class Queues {
     public static <T1, T2, R1, R2, R> Queue<R> forEach3(Queue<? extends T1> value1,
                                                          Function<? super T1, ? extends Queue<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Queue<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -451,7 +450,7 @@ public class Queues {
 
                 @Override
                 public <T> Maybe<Comonad<queue>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -515,8 +514,8 @@ public class Queues {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.QueueKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.QueueKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asQueue;
          *
         Queues.zippingApplicative()
@@ -556,7 +555,7 @@ public class Queues {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.QueueKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.QueueKind.widen;
          * QueueKind<Integer> list  = Queues.monad()
         .flatMap(i->widen(QueueX.range(0,i)), widen(Arrays.asQueue(1,2,3)))
         .convert(QueueKind::narrowK);
@@ -587,8 +586,8 @@ public class Queues {
             return new MonadRec<queue>(){
 
                 @Override
-                public <T, R> Higher<queue, R> tailRec(T initial, Function<? super T, ? extends Higher<queue, ? extends Xor<T, R>>> fn) {
-                    return widen(tailRecXor(initial,fn.andThen(QueueKind::narrowK).andThen(q->q.narrow())));
+                public <T, R> Higher<queue, R> tailRec(T initial, Function<? super T, ? extends Higher<queue, ? extends Either<T, R>>> fn) {
+                    return widen(tailRecEither(initial,fn.andThen(QueueKind::narrowK).andThen(q->q.narrow())));
                 }
             };
         }
@@ -722,7 +721,7 @@ public class Queues {
         }
 
         private static <T,R> QueueKind<R> ap(QueueKind<Function< T, R>> lt, QueueKind<T> list){
-            return widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toQueue());
+            return widen(FromCyclops.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toQueue());
         }
         private static <T,R> Higher<queue,R> flatMap(Higher<queue,T> lt, Function<? super T, ? extends  Higher<queue,R>> fn){
             return widen(QueueKind.narrow(lt).flatMap(fn.andThen(QueueKind::narrow)));
@@ -733,7 +732,7 @@ public class Queues {
         public static Unfoldable<queue> unfoldable(){
             return new Unfoldable<queue>() {
                 @Override
-                public <R, T> Higher<queue, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<queue, R> unfold(T b, Function<? super T, cyclops.control.Option<Tuple2<R, T>>> fn) {
                     return widen(ReactiveSeq.unfold(b,fn).collect(Queue.collector()));
 
                 }
@@ -757,7 +756,7 @@ public class Queues {
         public static <T> Nested<queue,queue,T> queue(Queue<Queue<T>> nested){
             return Nested.of(widen(nested.map(QueueKind::widen)),Instances.definitions(),Queues.Instances.definitions());
         }
-        public static <L, R> Nested<queue,Higher<VavrWitness.either,L>, R> either(Queue<Either<L, R>> nested){
+        public static <L, R> Nested<queue,Higher<VavrWitness.either,L>, R> either(Queue<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<queue,VavrWitness.stream,T> stream(Queue<Stream<T>> nested){
@@ -797,10 +796,10 @@ public class Queues {
             QueueKind<Higher<Witness.future,T>> y = (QueueKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<queue,Higher<xor,S>, P> xor(Queue<Xor<S, P>> nested){
-            QueueKind<Xor<S, P>> x = widen(nested);
-            QueueKind<Higher<Higher<xor,S>, P>> y = (QueueKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<queue,Higher<Witness.either,S>, P> xor(Queue<Either<S, P>> nested){
+            QueueKind<Either<S, P>> x = widen(nested);
+            QueueKind<Higher<Higher<Witness.either,S>, P>> y = (QueueKind)x;
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<queue,Higher<reader,S>, T> reader(Queue<Reader<S, T>> nested, S defaultValue){
             QueueKind<Reader<S, T>> x = widen(nested);
@@ -853,10 +852,10 @@ public class Queues {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,queue, P> xor(Xor<S, Queue<P>> nested){
-            Xor<S, Higher<queue,P>> x = nested.map(QueueKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,queue, P> xor(Either<S, Queue<P>> nested){
+            Either<S, Higher<queue,P>> x = nested.map(QueueKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,queue, T> reader(Reader<S, Queue<T>> nested,S defaultValue){
 

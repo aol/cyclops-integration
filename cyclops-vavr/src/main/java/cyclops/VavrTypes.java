@@ -1,8 +1,12 @@
 package cyclops;
 
+import com.oath.cyclops.types.persistent.PersistentList;
+import com.oath.cyclops.types.persistent.PersistentQueue;
+import com.oath.cyclops.types.persistent.PersistentSet;
+import com.oath.cyclops.types.persistent.PersistentSortedSet;
 import cyclops.collections.vavr.*;
 import cyclops.function.Reducer;
-import org.pcollections.*;
+
 
 import java.util.Comparator;
 
@@ -22,10 +26,10 @@ public class VavrTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Vavr List that implements PStack interface
+     * @return Reducer to convert a sequence of data to a Vavr List that implements PersistentList interface
      */
-    public static <T> Reducer<PStack<T>> list() {
-        return VavrListX.toPStack();
+    public static <T> Reducer<PersistentList<T>,T> list() {
+        return VavrListX.toPersistentList();
     }
     /**
      * Use to set the type of a VectorX to Vavr Vector
@@ -40,10 +44,10 @@ public class VavrTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Vavr Vector that implements PVector interface
+     * @return Reducer to convert a sequence of data to a Vavr Vector that implements PersistentList interface
      */
-    public static <T> Reducer<PVector<T>> vector() {
-        return VavrVectorX.toPVector();
+    public static <T> Reducer<PersistentList<T>,T> vector() {
+        return VavrVectorX.toPersistentList();
     }
 
     /**
@@ -59,10 +63,10 @@ public class VavrTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Vavr List that implements PQueue interface
+     * @return Reducer to convert a sequence of data to a Vavr List that implements PersistentQueue interface
      */
-    public static <T> Reducer<PQueue<T>> queue() {
-        return VavrQueueX.toPQueue();
+    public static <T> Reducer<PersistentQueue<T>,T> queue() {
+        return VavrQueueX.toPersistentQueue();
     }
     /**
      * Use to set the type of an OrderedSetX to Vavr TreeSet
@@ -77,13 +81,13 @@ public class VavrTypes {
      * </pre>
      *
      * @param <T> Data type
-     * @return Reducer to convert a sequence of data to a Vavr Set that implements POrderedSet interface
+     * @return Reducer to convert a sequence of data to a Vavr Set that implements PersistentSortedSet interface
      */
-    public static <T> Reducer<POrderedSet<T>> treeSet(Comparator<T> ordering) {
-        return VavrTreeSetX.toPOrderedSet(ordering);
+    public static <T> Reducer<PersistentSortedSet<T>,T> treeSet(Comparator<T> ordering) {
+        return VavrTreeSetX.toPersistentSortedSet(ordering);
     }
-    public static <T extends Comparable<T>> Reducer<POrderedSet<T>> treeSet() {
-        return VavrTreeSetX.toPOrderedSet(Comparator.naturalOrder());
+    public static <T extends Comparable<T>> Reducer<PersistentSortedSet<T>,T> treeSet() {
+        return VavrTreeSetX.toPersistentSortedSet(Comparator.naturalOrder());
     }
 
     /**
@@ -101,25 +105,9 @@ public class VavrTypes {
      * @param <T> Data type
      * @return Reducer to convert a sequence of data to a Vavr Set that implements PSet interface
      */
-    public static <T> Reducer<PSet<T>> hashSet() {
+    public static <T> Reducer<PersistentSet<T>,T> hashSet() {
         return VavrHashSetX.toPSet();
     }
 
-    /**
-     * Use to set the type of an OrderedSetX to Scala TreeSet
-     * <pre>
-     *     {@code
-     *     BitSet set =  OrderedSetX.of(1,2,3)
-     *                                        .type(VavrTypes.bitSet())
-     *                                        .map(i->i*2)
-     *                                        .to(VavrConverters::BitSet);
-     *     }
-     *
-     * </pre>
-     *
-     * @return Reducer to convert a sequence of data to a Scala Set that implements POrderedSet interface
-     */
-    public static Reducer<POrderedSet<Integer>> bitset() {
-        return VavrBitSetX.toPOrderedSet();
-    }
+
 }

@@ -1,7 +1,7 @@
 package cyclops.streams;
 
 import cyclops.companion.rx.Observables;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import rx.Observable;
 import rx.Subscriber;
 

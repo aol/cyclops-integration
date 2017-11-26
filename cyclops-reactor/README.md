@@ -211,7 +211,7 @@ AnyMSeq<flux,Integer> monad = Fluxs.anyM(myFlux);
 
 monad.map(i->i*2)
      .zipWithIndex();
-     .filter(t->t.v1()<100l);
+     .filter(t->t._1()<100l);
 ```
 
 We can create an AnyM instance for an Mono via Monos

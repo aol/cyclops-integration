@@ -1,6 +1,6 @@
 package cyclops.companion.rx2;
 
-import com.aol.cyclops2.util.ExceptionSoftener;
+import com.oath.cyclops.util.ExceptionSoftener;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;

@@ -7,31 +7,26 @@ import java.util.function.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.aol.cyclops.rx.adapter.ObservableReactiveSeq;
+import com.oath.cyclops.rx.adapter.ObservableReactiveSeq;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
-import cyclops.companion.Optionals;
 import cyclops.companion.Optionals.OptionalKind;
-import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
-import cyclops.control.Xor;
+import cyclops.control.*;
 import cyclops.monads.*;
 import cyclops.monads.RxWitness.observable;
-import com.aol.cyclops.rx.hkt.ObservableKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import com.oath.cyclops.rx.hkt.ObservableKind;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 
 
-import cyclops.stream.Spouts;
+import cyclops.reactive.Spouts;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -40,7 +35,7 @@ import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 import rx.*;
 import rx.Observable;
@@ -50,11 +45,11 @@ import rx.observables.AsyncOnSubscribe;
 import rx.observables.SyncOnSubscribe;
 import rx.schedulers.Schedulers;
 
-import static com.aol.cyclops.rx.hkt.ObservableKind.widen;
+import static com.oath.cyclops.rx.hkt.ObservableKind.widen;
 
 /**
  * Companion class for working with RxJava Observable types
- * 
+ *
  * @author johnmcclean
  *
  */
@@ -62,7 +57,7 @@ import static com.aol.cyclops.rx.hkt.ObservableKind.widen;
 public class Observables {
 
     public static  <W1,T> Coproduct<W1,observable,T> coproduct(Observable<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(ObservableKind.widen(list)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(ObservableKind.widen(list)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,observable,T> coproduct(InstanceDefinitions<W1> def1,T... values){
         return coproduct(Observable.from(values),def1);
@@ -74,8 +69,8 @@ public class Observables {
     public static <T,W extends WitnessType<W>> AnyM<W,Observable<T>> fromStream(AnyM<W,Stream<T>> anyM){
         return anyM.map(s->fromStream(s));
     }
-    public static  <T,R> Observable<R> tailRec(T initial, Function<? super T, ? extends Observable<? extends Xor<T, R>>> fn) {
-        Observable<Xor<T, R>> next = Observable.just(Xor.secondary(initial));
+    public static  <T,R> Observable<R> tailRec(T initial, Function<? super T, ? extends Observable<? extends Either<T, R>>> fn) {
+        Observable<Either<T, R>> next = Observable.just(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -92,7 +87,7 @@ public class Observables {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(Either::isRight).map(e->e.orElse(null));
     }
     public static <T> Observable<T> raw(AnyM<observable,T> anyM){
         return RxWitness.observable(anyM);
@@ -215,12 +210,12 @@ public class Observables {
 
 
 
-    
+
     public static <T> ReactiveSeq<T> create(Observable.OnSubscribe<T> f) {
         return reactiveSeq(Observable.create(f));
     }
 
-    
+
     public static <S, T> ReactiveSeq<T> create(SyncOnSubscribe<S, T> syncOnSubscribe) {
         return reactiveSeq(Observable.create(syncOnSubscribe));
     }
@@ -230,7 +225,7 @@ public class Observables {
         return reactiveSeq(Observable.create(asyncOnSubscribe));
     }
 
-   
+
 
 
 
@@ -238,26 +233,26 @@ public class Observables {
         return create(OnSubscribeAmb.amb(sources));
     }
 
-    
- 
-   
+
+
+
     public static <T> ReactiveSeq<T> concat(Observable<? extends Observable<? extends T>> observables) {
         return reactiveSeq(Observable.concat(observables));
     }
 
-    
 
-   
+
+
     public static <T> ReactiveSeq<T> concatDelayError(Observable<? extends Observable<? extends T>> sources) {
         return reactiveSeq(Observable.concatDelayError(sources));
     }
 
-    
+
     public static <T> ReactiveSeq<T> defer(Supplier<Observable<T>> observableFactory) {
         return reactiveSeq(Observable.defer(()->observableFactory.get()));
     }
 
-  
+
     public static <T> ReactiveSeq<T> empty() {
         return reactiveSeq(Observable.empty());
     }
@@ -267,15 +262,15 @@ public class Observables {
     }
 
 
-  
-  
 
-   
+
+
+
     public static <T> ReactiveSeq<T> from(Iterable<? extends T> iterable) {
         return reactiveSeq(Observable.from(iterable));
     }
 
-    
+
     public static <T> ReactiveSeq<T> from(T... params) {
         T[] array = params;
         int n = array.length;
@@ -288,27 +283,27 @@ public class Observables {
         return create(new OnSubscribeFromArray<T>(array));
     }
 
-   
+
     public static ReactiveSeq<Long> interval(long interval, TimeUnit unit) {
         return interval(interval, interval, unit, Schedulers.computation());
     }
 
-    
+
     public static ReactiveSeq<Long> interval(long interval, TimeUnit unit, Scheduler scheduler) {
         return interval(interval, interval, unit, scheduler);
     }
 
-   
+
     public static ReactiveSeq<Long> interval(long initialDelay, long period, TimeUnit unit) {
         return interval(initialDelay, period, unit, Schedulers.computation());
     }
 
-   
+
     public static ReactiveSeq<Long> interval(long initialDelay, long period, TimeUnit unit, Scheduler scheduler) {
         return reactiveSeq(Observable.interval(initialDelay,period,unit,scheduler));
     }
 
-   
+
     public static <T> ReactiveSeq<T> just(final T value) {
         return reactiveSeq(Observable.just(value));
     }
@@ -325,12 +320,12 @@ public class Observables {
         return just(values);
     }
 
-   
+
     public static <T> ReactiveSeq<T> merge(Iterable<? extends Observable<? extends T>> sequences) {
         return merge(from(sequences));
     }
 
- 
+
     public static <T> ReactiveSeq<T> merge(Iterable<? extends Observable<? extends T>> sequences, int maxConcurrent) {
         return merge(from(sequences), maxConcurrent);
     }
@@ -361,7 +356,7 @@ public class Observables {
     }
 
 
-  
+
     public static <T> ReactiveSeq<T> never() {
         return reactiveSeq(Observable.never());
     }
@@ -370,22 +365,22 @@ public class Observables {
        return reactiveSeq(Observable.range(start,count));
     }
 
-    
+
     public static ReactiveSeq<Integer> range(int start, int count, Scheduler scheduler) {
         return reactiveSeq(Observable.range(start,count,scheduler));
     }
 
-   
+
     public static <T> ReactiveSeq<T> switchOnNext(Observable<? extends Observable<? extends T>> sequenceOfSequences) {
         return reactiveSeq(Observable.switchOnNext(sequenceOfSequences));
     }
 
-    
+
     public static <T> ReactiveSeq<T> switchOnNextDelayError(Observable<? extends Observable<? extends T>> sequenceOfSequences) {
         return reactiveSeq(Observable.switchOnNext(sequenceOfSequences));
     }
 
-   
+
     public static ReactiveSeq<Long> timer(long initialDelay, long period, TimeUnit unit) {
         return interval(initialDelay, period, unit, Schedulers.computation());
     }
@@ -395,28 +390,28 @@ public class Observables {
         return timer(delay, unit, Schedulers.computation());
     }
 
- 
+
     public static ReactiveSeq<Long> timer(long delay, TimeUnit unit, Scheduler scheduler) {
         return create(new OnSubscribeTimerOnce(delay, unit, scheduler));
     }
 
-    
-    
+
+
 
     /**
      * Construct an AnyM type from an Observable. This allows the Observable to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
-     * 
+     *
      * <pre>
-     * {@code 
-     *    
+     * {@code
+     *
      *    AnyMSeq<Integer> obs = Observables.anyM(Observable.just(1,2,3));
      *    AnyMSeq<Integer> transformedObs = myGenericOperation(obs);
-     *    
+     *
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
      * }
      * </pre>
-     * 
+     *
      * @param obs Observable to wrap inside an AnyM
      * @return AnyMSeq wrapping an Observable
      */
@@ -425,13 +420,13 @@ public class Observables {
     }
 
     /**
-     * Perform a For Comprehension over a Observable, accepting 3 generating functions. 
+     * Perform a For Comprehension over a Observable, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Observables.
      *
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops.reactor.Observables.forEach4;
+     *   import static com.oath.cyclops.reactor.Observables.forEach4;
      *
     forEach4(Observable.range(1,10),
     a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -452,8 +447,8 @@ public class Observables {
     public static <T1, T2, T3, R1, R2, R3, R> Observable<R> forEach4(Observable<? extends T1> value1,
                                                                      Function<? super T1, ? extends Observable<R1>> value2,
                                                                      BiFunction<? super T1, ? super R1, ? extends Observable<R2>> value3,
-                                                                     Fn3<? super T1, ? super R1, ? super R2, ? extends Observable<R3>> value4,
-                                                                     Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                     Function3<? super T1, ? super R1, ? super R2, ? extends Observable<R3>> value4,
+                                                                     Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -474,12 +469,12 @@ public class Observables {
     }
 
     /**
-     * Perform a For Comprehension over a Observable, accepting 3 generating functions. 
-     * This results in a four level nested internal iteration over the provided Observables. 
+     * Perform a For Comprehension over a Observable, accepting 3 generating functions.
+     * This results in a four level nested internal iteration over the provided Observables.
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops.reactor.Observables.forEach4;
+     *  import static com.oath.cyclops.reactor.Observables.forEach4;
      *
      *  forEach4(Observable.range(1,10),
     a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -502,9 +497,9 @@ public class Observables {
     public static <T1, T2, T3, R1, R2, R3, R> Observable<R> forEach4(Observable<? extends T1> value1,
                                                                      Function<? super T1, ? extends Observable<R1>> value2,
                                                                      BiFunction<? super T1, ? super R1, ? extends Observable<R2>> value3,
-                                                                     Fn3<? super T1, ? super R1, ? super R2, ? extends Observable<R3>> value4,
-                                                                     Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                     Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                     Function3<? super T1, ? super R1, ? super R2, ? extends Observable<R3>> value4,
+                                                                     Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                     Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -523,13 +518,13 @@ public class Observables {
     }
 
     /**
-     * Perform a For Comprehension over a Observable, accepting 2 generating functions. 
-     * This results in a three level nested internal iteration over the provided Observables. 
+     * Perform a For Comprehension over a Observable, accepting 2 generating functions.
+     * This results in a three level nested internal iteration over the provided Observables.
      *
      * <pre>
      * {@code
      *
-     * import static com.aol.cyclops.reactor.Observables.forEach;
+     * import static com.oath.cyclops.reactor.Observables.forEach;
      *
      * forEach(Observable.range(1,10),
     a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -549,7 +544,7 @@ public class Observables {
     public static <T1, T2, R1, R2, R> Observable<R> forEach3(Observable<? extends T1> value1,
                                                              Function<? super T1, ? extends Observable<R1>> value2,
                                                              BiFunction<? super T1, ? super R1, ? extends Observable<R2>> value3,
-                                                             Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                             Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -569,7 +564,7 @@ public class Observables {
      * <pre>
      * {@code
      *
-     * import static com.aol.cyclops.reactor.Observables.forEach;
+     * import static com.oath.cyclops.reactor.Observables.forEach;
      *
      * forEach(Observable.range(1,10),
     a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
@@ -589,8 +584,8 @@ public class Observables {
     public static <T1, T2, R1, R2, R> Observable<R> forEach3(Observable<? extends T1> value1,
                                                              Function<? super T1, ? extends Observable<R1>> value2,
                                                              BiFunction<? super T1, ? super R1, ? extends Observable<R2>> value3,
-                                                             Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                             Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                             Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                             Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -608,13 +603,13 @@ public class Observables {
     }
 
     /**
-     * Perform a For Comprehension over a Observable, accepting an additonal generating function. 
-     * This results in a two level nested internal iteration over the provided Observables. 
+     * Perform a For Comprehension over a Observable, accepting an additonal generating function.
+     * This results in a two level nested internal iteration over the provided Observables.
      *
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops.reactor.Observables.forEach;
+     *  import static com.oath.cyclops.reactor.Observables.forEach;
      *  forEach(Observable.range(1, 10), i -> Observable.range(i, 10), Tuple::tuple)
     .subscribe(System.out::println);
 
@@ -647,7 +642,7 @@ public class Observables {
      * <pre>
      * {@code
      *
-     *   import static com.aol.cyclops.reactor.Observables.forEach;
+     *   import static com.oath.cyclops.reactor.Observables.forEach;
      *
      *   forEach(Observable.range(1, 10), i -> Observable.range(i, 10),(a,b) -> a>2 && b<10,Tuple::tuple)
     .subscribe(System.out::println);
@@ -755,7 +750,7 @@ public class Observables {
 
                 @Override
                 public <T> Maybe<Comonad<observable>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -818,8 +813,8 @@ public class Observables {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ObservableKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.ObservableKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Observables.zippingApplicative()
         .ap(widen(Observable.of(l1(this::multiplyByTwo))),widen(Observable.of(1,2,3)));
@@ -858,7 +853,7 @@ public class Observables {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.ObservableKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.ObservableKind.widen;
          * ObservableKind<Integer> observable  = Observables.monad()
         .flatMap(i->widen(ObservableX.range(0,i)), widen(Observable.of(1,2,3)))
         .convert(ObservableKind::narrowK);
@@ -888,7 +883,7 @@ public class Observables {
         public static <T,R> MonadRec<observable> monadRec(){
             return new MonadRec<observable>() {
                 @Override
-                public <T, R> Higher<observable, R> tailRec(T initial, Function<? super T, ? extends Higher<observable, ? extends Xor<T, R>>> fn) {
+                public <T, R> Higher<observable, R> tailRec(T initial, Function<? super T, ? extends Higher<observable, ? extends Either<T, R>>> fn) {
                     return widen(Observables.tailRec(initial,fn.andThen(ObservableKind::narrowK).andThen(a->a.narrow())));
                 }
             };
@@ -1048,7 +1043,7 @@ public class Observables {
         public static Unfoldable<observable> unfoldable(){
             return new Unfoldable<observable>() {
                 @Override
-                public <R, T> Higher<observable, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<observable, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(Observables.fromStream(ReactiveSeq.unfold(b,fn)));
                 }
             };
@@ -1085,10 +1080,10 @@ public class Observables {
             ObservableKind<Higher<future,T>> y = (ObservableKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<observable,Higher<xor,S>, P> xor(Observable<Xor<S, P>> nested){
-            ObservableKind<Xor<S, P>> x = widen(nested);
-            ObservableKind<Higher<Higher<xor,S>, P>> y = (ObservableKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<observable,Higher<Witness.either,S>, P> xor(Observable<Either<S, P>> nested){
+            ObservableKind<Either<S, P>> x = widen(nested);
+            ObservableKind<Higher<Higher<Witness.either,S>, P>> y = (ObservableKind)x;
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<observable,Higher<reader,S>, T> reader(Observable<Reader<S, T>> nested, S defaultValue){
             ObservableKind<Reader<S, T>> x = widen(nested);
@@ -1143,10 +1138,10 @@ public class Observables {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,observable, P> xor(Xor<S, Observable<P>> nested){
-            Xor<S, Higher<observable,P>> x = nested.map(ObservableKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,observable, P> xor(Either<S, Observable<P>> nested){
+            Either<S, Higher<observable,P>> x = nested.map(ObservableKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,observable, T> reader(Reader<S, Observable<T>> nested, S defaultValue){
 

@@ -1,29 +1,27 @@
 package cyclops.companion.rx2;
 
 
-import com.aol.cyclops.rx2.hkt.FlowableKind;
-import com.aol.cyclops.rx2.hkt.MaybeKind;
-import com.aol.cyclops.rx2.hkt.ObservableKind;
-import com.aol.cyclops.rx2.hkt.SingleKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.react.Status;
-import com.aol.cyclops2.types.MonadicValue;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.rx2.hkt.FlowableKind;
+import com.oath.cyclops.rx2.hkt.MaybeKind;
+import com.oath.cyclops.rx2.hkt.ObservableKind;
+import com.oath.cyclops.rx2.hkt.SingleKind;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.react.Status;
+import com.oath.cyclops.types.MonadicValue;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.async.Future;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
-import cyclops.companion.Optionals;
 import cyclops.companion.Optionals.OptionalKind;
-import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 
+import cyclops.control.LazyEither;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.control.lazy.Either;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.control.Either;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.*;
 import cyclops.monads.Rx2Witness.flowable;
@@ -32,7 +30,7 @@ import cyclops.monads.Rx2Witness.observable;
 import cyclops.monads.Rx2Witness.single;
 import cyclops.monads.Witness.*;
 import cyclops.monads.transformers.rx2.MaybeT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -56,11 +54,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.aol.cyclops.rx2.hkt.MaybeKind.widen;
+import static com.oath.cyclops.rx2.hkt.MaybeKind.widen;
 
 /**
- * Companion class for working with Reactor Maybe types
- * 
+ * Companion class for working with RxJava 2 Maybe types
+ *
  * @author johnmcclean
  *
  */
@@ -68,7 +66,7 @@ import static com.aol.cyclops.rx2.hkt.MaybeKind.widen;
 public class Maybes {
 
     public static  <W1,T> Coproduct<W1,maybe,T> coproduct(Maybe<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(MaybeKind.widen(list)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(MaybeKind.widen(list)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,maybe,T> coproductNone(InstanceDefinitions<W1> def1){
         return coproduct(Maybe.never(),def1);
@@ -81,9 +79,9 @@ public class Maybes {
     }
 
 
-    public static <T, R> Maybe< R> tailRec(T initial, Function<? super T, ? extends Maybe<? extends Xor<T, R>>> fn) {
-        Maybe<? extends Xor<T, R>> next[] = new Maybe[1];
-        next[0] = Maybe.just(Xor.secondary(initial));
+    public static <T, R> Maybe< R> tailRec(T initial, Function<? super T, ? extends Maybe<? extends Either<T, R>>> fn) {
+        Maybe<? extends Either<T, R>> next[] = new Maybe[1];
+        next[0] = Maybe.just(Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -91,7 +89,7 @@ public class Maybes {
                 return true;
             }, pr -> false)).blockingGet(false);
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(e->e.orElse(null));
     }
 
     public static <T> Maybe<T> fromPublisher(Publisher<T> maybe){
@@ -130,8 +128,8 @@ public class Maybes {
         return Future.fromPublisher(future.toFlowable());
     }
 
-    public static <R> Either<Throwable,R> either(Maybe<R> either){
-        return Either.fromFuture(future(either));
+    public static <R> LazyEither<Throwable,R> either(Maybe<R> either){
+        return LazyEither.fromFuture(future(either));
 
     }
 
@@ -141,21 +139,21 @@ public class Maybes {
     public static <T> Eval<T> eval(Maybe<T> opt){
         return Eval.fromFuture(future(opt));
     }
-    
+
     /**
      * Construct an AnyM type from a Maybe. This allows the Maybe to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
-     * 
+     *
      * <pre>
-     * {@code 
-     *    
+     * {@code
+     *
      *    AnyMSeq<Integer> maybe = Fluxs.anyM(Maybe.just(1,2,3));
      *    AnyMSeq<Integer> transformedMaybe = myGenericOperation(maybe);
-     *    
+     *
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
      * }
      * </pre>
-     * 
+     *
      * @param maybe To wrap inside an AnyM
      * @return AnyMSeq wrapping a Maybe
      */
@@ -271,23 +269,23 @@ public class Maybes {
     }
 
     /**
-     * Perform a For Comprehension over a Maybe, accepting 3 generating functions. 
+     * Perform a For Comprehension over a Maybe, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Maybes.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Maybes.forEach4;
-     *    
-          forEach4(Maybe.just(1), 
+     *
+          forEach4(Maybe.just(1),
                   a-> Maybe.just(a+1),
                   (a,b) -> Maybe.<Integer>just(a+b),
                   (a,b,c) -> Maybe.<Integer>just(a+b+c),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Maybe
      * @param value2 Nested Maybe
      * @param value3 Nested Maybe
@@ -298,8 +296,8 @@ public class Maybes {
     public static <T1, T2, T3, R1, R2, R3, R> Maybe<R> forEach4(Maybe<? extends T1> value1,
             Function<? super T1, ? extends Maybe<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Maybe<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends Maybe<R3>> value4,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends Maybe<R3>> value4,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         Maybe<? extends R> res = value1.flatMap(in -> {
@@ -320,22 +318,22 @@ public class Maybes {
 
 
     /**
-     * Perform a For Comprehension over a Maybe, accepting 2 generating functions. 
+     * Perform a For Comprehension over a Maybe, accepting 2 generating functions.
      * This results in a three level nested internal iteration over the provided Maybes.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Maybes.forEach3;
-     *    
-          forEach3(Maybe.just(1), 
+     *
+          forEach3(Maybe.just(1),
                   a-> Maybe.just(a+1),
                   (a,b) -> Maybe.<Integer>just(a+b),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Maybe
      * @param value2 Nested Maybe
      * @param value3 Nested Maybe
@@ -345,7 +343,7 @@ public class Maybes {
     public static <T1, T2, R1, R2, R> Maybe<R> forEach3(Maybe<? extends T1> value1,
             Function<? super T1, ? extends Maybe<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Maybe<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         Maybe<? extends R> res = value1.flatMap(in -> {
@@ -368,21 +366,21 @@ public class Maybes {
 
 
     /**
-     * Perform a For Comprehension over a Maybe, accepting a generating function. 
+     * Perform a For Comprehension over a Maybe, accepting a generating function.
      * This results in a two level nested internal iteration over the provided Maybes.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Maybes.forEach;
-     *    
-          forEach(Maybe.just(1), 
+     *
+          forEach(Maybe.just(1),
                   a-> Maybe.just(a+1),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Maybe
      * @param value2 Nested Maybe
      * @param yieldingFunction Generates a result per combination
@@ -409,7 +407,7 @@ public class Maybes {
 
     /**
      * Lazily combine this Maybe with the supplied value via the supplied BiFunction
-     * 
+     *
      * @param maybe Maybe to combine with another value
      * @param app Value to combine with supplied maybe
      * @param fn Combiner function
@@ -423,7 +421,7 @@ public class Maybes {
 
     /**
      * Lazily combine this Maybe with the supplied Maybe via the supplied BiFunction
-     * 
+     *
      * @param maybe Maybe to combine with another value
      * @param app Maybe to combine with supplied maybe
      * @param fn Combiner function
@@ -437,7 +435,7 @@ public class Maybes {
 
     /**
      * Combine the provided Maybe with the first element (if present) in the provided Iterable using the provided BiFunction
-     * 
+     *
      * @param maybe Maybe to combine with an Iterable
      * @param app Iterable to combine with a Maybe
      * @param fn Combining function
@@ -451,7 +449,7 @@ public class Maybes {
 
     /**
      * Combine the provided Maybe with the first element (if present) in the provided Publisher using the provided BiFunction
-     * 
+     *
      * @param maybe  Maybe to combine with a Publisher
      * @param fn Publisher to combine with a Maybe
      * @param app Combining function
@@ -463,21 +461,10 @@ public class Maybes {
         return res;
     }
 
-    /**
-     * Test if value is equal to the value inside this Maybe
-     * 
-     * @param maybe Maybe to test
-     * @param test Value to test
-     * @return true if equal
-     */
-    public static <T> boolean test(Maybe<T> maybe, T test) {
-        return Future.fromPublisher(maybe.toFlowable())
-                      .test(test);
-    }
 
     /**
      * Construct a Maybe from Iterable by taking the first value from Iterable
-     * 
+     *
      * @param t Iterable to populate Maybe from
      * @return Maybe containing first element from Iterable (or empty Maybe)
      */
@@ -487,7 +474,7 @@ public class Maybes {
 
     /**
      * Get an Iterator for the value (if any) in the provided Maybe
-     * 
+     *
      * @param pub Maybe to get Iterator for
      * @return Iterator over Maybe value
      */
@@ -575,7 +562,7 @@ public class Maybes {
 
                 @Override
                 public <T> cyclops.control.Maybe<Unfoldable<maybe>> unfoldable() {
-                    return cyclops.control.Maybe.none();
+                    return cyclops.control.Maybe.nothing();
                 }
             };
         }
@@ -633,8 +620,8 @@ public class Maybes {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.MaybeKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.MaybeKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asMaybe;
          *
         Maybes.applicative()
@@ -674,7 +661,7 @@ public class Maybes {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.MaybeKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.MaybeKind.widen;
          * MaybeKind<Integer> ft  = Maybes.monad()
         .flatMap(i->widen(Maybe.just(i)), widen(Maybe.just(3)))
         .convert(MaybeKind::narrowK);
@@ -704,7 +691,7 @@ public class Maybes {
         public static <T> MonadRec<maybe> monadRec(){
             return new MonadRec<maybe>() {
                 @Override
-                public <T, R> Higher<maybe, R> tailRec(T initial, Function<? super T, ? extends Higher<maybe, ? extends Xor<T, R>>> fn) {
+                public <T, R> Higher<maybe, R> tailRec(T initial, Function<? super T, ? extends Higher<maybe, ? extends Either<T, R>>> fn) {
                     return MaybeKind.widen(Maybes.tailRec(initial,fn.andThen(MaybeKind::narrowK).andThen(m->m.narrow())));
                 };
             };
@@ -897,10 +884,10 @@ public class Maybes {
             MaybeKind<Higher<future,T>> y = (MaybeKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<maybe,Higher<xor,S>, P> xor(Maybe<Xor<S, P>> nested){
-            MaybeKind<Xor<S, P>> x = widen(nested);
-            MaybeKind<Higher<Higher<xor,S>, P>> y = (MaybeKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<maybe,Higher<Witness.either,S>, P> xor(Maybe<Either<S, P>> nested){
+            MaybeKind<Either<S, P>> x = widen(nested);
+            MaybeKind<Higher<Higher<Witness.either,S>, P>> y = (MaybeKind)x;
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<maybe,Higher<reader,S>, T> reader(Maybe<Reader<S, T>> nested, S defaultValue){
             MaybeKind<Reader<S, T>> x = widen(nested);
@@ -955,10 +942,10 @@ public class Maybes {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,maybe, P> xor(Xor<S, Maybe<P>> nested){
-            Xor<S, Higher<maybe,P>> x = nested.map(MaybeKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,maybe, P> xor(Either<S, Maybe<P>> nested){
+            Either<S, Higher<maybe,P>> x = nested.map(MaybeKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,maybe, T> reader(Reader<S, Maybe<T>> nested,S defaultValue){
 

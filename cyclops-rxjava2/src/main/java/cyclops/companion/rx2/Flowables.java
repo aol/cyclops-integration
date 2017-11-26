@@ -1,20 +1,21 @@
 package cyclops.companion.rx2;
 
-import com.aol.cyclops.rx2.adapter.FlowableReactiveSeq;
-import com.aol.cyclops.rx2.hkt.FlowableKind;
-import com.aol.cyclops.rx2.hkt.MaybeKind;
-import com.aol.cyclops.rx2.hkt.ObservableKind;
-import com.aol.cyclops.rx2.hkt.SingleKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
+import com.oath.cyclops.rx2.adapter.FlowableReactiveSeq;
+import com.oath.cyclops.rx2.hkt.FlowableKind;
+import com.oath.cyclops.rx2.hkt.MaybeKind;
+import com.oath.cyclops.rx2.hkt.ObservableKind;
+import com.oath.cyclops.rx2.hkt.SingleKind;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.companion.Streams;
 import cyclops.control.Eval;
+import cyclops.control.Option;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.control.Either;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.*;
 
@@ -25,7 +26,7 @@ import cyclops.monads.Rx2Witness.single;
 import cyclops.monads.Witness.eval;
 import cyclops.monads.Witness.reactiveSeq;
 import cyclops.monads.transformers.StreamT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -35,23 +36,20 @@ import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
 import io.reactivex.*;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 import org.reactivestreams.Publisher;
 
-import java.time.Duration;
-
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 import java.util.stream.Stream;
 
-import static com.aol.cyclops.rx2.hkt.FlowableKind.widen;
+import static com.oath.cyclops.rx2.hkt.FlowableKind.widen;
 
 
 /**
  * Companion class for working with Reactor Flowable types
- * 
+ *
  * @author johnmcclean
  *
  */
@@ -59,7 +57,7 @@ import static com.aol.cyclops.rx2.hkt.FlowableKind.widen;
 public class Flowables {
 
     public static  <W1,T> Coproduct<W1,flowable,T> coproduct(Flowable<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(FlowableKind.widen(list)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(FlowableKind.widen(list)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,flowable,T> coproduct(InstanceDefinitions<W1> def1,T... values){
         return coproduct(Flowable.fromArray(values),def1);
@@ -68,8 +66,8 @@ public class Flowables {
         return XorM.right(anyM(type));
     }
 
-    public static  <T,R> Flowable<R> tailRec(T initial, Function<? super T, ? extends Flowable<? extends Xor<T, R>>> fn) {
-        Flowable<Xor<T, R>> next = Flowable.just(Xor.secondary(initial));
+    public static  <T,R> Flowable<R> tailRec(T initial, Function<? super T, ? extends Flowable<? extends Either<T, R>>> fn) {
+        Flowable<Either<T, R>> next = Flowable.just(Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -86,7 +84,7 @@ public class Flowables {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(Either::isRight).map(e->e.orElse(null));
     }
 
     public static <T> Flowable<T> raw(AnyM<flowable,T> anyM){
@@ -227,17 +225,17 @@ public class Flowables {
     /**
      * Construct an AnyM type from a Flowable. This allows the Flowable to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
-     * 
+     *
      * <pre>
-     * {@code 
-     *    
+     * {@code
+     *
      *    AnyMSeq<Integer> flowable = Flowables.anyM(Flowable.just(1,2,3));
      *    AnyMSeq<Integer> transformedFlowable = myGenericOperation(flowable);
-     *    
+     *
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
      * }
      * </pre>
-     * 
+     *
      * @param flowable To wrap inside an AnyM
      * @return AnyMSeq wrapping a flowable
      */
@@ -252,23 +250,23 @@ public class Flowables {
     }
 
     /**
-     * Perform a For Comprehension over a Flowable, accepting 3 generating functions. 
+     * Perform a For Comprehension over a Flowable, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Publishers.
-     * 
+     *
      *  <pre>
       * {@code
-      *    
+      *
       *   import static cyclops.companion.reactor.Flowables.forEach4;
-      *    
-          forEach4(Flowable.range(1,10), 
+      *
+          forEach4(Flowable.range(1,10),
                   a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
                   (a,b) -> Maybe.<Integer>of(a+b),
                   (a,b,c) -> Mono.<Integer>just(a+b+c),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Flowable
      * @param value2 Nested publisher
      * @param value3 Nested publisher
@@ -279,8 +277,8 @@ public class Flowables {
     public static <T1, T2, T3, R1, R2, R3, R> Flowable<R> forEach4(Flowable<? extends T1> value1,
                                                                Function<? super T1, ? extends Publisher<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Publisher<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends Publisher<R3>> value4,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends Publisher<R3>> value4,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -301,23 +299,23 @@ public class Flowables {
     }
 
     /**
-     * Perform a For Comprehension over a Flowable, accepting 3 generating functions. 
-     * This results in a four level nested internal iteration over the provided Publishers. 
+     * Perform a For Comprehension over a Flowable, accepting 3 generating functions.
+     * This results in a four level nested internal iteration over the provided Publishers.
      * <pre>
      * {@code
-     * 
+     *
      *  import static cyclops.companion.reactor.Flowables.forEach4;
-     *   
-     *  forEach4(Flowable.range(1,10), 
+     *
+     *  forEach4(Flowable.range(1,10),
                             a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
                             (a,b) -> Maybe.<Integer>just(a+b),
                             (a,b,c) -> Mono.<Integer>just(a+b+c),
                             (a,b,c,d) -> a+b+c+d <100,
                             Tuple::tuple);
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Flowable
      * @param value2 Nested publisher
      * @param value3 Nested publisher
@@ -329,9 +327,9 @@ public class Flowables {
     public static <T1, T2, T3, R1, R2, R3, R> Flowable<R> forEach4(Flowable<? extends T1> value1,
             Function<? super T1, ? extends Publisher<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Publisher<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends Publisher<R3>> value4,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends Publisher<R3>> value4,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -350,23 +348,23 @@ public class Flowables {
     }
 
     /**
-     * Perform a For Comprehension over a Flowable, accepting 2 generating functions. 
-     * This results in a three level nested internal iteration over the provided Publishers. 
-     * 
+     * Perform a For Comprehension over a Flowable, accepting 2 generating functions.
+     * This results in a three level nested internal iteration over the provided Publishers.
+     *
      * <pre>
-     * {@code 
-     * 
+     * {@code
+     *
      * import static cyclops.companion.reactor.Flowables.forEach;
-     * 
-     * forEach(Flowable.range(1,10), 
+     *
+     * forEach(Flowable.range(1,10),
                             a-> ReactiveSeq.iterate(a,i->i+1).limit(10),
                             (a,b) -> Maybe.<Integer>of(a+b),
                             Tuple::tuple);
-     * 
+     *
      * }
      * </pre>
-     * 
-     * 
+     *
+     *
      * @param value1 top level Flowable
      * @param value2 Nested publisher
      * @param value3 Nested publisher
@@ -376,7 +374,7 @@ public class Flowables {
     public static <T1, T2, R1, R2, R> Flowable<R> forEach3(Flowable<? extends T1> value1,
             Function<? super T1, ? extends Publisher<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Publisher<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -416,8 +414,8 @@ public class Flowables {
     public static <T1, T2, R1, R2, R> Flowable<R> forEach3(Flowable<? extends T1> value1,
             Function<? super T1, ? extends Publisher<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Publisher<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+            Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -435,24 +433,24 @@ public class Flowables {
     }
 
     /**
-     * Perform a For Comprehension over a Flowable, accepting an additonal generating function. 
-     * This results in a two level nested internal iteration over the provided Publishers. 
-     * 
+     * Perform a For Comprehension over a Flowable, accepting an additonal generating function.
+     * This results in a two level nested internal iteration over the provided Publishers.
+     *
      * <pre>
-     * {@code 
-     * 
+     * {@code
+     *
      *  import static cyclops.companion.reactor.Flowables.forEach;
      *  forEach(Flowable.range(1, 10), i -> Flowable.range(i, 10), Tuple::tuple)
               .subscribe(System.out::println);
-              
+
        //(1, 1)
          (1, 2)
          (1, 3)
          (1, 4)
          ...
-     * 
+     *
      * }</pre>
-     * 
+     *
      * @param value1 top level Flowable
      * @param value2 Nested publisher
      * @param yieldingFunction Generates a result per combination
@@ -470,15 +468,15 @@ public class Flowables {
     }
 
     /**
-     * 
+     *
      * <pre>
-     * {@code 
-     * 
+     * {@code
+     *
      *   import static cyclops.companion.reactor.Flowables.forEach;
-     * 
+     *
      *   forEach(Flowable.range(1, 10), i -> Flowable.range(i, 10),(a,b) -> a>2 && b<10,Tuple::tuple)
                .subscribe(System.out::println);
-               
+
        //(3, 3)
          (3, 4)
          (3, 5)
@@ -487,11 +485,11 @@ public class Flowables {
          (3, 8)
          (3, 9)
          ...
-     
-     * 
+
+     *
      * }</pre>
-     * 
-     * 
+     *
+     *
      * @param value1 top level Flowable
      * @param value2 Nested publisher
      * @param filterFunction A filtering function, keeps values where the predicate holds
@@ -583,7 +581,7 @@ public class Flowables {
 
                 @Override
                 public <T> cyclops.control.Maybe<Comonad<flowable>> comonad() {
-                    return cyclops.control.Maybe.none();
+                    return cyclops.control.Maybe.nothing();
                 }
 
                 @Override
@@ -648,8 +646,8 @@ public class Flowables {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FlowableKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.FlowableKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Flowables.zippingApplicative()
         .ap(widen(Flowable.of(l1(this::multiplyByTwo))),widen(Flowable.of(1,2,3)));
@@ -688,7 +686,7 @@ public class Flowables {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FlowableKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.FlowableKind.widen;
          * FlowableKind<Integer> flowable  = Flowables.monad()
         .flatMap(i->widen(FlowableX.range(0,i)), widen(Flowable.of(1,2,3)))
         .convert(FlowableKind::narrowK);
@@ -781,7 +779,7 @@ public class Flowables {
         public static <T> MonadRec<flowable> monadRec(){
             return new MonadRec<flowable>() {
                 @Override
-                public <T, R> Higher<flowable, R> tailRec(T initial, Function<? super T, ? extends Higher<flowable, ? extends Xor<T, R>>> fn) {
+                public <T, R> Higher<flowable, R> tailRec(T initial, Function<? super T, ? extends Higher<flowable, ? extends Either<T, R>>> fn) {
                     return widen(Flowables.tailRec(initial,fn.andThen(FlowableKind::narrowK).andThen(f->f.narrow())));
                 }
             };
@@ -873,7 +871,7 @@ public class Flowables {
             return new Unfoldable<flowable>() {
 
                 @Override
-                public <R, T> Higher<flowable, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<flowable, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(Flowables.fromStream(ReactiveSeq.unfold(b, fn)));
                 }
             };
@@ -928,10 +926,10 @@ public class Flowables {
             FlowableKind<Higher<Witness.future,T>> y = (FlowableKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<flowable,Higher<Witness.xor,S>, P> xor(Flowable<Xor<S, P>> nested){
-            FlowableKind<Xor<S, P>> x = widen(nested);
-            FlowableKind<Higher<Higher<Witness.xor,S>, P>> y = (FlowableKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<flowable,Higher<Witness.either,S>, P> xor(Flowable<Either<S, P>> nested){
+            FlowableKind<Either<S, P>> x = widen(nested);
+            FlowableKind<Higher<Higher<Witness.either,S>, P>> y = (FlowableKind)x;
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<flowable,Higher<Witness.reader,S>, T> reader(Flowable<Reader<S, T>> nested, S defaultValue){
             FlowableKind<Reader<S, T>> x = widen(nested);
@@ -986,10 +984,10 @@ public class Flowables {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<Witness.xor,S>,flowable, P> xor(Xor<S, Flowable<P>> nested){
-            Xor<S, Higher<flowable,P>> x = nested.map(FlowableKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,flowable, P> xor(Either<S, Flowable<P>> nested){
+            Either<S, Higher<flowable,P>> x = nested.map(FlowableKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<Witness.reader,S>,flowable, T> reader(Reader<S, Flowable<T>> nested, S defaultValue){
 

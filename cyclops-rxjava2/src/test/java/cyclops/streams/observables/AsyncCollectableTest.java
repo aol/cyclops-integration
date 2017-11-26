@@ -2,14 +2,14 @@ package cyclops.streams.observables;
 
 
 import cyclops.companion.rx2.Observables;
-import cyclops.stream.ReactiveSeq;
-import cyclops.stream.Spouts;
-import org.jooq.lambda.Collectable;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.Spouts;
+
 
 public class AsyncCollectableTest extends CollectableTest {
 
 
-    public <T> Collectable<T> of(T... values){
+    public <T> ReactiveSeq<T> of(T... values){
 
         ReactiveSeq<T> seq = Spouts.<T>async(s->{
             Thread t = new Thread(()-> {
@@ -21,7 +21,7 @@ public class AsyncCollectableTest extends CollectableTest {
             t.start();
         });
 
-        return Observables.reactiveSeq(Observables.observableFrom(seq)).collectors();
+        return Observables.reactiveSeq(Observables.observableFrom(seq));
     }
 
 }

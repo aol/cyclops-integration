@@ -2,7 +2,7 @@ package cyclops.streams.flowables.reactivestreamspath;
 
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Reducers;
-import cyclops.stream.Streamable;
+import cyclops.reactive.Streamable;
 import org.junit.Test;
 
 import static cyclops.companion.rx2.Flowables.of;

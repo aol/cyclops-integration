@@ -1,9 +1,9 @@
 package cyclops.monads;
 
 
-import com.aol.cyclops.reactor.adapter.FluxAdapter;
-import com.aol.cyclops.reactor.adapter.MonoAdapter;
-import com.aol.cyclops2.types.extensability.FunctionalAdapter;
+import com.oath.cyclops.reactor.adapter.FluxAdapter;
+import com.oath.cyclops.reactor.adapter.MonoAdapter;
+import com.oath.cyclops.types.extensability.FunctionalAdapter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

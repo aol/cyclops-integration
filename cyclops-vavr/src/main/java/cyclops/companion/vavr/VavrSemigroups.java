@@ -1,6 +1,6 @@
 package cyclops.companion.vavr;
 
-import com.aol.cyclops2.types.Zippable;
+import com.oath.cyclops.types.Zippable;
 import cyclops.function.Semigroup;
 import io.vavr.collection.*;
 import io.vavr.collection.HashSet;

@@ -1,8 +1,8 @@
 package cyclops.streams.syncflux;
 
-import com.aol.cyclops2.util.ExceptionSoftener;
+import com.oath.cyclops.util.ExceptionSoftener;
 import cyclops.companion.reactor.Fluxs;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,17 +25,17 @@ import static org.mockito.Matchers.anyInt;
 
 public class SyncRetryTest {
 
-	
+
 	@Mock
 	Function<Integer, String> serviceMock;
-	
+
 	Throwable error;
-	
+
 	@Before
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		
-		
+
+
 		error = null;
 	}
 
@@ -49,7 +49,7 @@ public class SyncRetryTest {
 		assertThat(of(1,2,3,4)
 					.map(u->{throw new RuntimeException();})
 					.recover(e->"hello")
-					.firstValue(),equalTo("hello"));
+					.firstValue("b"),equalTo("hello"));
 	}
 
 	@Test
@@ -58,7 +58,7 @@ public class SyncRetryTest {
 					.map(i->i+2)
 					.map(u->{throw new RuntimeException();})
 					.recover(e->"hello")
-					.firstValue(),equalTo("hello"));
+					.firstValue("b"),equalTo("hello"));
 	}
 	@Test
 	public void recover3(){
@@ -67,7 +67,7 @@ public class SyncRetryTest {
 					.map(u->{throw new RuntimeException();})
 					.map(i->"x!"+i)
 					.recover(e->"hello")
-					.firstValue(),equalTo("hello"));
+					.firstValue("b"),equalTo("hello"));
 	}
 	@Test
 	public void recoverIO(){
@@ -75,9 +75,9 @@ public class SyncRetryTest {
 					.map(u->{
                         ExceptionSoftener.throwSoftenedException( new IOException()); return null;})
 					.recover(e->"hello")
-					.firstValue(),equalTo("hello"));
+					.firstValue("b"),equalTo("hello"));
 	}
-	
+
 	@Test
 	public void recover2IO(){
 		assertThat(of(1,2,3,4)
@@ -85,10 +85,9 @@ public class SyncRetryTest {
 					.map(u->{
                         ExceptionSoftener.throwSoftenedException( new IOException()); return null;})
 					.recover(IOException.class,e->"hello")
-					.firstValue(),equalTo("hello"));
+					.firstValue("b"),equalTo("hello"));
 	}
-	@Test(expected=Exception.class)
-	
+	@Test
 	public void recoverIOUnhandledThrown(){
 		assertThat(of(1,2,3,4)
 					.map(i->i+2)
@@ -96,7 +95,7 @@ public class SyncRetryTest {
                         ExceptionSoftener.throwSoftenedException( new IOException()); return null;})
 					.map(i->"x!"+i)
 					.recover(IllegalStateException.class,e->"hello")
-					.firstValue(),equalTo("hello"));
+					.firstValue("b"),equalTo("b"));
 	}
 
 	@Test
@@ -110,7 +109,7 @@ public class SyncRetryTest {
 		long time = System.currentTimeMillis();
 		String result = of( 1,  2, 3)
 				.retry(serviceMock,7,200,TimeUnit.MILLISECONDS)
-				.firstValue();
+				.firstValue("b");
 		assertThat(System.currentTimeMillis()-time,greaterThan(200l));
 		assertThat(result, is("42"));
 	}
@@ -122,42 +121,42 @@ public class SyncRetryTest {
 	}
 
 
-	
+
 
 	@Test @Ignore
 	public void shouldRethrowOriginalExceptionFromUserFutureCompletion()
 			throws Exception {
-		
-		
-		
-			
+
+
+
+
 		given(serviceMock.apply(anyInt())).willThrow(
 				new RuntimeException("DONT PANIC"));
 
-		
+
 		List<String> result = of(1)
-				
+
 				.retry(serviceMock).toList();
 
-		
+
 		assertThat(result.size(), is(0));
 		assertThat((error).getMessage(), is("DONT PANIC"));
 
 	}
 
-	
+
 
 	@Test @Ignore
 	public void shouldRethrowExceptionThatWasThrownFromUserTaskBeforeReturningFuture()
 			throws Exception {
 		error = null;
-		
+
 		given(serviceMock.apply(anyInt())).willThrow(
 				new IllegalArgumentException("DONT PANIC"));
 
-		
+
 		List<String> result = of(1).retry(serviceMock).toList();
-		
+
 		assertThat(result.size(), is(0));
 
 		error.printStackTrace();
@@ -165,6 +164,6 @@ public class SyncRetryTest {
 		assertThat(error.getCause().getMessage(), is("DONT PANIC"));
 	}
 
-	
+
 
 }

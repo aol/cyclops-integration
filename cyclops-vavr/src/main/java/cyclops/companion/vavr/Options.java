@@ -4,31 +4,31 @@ import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.control.Either;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
-import com.aol.cyclops2.hkt.Higher;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import com.oath.cyclops.hkt.Higher;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.FutureKind;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import com.oath.cyclops.vavr.hkt.FutureKind;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.option;
-import com.aol.cyclops.vavr.hkt.OptionKind;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.vavr.hkt.OptionKind;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Monoids;
 import cyclops.function.Reducer;
@@ -56,8 +56,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-import static com.aol.cyclops.vavr.hkt.OptionKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.OptionKind.widen;
+import static com.oath.cyclops.vavr.hkt.OptionKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.OptionKind.widen;
 
 /**
  * Utility class for working with JDK Optionals
@@ -68,7 +68,7 @@ import static com.aol.cyclops.vavr.hkt.OptionKind.widen;
 @UtilityClass
 public class Options {
     public static  <W1,T> Coproduct<W1,option,T> coproduct(Option<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,option,T> coproduct(T value, InstanceDefinitions<W1> def1){
         return coproduct(Option.some(value),def1);
@@ -91,9 +91,9 @@ public class Options {
     public static <T> AnyMValue<option,T> anyM(Option<T> option) {
         return AnyM.ofValue(option, VavrWitness.option.INSTANCE);
     }
-    public static <L, T, R> Option<R> tailRec(T initial, Function<? super T, ? extends Option<? extends Either<T, R>>> fn) {
-        Option<? extends Either<T, R>> next[] = new Option[1];
-        next[0] = Option.some(Either.left(initial));
+    public static <L, T, R> Option<R> tailRec(T initial, Function<? super T, ? extends Option<? extends io.vavr.control.Either<T, R>>> fn) {
+        Option<? extends io.vavr.control.Either<T, R>> next[] = new Option[1];
+        next[0] = Option.some(io.vavr.control.Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.fold(s -> {
@@ -101,11 +101,11 @@ public class Options {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(io.vavr.control.Either::get);
     }
-    public static <T, R> Option< R> tailRecXor(T initial, Function<? super T, ? extends Option<? extends Xor<T, R>>> fn) {
-        Option<? extends Xor<T, R>> next[] = new Option[1];
-        next[0] = Option.some(Xor.secondary(initial));
+    public static <T, R> Option< R> tailRecEither(T initial, Function<? super T, ? extends Option<? extends Either<T, R>>> fn) {
+        Option<? extends Either<T, R>> next[] = new Option[1];
+        next[0] = Option.some(Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -113,7 +113,7 @@ public class Options {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(e->e.orElse(null));
     }
 
     /**
@@ -123,7 +123,7 @@ public class Options {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Options.forEach4;
+     *   import static com.oath.cyclops.reactor.Options.forEach4;
      *
     forEach4(Option.just(1),
     a-> Option.just(a+1),
@@ -144,8 +144,8 @@ public class Options {
     public static <T1, T2, T3, R1, R2, R3, R> Option<R> forEach4(Option<? extends T1> value1,
                                                                  Function<? super T1, ? extends Option<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Option<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Option<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Option<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -171,7 +171,7 @@ public class Options {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Options.forEach4;
+     *  import static com.oath.cyclops.reactor.Options.forEach4;
      *
      *  forEach4(Option.just(1),
     a-> Option.just(a+1),
@@ -194,9 +194,9 @@ public class Options {
     public static <T1, T2, T3, R1, R2, R3, R> Option<R> forEach4(Option<? extends T1> value1,
                                                                  Function<? super T1, ? extends Option<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Option<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Option<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Option<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -222,7 +222,7 @@ public class Options {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Options.forEach3;
+     *   import static com.oath.cyclops.reactor.Options.forEach3;
      *
     forEach3(Option.just(1),
     a-> Option.just(a+1),
@@ -241,7 +241,7 @@ public class Options {
     public static <T1, T2, R1, R2, R> Option<R> forEach3(Option<? extends T1> value1,
                                                          Function<? super T1, ? extends Option<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Option<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -264,7 +264,7 @@ public class Options {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Options.forEach3;
+     *  import static com.oath.cyclops.reactor.Options.forEach3;
      *
      *  forEach3(Option.just(1),
     a-> Option.just(a+1),
@@ -285,8 +285,8 @@ public class Options {
     public static <T1, T2, R1, R2, R> Option<R> forEach3(Option<? extends T1> value1,
                                                          Function<? super T1, ? extends Option<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Option<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -310,7 +310,7 @@ public class Options {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Options.forEach;
+     *   import static com.oath.cyclops.reactor.Options.forEach;
      *
     forEach(Option.just(1),
     a-> Option.just(a+1),
@@ -345,7 +345,7 @@ public class Options {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Options.forEach;
+     *  import static com.oath.cyclops.reactor.Options.forEach;
      *
      *  forEach(Option.just(1),
     a-> Option.just(a+1),
@@ -481,7 +481,7 @@ public class Options {
      * @param reducer Reducer to accumulate values with
      * @return Option with reduced value
      */
-    public static <T, R> Option<R> accumulatePresent(final CollectionX<Option<T>> optionals, final Reducer<R> reducer) {
+    public static <T, R> Option<R> accumulatePresent(final CollectionX<Option<T>> optionals, final Reducer<R,T> reducer) {
         return sequencePresent(optionals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -558,7 +558,7 @@ public class Options {
      */
     public static <T1, T2, R> Option<R> combine(final Option<? extends T1> f, final Value<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.option(ToCyclopsReact.maybe(f)
+        return narrow(FromCyclops.option(ToCyclops.maybe(f)
                 .combine(v, fn)));
     }
     /**
@@ -583,7 +583,7 @@ public class Options {
      */
     public static <T1, T2, R> Option<R> combine(final Option<? extends T1> f, final Option<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return combine(f,ToCyclopsReact.maybe(v),fn);
+        return combine(f, ToCyclops.maybe(v),fn);
     }
 
     /**
@@ -606,7 +606,7 @@ public class Options {
      */
     public static <T1, T2, R> Option<R> zip(final Option<? extends T1> f, final Iterable<? extends T2> v,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.option(ToCyclopsReact.maybe(f)
+        return narrow(FromCyclops.option(ToCyclops.maybe(f)
                 .zip(v, fn)));
     }
 
@@ -631,7 +631,7 @@ public class Options {
      */
     public static <T1, T2, R> Option<R> zip(final Publisher<? extends T2> p, final Option<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.option(ToCyclopsReact.maybe(f)
+        return narrow(FromCyclops.option(ToCyclops.maybe(f)
                 .zipP(p, fn)));
     }
     /**
@@ -719,7 +719,7 @@ public class Options {
 
                 @Override
                 public <T> Maybe<Unfoldable<option>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -777,8 +777,8 @@ public class Options {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.OptionKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.OptionKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Option.just;
          *
         Options.zippingApplicative()
@@ -818,7 +818,7 @@ public class Options {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.OptionKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.OptionKind.widen;
          * OptionKind<Integer> option  = Options.monad()
         .flatMap(i->widen(OptionX.range(0,i)), widen(Option.just(1,2,3)))
         .convert(OptionKind::narrowK);
@@ -848,8 +848,8 @@ public class Options {
         public static <T,R> MonadRec<option> monadRec(){
             return new MonadRec<option>() {
                 @Override
-                public <T, R> Higher<option, R> tailRec(T initial, Function<? super T, ? extends Higher<option, ? extends Xor<T, R>>> fn) {
-                    return widen(Options.tailRecXor(initial,fn.andThen(OptionKind::narrowK)));
+                public <T, R> Higher<option, R> tailRec(T initial, Function<? super T, ? extends Higher<option, ? extends Either<T, R>>> fn) {
+                    return widen(Options.tailRecEither(initial,fn.andThen(OptionKind::narrowK)));
                 }
             };
         }
@@ -967,7 +967,7 @@ public class Options {
             return widen(Option.of(value));
         }
         private static <T,R> OptionKind<R> ap(OptionKind<Function< T, R>> lt, OptionKind<T> option){
-            return widen(FromCyclopsReact.option(ToCyclopsReact.maybe(lt).combine(ToCyclopsReact.maybe(option), (a, b)->a.apply(b))));
+            return widen(FromCyclops.option(ToCyclops.maybe(lt).combine(ToCyclops.maybe(option), (a, b)->a.apply(b))));
 
         }
         private static <T,R> Higher<option,R> flatMap(Higher<option,T> lt, Function<? super T, ? extends  Higher<option,R>> fn){
@@ -982,7 +982,7 @@ public class Options {
                                                                               Higher<option, T> ds){
 
             Option<T> option = OptionKind.narrow(ds);
-            Higher<C2, OptionKind<R>> res = ToCyclopsReact.maybe(option).visit(some-> applicative.map(m-> OptionKind.of(m), fn.apply(some)),
+            Higher<C2, OptionKind<R>> res = ToCyclops.maybe(option).visit(some-> applicative.map(m-> OptionKind.of(m), fn.apply(some)),
                     ()->applicative.unit(widen(OptionKind.<R>none())));
 
             return OptionKind.widen2(res);
@@ -1004,7 +1004,7 @@ public class Options {
         public static <T> Nested<option,option,T> option(Option<Option<T>> nested){
             return Nested.of(widen(nested.map(OptionKind::widen)),Instances.definitions(),Options.Instances.definitions());
         }
-        public static <L, R> Nested<option,Higher<VavrWitness.either,L>, R> either(Option<Either<L, R>> nested){
+        public static <L, R> Nested<option,Higher<VavrWitness.either,L>, R> either(Option<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<option,VavrWitness.queue,T> queue(Option<Queue<T>> nested){
@@ -1047,10 +1047,10 @@ public class Options {
             OptionKind<Higher<Witness.future,T>> y = (OptionKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<option,Higher<xor,S>, P> xor(Option<Xor<S, P>> nested){
-            OptionKind<Xor<S, P>> x = widen(nested);
-            OptionKind<Higher<Higher<xor,S>, P>> y = (OptionKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<option,Higher<Witness.either,S>, P> xor(Option<Either<S, P>> nested){
+            OptionKind<Either<S, P>> x = widen(nested);
+            OptionKind<Higher<Higher<Witness.either,S>, P>> y = (OptionKind)x;
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<option,Higher<reader,S>, T> reader(Option<Reader<S, T>> nested,S defaultValue){
             OptionKind<Reader<S, T>> x = widen(nested);
@@ -1101,10 +1101,10 @@ public class Options {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,option, P> xor(Xor<S, Option<P>> nested){
-            Xor<S, Higher<option,P>> x = nested.map(OptionKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,option, P> xor(Either<S, Option<P>> nested){
+            Either<S, Higher<option,P>> x = nested.map(OptionKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,option, T> reader(Reader<S, Option<T>> nested,S defaultValue){
 

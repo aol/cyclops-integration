@@ -1,7 +1,7 @@
 package cyclops.monads.transformers.observables;
 
 
-import com.aol.cyclops2.types.anyM.transformers.FoldableTransformerSeq;
+import com.oath.cyclops.types.anyM.transformers.FoldableTransformerSeq;
 import cyclops.companion.rx2.Observables;
 import cyclops.monads.Witness;
 import cyclops.monads.transformers.AbstractNestedFoldableTest;

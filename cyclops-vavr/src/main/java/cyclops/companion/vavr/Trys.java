@@ -1,35 +1,34 @@
 package cyclops.companion.vavr;
 
 
+import com.oath.cyclops.types.MonadicValue;
 import cyclops.monads.VavrWitness.queue;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
-import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.control.Either;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
-import com.aol.cyclops2.hkt.Higher;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import com.oath.cyclops.hkt.Higher;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.TryKind;
+import com.oath.cyclops.vavr.hkt.TryKind;
 import cyclops.companion.Monoids;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
@@ -53,8 +52,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-import static com.aol.cyclops.vavr.hkt.TryKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.TryKind.widen;
+import static com.oath.cyclops.vavr.hkt.TryKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.TryKind.widen;
 
 /**
  * Utility class for working with JDK Tryals
@@ -72,7 +71,7 @@ public class Trys {
         return xorM(Try.success(type));
     }
     public static  <W1,T> Coproduct<W1,tryType,T> coproduct(Try<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,tryType,T> coproductSuccess(T type, InstanceDefinitions<W1> def1){
         return coproduct(Try.success(type),def1);
@@ -83,9 +82,9 @@ public class Trys {
     public static <T> AnyMValue<tryType,T> anyM(Try<T> tryType) {
         return AnyM.ofValue(tryType, VavrWitness.tryType.INSTANCE);
     }
-    public static <L, T, R> Try<R> tailRec(T initial, Function<? super T, ? extends Try<? extends Either<T, R>>> fn) {
-        Try<? extends Either<T, R>> next[] = new Try[1];
-        next[0] = Try.success(Either.left(initial));
+    public static <L, T, R> Try<R> tailRec(T initial, Function<? super T, ? extends Try<? extends io.vavr.control.Either<T, R>>> fn) {
+        Try<? extends io.vavr.control.Either<T, R>> next[] = new Try[1];
+        next[0] = Try.success(io.vavr.control.Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.fold(s -> {
@@ -93,11 +92,11 @@ public class Trys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(io.vavr.control.Either::get);
     }
-    public static <T, R> Try< R> tailRecXor(T initial, Function<? super T, ? extends Try<? extends Xor<T, R>>> fn) {
-        Try<? extends Xor<T, R>> next[] = new Try[1];
-        next[0] = Try.success(Xor.secondary(initial));
+    public static <T, R> Try< R> tailRecEither(T initial, Function<? super T, ? extends Try<? extends Either<T, R>>> fn) {
+        Try<? extends Either<T, R>> next[] = new Try[1];
+        next[0] = Try.success(Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -105,7 +104,7 @@ public class Trys {
                 return true;
             }, pr -> false)).getOrElse(false);
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(e->e.orElse(null));
     }
     /**
      * Perform a For Comprehension over a Try, accepting 3 generating function.
@@ -114,7 +113,7 @@ public class Trys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Trys.forEach4;
+     *   import static com.oath.cyclops.reactor.Trys.forEach4;
      *
     forEach4(Try.just(1),
     a-> Try.just(a+1),
@@ -135,8 +134,8 @@ public class Trys {
     public static <T1, T2, T3, R1, R2, R3, R> Try<R> forEach4(Try<? extends T1> value1,
                                                                  Function<? super T1, ? extends Try<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Try<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Try<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Try<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -162,7 +161,7 @@ public class Trys {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Trys.forEach4;
+     *  import static com.oath.cyclops.reactor.Trys.forEach4;
      *
      *  forEach4(Try.just(1),
     a-> Try.just(a+1),
@@ -185,9 +184,9 @@ public class Trys {
     public static <T1, T2, T3, R1, R2, R3, R> Try<R> forEach4(Try<? extends T1> value1,
                                                                  Function<? super T1, ? extends Try<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Try<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Try<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Try<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -213,7 +212,7 @@ public class Trys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Trys.forEach3;
+     *   import static com.oath.cyclops.reactor.Trys.forEach3;
      *
     forEach3(Try.just(1),
     a-> Try.just(a+1),
@@ -232,7 +231,7 @@ public class Trys {
     public static <T1, T2, R1, R2, R> Try<R> forEach3(Try<? extends T1> value1,
                                                          Function<? super T1, ? extends Try<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Try<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -255,7 +254,7 @@ public class Trys {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Trys.forEach3;
+     *  import static com.oath.cyclops.reactor.Trys.forEach3;
      *
      *  forEach3(Try.just(1),
     a-> Try.just(a+1),
@@ -276,8 +275,8 @@ public class Trys {
     public static <T1, T2, R1, R2, R> Try<R> forEach3(Try<? extends T1> value1,
                                                          Function<? super T1, ? extends Try<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Try<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -301,7 +300,7 @@ public class Trys {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Trys.forEach;
+     *   import static com.oath.cyclops.reactor.Trys.forEach;
      *
     forEach(Try.just(1),
     a-> Try.just(a+1),
@@ -336,7 +335,7 @@ public class Trys {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Trys.forEach;
+     *  import static com.oath.cyclops.reactor.Trys.forEach;
      *
      *  forEach(Try.just(1),
     a-> Try.just(a+1),
@@ -460,7 +459,7 @@ public class Trys {
      * @param reducer Reducer to accumulate values with
      * @return Try with reduced value
      */
-    public static <T, R> Try<R> accumulatePresent(final CollectionX<Try<T>> tryTypeals, final Reducer<R> reducer) {
+    public static <T, R> Try<R> accumulatePresent(final CollectionX<Try<T>> tryTypeals, final Reducer<R,T> reducer) {
         return sequencePresent(tryTypeals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -535,10 +534,9 @@ public class Trys {
      * @param fn Combining function
      * @return Try combined with supplied value
      */
-    public static <T1, T2, R> Try<R> combine(final Try<? extends T1> f, final Value<? extends T2> v,
+    public static <T1, T2, R> Try<R> combine(final Try<? extends T1> f, final MonadicValue<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.toTry(ToCyclopsReact.toTry(f)
-                .combine(v, fn)));
+      return combine(f, FromCyclops.toTry(v),fn);
     }
     /**
      * Combine an Try with the provided Try using the supplied BiFunction
@@ -562,32 +560,13 @@ public class Trys {
      */
     public static <T1, T2, R> Try<R> combine(final Try<? extends T1> f, final Try<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return combine(f,ToCyclopsReact.toTry(v),fn);
+      cyclops.control.Try<? extends R, Throwable> x = ToCyclops.toTry(f)
+        .zip(ToCyclops.toTry(v), fn);
+      return narrow(FromCyclops.toTry(x));
+
     }
 
-    /**
-     * Combine an Try with the provided Iterable (selecting one element if present) using the supplied BiFunction
-     * <pre>
-     * {@code
-     *  Trys.zip(Try.of(10),Arrays.asList(20), this::add)
-     *  //Try[30]
-     *
-     *  private int add(int a, int b) {
-    return a + b;
-    }
-     *
-     * }
-     * </pre>
-     * @param f Try to combine with first element in Iterable (if present)
-     * @param v Iterable to combine
-     * @param fn Combining function
-     * @return Try combined with supplied Iterable, or empty Try if no value present
-     */
-    public static <T1, T2, R> Try<R> zip(final Try<? extends T1> f, final Iterable<? extends T2> v,
-                                            final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.toTry(ToCyclopsReact.toTry(f)
-                .zip(v, fn)));
-    }
+
 
     /**
      * Combine an Try with the provided Publisher (selecting one element if present) using the supplied BiFunction
@@ -610,8 +589,8 @@ public class Trys {
      */
     public static <T1, T2, R> Try<R> zip(final Publisher<? extends T2> p, final Try<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.toTry(ToCyclopsReact.toTry(f)
-                .zipP(p, fn)));
+        return narrow(FromCyclops.toTry(ToCyclops.toTry(f)
+                .zip(cyclops.control.Try.fromPublisher(p), fn)));
     }
     /**
      * Narrow covariant type parameter
@@ -700,7 +679,7 @@ public class Trys {
 
                 @Override
                 public <T> Maybe<Unfoldable<tryType>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -759,8 +738,8 @@ public class Trys {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.TryKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.TryKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Trys.applicative()
         .ap(widen(Try.successful(l1(this::multiplyByTwo))),widen(asTry(1,2,3)));
@@ -799,7 +778,7 @@ public class Trys {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.TryKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.TryKind.widen;
          * TryKind<Integer> ft  = Trys.monad()
         .flatMap(i->widen(Try.successful(i), widen(Try.successful(3))
         .convert(TryKind::narrowK);
@@ -829,8 +808,8 @@ public class Trys {
         public static <T,R> MonadRec<tryType> monadRec() {
             return new MonadRec<tryType>() {
                 @Override
-                public <T, R> Higher<tryType, R> tailRec(T initial, Function<? super T, ? extends Higher<tryType, ? extends Xor<T, R>>> fn) {
-                    return widen(Trys.tailRecXor(initial,fn.andThen(TryKind::narrowK)));
+                public <T, R> Higher<tryType, R> tailRec(T initial, Function<? super T, ? extends Higher<tryType, ? extends Either<T, R>>> fn) {
+                    return widen(Trys.tailRecEither(initial,fn.andThen(TryKind::narrowK)));
                 }
             };
         }
@@ -870,7 +849,7 @@ public class Trys {
         public static <T> MonadPlus<tryType> monadPlus(){
             Monoid<cyclops.control.Try<T,Throwable>> mn = Monoids.firstTrySuccess(new NoSuchElementException());
             Monoid<TryKind<T>> m = Monoid.of(widen(mn.zero()), (f, g)-> widen(
-                    mn.apply(ToCyclopsReact.toTry(f), ToCyclopsReact.toTry(g))));
+                    mn.apply(ToCyclops.toTry(f), ToCyclops.toTry(g))));
 
             Monoid<Higher<tryType,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
@@ -947,7 +926,7 @@ public class Trys {
             return widen(Try.success(value));
         }
         private static <T,R> TryKind<R> ap(TryKind<Function< T, R>> lt, TryKind<T> list){
-            return widen(ToCyclopsReact.toTry(lt).combine(ToCyclopsReact.toTry(list), (a, b)->a.apply(b)));
+            return widen(ToCyclops.toTry(lt).zip(ToCyclops.toTry(list), (a, b)->a.apply(b)));
 
         }
         private static <T,R> Higher<tryType,R> flatMap(Higher<tryType,T> lt, Function<? super T, ? extends  Higher<tryType,R>> fn){
@@ -981,7 +960,7 @@ public class Trys {
         public static <T> Nested<tryType,queue,T> queue(Try<Queue<T>> nested){
             return Nested.of(widen(nested.map(QueueKind::widen)),Instances.definitions(),Queues.Instances.definitions());
         }
-        public static <L, R> Nested<tryType,Higher<VavrWitness.either,L>, R> either(Try<Either<L, R>> nested){
+        public static <L, R> Nested<tryType,Higher<VavrWitness.either,L>, R> either(Try<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<tryType,VavrWitness.stream,T> stream(Try<Stream<T>> nested){
@@ -1021,10 +1000,10 @@ public class Trys {
             TryKind<Higher<Witness.future,T>> y = (TryKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<tryType,Higher<xor,S>, P> xor(Try<Xor<S, P>> nested){
-            TryKind<Xor<S, P>> x = widen(nested);
-            TryKind<Higher<Higher<xor,S>, P>> y = (TryKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<tryType,Higher<Witness.either,S>, P> xor(Try<Either<S, P>> nested){
+            TryKind<Either<S, P>> x = widen(nested);
+            TryKind<Higher<Higher<Witness.either,S>, P>> y = (TryKind)x;
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<tryType,Higher<reader,S>, T> reader(Try<Reader<S, T>> nested, S defaultValue){
             TryKind<Reader<S, T>> x = widen(nested);
@@ -1076,10 +1055,10 @@ public class Trys {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,tryType, P> xor(Xor<S, Try<P>> nested){
-            Xor<S, Higher<tryType,P>> x = nested.map(TryKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,tryType, P> xor(Either<S, Try<P>> nested){
+            Either<S, Higher<tryType,P>> x = nested.map(TryKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,tryType, T> reader(Reader<S, Try<T>> nested, S defaultValue){
 

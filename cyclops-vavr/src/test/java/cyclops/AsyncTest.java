@@ -1,6 +1,6 @@
 package cyclops;
 
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.companion.vavr.Trys;
 import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.tryType;
@@ -31,11 +31,11 @@ public class AsyncTest {
 
         System.out.println("Run asynchronously..");
         Capitalizer<future> processorAsync = new Capitalizer<>(new AsyncWork());
-        assertTrue(processorAsync.process().get());
+        assertTrue(processorAsync.process().orElse(false));
 
         System.out.println("Run synchronously..");
         Capitalizer<tryType> processorSync = new Capitalizer<>(new SyncWork());
-        assertTrue(processorSync.process().get());
+        assertTrue(processorSync.process().orElse(false));
 
 
 

@@ -1,10 +1,10 @@
 package cyclops.monads.transformers;
 
 
-import com.aol.cyclops2.types.anyM.transformers.FoldableTransformerSeq;
+import com.oath.cyclops.types.anyM.transformers.FoldableTransformerSeq;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.monads.Witness;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 
 
 public class StreamTSeqNestedFoldableTest extends AbstractNestedFoldableTest<Witness.list> {

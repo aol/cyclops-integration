@@ -6,9 +6,10 @@ import cyclops.companion.Semigroups;
 import cyclops.companion.Streams;
 import cyclops.companion.reactor.Fluxs;
 import cyclops.control.Maybe;
+import cyclops.control.Option;
 import cyclops.monads.AnyM;
-import cyclops.stream.ReactiveSeq;
-import cyclops.stream.Streamable;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.Streamable;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -34,8 +35,8 @@ public class ExtensionOperatorsRSTest {
     public void combine(){
         assertThat(Fluxs.of(1,1,2,3)
                    .combine((a, b)->a.equals(b), Semigroups.intSum)
-                   .to(Streamable::fromStream).toListX(),equalTo(ListX.of(4,3))); 
-                   
+                   .to(Streamable::fromStream).toListX(),equalTo(ListX.of(4,3)));
+
     }
 	@Test
 	public void subStream(){
@@ -54,7 +55,7 @@ public class ExtensionOperatorsRSTest {
         		equalTo(Fluxs.of(Fluxs.of(1, 2, 3),
         		Fluxs.of(1, 3, 2), Fluxs.of(2, 1, 3), Fluxs.of(2, 3, 1), Fluxs.of(3, 1, 2), Fluxs.of(3, 2, 1)).map(s->s.toList()).toList()));
     }
-    
+
     @Test
     public void emptyAllCombinations() {
         assertThat(Fluxs.of().combinations().map(s->s.toList()).toList(),equalTo(Arrays.asList(Arrays.asList())));
@@ -66,7 +67,7 @@ public class ExtensionOperatorsRSTest {
         		Arrays.asList(3), Arrays.asList(1, 2), Arrays.asList(1, 3), Arrays.asList(2, 3), Arrays.asList(1, 2, 3))));
     }
 
-  
+
 
     @Test
     public void emptyCombinations() {
@@ -84,7 +85,7 @@ public class ExtensionOperatorsRSTest {
 							.onEmptySwitch(()-> Fluxs.of(1,2,3))
 							.toList(),
 							equalTo(Arrays.asList(1,2,3)));
-				
+
 	}
 	@Test
 	public void onEmptySwitch(){
@@ -92,76 +93,73 @@ public class ExtensionOperatorsRSTest {
 							.onEmptySwitch(()-> Fluxs.of(1,2,3))
 							.toList(),
 							equalTo(Arrays.asList(4,5,6)));
-				
+
 	}
-	
+
 	@Test
 	public void elapsedIsPositive(){
-		
-		
-		assertTrue(Fluxs.of(1,2,3,4,5).elapsed().noneMatch(t->t.v2<0));
+
+
+		assertTrue(Fluxs.of(1,2,3,4,5).elapsed().noneMatch(t->t._2()<0));
 	}
 	@Test
 	public void timeStamp(){
-		
-		
+
+
 		assertTrue(Fluxs.of(1,2,3,4,5)
 							.timestamp()
-							.allMatch(t-> t.v2 <= System.currentTimeMillis()));
-		
+							.allMatch(t-> t._2() <= System.currentTimeMillis()));
+
 
 	}
 	@Test
 	public void elementAt0(){
-		assertThat(Fluxs.of(1).elementAt(0).v1,equalTo(1));
+		assertThat(Fluxs.of(1).elementAt(0),equalTo(Option.some(1)));
 	}
 	@Test
 	public void getMultple(){
-		assertThat(Fluxs.of(1,2,3,4,5).elementAt(2).v1,equalTo(3));
+		assertThat(Fluxs.of(1,2,3,4,5).elementAt(2),equalTo(Maybe.just(3)));
+	}
+
+	@Test
+	public void getMultiple1(){
+		assertFalse(Fluxs.of(1).elementAt(1).isPresent());
 	}
 	@Test
-	public void getMultpleStream(){
-		assertThat(Fluxs.of(1,2,3,4,5).elementAt(2).v2.toList(),equalTo(Arrays.asList(1,2,3,4,5)));
-	}
-	@Test(expected=NoSuchElementException.class)
-	public void getMultiple1(){
-		Fluxs.of(1).elementAt(1);
-	}
-	@Test(expected=NoSuchElementException.class)
 	public void getEmpty(){
-		Fluxs.of().elementAt(0);
+    assertFalse(Fluxs.of().elementAt(0).isPresent());
 	}
 	@Test
 	public void get0(){
-		assertTrue(Fluxs.of(1).get(0).isPresent());
+		assertTrue(Fluxs.of(1).elementAt(0).isPresent());
 	}
 	@Test
 	public void getAtMultple(){
-		assertThat(Fluxs.of(1,2,3,4,5).get(2).get(),equalTo(3));
+		assertThat(Fluxs.of(1,2,3,4,5).elementAt(2).orElse(-1),equalTo(3));
 	}
 	@Test
 	public void getAt1(){
-		assertFalse(Fluxs.of(1).get(1).isPresent());
+		assertFalse(Fluxs.of(1).elementAt(1).isPresent());
 	}
 	@Test
 	public void elementAtEmpty(){
-		assertFalse(Fluxs.of().get(0).isPresent());
+		assertFalse(Fluxs.of().elementAt(0).isPresent());
 	}
 	@Test
 	public void singleTest(){
-		assertThat(Fluxs.of(1).singleUnsafe(),equalTo(1));
+		assertThat(Fluxs.of(1).single().orElse(null),equalTo(1));
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void singleEmpty(){
-		Fluxs.of().singleUnsafe();
+		assertNull(Fluxs.of().single().orElse(null));
 	}
-	@Test(expected=NoSuchElementException.class)
+	@Test
 	public void single2(){
-		Fluxs.of(1,2).singleUnsafe();
+		assertNull(Fluxs.of(1,2).single().orElse(null));
 	}
 	@Test
 	public void singleOptionalTest(){
-		assertThat(Fluxs.of(1).single().get(),equalTo(1));
+		assertThat(Fluxs.of(1).single().orElse(null),equalTo(1));
 	}
 	@Test
 	public void singleOptionalEmpty(){
@@ -177,8 +175,8 @@ public class ExtensionOperatorsRSTest {
 										.peek(i->sleep(i*100))
 										.limit(1000,TimeUnit.MILLISECONDS)
 										.toList();
-		
-		
+
+
 		assertThat(result,equalTo(Arrays.asList(1,2,3)));
 	}
 	@Test
@@ -187,8 +185,8 @@ public class ExtensionOperatorsRSTest {
 										.peek(i->sleep(i*100))
 										.limit(1000,TimeUnit.MILLISECONDS)
 										.toList();
-		
-		
+
+
 		assertThat(result,equalTo(Arrays.asList()));
 	}
 	@Test
@@ -197,8 +195,8 @@ public class ExtensionOperatorsRSTest {
 										.peek(i->sleep(i*100))
 										.skip(1000,TimeUnit.MILLISECONDS)
 										.toList();
-		
-		
+
+
 		assertThat(result,equalTo(Arrays.asList(4,5,6)));
 	}
 	@Test
@@ -207,15 +205,15 @@ public class ExtensionOperatorsRSTest {
 										.peek(i->sleep(i*100))
 										.skip(1000,TimeUnit.MILLISECONDS)
 										.toList();
-		
-		
+
+
 		assertThat(result,equalTo(Arrays.asList()));
 	}
 	private int sleep(Integer i) {
 		try {
 			Thread.currentThread().sleep(i);
 		} catch (InterruptedException e) {
-			
+
 		}
 		return i;
 	}
@@ -313,7 +311,7 @@ public class ExtensionOperatorsRSTest {
 	public void anyMTest(){
 		List<Integer> list = Fluxs.of(1,2,3,4,5,6)
 								.anyM().filter(i->i>3).stream().toList();
-		
+
 		assertThat(list,equalTo(Arrays.asList(4,5,6)));
 	}
 	@Test
@@ -321,24 +319,24 @@ public class ExtensionOperatorsRSTest {
 		Streamable<Integer> repeat = Fluxs.of(1,2,3,4,5,6)
 												.map(i->i*2).to()
 												.streamable();
-		
+
 		assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
 		assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
 	}
-	
+
 	@Test
 	public void concurrentLazyStreamable(){
 		Streamable<Integer> repeat = Fluxs.of(1,2,3,4,5,6)
 												.map(i->i*2).to()
 												.lazyStreamableSynchronized();
-		
+
 		assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
 		assertThat(repeat.reactiveSeq().toList(),equalTo(Arrays.asList(2,4,6,8,10,12)));
 	}
 	@Test
 	public void splitBy(){
-		assertThat( Fluxs.of(1, 2, 3, 4, 5, 6).splitBy(i->i<4).v1.toList(),equalTo(Arrays.asList(1,2,3)));
-		assertThat( Fluxs.of(1, 2, 3, 4, 5, 6).splitBy(i->i<4).v2.toList(),equalTo(Arrays.asList(4,5,6)));
+		assertThat( Fluxs.of(1, 2, 3, 4, 5, 6).splitBy(i->i<4)._1().toList(),equalTo(Arrays.asList(1,2,3)));
+		assertThat( Fluxs.of(1, 2, 3, 4, 5, 6).splitBy(i->i<4)._2().toList(),equalTo(Arrays.asList(4,5,6)));
 	}
 	@Test
 	public void testLazy(){
@@ -391,7 +389,7 @@ public class ExtensionOperatorsRSTest {
 	@Test
 	public void testOfType() {
 
-		
+
 
 		assertThat(Fluxs.of(1, "a", 2, "b", 3).ofType(Integer.class).toList(),containsInAnyOrder(1, 2, 3));
 
@@ -403,15 +401,7 @@ public class ExtensionOperatorsRSTest {
 
 	}
 
-	@Test
-	public void testCastPast() {
-		Fluxs.of(1, "a", 2, "b", 3, null).cast(Date.class).map(d -> d.getTime());
-	
 
-
-
-	}
-	
 	@Test
 	public void flatMapCompletableFuture(){
 		assertThat(Fluxs.of(1,2,3).flatMapAnyM(i-> AnyM.fromArray(i+2))
@@ -421,21 +411,18 @@ public class ExtensionOperatorsRSTest {
 
 	@Test
 	public void testIntersperse() {
-		
+
 		assertThat(Fluxs.of(1,2,3).intersperse(0).toList(),equalTo(Arrays.asList(1,0,2,0,3)));
-	
+
 
 
 
 	}
-	@Test(expected=ClassCastException.class)
-	public void cast(){
-		Fluxs.of(1,2,3).cast(String.class).to(Streamable::fromStream).collect(Collectors.toList());
-	}
+
 	@Test
 	public void xMatch(){
 		assertTrue(Fluxs.of(1,2,3,5,6,7).xMatch(3, i-> i>4 ));
 	}
-	
-	
+
+
 }

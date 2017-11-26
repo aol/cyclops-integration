@@ -2,7 +2,7 @@ package cyclops.streams.flowables.syncflux;
 
 import cyclops.companion.Reducers;
 import cyclops.companion.rx2.Flowables;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 

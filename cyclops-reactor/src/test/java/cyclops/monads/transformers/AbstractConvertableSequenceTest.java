@@ -1,6 +1,6 @@
 package cyclops.monads.transformers;
 
-import com.aol.cyclops2.types.foldable.ConvertableSequence;
+import com.oath.cyclops.types.foldable.ConvertableSequence;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -26,8 +26,8 @@ public abstract class AbstractConvertableSequenceTest {
         assertFalse(empty().persistentMapX(t->t, t->t).size()>0);
         assertFalse(empty().mapX(t->t,t->t).size()>0);
         assertFalse(empty().streamable().size()>0);
-        
-        
+
+
     }
     @Test
     public void presentConvert(){
@@ -46,9 +46,9 @@ public abstract class AbstractConvertableSequenceTest {
         assertTrue(of(1).persistentMapX(t->t, t->t).size()>0);
         assertTrue(of(1).mapX(t->t,t->t).size()>0);
         assertTrue(of(1).streamable().size()>0);
-        
-        
+
+
     }
 
-    
+
 }

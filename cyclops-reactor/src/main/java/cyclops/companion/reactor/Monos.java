@@ -8,35 +8,32 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.aol.cyclops.reactor.hkt.FluxKind;
-import com.aol.cyclops2.react.Status;
+import com.oath.cyclops.reactor.hkt.FluxKind;
+import com.oath.cyclops.react.Status;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.CompletableFutures.CompletableFutureKind;
-import cyclops.companion.Optionals;
 import cyclops.companion.Optionals.OptionalKind;
-import cyclops.companion.Streams;
 import cyclops.companion.Streams.StreamKind;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.control.lazy.Either;
+import cyclops.control.Either;
+
 import cyclops.monads.*;
 import cyclops.monads.ReactorWitness.flux;
 import cyclops.monads.ReactorWitness.mono;
-import com.aol.cyclops.reactor.hkt.MonoKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.reactor.hkt.MonoKind;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.async.Future;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.monads.transformers.StreamT;
 import cyclops.monads.transformers.reactor.MonoT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.foldable.Foldable;
@@ -52,12 +49,11 @@ import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.aol.cyclops.reactor.hkt.MonoKind.widen;
-import static cyclops.companion.Streams.StreamKind.*;
+import static com.oath.cyclops.reactor.hkt.MonoKind.widen;
 
 /**
  * Companion class for working with Reactor Mono types
- * 
+ *
  * @author johnmcclean
  *
  */
@@ -65,7 +61,7 @@ import static cyclops.companion.Streams.StreamKind.*;
 public class Monos {
 
     public static  <W1,T> Coproduct<W1,mono,T> coproduct(Mono<T> list, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(MonoKind.widen(list)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(MonoKind.widen(list)),def1, Instances.definitions());
     }
     public static  <W1,T> Coproduct<W1,mono,T> coproduct(T value,InstanceDefinitions<W1> def1){
         return coproduct(Mono.just(value),def1);
@@ -78,9 +74,9 @@ public class Monos {
         return ReactorWitness.mono(anyM);
     }
 
-    public static <T, R> Mono< R> tailRec(T initial, Function<? super T, ? extends Mono<? extends Xor<T, R>>> fn) {
-        Mono<? extends Xor<T, R>> next[] = new Mono[1];
-        next[0] = Mono.just(Xor.secondary(initial));
+    public static <T, R> Mono< R> tailRec(T initial, Function<? super T, ? extends Mono<? extends Either<T, R>>> fn) {
+        Mono<? extends Either<T, R>> next[] = new Mono[1];
+        next[0] = Mono.just(Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].map(p -> p.visit(s -> {
@@ -88,7 +84,7 @@ public class Monos {
                 return true;
             }, pr -> false)).block();
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(e->e.orElse(null));
     }
     public static <W extends WitnessType<W>,T> MonoT<W,T> liftM(AnyM<W,Mono<T>> nested){
         return MonoT.of(nested);
@@ -110,7 +106,7 @@ public class Monos {
     }
 
     public static <R> Either<Throwable,R> either(Mono<R> either){
-        return Either.fromFuture(future(either));
+        return Either.fromPublisher(either);
 
     }
 
@@ -120,21 +116,21 @@ public class Monos {
     public static <T> Eval<T> eval(Mono<T> opt){
         return Eval.fromFuture(future(opt));
     }
-    
+
     /**
      * Construct an AnyM type from a Mono. This allows the Mono to be manipulated according to a standard interface
      * along with a vast array of other Java Monad implementations
-     * 
+     *
      * <pre>
-     * {@code 
-     *    
+     * {@code
+     *
      *    AnyMSeq<Integer> mono = Fluxs.anyM(Mono.just(1,2,3));
      *    AnyMSeq<Integer> transformedMono = myGenericOperation(mono);
-     *    
+     *
      *    public AnyMSeq<Integer> myGenericOperation(AnyMSeq<Integer> monad);
      * }
      * </pre>
-     * 
+     *
      * @param mono To wrap inside an AnyM
      * @return AnyMSeq wrapping a Mono
      */
@@ -248,23 +244,23 @@ public class Monos {
     }
 
     /**
-     * Perform a For Comprehension over a Mono, accepting 3 generating functions. 
+     * Perform a For Comprehension over a Mono, accepting 3 generating functions.
      * This results in a four level nested internal iteration over the provided Monos.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Monos.forEach4;
-     *    
-          forEach4(Mono.just(1), 
+     *
+          forEach4(Mono.just(1),
                   a-> Mono.just(a+1),
                   (a,b) -> Mono.<Integer>just(a+b),
                   (a,b,c) -> Mono.<Integer>just(a+b+c),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Mono
      * @param value2 Nested Mono
      * @param value3 Nested Mono
@@ -275,8 +271,8 @@ public class Monos {
     public static <T1, T2, T3, R1, R2, R3, R> Mono<R> forEach4(Mono<? extends T1> value1,
             Function<? super T1, ? extends Mono<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Mono<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends Mono<R3>> value4,
-            Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends Mono<R3>> value4,
+            Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         Future<? extends R> res = Future.fromPublisher(value1).flatMap(in -> {
@@ -297,22 +293,22 @@ public class Monos {
 
 
     /**
-     * Perform a For Comprehension over a Mono, accepting 2 generating functions. 
+     * Perform a For Comprehension over a Mono, accepting 2 generating functions.
      * This results in a three level nested internal iteration over the provided Monos.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Monos.forEach3;
-     *    
-          forEach3(Mono.just(1), 
+     *
+          forEach3(Mono.just(1),
                   a-> Mono.just(a+1),
                   (a,b) -> Mono.<Integer>just(a+b),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Mono
      * @param value2 Nested Mono
      * @param value3 Nested Mono
@@ -322,7 +318,7 @@ public class Monos {
     public static <T1, T2, R1, R2, R> Mono<R> forEach3(Mono<? extends T1> value1,
             Function<? super T1, ? extends Mono<R1>> value2,
             BiFunction<? super T1, ? super R1, ? extends Mono<R2>> value3,
-            Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+            Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         Future<? extends R> res = Future.fromPublisher(value1).flatMap(in -> {
 
@@ -344,21 +340,21 @@ public class Monos {
 
 
     /**
-     * Perform a For Comprehension over a Mono, accepting a generating function. 
+     * Perform a For Comprehension over a Mono, accepting a generating function.
      * This results in a two level nested internal iteration over the provided Monos.
-     * 
+     *
      *  <pre>
      * {@code
-     *    
+     *
      *   import static cyclops.companion.reactor.Monos.forEach;
-     *    
-          forEach(Mono.just(1), 
+     *
+          forEach(Mono.just(1),
                   a-> Mono.just(a+1),
                   Tuple::tuple)
-     * 
+     *
      * }
      * </pre>
-     * 
+     *
      * @param value1 top level Mono
      * @param value2 Nested Mono
      * @param yieldingFunction Generates a result per combination
@@ -385,7 +381,7 @@ public class Monos {
 
     /**
      * Lazily combine this Mono with the supplied value via the supplied BiFunction
-     * 
+     *
      * @param mono Mono to combine with another value
      * @param app Value to combine with supplied mono
      * @param fn Combiner function
@@ -399,7 +395,7 @@ public class Monos {
 
     /**
      * Lazily combine this Mono with the supplied Mono via the supplied BiFunction
-     * 
+     *
      * @param mono Mono to combine with another value
      * @param app Mono to combine with supplied mono
      * @param fn Combiner function
@@ -413,7 +409,7 @@ public class Monos {
 
     /**
      * Combine the provided Mono with the first element (if present) in the provided Iterable using the provided BiFunction
-     * 
+     *
      * @param mono Mono to combine with an Iterable
      * @param app Iterable to combine with a Mono
      * @param fn Combining function
@@ -427,7 +423,7 @@ public class Monos {
 
     /**
      * Combine the provided Mono with the first element (if present) in the provided Publisher using the provided BiFunction
-     * 
+     *
      * @param mono  Mono to combine with a Publisher
      * @param fn Publisher to combine with a Mono
      * @param app Combining function
@@ -439,21 +435,11 @@ public class Monos {
         return res;
     }
 
-    /**
-     * Test if value is equal to the value inside this Mono
-     * 
-     * @param mono Mono to test
-     * @param test Value to test
-     * @return true if equal
-     */
-    public static <T> boolean test(Mono<T> mono, T test) {
-        return Future.of(mono.toFuture())
-                      .test(test);
-    }
+
 
     /**
      * Construct a Mono from Iterable by taking the first value from Iterable
-     * 
+     *
      * @param t Iterable to populate Mono from
      * @return Mono containing first element from Iterable (or empty Mono)
      */
@@ -463,7 +449,7 @@ public class Monos {
 
     /**
      * Get an Iterator for the value (if any) in the provided Mono
-     * 
+     *
      * @param pub Mono to get Iterator for
      * @return Iterator over Mono value
      */
@@ -550,7 +536,7 @@ public class Monos {
 
                 @Override
                 public <T> Maybe<Unfoldable<mono>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -608,8 +594,8 @@ public class Monos {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.MonoKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.MonoKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asMono;
          *
         Monos.applicative()
@@ -649,7 +635,7 @@ public class Monos {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.MonoKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.MonoKind.widen;
          * MonoKind<Integer> ft  = Monos.monad()
         .flatMap(i->widen(Mono.just(i)), widen(Mono.just(3)))
         .convert(MonoKind::narrowK);
@@ -743,7 +729,7 @@ public class Monos {
         public static <T> MonadRec<mono> monadRec(){
             return new MonadRec<mono>() {
                 @Override
-                public <T, R> Higher<mono, R> tailRec(T initial, Function<? super T, ? extends Higher<mono, ? extends Xor<T, R>>> fn) {
+                public <T, R> Higher<mono, R> tailRec(T initial, Function<? super T, ? extends Higher<mono, ? extends Either<T, R>>> fn) {
                     return widen(Monos.tailRec(initial,fn.andThen(MonoKind::narrow)));
                 }
             };
@@ -861,10 +847,10 @@ public class Monos {
             MonoKind<Higher<Witness.future,T>> y = (MonoKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<mono,Higher<xor,S>, P> xor(Mono<Xor<S, P>> nested){
-            MonoKind<Xor<S, P>> x = widen(nested);
-            MonoKind<Higher<Higher<xor,S>, P>> y = (MonoKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<mono,Higher<Witness.either,S>, P> xor(Mono<Either<S, P>> nested){
+            MonoKind<Either<S, P>> x = widen(nested);
+            MonoKind<Higher<Higher<Witness.either,S>, P>> y = (MonoKind)x;
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<mono,Higher<reader,S>, T> reader(Mono<Reader<S, T>> nested, S defaultValue){
             MonoKind<Reader<S, T>> x = widen(nested);
@@ -923,10 +909,10 @@ public class Monos {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,mono, P> xor(Xor<S, Mono<P>> nested){
-            Xor<S, Higher<mono,P>> x = nested.map(MonoKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,mono, P> xor(Either<S, Mono<P>> nested){
+            Either<S, Higher<mono,P>> x = nested.map(MonoKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,mono, T> reader(Reader<S, Mono<T>> nested, S defaultValue){
 

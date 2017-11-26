@@ -1,37 +1,36 @@
 package cyclops.companion.vavr;
 
+import com.oath.cyclops.types.traversable.IterableX;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
-import com.aol.cyclops2.hkt.Higher;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import com.oath.cyclops.hkt.Higher;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.EitherKind;
-import com.aol.cyclops.vavr.hkt.ListKind;
+import com.oath.cyclops.vavr.hkt.EitherKind;
+import com.oath.cyclops.vavr.hkt.ListKind;
 import cyclops.companion.Monoids;
-import cyclops.conversion.vavr.ToCyclopsReact;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import cyclops.conversion.vavr.ToCyclops;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.monads.VavrWitness.either;
-import cyclops.monads.transformers.XorT;
+import cyclops.monads.transformers.EitherT;
 import cyclops.typeclasses.comonad.Comonad;
 import cyclops.typeclasses.comonad.ComonadByPure;
 import cyclops.typeclasses.foldable.Foldable;
@@ -39,9 +38,7 @@ import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.monad.*;
 import io.vavr.collection.List;
-import io.vavr.control.Either;
 import lombok.experimental.UtilityClass;
-import org.reactivestreams.Publisher;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -49,8 +46,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-import static com.aol.cyclops.vavr.hkt.EitherKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.EitherKind.widen;
+import static com.oath.cyclops.vavr.hkt.EitherKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.EitherKind.widen;
 
 /**
  * Utility class for working with Eithers
@@ -63,7 +60,7 @@ public class Eithers {
 
 
     public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproduct(Either<L,T> either, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(either)),def1,Instances.definitions());
+        return Coproduct.of(cyclops.control.Either.right(widen(either)),def1,Instances.definitions());
     }
     public static  <W1,L,T> Coproduct<W1,Higher<either,L>,T> coproductRight(T right, InstanceDefinitions<W1> def1){
         return coproduct(Either.right(right),def1);
@@ -80,9 +77,9 @@ public class Eithers {
     public static  <W1 extends WitnessType<W1>,L,T> XorM<W1,either,T> xorMLeft(L type){
         return XorM.right(anyM(Either.left(type)));
     }
-    public static <L, R> Either<L, R> xor(Xor<L, R> value) {
-        Xor<L, R> xor = (Xor) value.toXor();
-        return xor.visit(l -> Either.left(l), r -> Either.right(r));
+    public static <L, R> Either<L, R> xor(cyclops.control.Either<L, R> value) {
+
+        return value.visit(l -> Either.left(l), r -> Either.right(r));
     }
     public static <T> AnyMValue<either,T> anyM(Either<?,T> either) {
         return AnyM.ofValue(either, VavrWitness.either.INSTANCE);
@@ -100,9 +97,9 @@ public class Eithers {
         } while (cont);
         return next[0].map(Either::get);
     }
-    public static <L, T, R> Either<L, R> tailRecXor(T initial, Function<? super T, ? extends Either<L, ? extends Xor<T, R>>> fn) {
-        Either<L,? extends Xor<T, R>> next[] = new Either[1];
-        next[0] = Either.right(Xor.secondary(initial));
+    public static <L, T, R> Either<L, R> tailRecEither(T initial, Function<? super T, ? extends Either<L, ? extends cyclops.control.Either<T, R>>> fn) {
+        Either<L,? extends cyclops.control.Either<T, R>> next[] = new Either[1];
+        next[0] = Either.right(cyclops.control.Either.left(initial));
         boolean cont = true;
         do {
             cont = next[0].fold(__ -> false,p -> p.visit(s -> {
@@ -110,7 +107,7 @@ public class Eithers {
                 return true;
             }, pr -> false));
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(e->e.orElse(null));
     }
 
 
@@ -123,7 +120,7 @@ public class Eithers {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Eithers.forEach4;
+     *   import static com.oath.cyclops.reactor.Eithers.forEach4;
      *
     forEach4(Either.just(1),
     a-> Either.just(a+1),
@@ -144,8 +141,8 @@ public class Eithers {
     public static <L,T1, T2, T3, R1, R2, R3, R> Either<L,R> forEach4(Either<L,? extends T1> value1,
                                                                  Function<? super T1, ? extends Either<L,R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Either<L,R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Either<L,R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Either<L,R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -171,7 +168,7 @@ public class Eithers {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Eithers.forEach3;
+     *   import static com.oath.cyclops.reactor.Eithers.forEach3;
      *
     forEach3(Either.just(1),
     a-> Either.just(a+1),
@@ -190,7 +187,7 @@ public class Eithers {
     public static <L,T1, T2, R1, R2, R> Either<L,R> forEach3(Either<L,? extends T1> value1,
                                                          Function<? super T1, ? extends Either<L,R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Either<L,R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -214,7 +211,7 @@ public class Eithers {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Eithers.forEach;
+     *   import static com.oath.cyclops.reactor.Eithers.forEach;
      *
     forEach(Either.just(1),
     a-> Either.just(a+1),
@@ -248,7 +245,7 @@ public class Eithers {
 
     /**
      * Sequence operation, take a Collection of Eithers and turn it into a Either with a Collection
-     * By constrast with {@link Eithers#sequencePresent(CollectionX)}, if any Eithers are empty the result
+     * By constrast with {@link Eithers#sequencePresent(IterableX)}, if any Eithers are empty the result
      * is an empty Either
      *
      * <pre>
@@ -267,13 +264,14 @@ public class Eithers {
      * @param opts Maybes to Sequence
      * @return  Maybe with a List of values
      */
-    public static <L,T> Either<L,ListX<T>> sequence(final CollectionX<Either<L,T>> opts) {
-        return sequence(opts.stream()).map(s -> s.toListX());
+    public static <L,T> Either<L,ListX<T>> sequence(final IterableX<Either<L,T>> opts) {
+        java.util.stream.Stream<Either<L, T>> s = opts.stream();
+        return sequence(s).map(r ->r.toListX());
 
     }
     /**
      * Sequence operation, take a Collection of Eithers and turn it into a Either with a Collection
-     * Only successes are retained. By constrast with {@link Eithers#sequence(CollectionX)} Either#empty types are
+     * Only successes are retained. By constrast with {@link Eithers#sequence(IterableX)} Either#empty types are
      * tolerated and ignored.
      *
      * <pre>
@@ -289,12 +287,13 @@ public class Eithers {
      * @param opts Eithers to Sequence
      * @return Either with a List of values
      */
-    public static <L,T> Either<L,ListX<T>> sequencePresent(final CollectionX<Either<L,T>> opts) {
-        return sequence(opts.stream().filter(Either::isRight)).map(s->s.toListX());
+    public static <L,T> Either<L,ListX<T>> sequencePresent(final IterableX<Either<L,T>> opts) {
+      java.util.stream.Stream<Either<L, T>> s = opts.stream();
+        return sequence(s.filter(Either::isRight)).map(r->r.toListX());
     }
     /**
      * Sequence operation, take a Collection of Eithers and turn it into a Either with a Collection
-     * By constrast with {@link Eithers#sequencePresent(CollectionX)} if any Either types are empty
+     * By constrast with {@link Eithers#sequencePresent(IterableX)} if any Either types are empty
      * the return type will be an empty Either
      *
      * <pre>
@@ -338,7 +337,7 @@ public class Eithers {
      * @param reducer Reducer to accumulate values with
      * @return Either with reduced value
      */
-    public static <T, L,R> Either<L,R> accumulatePresent(final CollectionX<Either<L,T>> eithers, final Reducer<R> reducer) {
+    public static <T, L,R> Either<L,R> accumulatePresent(final IterableX<Either<L,T>> eithers, final Reducer<R,T> reducer) {
         return sequencePresent(eithers).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -363,7 +362,7 @@ public class Eithers {
      * @param reducer Monoid to combine values from each Either
      * @return Either with reduced value
      */
-    public static <T,L, R> Either<L,R> accumulatePresent(final CollectionX<Either<L,T>> eithers, final Function<? super T, R> mapper,
+    public static <T,L, R> Either<L,R> accumulatePresent(final IterableX<Either<L,T>> eithers, final Function<? super T, R> mapper,
                                                      final Monoid<R> reducer) {
         return sequencePresent(eithers).map(s -> s.map(mapper)
                 .reduce(reducer));
@@ -394,30 +393,7 @@ public class Eithers {
                 .reduce(reducer));
     }
 
-    /**
-     * Combine an Either with the provided value using the supplied BiFunction
-     *
-     * <pre>
-     * {@code
-     *  Eithers.combine(Either.of(10),Maybe.just(20), this::add)
-     *  //Either[30]
-     *
-     *  private int add(int a, int b) {
-    return a + b;
-    }
-     *
-     * }
-     * </pre>
-     * @param f Either to combine with a value
-     * @param v Value to combine
-     * @param fn Combining function
-     * @return Either combined with supplied value
-     */
-    public static <T1, T2, L,R> Either<L,R> combine(final Either<L,? extends T1> f, final Value<? extends T2> v,
-                                                final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.either(ToCyclopsReact.xor(f)
-                .combine(v, fn)));
-    }
+
     /**
      * Combine an Either with the provided Either using the supplied BiFunction
      *
@@ -438,59 +414,14 @@ public class Eithers {
      * @param fn Combining function
      * @return Either combined with supplied value, or empty Either if no value present
      */
-    public static <T1, T2, L,R> Either<L,R> combine(final Either<L,? extends T1> f, final Either<L,? extends T2> v,
+    public static <T1, T2, L,R> Either<L,R> zip(final Either<L,? extends T1> f, final Either<L,? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return combine(f,ToCyclopsReact.xor(v),fn);
+      return narrow(FromCyclops.either(ToCyclops.either(f)
+        .zip(ToCyclops.either(v), fn)));
     }
 
-    /**
-     * Combine an Either with the provided Iterable (selecting one element if present) using the supplied BiFunction
-     * <pre>
-     * {@code
-     *  Eithers.zip(Either.of(10),Arrays.asList(20), this::add)
-     *  //Either[30]
-     *
-     *  private int add(int a, int b) {
-    return a + b;
-    }
-     *
-     * }
-     * </pre>
-     * @param f Either to combine with first element in Iterable (if present)
-     * @param v Iterable to combine
-     * @param fn Combining function
-     * @return Either combined with supplied Iterable, or empty Either if no value present
-     */
-    public static <T1, T2, L,R> Either<L,R> zip(final Either<L,? extends T1> f, final Iterable<? extends T2> v,
-                                            final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.either(ToCyclopsReact.xor(f)
-                .zip(v, fn)));
-    }
 
-    /**
-     * Combine an Either with the provided Publisher (selecting one element if present) using the supplied BiFunction
-     * <pre>
-     * {@code
-     *  Eithers.zip(Flux.just(10),Either.of(10), this::add)
-     *  //Either[30]
-     *
-     *  private int add(int a, int b) {
-    return a + b;
-    }
-     *
-     * }
-     * </pre>
-     *
-     * @param p Publisher to combine
-     * @param f  Either to combine with
-     * @param fn Combining function
-     * @return Either combined with supplied Publisher, or empty Either if no value present
-     */
-    public static <T1, T2, L,R> Either<L,R> zip(final Publisher<? extends T2> p, final Either<L,? extends T1> f,
-                                            final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.either(ToCyclopsReact.xor(f)
-                .zipP(p, fn)));
-    }
+
     /**
      * Narrow covariant type parameter
      *
@@ -510,8 +441,8 @@ public class Eithers {
         EitherKind<L, Higher<W2, R2>> ek = widen(e);
         return Nested.of(ek, Eithers.Instances.definitions(), defs);
     }
-    public <L,R,W extends WitnessType<W>> XorT<W, L, R> liftM(Either<L,R> either, W witness) {
-        return XorT.of(witness.adapter().unit(ToCyclopsReact.xor(either)));
+    public <L,R,W extends WitnessType<W>> EitherT<W, L, R> liftM(Either<L,R> either, W witness) {
+        return EitherT.of(witness.adapter().unit(ToCyclops.either(either)));
     }
 
     public static class Instances {
@@ -575,7 +506,7 @@ public class Eithers {
 
                 @Override
                 public <T> Maybe<Unfoldable<Higher<either, L>>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -609,7 +540,7 @@ public class Eithers {
                 public <T, R> Higher<Higher<either, L>, R> ap(Higher<Higher<either, L>, ? extends Function<T, R>> fn, Higher<Higher<either, L>, T> apply) {
                     Either<L, T> either = narrowK(apply);
                     Either<L, ? extends Function<T, R>> eitherFn = narrowK(fn);
-                    return widen(Eithers.xor(ToCyclopsReact.xor(eitherFn).combine(ToCyclopsReact.xor(either), (a, b) -> a.apply(b))));
+                    return widen(Eithers.xor(ToCyclops.either(eitherFn).zip(ToCyclops.either(either), (a, b) -> a.apply(b))));
                 }
 
                 @Override
@@ -687,8 +618,8 @@ public class Eithers {
         public static <L> MonadRec<Higher<either, L>> monadRec() {
             return new MonadRec<Higher<either, L>>() {
                 @Override
-                public <T, R> Higher<Higher<either, L>, R> tailRec(T initial, Function<? super T, ? extends Higher<Higher<either, L>, ? extends Xor<T, R>>> fn) {
-                    return widen(Eithers.tailRecXor(initial,fn.andThen(EitherKind::narrowK)));
+                public <T, R> Higher<Higher<either, L>, R> tailRec(T initial, Function<? super T, ? extends Higher<Higher<either, L>, ? extends cyclops.control.Either<T, R>>> fn) {
+                    return widen(Eithers.tailRecEither(initial,fn.andThen(EitherKind::narrowK)));
                 }
             };
         }
@@ -700,13 +631,13 @@ public class Eithers {
                 @Override
                 public <T> T foldRight(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
                     Either<L, T> either = narrowK(ds);
-                    return ToCyclopsReact.xor(either).foldRight(monoid);
+                    return ToCyclops.either(either).fold(monoid);
                 }
 
                 @Override
                 public <T> T foldLeft(Monoid<T> monoid, Higher<Higher<either, L>, T> ds) {
                     Either<L, T> either = narrowK(ds);
-                    return ToCyclopsReact.xor(either).foldLeft(monoid);
+                    return ToCyclops.either(either).fold(monoid);
                 }
 
                 @Override
@@ -749,7 +680,7 @@ public class Eithers {
         }
 
         public static <L> MonadPlus<Higher<either, L>> monadPlus() {
-            Monoid m = Monoids.firstPrimaryXor((Either) narrowK(Instances.<L>monadZero().zero()));
+            Monoid m = Monoids.firstRightEither((Either) narrowK(Instances.<L>monadZero().zero()));
 
             return monadPlus(m);
         }
@@ -881,10 +812,10 @@ public class Eithers {
                 return Nested.of(y, Instances.definitions(), cyclops.async.Future.Instances.definitions());
             }
 
-            public static <L, S, P> Nested<Higher<either, L>, Higher<xor, S>, P> xor(Either<L, Xor<S, P>> nested) {
-                EitherKind<L, Xor<S, P>> x = widen(nested);
-                EitherKind<L, Higher<Higher<xor, S>, P>> y = (EitherKind) x;
-                return Nested.of(y, Instances.definitions(), Xor.Instances.definitions());
+            public static <L, S, P> Nested<Higher<either, L>, Higher<Witness.either, S>, P> xor(Either<L, cyclops.control.Either<S, P>> nested) {
+                EitherKind<L, cyclops.control.Either<S, P>> x = widen(nested);
+                EitherKind<L, Higher<Higher<Witness.either, S>, P>> y = (EitherKind) x;
+                return Nested.of(y, Instances.definitions(), cyclops.control.Either.Instances.definitions());
             }
 
             public static <L, S, T> Nested<Higher<either, L>, Higher<reader, S>, T> reader(Either<L, Reader<S, T>> nested, S defaultValue) {
@@ -945,10 +876,10 @@ public class Eithers {
                 return Nested.of(x, cyclops.async.Future.Instances.definitions(), Instances.definitions());
             }
 
-            public static <L, S, P> Nested<Higher<xor, S>, Higher<either, L>, P> xor(Xor<S, Either<L, P>> nested) {
-                Xor<S, Higher<Higher<either, L>, P>> x = nested.map(EitherKind::widenK);
+            public static <L, S, P> Nested<Higher<Witness.either, S>, Higher<either, L>, P> xor(cyclops.control.Either<S, Either<L, P>> nested) {
+              cyclops.control.Either<S, Higher<Higher<either, L>, P>> x = nested.map(EitherKind::widenK);
 
-                return Nested.of(x, Xor.Instances.definitions(), Instances.definitions());
+                return Nested.of(x, cyclops.control.Either.Instances.definitions(), Instances.definitions());
             }
 
             public static <L, S, T> Nested<Higher<reader, S>, Higher<either, L>, T> reader(Reader<S, Either<L, T>> nested, S defaultValue) {

@@ -1,6 +1,6 @@
 package cyclops;
 
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.testng.annotations.Test;
 
 import java.util.stream.Stream;

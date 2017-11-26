@@ -1,10 +1,6 @@
 package cyclops;
 
-import com.aol.cyclops.vavr.hkt.FutureKind;
-import com.aol.cyclops.vavr.hkt.OptionKind;
-import com.aol.cyclops2.data.collections.extensions.IndexedSequenceX;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.data.collections.extensions.IndexedSequenceX;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.VectorX;
 import cyclops.collections.mutable.ListX;
@@ -13,30 +9,22 @@ import cyclops.collections.vavr.VavrVectorX;
 import cyclops.companion.Monoids;
 import cyclops.companion.vavr.Futures;
 import cyclops.companion.vavr.Trys;
-import cyclops.monads.AnyM;
+import cyclops.control.Option;
 import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.tryType;
-import cyclops.monads.Witness;
-import cyclops.monads.Witness.stream;
-import cyclops.monads.WitnessType;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
-import fj.Monoid;
 import io.vavr.concurrent.Future;
 import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
-import org.jooq.lambda.tuple.Tuple;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple;
+import cyclops.data.tuple.Tuple2;
 import org.junit.Test;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static cyclops.companion.vavr.Futures.allTypeclasses;
-import static cyclops.companion.vavr.Futures.anyM;
 import static org.junit.Assert.assertTrue;
 
 
@@ -52,7 +40,6 @@ public class AsyncActiveTest {
                 .groupedT(2)
                .reduce(0, (a, b) -> a + b);
         //[1, 5, 9, 13, 17]
-
 
     }
 
@@ -74,7 +61,7 @@ public class AsyncActiveTest {
 
 
 
-        ListX.unfold(1,i->i<10 ? Optional.of(Tuple.tuple(i,i+1)) : Optional.empty());
+        ListX.unfold(1,i->i<10 ? Option.of(Tuple.tuple(i,i+1)) : Option.none());
         //[1, 2, 3, 4, 5, 6, 7, 8, 9]
 
         ListX.iterate(Long.MAX_VALUE,1,i->i+1)
@@ -128,8 +115,8 @@ public class AsyncActiveTest {
                                                         .zip(ListX.of('a', 'b', 'c'))
                                                         .materialize();
 
-        ListX<Integer> nums = zipped.map(t2-> t2.v1);
-        ListX<Character> chars = zipped.map(t2->t2.v2);
+        ListX<Integer> nums = zipped.map(t2-> t2._1());
+        ListX<Character> chars = zipped.map(t2->t2._2());
 
         ListX.of(1,2,3)
                 .peek(System.out::println)
@@ -162,7 +149,7 @@ public class AsyncActiveTest {
        //[2,3]
 
        ListX.of(1,2,3)
-               .minus(1);
+               .removeValue((Object)1);
        //[2,3]
     }
     int times =0;

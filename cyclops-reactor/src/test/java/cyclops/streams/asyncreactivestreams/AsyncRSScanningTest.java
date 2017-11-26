@@ -2,7 +2,7 @@ package cyclops.streams.asyncreactivestreams;
 
 import cyclops.companion.Reducers;
 import cyclops.companion.reactor.Fluxs;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;

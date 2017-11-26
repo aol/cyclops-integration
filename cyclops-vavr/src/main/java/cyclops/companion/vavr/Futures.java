@@ -6,32 +6,32 @@ import cyclops.monads.VavrWitness.tryType;
 import io.vavr.Lazy;
 import io.vavr.collection.*;
 import io.vavr.control.*;
-import com.aol.cyclops.vavr.hkt.*;
+import com.oath.cyclops.vavr.hkt.*;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Reader;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
+import cyclops.control.Either;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.*;
 import cyclops.monads.VavrWitness.*;
-import com.aol.cyclops2.hkt.Higher;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import com.oath.cyclops.hkt.Higher;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.Witness.*;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.*;
-import com.aol.cyclops.vavr.hkt.ArrayKind;
-import com.aol.cyclops.vavr.hkt.ListKind;
-import com.aol.cyclops2.react.Status;
-import cyclops.conversion.vavr.ToCyclopsReact;
+import com.oath.cyclops.vavr.hkt.ArrayKind;
+import com.oath.cyclops.vavr.hkt.ListKind;
+import com.oath.cyclops.react.Status;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.VavrWitness.future;
-import com.aol.cyclops.vavr.hkt.FutureKind;
-import com.aol.cyclops2.data.collections.extensions.CollectionX;
-import com.aol.cyclops2.types.Value;
-import com.aol.cyclops2.types.anyM.AnyMValue;
+import com.oath.cyclops.vavr.hkt.FutureKind;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.anyM.AnyMValue;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Monoids;
 import cyclops.function.Reducer;
@@ -58,8 +58,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 
-import static com.aol.cyclops.vavr.hkt.FutureKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.FutureKind.widen;
+import static com.oath.cyclops.vavr.hkt.FutureKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.FutureKind.widen;
 
 /**
  * Utilty methods for working with JDK CompletableFutures
@@ -72,7 +72,7 @@ public class Futures {
 
 
     public static  <W1,T> Coproduct<W1,future,T> coproduct(Future<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Xor.primary(widen(type)),def1, Instances.definitions());
+        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
     }
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,future,T> xorM(Future<T> type){
         return XorM.right(anyM(type));
@@ -81,15 +81,15 @@ public class Futures {
          asPublisher(f).subscribe(sub);
     }
     public static <T> Publisher<T> asPublisher(Future<T> f){
-        return ToCyclopsReact.future(f);
+        return ToCyclops.future(f);
     }
     public static <T> AnyMValue<future,T> anyM(Future<T> future) {
         return AnyM.ofValue(future, VavrWitness.future.INSTANCE);
     }
 
-    public static <T, R> Future<R> tailRec(T initial, Function<? super T, ? extends Future<  ? extends Either<T, R>>> fn) {
-        Future<? extends Either<T, R>> next[] = new Future[1];
-        next[0] = Future.of(()->Either.left(initial));
+    public static <T, R> Future<R> tailRec(T initial, Function<? super T, ? extends Future<  ? extends io.vavr.control.Either<T, R>>> fn) {
+        Future<? extends io.vavr.control.Either<T, R>> next[] = new Future[1];
+        next[0] = Future.of(()->io.vavr.control.Either.left(initial));
         boolean cont = true;
         do {
 
@@ -105,11 +105,11 @@ public class Futures {
                 }, pr -> false);
             }
         } while (cont);
-        return next[0].map(Either::get);
+        return next[0].map(e->e.get());
     }
-    public static <L, T, R> Future< R> tailRecXor(T initial, Function<? super T, ? extends Future< ? extends Xor<T, R>>> fn) {
-        Future<? extends Xor<T, R>> next[] = new Future[1];
-        next[0] = Future.of(()->Xor.secondary(initial));
+    public static <L, T, R> Future< R> tailRecEither(T initial, Function<? super T, ? extends Future< ? extends Either<T, R>>> fn) {
+        Future<? extends Either<T, R>> next[] = new Future[1];
+        next[0] = Future.of(()->Either.left(initial));
         boolean cont = true;
         do {
 
@@ -125,7 +125,7 @@ public class Futures {
                 }, pr -> false);
             }
         } while (cont);
-        return next[0].map(Xor::get);
+        return next[0].map(e->e.orElse(null));
     }
 
     /**
@@ -134,7 +134,7 @@ public class Futures {
      *
      */
     public static <T,W extends WitnessType<W>> FutureT<W, T> liftM(Future<T> opt, W witness) {
-        return FutureT.of(witness.adapter().unit(ToCyclopsReact.future(opt)));
+        return FutureT.of(witness.adapter().unit(ToCyclops.future(opt)));
     }
 
 
@@ -147,7 +147,7 @@ public class Futures {
      * @return First Future to complete
      */
     public static <T> Future<T> anyOf(Future<T>... fts) {
-        return FromCyclopsReact.future(cyclops.async.Future.anyOf(ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.anyOf(ToCyclops.futures(fts)));
 
     }
     /**
@@ -161,7 +161,7 @@ public class Futures {
      */
     public static <T> Future<T> allOf(Future<T>... fts) {
 
-        return FromCyclopsReact.future(cyclops.async.Future.allOf(ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.allOf(ToCyclops.futures(fts)));
     }
     /**
      * Block until a Quorum of results have returned as determined by the provided Predicate
@@ -188,7 +188,7 @@ public class Futures {
     @SafeVarargs
     public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Consumer<Throwable> errorHandler, Future<T>... fts) {
 
-        return FromCyclopsReact.future(cyclops.async.Future.quorum(breakout,errorHandler,ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.quorum(breakout,errorHandler, ToCyclops.futures(fts)));
 
 
     }
@@ -216,7 +216,7 @@ public class Futures {
     @SafeVarargs
     public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Future<T>... fts) {
 
-        return FromCyclopsReact.future(cyclops.async.Future.quorum(breakout,ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.quorum(breakout, ToCyclops.futures(fts)));
 
 
     }
@@ -238,7 +238,7 @@ public class Futures {
      */
     @SafeVarargs
     public static <T> Future<T> firstSuccess(Future<T>... fts) {
-        return FromCyclopsReact.future(cyclops.async.Future.firstSuccess(ToCyclopsReact.futures(fts)));
+        return FromCyclops.future(cyclops.async.Future.firstSuccess(ToCyclops.futures(fts)));
 
     }
 
@@ -249,7 +249,7 @@ public class Futures {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Futures.forEach4;
+     *   import static com.oath.cyclops.reactor.Futures.forEach4;
      *
     forEach4(Future.just(1),
     a-> Future.just(a+1),
@@ -270,8 +270,8 @@ public class Futures {
     public static <T1, T2, T3, R1, R2, R3, R> Future<R> forEach4(Future<? extends T1> value1,
                                                                  Function<? super T1, ? extends Future<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Future<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Future<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Future<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -297,7 +297,7 @@ public class Futures {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Futures.forEach4;
+     *  import static com.oath.cyclops.reactor.Futures.forEach4;
      *
      *  forEach4(Future.just(1),
     a-> Future.just(a+1),
@@ -320,9 +320,9 @@ public class Futures {
     public static <T1, T2, T3, R1, R2, R3, R> Future<R> forEach4(Future<? extends T1> value1,
                                                                  Function<? super T1, ? extends Future<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Future<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Future<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Future<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -348,7 +348,7 @@ public class Futures {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Futures.forEach3;
+     *   import static com.oath.cyclops.reactor.Futures.forEach3;
      *
     forEach3(Future.just(1),
     a-> Future.just(a+1),
@@ -367,7 +367,7 @@ public class Futures {
     public static <T1, T2, R1, R2, R> Future<R> forEach3(Future<? extends T1> value1,
                                                          Function<? super T1, ? extends Future<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Future<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -390,7 +390,7 @@ public class Futures {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Futures.forEach3;
+     *  import static com.oath.cyclops.reactor.Futures.forEach3;
      *
      *  forEach3(Future.just(1),
     a-> Future.just(a+1),
@@ -411,8 +411,8 @@ public class Futures {
     public static <T1, T2, R1, R2, R> Future<R> forEach3(Future<? extends T1> value1,
                                                          Function<? super T1, ? extends Future<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Future<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -436,7 +436,7 @@ public class Futures {
      *  <pre>
      * {@code
      *
-     *   import static com.aol.cyclops2.reactor.Futures.forEach;
+     *   import static com.oath.cyclops.reactor.Futures.forEach;
      *
     forEach(Future.just(1),
     a-> Future.just(a+1),
@@ -471,7 +471,7 @@ public class Futures {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Futures.forEach;
+     *  import static com.oath.cyclops.reactor.Futures.forEach;
      *
      *  forEach(Future.just(1),
     a-> Future.just(a+1),
@@ -597,7 +597,7 @@ public class Futures {
      * @param reducer Reducer to accumulate values with
      * @return Future with reduced value
      */
-    public static <T, R> Future<R> accumulatePresent(final CollectionX<Future<T>> futureals, final Reducer<R> reducer) {
+    public static <T, R> Future<R> accumulatePresent(final CollectionX<Future<T>> futureals, final Reducer<R,T> reducer) {
         return sequencePresent(futureals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -674,7 +674,7 @@ public class Futures {
      */
     public static <T1, T2, R> Future<R> combine(final Future<? extends T1> f, final Value<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.future(ToCyclopsReact.future(f)
+        return narrow(FromCyclops.future(ToCyclops.future(f)
                 .combine(v, fn)));
     }
     /**
@@ -699,7 +699,7 @@ public class Futures {
      */
     public static <T1, T2, R> Future<R> combine(final Future<? extends T1> f, final Future<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return combine(f,ToCyclopsReact.future(v),fn);
+        return combine(f, ToCyclops.future(v),fn);
     }
 
     /**
@@ -722,7 +722,7 @@ public class Futures {
      */
     public static <T1, T2, R> Future<R> zip(final Future<? extends T1> f, final Iterable<? extends T2> v,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.future(ToCyclopsReact.future(f)
+        return narrow(FromCyclops.future(ToCyclops.future(f)
                 .zip(v, fn)));
     }
 
@@ -747,7 +747,7 @@ public class Futures {
      */
     public static <T1, T2, R> Future<R> zip(final Publisher<? extends T2> p, final Future<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
-        return narrow(FromCyclopsReact.future(ToCyclopsReact.future(f)
+        return narrow(FromCyclops.future(ToCyclops.future(f)
                 .zipP(p, fn)));
     }
     /**
@@ -837,7 +837,7 @@ public class Futures {
 
                 @Override
                 public <T> Maybe<Unfoldable<future>> unfoldable() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
             };
         }
@@ -896,8 +896,8 @@ public class Futures {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FutureKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.FutureKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          *
         Futures.applicative()
         .ap(widen(Future.successful(l1(this::multiplyByTwo))),widen(asFuture(1,2,3)));
@@ -936,7 +936,7 @@ public class Futures {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.FutureKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.FutureKind.widen;
          * FutureKind<Integer> ft  = Futures.monad()
         .flatMap(i->widen(Future.successful(i), widen(Future.successful(3))
         .convert(FutureKind::narrowK);
@@ -966,8 +966,8 @@ public class Futures {
         public static <T,R> MonadRec<future> monadRec(){
             return new MonadRec<future>() {
                 @Override
-                public <T, R> Higher<future, R> tailRec(T initial, Function<? super T, ? extends Higher<future, ? extends Xor<T, R>>> fn) {
-                    return widen(Futures.tailRecXor(initial,fn.andThen(FutureKind::narrowK)));
+                public <T, R> Higher<future, R> tailRec(T initial, Function<? super T, ? extends Higher<future, ? extends Either<T, R>>> fn) {
+                    return widen(Futures.tailRecEither(initial,fn.andThen(FutureKind::narrowK)));
                 }
             };
         }
@@ -1007,7 +1007,7 @@ public class Futures {
         public static <T> MonadPlus<future> monadPlus(){
             Monoid<cyclops.async.Future<T>> mn = Monoids.firstSuccessfulFuture();
             Monoid<FutureKind<T>> m = Monoid.of(widen(mn.zero()), (f, g)-> widen(
-                    mn.apply(ToCyclopsReact.future(f), ToCyclopsReact.future(g))));
+                    mn.apply(ToCyclops.future(f), ToCyclops.future(g))));
 
             Monoid<Higher<future,T>> m2= (Monoid)m;
             return General.monadPlus(monadZero(),m2);
@@ -1089,7 +1089,7 @@ public class Futures {
             return widen(Future.successful(value));
         }
         private static <T,R> FutureKind<R> ap(FutureKind<Function< T, R>> lt, FutureKind<T> list){
-            return widen(ToCyclopsReact.future(lt).combine(ToCyclopsReact.future(list), (a, b)->a.apply(b)));
+            return widen(ToCyclops.future(lt).combine(ToCyclops.future(list), (a, b)->a.apply(b)));
 
         }
         private static <T,R> Higher<future,R> flatMap(Higher<future,T> lt, Function<? super T, ? extends  Higher<future,R>> fn){
@@ -1123,7 +1123,7 @@ public class Futures {
         public static <T> Nested<future,lazy,T> lazy(Future<Lazy<T>> nested){
             return Nested.of(widen(nested.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
         }
-        public static <L, R> Nested<future,Higher<VavrWitness.either,L>, R> either(Future<Either<L, R>> nested){
+        public static <L, R> Nested<future,Higher<VavrWitness.either,L>, R> either(Future<io.vavr.control.Either<L, R>> nested){
             return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
         }
         public static <T> Nested<future,VavrWitness.queue,T> queue(Future<Queue<T>> nested){
@@ -1166,10 +1166,10 @@ public class Futures {
             FutureKind<Higher<Witness.future,T>> y = (FutureKind)x;
             return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
         }
-        public static <S, P> Nested<future,Higher<xor,S>, P> xor(Future<Xor<S, P>> nested){
-            FutureKind<Xor<S, P>> x = widen(nested);
-            FutureKind<Higher<Higher<xor,S>, P>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),Xor.Instances.definitions());
+        public static <S, P> Nested<future,Higher<Witness.either,S>, P> xor(Future<Either<S, P>> nested){
+            FutureKind<Either<S, P>> x = widen(nested);
+            FutureKind<Higher<Higher<Witness.either,S>, P>> y = (FutureKind)x;
+            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
         }
         public static <S,T> Nested<future,Higher<reader,S>, T> reader(Future<Reader<S, T>> nested,S defaultValue){
             FutureKind<Reader<S, T>> x = widen(nested);
@@ -1222,10 +1222,10 @@ public class Futures {
 
             return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
         }
-        public static <S, P> Nested<Higher<xor,S>,future, P> xor(Xor<S, Future<P>> nested){
-            Xor<S, Higher<future,P>> x = nested.map(FutureKind::widenK);
+        public static <S, P> Nested<Higher<Witness.either,S>,future, P> xor(Either<S, Future<P>> nested){
+            Either<S, Higher<future,P>> x = nested.map(FutureKind::widenK);
 
-            return Nested.of(x,Xor.Instances.definitions(),Instances.definitions());
+            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
         }
         public static <S,T> Nested<Higher<reader,S>,future, T> reader(Reader<S, Future<T>> nested,S defaultValue){
 

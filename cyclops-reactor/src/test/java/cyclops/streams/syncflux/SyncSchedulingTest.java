@@ -1,7 +1,7 @@
 package cyclops.streams.syncflux;
 
 import cyclops.companion.reactor.Fluxs;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 
@@ -28,9 +28,9 @@ public class SyncSchedulingTest {
 				.peek(i->count.incrementAndGet())
 				.peek(System.out::println)
 				.schedule("* * * * * ?", ex);
-		
+
 		Thread.sleep(5000);
-		
+
 	}
 	@Test
 	public void cronDebounceTest() throws InterruptedException{
@@ -42,8 +42,8 @@ public class SyncSchedulingTest {
 				.debounce(1,TimeUnit.DAYS)
 				.peek(System.out::println)
 				.toList(),equalTo(Arrays.asList(1)));
-		
-		
+
+
 	}
 	@Test
 	public void fixedRateTest() throws InterruptedException{
@@ -55,8 +55,8 @@ public class SyncSchedulingTest {
 				.debounce(1,TimeUnit.DAYS)
 				.peek(System.out::println)
 				.toList(),equalTo(Arrays.asList(1)));
-		
-		
+
+
 	}
 	@Test
 	public void fixedRateDelay() throws InterruptedException{
@@ -68,7 +68,7 @@ public class SyncSchedulingTest {
 				.debounce(1,TimeUnit.DAYS)
 				.peek(System.out::println)
 				.toList(),equalTo(Arrays.asList(1)));
-		
-		
+
+
 	}
 }

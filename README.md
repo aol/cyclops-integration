@@ -122,7 +122,7 @@ The code for this performance testing speeding up the execution of functional op
 cyclops also allows data to be pushed asynchronously into collection types from the major functional libraries. For example to asynchronously populate a JavaSlang / Vavr Vector we can write
 
 ```java
-VectorX<Integer> asyncPopulated = JavaSlangPVector.fromStream(Spouts.publishOn(ReactiveSeq.of(1,2,3),
+VectorX<Integer> asyncPopulated = JavaSlangPersistentList.fromStream(Spouts.publishOn(ReactiveSeq.of(1,2,3),
                 Executors.newFixedThreadPool(1));
 ```
 
@@ -132,11 +132,11 @@ E.g. Using a functor and applicative type classes on FunctionalJava Lists (Highe
 
 ```java
 
-import static com.aol.cyclops.functionaljava.ListKind;
+import static com.oath.cyclops.functionaljava.ListKind;
 import static cyclops.companion.functionaljava.Lists.Instances.functor;
 import static cyclops.companion.functionaljava.Lists.Instances.zippingApplicative;
 
-ListKind<Fn1<Integer,Integer>> listFn = ListKind.widen(List.list((Lambda.λ((Integer i) ->i*2))
+ListKind<Function1<Integer,Integer>> listFn = ListKind.widen(List.list((Lambda.λ((Integer i) ->i*2))
                                                 .convert(ListKind::narrowK);
         
 List<Integer> list =  zippingApplicative().ap(listFn,functor().map((String v)->v.length(),
@@ -166,13 +166,13 @@ This screencast gives an overview of how cyclops can help integrate and provide 
 
 where x.y.z represents the latest version
 
-compile 'com.aol.simplereact:cyclops-react:x.y.z'
+compile 'com.oath.simplereact:cyclops-react:x.y.z'
 
 ## Maven
 
 ```xml
 <dependency>
-    <groupId>com.aol.simplereact</groupId>
+    <groupId>com.oath.simplereact</groupId>
     <artifactId>cyclops-react</artifactId>
     <version>x.y.z</version>
 </dependency>

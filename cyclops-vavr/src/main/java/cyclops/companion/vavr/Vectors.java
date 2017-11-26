@@ -1,23 +1,20 @@
 package cyclops.companion.vavr;
 
-import com.aol.cyclops.vavr.hkt.ListKind;
-import cyclops.collections.mutable.ListX;
 import cyclops.control.Maybe;
-import cyclops.control.Xor;
-import cyclops.conversion.vavr.FromCyclopsReact;
-import cyclops.monads.VavrWitness;
+import cyclops.control.Option;
+import cyclops.conversion.vavr.FromCyclops;
 import cyclops.monads.VavrWitness.vector;
 import cyclops.collections.vavr.VavrVectorX;
-import com.aol.cyclops.vavr.hkt.VectorKind;
-import com.aol.cyclops2.hkt.Higher;
-import com.aol.cyclops2.types.anyM.AnyMSeq;
-import cyclops.function.Fn3;
-import cyclops.function.Fn4;
+import com.oath.cyclops.vavr.hkt.VectorKind;
+import com.oath.cyclops.hkt.Higher;
+import com.oath.cyclops.types.anyM.AnyMSeq;
+import cyclops.function.Function3;
+import cyclops.function.Function4;
 import cyclops.function.Monoid;
 import cyclops.monads.AnyM;
 import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.ListT;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import cyclops.typeclasses.Active;
 import cyclops.typeclasses.InstanceDefinitions;
 import cyclops.typeclasses.Nested;
@@ -28,31 +25,28 @@ import cyclops.typeclasses.foldable.Unfoldable;
 import cyclops.typeclasses.functor.Functor;
 import cyclops.typeclasses.instances.General;
 import cyclops.typeclasses.monad.*;
-import io.vavr.collection.List;
 import io.vavr.collection.Vector;
-import io.vavr.control.Either;
 import lombok.experimental.UtilityClass;
-import org.jooq.lambda.tuple.Tuple2;
+import cyclops.data.tuple.Tuple2;
 
-import java.util.Optional;
 import java.util.function.*;
 
-import static com.aol.cyclops.vavr.hkt.VectorKind.narrowK;
-import static com.aol.cyclops.vavr.hkt.VectorKind.widen;
+import static com.oath.cyclops.vavr.hkt.VectorKind.narrowK;
+import static com.oath.cyclops.vavr.hkt.VectorKind.widen;
 
 
 public class Vectors {
 
     public static <T,W extends WitnessType<W>> ListT<W, T> liftM(Vector<T> opt, W witness) {
-        return ListT.ofList(witness.adapter().unit(VavrVectorX.ofAll(opt)));
+        return ListT.of(witness.adapter().unit(VavrVectorX.ofAll(opt)));
     }
-   
+
     public static <T> AnyMSeq<vector,T> anyM(Vector<T> option) {
         return AnyM.ofSeq(option, vector.INSTANCE);
     }
 
-    public static  <T,R> Vector<R> tailRec(T initial, Function<? super T, ? extends Vector<? extends Either<T, R>>> fn) {
-        Vector<Either<T, R>> next = Vector.of(Either.left(initial));
+    public static  <T,R> Vector<R> tailRec(T initial, Function<? super T, ? extends Vector<? extends io.vavr.control.Either<T, R>>> fn) {
+        Vector<io.vavr.control.Either<T, R>> next = Vector.of(io.vavr.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -69,10 +63,10 @@ public class Vectors {
 
         }
 
-        return next.filter(Either::isRight).map(Either::get);
+        return next.filter(io.vavr.control.Either::isRight).map(io.vavr.control.Either::get);
     }
-    public static  <T,R> Vector<R> tailRecXor(T initial, Function<? super T, ? extends Vector<? extends Xor<T, R>>> fn) {
-        Vector<Xor<T, R>> next = Vector.of(Xor.secondary(initial));
+    public static  <T,R> Vector<R> tailRecEither(T initial, Function<? super T, ? extends Vector<? extends cyclops.control.Either<T, R>>> fn) {
+        Vector<cyclops.control.Either<T, R>> next = Vector.of(cyclops.control.Either.left(initial));
 
         boolean newValue[] = {true};
         for(;;){
@@ -89,7 +83,7 @@ public class Vectors {
 
         }
 
-        return next.filter(Xor::isPrimary).map(Xor::get);
+        return next.filter(cyclops.control.Either::isRight).map(e->e.orElse(null));
     }
 
     /**
@@ -120,8 +114,8 @@ public class Vectors {
     public static <T1, T2, T3, R1, R2, R3, R> Vector<R> forEach4(Vector<? extends T1> value1,
                                                                Function<? super T1, ? extends Vector<R1>> value2,
                                                                BiFunction<? super T1, ? super R1, ? extends Vector<R2>> value3,
-                                                               Fn3<? super T1, ? super R1, ? super R2, ? extends Vector<R3>> value4,
-                                                               Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                               Function3<? super T1, ? super R1, ? super R2, ? extends Vector<R3>> value4,
+                                                               Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -146,7 +140,7 @@ public class Vectors {
      * <pre>
      * {@code
      *
-     *  import static com.aol.cyclops2.reactor.Vectores.forEach4;
+     *  import static com.oath.cyclops.reactor.Vectores.forEach4;
      *
      *  forEach4(IntVector.range(1,10).boxed(),
     a-> Vector.iterate(a,i->i+1).limit(10),
@@ -169,9 +163,9 @@ public class Vectors {
     public static <T1, T2, T3, R1, R2, R3, R> Vector<R> forEach4(Vector<? extends T1> value1,
                                                                  Function<? super T1, ? extends Vector<R1>> value2,
                                                                  BiFunction<? super T1, ? super R1, ? extends Vector<R2>> value3,
-                                                                 Fn3<? super T1, ? super R1, ? super R2, ? extends Vector<R3>> value4,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
-                                                                 Fn4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
+                                                                 Function3<? super T1, ? super R1, ? super R2, ? extends Vector<R3>> value4,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, Boolean> filterFunction,
+                                                                 Function4<? super T1, ? super R1, ? super R2, ? super R3, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -217,7 +211,7 @@ public class Vectors {
     public static <T1, T2, R1, R2, R> Vector<R> forEach3(Vector<? extends T1> value1,
                                                          Function<? super T1, ? extends Vector<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Vector<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
         return value1.flatMap(in -> {
 
@@ -260,8 +254,8 @@ public class Vectors {
     public static <T1, T2, R1, R2, R> Vector<R> forEach3(Vector<? extends T1> value1,
                                                          Function<? super T1, ? extends Vector<R1>> value2,
                                                          BiFunction<? super T1, ? super R1, ? extends Vector<R2>> value3,
-                                                         Fn3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
-                                                         Fn3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
+                                                         Function3<? super T1, ? super R1, ? super R2, Boolean> filterFunction,
+                                                         Function3<? super T1, ? super R1, ? super R2, ? extends R> yieldingFunction) {
 
 
         return value1.flatMap(in -> {
@@ -431,7 +425,7 @@ public class Vectors {
 
                 @Override
                 public <T> Maybe<Comonad<vector>> comonad() {
-                    return Maybe.none();
+                    return Maybe.nothing();
                 }
 
                 @Override
@@ -494,8 +488,8 @@ public class Vectors {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.VectorKind.widen;
-         * import static com.aol.cyclops.util.function.Lambda.l1;
+         * import static com.oath.cyclops.hkt.jdk.VectorKind.widen;
+         * import static com.oath.cyclops.util.function.Lambda.l1;
          * import static java.util.Arrays.asVector;
          *
         Vectors.zippingApplicative()
@@ -535,7 +529,7 @@ public class Vectors {
          *
          * <pre>
          * {@code
-         * import static com.aol.cyclops.hkt.jdk.VectorKind.widen;
+         * import static com.oath.cyclops.hkt.jdk.VectorKind.widen;
          * VectorKind<Integer> list  = Vectors.monad()
         .flatMap(i->widen(VectorX.range(0,i)), widen(Arrays.asVector(1,2,3)))
         .convert(VectorKind::narrowK);
@@ -628,8 +622,8 @@ public class Vectors {
             return new MonadRec<vector>(){
 
                 @Override
-                public <T, R> Higher<vector, R> tailRec(T initial, Function<? super T, ? extends Higher<vector, ? extends Xor<T, R>>> fn) {
-                    return widen(tailRecXor(initial,fn.andThen(VectorKind::narrowK).andThen(v->v.narrow())));
+                public <T, R> Higher<vector, R> tailRec(T initial, Function<? super T, ? extends Higher<vector, ? extends cyclops.control.Either<T, R>>> fn) {
+                    return widen(tailRecEither(initial,fn.andThen(VectorKind::narrowK).andThen(v->v.narrow())));
                 }
             };
         }
@@ -700,7 +694,7 @@ public class Vectors {
         }
 
         private static <T,R> VectorKind<R> ap(VectorKind<Function< T, R>> lt, VectorKind<T> list){
-            return widen(FromCyclopsReact.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toVector());
+            return widen(FromCyclops.fromStream(ReactiveSeq.fromIterable(lt.narrow()).zip(list.narrow(), (a, b)->a.apply(b))).toVector());
         }
         private static <T,R> Higher<vector,R> flatMap(Higher<vector,T> lt, Function<? super T, ? extends  Higher<vector,R>> fn){
             return widen(VectorKind.narrow(lt).flatMap(fn.andThen(VectorKind::narrow)));
@@ -711,7 +705,7 @@ public class Vectors {
         public static Unfoldable<vector> unfoldable(){
             return new Unfoldable<vector>() {
                 @Override
-                public <R, T> Higher<vector, R> unfold(T b, Function<? super T, Optional<Tuple2<R, T>>> fn) {
+                public <R, T> Higher<vector, R> unfold(T b, Function<? super T, Option<Tuple2<R, T>>> fn) {
                     return widen(ReactiveSeq.unfold(b,fn).collect(Vector.collector()));
 
                 }

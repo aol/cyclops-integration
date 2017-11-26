@@ -1,7 +1,7 @@
 package cyclops.streams.asyncreactivestreams;
 
 import cyclops.companion.reactor.Fluxs;
-import cyclops.stream.ReactiveSeq;
+import cyclops.reactive.ReactiveSeq;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -34,8 +34,8 @@ public class AsyncRSJDKStreamTest {
 	public void testNoneMatch(){
 		assertThat(of(1,2,3,4,5).noneMatch(it-> it==5000),equalTo(true));
 	}
-	
-	
+
+
 	@Test
 	public void testAnyMatchFalse(){
 		assertThat(of(1,2,3,4,5).anyMatch(it-> it.equals(8)),equalTo(false));
@@ -48,7 +48,7 @@ public class AsyncRSJDKStreamTest {
 	public void testFlatMap(){
 		System.out.println("Result = " + of( asList("1","10"), asList("2"),asList("3"),asList("4"))
                 .flatMapStream( list -> list.stream() ).collect(Collectors.toList()));
-		assertThat(of( asList("1","10"), asList("2"),asList("3"),asList("4")).flatMapStream( list -> list.stream() ).collect(Collectors.toList() 
+		assertThat(of( asList("1","10"), asList("2"),asList("3"),asList("4")).flatMapStream( list -> list.stream() ).collect(Collectors.toList()
 						),hasItem("10"));
 	}
     @Test
@@ -59,7 +59,7 @@ public class AsyncRSJDKStreamTest {
         assertThat(of( asList("1","10"), asList("2"),asList("3"),asList("4")).flatMap( list -> list.stream() ).collect(Collectors.toList()
         ),hasItem("10"));
     }
-	
+
 	@Test
 	public void testMapReduce(){
 		assertThat(of(1,2,3,4,5).map(it -> it*100).reduce( (acc,next) -> acc+next).get(),equalTo(1500));
@@ -68,8 +68,8 @@ public class AsyncRSJDKStreamTest {
 	public void testMapReduceSeed(){
 		assertThat(of(1,2,3,4,5).map(it -> it*100).reduce( 50,(acc,next) -> acc+next),equalTo(1550));
 	}
-	
-	
+
+
 	@Test
 	public void testMapReduceCombiner(){
 		assertThat(of(1,2,3,4,5).map(it -> it*100).reduce( 0,
@@ -90,7 +90,7 @@ public class AsyncRSJDKStreamTest {
 		assertThat(of(1,1,1,2,1).distinct().collect(Collectors.toList()),hasItem(1));
 		assertThat(of(1,1,1,2,1).distinct().collect(Collectors.toList()),hasItem(2));
 	}
-	
+
 	@Test
 	public void testLimit(){
 		assertThat(of(1,2,3,4,5).limit(2).collect(Collectors.toList()).size(),equalTo(2));
@@ -115,11 +115,11 @@ public class AsyncRSJDKStreamTest {
 	public void testMin(){
 		assertThat(of(1,2,3,4,5).min((t1,t2) -> t1-t2).get(),equalTo(1));
 	}
-	
+
 	@Test
 	public void testMapToInt(){
 		assertThat(of("1","2","3","4").mapToInt(it -> Integer.valueOf(it)).max().getAsInt(),equalTo(4));
-		
+
 	}
 
 	@Test
@@ -132,7 +132,7 @@ public class AsyncRSJDKStreamTest {
 		assertThat(of("1","2","3","4").mapToDouble(it -> Double.valueOf(it)).max().getAsDouble(),equalTo(4d));
 	}
 
-	
+
 	@Test
 	public void flatMapToInt() {
 		assertThat(of( asList("1","10"), asList("2"),asList("3"),asList("4"))
@@ -140,7 +140,7 @@ public class AsyncRSJDKStreamTest {
 						.mapToInt(Integer::valueOf)).max().getAsInt(),equalTo(10));
 	}
 
-	
+
 	@Test
 	public void flatMapToLong() {
 		assertThat(of( asList("1","10"), asList("2"),asList("3"),asList("4"))
@@ -148,11 +148,11 @@ public class AsyncRSJDKStreamTest {
 
 	}
 
-	
+
 	@Test
 	public void flatMapToDouble(){
-			
-		assertThat(of( asList("1","10"), 
+
+		assertThat(of( asList("1","10"),
 				asList("2"),asList("3"),asList("4"))
 				.flatMapToDouble(list ->list.stream()
 						.mapToDouble(Double::valueOf))
@@ -177,7 +177,7 @@ public class AsyncRSJDKStreamTest {
 		assertThat(list,hasItem(3));
 		assertThat(list,hasItem(4));
 		assertThat(list,hasItem(5));
-		
+
 	}
 	@Test
 	public void forEachOrderedx() {
@@ -188,9 +188,9 @@ public class AsyncRSJDKStreamTest {
 		assertThat(list,hasItem(3));
 		assertThat(list,hasItem(4));
 		assertThat(list,hasItem(5));
-		
+
 	}
-	
+
 	@Test
 	public void testToArray() {
 		assertThat( Arrays.asList(1,2,3,4,5),hasItem(of(1,5,3,4,2).toArray()[0]));
@@ -207,7 +207,7 @@ public class AsyncRSJDKStreamTest {
 
 	@Test
 	public void collectSBB(){
-		
+
 		List<Integer> list = of(1,2,3,4,5).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 		assertThat(list.size(),equalTo(5));
 	}
@@ -231,7 +231,7 @@ public class AsyncRSJDKStreamTest {
 		of(1).map(it->it+100).peek(it -> val=it).collect(Collectors.toList());
 		assertThat(val,equalTo(101));
 	}
-		
+
 
 
 }
