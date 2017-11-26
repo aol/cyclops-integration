@@ -9,6 +9,7 @@ import com.oath.cyclops.types.persistent.PersistentSet;
 import cyclops.collections.vavr.VavrHashSetX;
 import cyclops.data.HashSet;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class PSetTest {
@@ -32,7 +33,7 @@ public class PSetTest {
         assertThat(HashSet.singleton(1),equalTo(VavrHashSetX.singleton(1)));
     }
 
-    @Test
+    @Test //@Ignore //dependent on https://github.com/aol/cyclops-react/issues/789
     public void plusMinus(){
         System.out.println(test.plusAll(Arrays.asList(1,2,3)));
         System.out.println(test.plusAll(Arrays.asList(1,2,3)).removeValue(1));

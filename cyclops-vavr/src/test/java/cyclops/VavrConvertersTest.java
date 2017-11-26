@@ -66,7 +66,7 @@ public class VavrConvertersTest {
                                               .map(i -> i * 2)
                                               .to(VavrConverters::Queue);
 
-        assertThat(list.toString(), equalTo("Queue(6, 4, 2)"));
+        assertThat(list.toString(), equalTo("Queue(2, 4, 6)"));
     }
     @Test
     public void queueAlien(){
