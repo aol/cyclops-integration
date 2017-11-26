@@ -33,7 +33,7 @@ public class PSetTest {
         assertThat(HashSet.singleton(1),equalTo(VavrHashSetX.singleton(1)));
     }
 
-    @Test //@Ignore //dependent on https://github.com/aol/cyclops-react/issues/789
+    @Test @Ignore //dependent on https://github.com/aol/cyclops-react/issues/789
     public void plusMinus(){
         System.out.println(test.plusAll(Arrays.asList(1,2,3)));
         System.out.println(test.plusAll(Arrays.asList(1,2,3)).removeValue(1));
