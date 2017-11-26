@@ -1,9 +1,6 @@
 package cyclops.collections.vavr;
 
-import java.util.AbstractList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -15,6 +12,7 @@ import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyLinkedLis
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
 import com.oath.cyclops.types.persistent.PersistentList;
+import com.oath.cyclops.types.persistent.PersistentSet;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.control.Option;
@@ -188,10 +186,7 @@ public class VavrListX<T>  implements PersistentList<T>, Unwrapable {
 
     @Override
     public VavrListX<T> plusAll(Iterable<? extends T> l) {
-        List<T> use = list;
-        for(T next :  l)
-            use = use.prepend(next);
-        return withList(use);
+       return withList(list.appendAll(l));
     }
 
   @Override
@@ -253,5 +248,23 @@ public class VavrListX<T>  implements PersistentList<T>, Unwrapable {
         return list.size();
     }
 
+  @Override
+  public String toString() {
+    return "VavrListX[" + list + ']';
+  }
+  @Override
+  public boolean equals(Object o) {
 
+    if (this == o) return true;
+    if(o instanceof PersistentList){
+      PersistentList<T> x = (PersistentList<T>)o;
+      return o.equals(this);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(list);
+  }
 }

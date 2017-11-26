@@ -1,9 +1,6 @@
 package cyclops.collections.vavr;
 
-import java.util.AbstractList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -236,5 +233,24 @@ public class VavrVectorX<T> implements PersistentList<T>, Unwrapable {
   @Override
   public Iterator<T> iterator() {
     return vector.iterator();
+  }
+  @Override
+  public String toString() {
+    return "VavrVectorX[" + vector + ']';
+  }
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) return true;
+    if(o instanceof PersistentList){
+      PersistentList<T> x = (PersistentList<T>)o;
+      return o.equals(this);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(vector);
   }
 }

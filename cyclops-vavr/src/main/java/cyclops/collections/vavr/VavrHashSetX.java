@@ -12,6 +12,7 @@ import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPSetX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
 import com.oath.cyclops.types.persistent.PersistentSet;
+import com.oath.cyclops.types.persistent.PersistentSortedSet;
 import cyclops.collections.immutable.LinkedListX;
 import cyclops.collections.immutable.OrderedSetX;
 import cyclops.collections.immutable.PersistentSetX;
@@ -181,7 +182,7 @@ public class VavrHashSetX<T>  implements PersistentSet<T>, Unwrapable {
 
 
   @Override
-    public int size() {
+  public int size() {
         return set.size();
     }
 
@@ -191,6 +192,23 @@ public class VavrHashSetX<T>  implements PersistentSet<T>, Unwrapable {
     }
 
 
+  @Override
+  public boolean equals(Object o) {
 
+    if (this == o) return true;
+    if(o instanceof PersistentSet){
+      PersistentSet<T> x = (PersistentSet<T>)o;
+      return o.equals(this);
+    }
+    return false;
+  }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(set);
+  }
+  @Override
+  public String toString() {
+    return "VavrHashSetX[" + set + ']';
+  }
 }

@@ -1,10 +1,6 @@
 package cyclops.collections.vavr;
 
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -253,5 +249,24 @@ public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
                   .getOrElse(-1)
                   .intValue();
     }
+  @Override
+  public String toString() {
+    return "VavrTreeSetX[" + set + ']';
+  }
 
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) return true;
+    if(o instanceof PersistentSortedSet){
+      PersistentSortedSet<T> x = (PersistentSortedSet<T>)o;
+      return o.equals(this);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(set);
+  }
 }

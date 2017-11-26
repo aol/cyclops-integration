@@ -1,9 +1,6 @@
 package cyclops.collections.vavr;
 
-import java.util.AbstractQueue;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -14,6 +11,7 @@ import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPQueueX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
+import com.oath.cyclops.types.persistent.PersistentList;
 import com.oath.cyclops.types.persistent.PersistentQueue;
 import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.collections.immutable.VectorX;
@@ -229,5 +227,23 @@ public class VavrQueueX<T>  implements PersistentQueue<T>, Unwrapable {
     return get(index).orElseGet(alt);
   }
 
+  @Override
+  public String toString() {
+    return "VavrQueueX["  + list + "]";
+  }
+  @Override
+  public boolean equals(Object o) {
 
+    if (this == o) return true;
+    if(o instanceof PersistentList){
+      PersistentQueue<T> x = (PersistentQueue<T>)o;
+      return o.equals(this);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(list);
+  }
 }
