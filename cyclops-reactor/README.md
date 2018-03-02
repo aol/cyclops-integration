@@ -28,7 +28,7 @@
 
 # Reactive Collections!
 
-In the example below we asynchronously populate an Xtended list using an Rx Java Observable. Additional, reactive operations can be performed on the List asynchronously.
+In the example below we asynchronously populate an Xtended list using an Reactor Flux. Additional, reactive operations can be performed on the List asynchronously.
 The ListX only blocks on first access to the data.
 
 ```java
