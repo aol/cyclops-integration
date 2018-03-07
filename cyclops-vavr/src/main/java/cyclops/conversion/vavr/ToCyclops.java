@@ -1,11 +1,7 @@
 package cyclops.conversion.vavr;
 
 import com.oath.cyclops.types.Zippable;
-import cyclops.async.Future;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Try;
-import cyclops.control.Either;
+import cyclops.control.*;
 import io.vavr.Lazy;
 
 import io.vavr.control.Option;

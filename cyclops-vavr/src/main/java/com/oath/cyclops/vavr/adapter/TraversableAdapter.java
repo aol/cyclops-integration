@@ -1,7 +1,8 @@
 package com.oath.cyclops.vavr.adapter;
 
+import com.oath.anym.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.VavrWitness;
-import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
+
 import cyclops.monads.AnyM;
 import cyclops.reactive.ReactiveSeq;
 import io.vavr.collection.Traversable;

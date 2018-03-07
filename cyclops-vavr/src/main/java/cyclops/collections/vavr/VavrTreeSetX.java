@@ -6,13 +6,11 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import com.oath.cyclops.data.collections.extensions.CollectionX;
-import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
+
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
 import com.oath.cyclops.types.persistent.PersistentSortedSet;
-import cyclops.collections.immutable.OrderedSetX;
-import cyclops.collections.immutable.VectorX;
+
 import cyclops.control.Option;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;

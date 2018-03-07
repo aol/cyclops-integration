@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import cyclops.companion.vavr.Queues;
-import com.oath.cyclops.vavr.hkt.QueueKind;
 import cyclops.monads.VavrWitness.queue;
 import org.junit.Test;
 

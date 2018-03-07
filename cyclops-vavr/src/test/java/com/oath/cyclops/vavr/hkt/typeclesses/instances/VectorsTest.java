@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import cyclops.companion.vavr.Vectors;
-import com.oath.cyclops.vavr.hkt.VectorKind;
 import cyclops.monads.VavrWitness.vector;
 import org.junit.Test;
 

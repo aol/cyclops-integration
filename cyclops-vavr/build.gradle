@@ -34,6 +34,10 @@ configurations {
 dependencies {
 
   compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops-reactive-collections', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops-anym', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops-futurestream', version: cyclopsReactVersion
+
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   compile group: 'io.vavr', name: 'vavr', version: vavrVersion
   testCompile 'commons-io:commons-io:2.4'
@@ -43,7 +47,7 @@ dependencies {
   testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
   testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0'
   testCompile 'org.assertj:assertj-core:3.2.0'
-  testCompile project(path: ':cyclops-reactor', configuration: 'testArtifacts')
+
 }
 
 sourceSets {

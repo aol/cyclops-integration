@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import cyclops.companion.vavr.Options;
-import com.oath.cyclops.vavr.hkt.OptionKind;
 import cyclops.monads.VavrWitness.option;
 import org.junit.Test;
 

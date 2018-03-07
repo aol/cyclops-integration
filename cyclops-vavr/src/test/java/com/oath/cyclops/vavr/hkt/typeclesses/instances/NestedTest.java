@@ -1,8 +1,5 @@
 package com.oath.cyclops.vavr.hkt.typeclesses.instances;
 
-import com.oath.cyclops.vavr.hkt.ListKind;
-import com.oath.cyclops.vavr.hkt.OptionKind;
-import com.oath.cyclops.vavr.hkt.StreamKind;
 import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.Monoids;
 import cyclops.companion.vavr.Lists.ListNested;

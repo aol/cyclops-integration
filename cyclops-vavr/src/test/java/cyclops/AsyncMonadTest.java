@@ -1,7 +1,5 @@
 package cyclops;
 
-import com.oath.cyclops.vavr.hkt.FutureKind;
-import com.oath.cyclops.vavr.hkt.TryKind;
 import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.vavr.Trys;
 import cyclops.monads.VavrWitness.future;

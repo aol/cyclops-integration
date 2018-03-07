@@ -7,7 +7,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import cyclops.companion.vavr.Futures;
-import com.oath.cyclops.vavr.hkt.FutureKind;
 import cyclops.monads.VavrWitness.future;
 import org.junit.Test;
 

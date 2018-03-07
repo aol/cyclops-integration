@@ -5,7 +5,6 @@ import static cyclops.function.Lambda.l1;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.oath.cyclops.vavr.hkt.LazyKind;
 import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.vavr.Lazys.Instances;
 import cyclops.control.Maybe;

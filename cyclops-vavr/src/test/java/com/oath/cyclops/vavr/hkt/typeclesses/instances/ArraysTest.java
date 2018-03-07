@@ -2,7 +2,6 @@ package com.oath.cyclops.vavr.hkt.typeclesses.instances;
 
 
 import cyclops.companion.vavr.Arrays;
-import com.oath.cyclops.vavr.hkt.ArrayKind;
 import com.oath.cyclops.hkt.Higher;
 import cyclops.control.Maybe;
 import cyclops.function.Function1;

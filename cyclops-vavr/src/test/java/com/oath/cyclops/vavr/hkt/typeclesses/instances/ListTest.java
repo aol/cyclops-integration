@@ -8,7 +8,6 @@ import java.util.Arrays;
 
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.vavr.Lists;
-import com.oath.cyclops.vavr.hkt.ListKind;
 
 
 import cyclops.monads.VavrWitness.list;

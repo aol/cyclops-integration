@@ -8,7 +8,6 @@ import java.util.Arrays;
 
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.vavr.Streams;
-import com.oath.cyclops.vavr.hkt.StreamKind;
 
 import cyclops.monads.VavrWitness.stream;
 import cyclops.reactive.ReactiveSeq;
