@@ -10,15 +10,15 @@ import java.util.function.UnaryOperator;
 
 import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
-import cyclops.collections.immutable.BagX;
-import cyclops.collections.immutable.OrderedSetX;
+
 import cyclops.collections.vavr.VavrTreeSetX;
 import cyclops.control.Option;
 import cyclops.data.tuple.Tuple2;
+import cyclops.reactive.collections.immutable.BagX;
+import cyclops.reactive.collections.immutable.OrderedSetX;
 import org.junit.Test;
-
-
 import reactor.core.publisher.Flux;
+
 
 public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
 
@@ -64,8 +64,8 @@ public class LazyPOrderedSetXTest extends AbstractCollectionXTest  {
     public void remove() {
 
         VavrTreeSetX.of(1, 2, 3)
-               .removeAll((Iterable<Integer>)BagX.of(2, 3))
-               .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
+               .removeAll((Iterable<Integer>) BagX.of(2, 3))
+               .mergeMap(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 

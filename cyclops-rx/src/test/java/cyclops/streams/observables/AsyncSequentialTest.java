@@ -1,7 +1,8 @@
 package cyclops.streams.observables;
 
-import cyclops.async.adapters.Topic;
-import cyclops.collections.mutable.ListX;
+
+import com.oath.cyclops.ReactiveConvertableSequence;
+import com.oath.cyclops.async.adapters.Topic;
 import cyclops.companion.Semigroups;
 import cyclops.companion.rx.Observables;
 import cyclops.control.Either;
@@ -10,6 +11,7 @@ import cyclops.control.Option;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.reactive.Spouts;
 import cyclops.reactive.Streamable;
+import cyclops.reactive.collections.mutable.ListX;
 import org.hamcrest.Matchers;
 import cyclops.data.tuple.Tuple2;
 import cyclops.data.tuple.Tuple3;
@@ -282,7 +284,7 @@ public class AsyncSequentialTest extends BaseSequentialTest {
     @Test
     public void skipLimitDuplicateLimitSkip() {
         Tuple2<ReactiveSeq<Integer>, ReactiveSeq<Integer>> dup = of(1, 2, 3).duplicate();
-        Optional<Integer> head1 = dup._1().limit(1).to().optional().flatMap(l -> {
+        Optional<Integer> head1 = dup._1().limit(1).to(ReactiveConvertableSequence::converter).optional().flatMap(l -> {
             return l.size() > 0 ? Optional.of(l.get(0)) : Optional.empty();
         });
         Tuple2<ReactiveSeq<Integer>, ReactiveSeq<Integer>> dup2 = dup._2().skip(1).duplicate();

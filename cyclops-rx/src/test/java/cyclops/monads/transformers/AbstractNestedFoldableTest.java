@@ -5,6 +5,8 @@ import com.oath.cyclops.types.anyM.transformers.FoldableTransformerSeq;
 import cyclops.collections.mutable.ListX;
 import cyclops.companion.Reducers;
 import cyclops.control.Maybe;
+import cyclops.control.Option;
+import cyclops.data.Vector;
 import cyclops.monads.WitnessType;
 import cyclops.reactive.ReactiveSeq;
 import org.junit.Rule;
@@ -202,18 +204,16 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
         assertThat(serr.getLog(),containsString("2"));
         assertThat(serr.getLog(),containsString("3"));
     }
+  @Test
+  public void testGroupByEager() {
+    cyclops.data.HashMap<Integer, Vector<Integer>> map1 =of(1, 2, 3, 4).groupBy(i -> i % 2);
+    assertEquals(Option.some(Vector.of(2, 4)), map1.get(0));
+    assertEquals(Option.some(Vector.of(1, 3)), map1.get(1));
+    assertEquals(2, map1.size());
 
-    @Test
-    public void testGroupBy() {
-        Map<Integer, ListX<Integer>> map1 =of(1, 2, 3, 4).groupBy(i -> i % 2).single().orElse(null);
 
-        assertThat(map1.get(0),hasItem(2));
-        assertThat(map1.get(0),hasItem(4));
-        assertThat(map1.get(1),hasItem(1));
-        assertThat(map1.get(1),hasItem(3));
+  }
 
-        assertEquals(2, map1.size());
-    }
 
     @Test
     public void testHeadAndTail() {

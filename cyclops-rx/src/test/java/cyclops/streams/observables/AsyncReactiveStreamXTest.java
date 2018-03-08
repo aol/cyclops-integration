@@ -1,24 +1,24 @@
 package cyclops.streams.observables;
 
-import cyclops.collections.mutable.ListX;
+import com.oath.cyclops.ReactiveConvertableSequence;
 import cyclops.companion.Streams;
 import cyclops.companion.rx.Observables;
 import cyclops.control.Maybe;
-import cyclops.function.Monoid;
-import cyclops.reactive.ReactiveSeq;
-import cyclops.reactive.Spouts;
-import org.hamcrest.Matchers;
+import cyclops.control.Option;
+import cyclops.data.Vector;
 import cyclops.data.tuple.Tuple2;
 import cyclops.data.tuple.Tuple3;
 import cyclops.data.tuple.Tuple4;
+import cyclops.function.Monoid;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.Spouts;
+import cyclops.reactive.collections.mutable.ListX;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,7 +66,7 @@ public  class AsyncReactiveStreamXTest {
 		//		.flatMapP(i->Maybe.of(i)).printOut();
 
         assertThat(of(1,2,3)
-                        .flatMapP(i-> Maybe.of(i))
+                        .mergeMap(i-> Maybe.of(i))
                         .to(ReactiveConvertableSequence::converter).listX(),Matchers.hasItems(1,2,3));
 
 
@@ -393,14 +393,14 @@ public  class AsyncReactiveStreamXTest {
 	}
 	@Test
 	public void append(){
-		List<String> result = 	of(1,2,3).append(100,200,300)
+		List<String> result = 	of(1,2,3).appendAll(100,200,300)
 				.map(it ->it+"!!").collect(Collectors.toList());
 
 		assertThat(result,equalTo(Arrays.asList("1!!","2!!","3!!","100!!","200!!","300!!")));
 	}
 	@Test
 	public void concatStreams(){
-		List<String> result = 	of(1,2,3).appendS(of(100,200,300))
+		List<String> result = 	of(1,2,3).appendStream(of(100,200,300))
 				.map(it ->it+"!!").collect(Collectors.toList());
 
 		assertThat(result,equalTo(Arrays.asList("1!!","2!!","3!!","100!!","200!!","300!!")));
@@ -419,7 +419,7 @@ public  class AsyncReactiveStreamXTest {
 
 	@Test
 	public void prependStreams(){
-		List<String> result = 	of(1,2,3).prependS(of(100,200,300))
+		List<String> result = 	of(1,2,3).prependStream(of(100,200,300))
 				.map(it ->it+"!!").collect(Collectors.toList());
 
 		assertThat(result,equalTo(Arrays.asList("100!!","200!!","300!!","1!!","2!!","3!!")));
@@ -427,19 +427,15 @@ public  class AsyncReactiveStreamXTest {
 
 
 
-	    @Test
-	    public void testGroupByEager() {
-	        Map<Integer, ListX<Integer>> map1 =of(1, 2, 3, 4).groupBy(i -> i % 2);
-
-	        assertThat(map1.get(0),hasItem(2));
-	        assertThat(map1.get(0),hasItem(4));
-	        assertThat(map1.get(1),hasItem(1));
-	        assertThat(map1.get(1),hasItem(3));
-
-	        assertEquals(2, map1.size());
+      @Test
+      public void testGroupByEager() {
+        cyclops.data.HashMap<Integer, cyclops.data.Vector<Integer>> map1 =of(1, 2, 3, 4).groupBy(i -> i % 2);
+        assertEquals(Option.some(cyclops.data.Vector.of(2, 4)), map1.get(0));
+        assertEquals(Option.some(Vector.of(1, 3)), map1.get(1));
+        assertEquals(2, map1.size());
 
 
-	    }
+      }
 
 
 	    @Test
@@ -554,7 +550,7 @@ public  class AsyncReactiveStreamXTest {
 
 		@Test
 		public void flatten() throws Exception {
-			assertThat(of(Arrays.asList(1,2)).to(ReactiveSeq::flattenI).toList().size(),equalTo(asList(1,  2).size()));
+			assertThat(of(Arrays.asList(1,2)).to(ReactiveSeq::flattenIterable).toList().size(),equalTo(asList(1,  2).size()));
 		}
 
 

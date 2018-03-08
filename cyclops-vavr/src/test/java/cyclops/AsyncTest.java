@@ -1,6 +1,6 @@
 package cyclops;
 
-import com.oath.cyclops.types.anyM.AnyMValue;
+import com.oath.anym.AnyMValue;
 import cyclops.companion.vavr.Trys;
 import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.tryType;

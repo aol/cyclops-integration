@@ -8,10 +8,10 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
-import cyclops.collections.immutable.BagX;
-import cyclops.collections.immutable.LinkedListX;
 import cyclops.control.Option;
 import cyclops.data.tuple.Tuple2;
+import cyclops.reactive.collections.immutable.BagX;
+import cyclops.reactive.collections.immutable.LinkedListX;
 import org.junit.Test;
 
 
@@ -58,8 +58,8 @@ public class LazyPStackXTest extends AbstractOrderDependentCollectionXTest  {
     public void remove() {
 
         VavrListX.of(1, 2, 3)
-               .removeAll((Iterable<Integer>)BagX.of(2, 3))
-               .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
+               .removeAll((Iterable<Integer>) BagX.of(2, 3))
+               .mergeMap(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
 

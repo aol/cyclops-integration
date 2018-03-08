@@ -10,10 +10,10 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import com.oath.cyclops.data.collections.extensions.FluentCollectionX;
-import cyclops.collections.immutable.BagX;
-import cyclops.collections.immutable.VectorX;
 import cyclops.control.Option;
 import cyclops.data.tuple.Tuple2;
+import cyclops.reactive.collections.immutable.BagX;
+import cyclops.reactive.collections.immutable.VectorX;
 import org.junit.Test;
 
 import cyclops.collections.vavr.VavrVectorX;
@@ -59,8 +59,8 @@ public class LazyPVectorXTest extends AbstractOrderDependentCollectionXTest  {
     public void remove() {
 
         VavrVectorX.of(1, 2, 3)
-               .removeAll((Iterable<Integer>)BagX.of(2, 3))
-               .flatMapP(i -> Flux.just(10 + i, 20 + i, 30 + i));
+               .removeAll((Iterable<Integer>) BagX.of(2, 3))
+               .mergeMap(i -> Flux.just(10 + i, 20 + i, 30 + i));
 
     }
   @Test

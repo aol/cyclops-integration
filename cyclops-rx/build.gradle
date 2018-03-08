@@ -33,7 +33,9 @@ configurations {
 
 dependencies {
   compile 'io.reactivex:rxjava:' + rxJavaVersion
-  compile group: 'com.oath.cyclops', name: 'cyclops', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops-reactive-collections', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops-anym', version: cyclopsReactVersion
+  compile group: 'com.oath.cyclops', name: 'cyclops-futurestream', version: cyclopsReactVersion
   compile 'io.reactivex:rxjava-reactive-streams:1.0.1'
   provided group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   testCompile 'io.projectreactor:reactor-core:' + reactorVersion
