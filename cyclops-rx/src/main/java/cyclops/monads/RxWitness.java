@@ -2,9 +2,9 @@ package cyclops.monads;
 
 
 
+import com.oath.anym.extensability.MonadAdapter;
 import com.oath.cyclops.rx.adapter.ObservableAdapter;
 import com.oath.cyclops.rx.adapter.ObservableReactiveSeq;
-import com.oath.cyclops.types.extensability.FunctionalAdapter;
 import rx.Observable;
 
 
@@ -22,7 +22,7 @@ public interface RxWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<observable> adapter() {
+        public MonadAdapter<observable> adapter() {
             return new ObservableAdapter();
         }
 

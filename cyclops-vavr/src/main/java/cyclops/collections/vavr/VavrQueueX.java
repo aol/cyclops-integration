@@ -13,16 +13,13 @@ import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
 import com.oath.cyclops.types.persistent.PersistentList;
 import com.oath.cyclops.types.persistent.PersistentQueue;
-import cyclops.collections.immutable.PersistentQueueX;
-import cyclops.collections.immutable.VectorX;
-import cyclops.collections.mutable.QueueX;
 import cyclops.control.Option;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
 
 
-
+import cyclops.reactive.collections.immutable.PersistentQueueX;
 import io.vavr.collection.Queue;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

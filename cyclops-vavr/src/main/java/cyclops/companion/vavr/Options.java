@@ -1,6 +1,7 @@
 package cyclops.companion.vavr;
 
 import com.oath.anym.AnyMValue;
+import com.oath.cyclops.ReactiveConvertableSequence;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.types.Value;
 import cyclops.control.Either;
@@ -17,6 +18,7 @@ import cyclops.monads.WitnessType;
 import cyclops.monads.XorM;
 import cyclops.monads.transformers.jdk.OptionalT;
 import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.collections.mutable.ListX;
 import io.vavr.control.Option;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
@@ -353,7 +355,7 @@ public class Options {
 
     /**
      * Sequence operation, take a Collection of Options and turn it into a Option with a Collection
-     * By constrast with {@link Options#sequencePresent(CollectionX)}, if any Options are empty the result
+     * By constrast with {@link Options#sequencePresent(Iterable)}, if any Options are empty the result
      * is an empty Option
      *
      * <pre>
@@ -372,13 +374,13 @@ public class Options {
      * @param opts Maybes to Sequence
      * @return  Maybe with a List of values
      */
-    public static <T> Option<ListX<T>> sequence(final CollectionX<Option<T>> opts) {
-        return sequence(opts.stream()).map(s -> s.toListX());
+    public static <T> Option<ListX<T>> sequence(final Iterable<Option<T>> opts) {
+        return sequence(ReactiveSeq.fromIterable(opts)).map(s -> s.to(ReactiveConvertableSequence::converter).listX());
 
     }
     /**
      * Sequence operation, take a Collection of Options and turn it into a Option with a Collection
-     * Only successes are retained. By constrast with {@link Options#sequence(CollectionX)} Option#empty types are
+     * Only successes are retained. By constrast with {@link Options#sequence(Iterable)} Option#empty types are
      * tolerated and ignored.
      *
      * <pre>
@@ -394,12 +396,12 @@ public class Options {
      * @param opts Options to Sequence
      * @return Option with a List of values
      */
-    public static <T> Option<ListX<T>> sequencePresent(final CollectionX<Option<T>> opts) {
-        return sequence(opts.stream().filter(Option::isDefined)).map(s->s.toListX());
+    public static <T> Option<ListX<T>> sequencePresent(final Iterable<Option<T>> opts) {
+        return sequence(ReactiveSeq.fromIterable(opts).filter(Option::isDefined)).map(s->s.to(ReactiveConvertableSequence::converter).listX());
     }
     /**
      * Sequence operation, take a Collection of Options and turn it into a Option with a Collection
-     * By constrast with {@link Options#sequencePresent(CollectionX)} if any Option types are empty
+     * By constrast with {@link Options#sequencePresent(Iterable)} if any Option types are empty
      * the return type will be an empty Option
      *
      * <pre>
@@ -424,6 +426,12 @@ public class Options {
                 .to(VavrWitness::option);
 
     }
+    public static <T> Option<ReactiveSeq<T>> sequence(final ReactiveSeq<Option<T>> opts) {
+      return AnyM.sequence(opts.map(Options::anyM), option.INSTANCE)
+        .map(ReactiveSeq::fromStream)
+        .to(VavrWitness::option);
+
+    }
     /**
      * Accummulating operation using the supplied Reducer (@see cyclops2.Reducers). A typical use case is to accumulate into a Persistent Collection type.
      * Accumulates the present results, ignores empty Options.
@@ -443,7 +451,7 @@ public class Options {
      * @param reducer Reducer to accumulate values with
      * @return Option with reduced value
      */
-    public static <T, R> Option<R> accumulatePresent(final CollectionX<Option<T>> optionals, final Reducer<R,T> reducer) {
+    public static <T, R> Option<R> accumulatePresent(final Iterable<Option<T>> optionals, final Reducer<R,T> reducer) {
         return sequencePresent(optionals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -468,7 +476,7 @@ public class Options {
      * @param reducer Monoid to combine values from each Option
      * @return Option with reduced value
      */
-    public static <T, R> Option<R> accumulatePresent(final CollectionX<Option<T>> optionals, final Function<? super T, R> mapper,
+    public static <T, R> Option<R> accumulatePresent(final Iterable<Option<T>> optionals, final Function<? super T, R> mapper,
                                                      final Monoid<R> reducer) {
         return sequencePresent(optionals).map(s -> s.map(mapper)
                 .reduce(reducer));
@@ -494,7 +502,7 @@ public class Options {
      * @param reducer Monoid to combine values from each Option
      * @return Option with reduced value
      */
-    public static <T> Option<T> accumulatePresent(final Monoid<T> reducer, final CollectionX<Option<T>> optionals) {
+    public static <T> Option<T> accumulatePresent(final Monoid<T> reducer, final Iterable<Option<T>> optionals) {
         return sequencePresent(optionals).map(s -> s
                 .reduce(reducer));
     }
@@ -521,7 +529,7 @@ public class Options {
     public static <T1, T2, R> Option<R> combine(final Option<? extends T1> f, final Value<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
         return narrow(FromCyclops.option(ToCyclops.maybe(f)
-                .combine(v, fn)));
+                .zip(v, fn)));
     }
     /**
      * Combine an Option with the provided Option using the supplied BiFunction
@@ -594,7 +602,7 @@ public class Options {
     public static <T1, T2, R> Option<R> zip(final Publisher<? extends T2> p, final Option<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
         return narrow(FromCyclops.option(ToCyclops.maybe(f)
-                .zipP(p, fn)));
+                .zip(fn,p)));
     }
     /**
      * Narrow covariant type parameter

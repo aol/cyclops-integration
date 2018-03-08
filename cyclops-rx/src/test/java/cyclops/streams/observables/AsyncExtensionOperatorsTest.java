@@ -70,7 +70,7 @@ public class AsyncExtensionOperatorsTest {
     public void combine(){
         assertThat(of(1,1,2,3)
                    .combine((a, b)->a.equals(b), Semigroups.intSum)
-                   .toListX(),equalTo(ListX.of(4,3)));
+                   .to(ReactiveConvertableSequence::converter).listX(),equalTo(ListX.of(4,3)));
 
     }
 	@Test

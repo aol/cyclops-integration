@@ -277,7 +277,7 @@ public abstract class AbstractTraversableTest {
         assertThat(of(1,2,3,4,5)
                             .skipLast(2)
                             .stream()
-                            .toListX(),equalTo(Arrays.asList(1,2,3)));
+                            .to(ReactiveConvertableSequence::converter).listX(),equalTo(Arrays.asList(1,2,3)));
     }
     @Test
     public void testSkipLastEmpty(){
@@ -305,7 +305,7 @@ public abstract class AbstractTraversableTest {
 
         List<Tuple2<Integer,Integer>> list = ReactiveSeq.fromIterable(of(1,2,3,4,5,6)
                                             .zip(of(100,200,300,400).stream()))
-                                            .stream().toListX().materialize();
+                                            .stream().to(ReactiveConvertableSequence::converter).listX().materialize();
 
 
         List<Integer> right = list.stream().map(t -> t._2()).collect(java.util.stream.Collectors.toList());
@@ -324,7 +324,7 @@ public abstract class AbstractTraversableTest {
 
         List<Tuple2<Integer,Integer>> list =  ReactiveSeq.fromIterable(of(1,2,3,4,5,6)
                                                     .zip( of(100,200,300,400).stream()))
-                                                    .toListX();
+                                                    .to(ReactiveConvertableSequence::converter).listX();
 
         assertThat(asList(1,2,3,4,5,6),hasItem(list.get(0)._1()));
         assertThat(asList(100,200,300,400),hasItem(list.get(0)._2()));
@@ -470,10 +470,10 @@ public abstract class AbstractTraversableTest {
 
     @Test
     public void testZipWithIndex() {
-        assertEquals(asList(), of().zipWithIndex().stream().toListX());
+        assertEquals(asList(), of().zipWithIndex().stream().to(ReactiveConvertableSequence::converter).listX());
 
         assertThat(of("a").zipWithIndex().stream().map(t -> t._2()).findFirst().get(), is(0l));
-        assertEquals(asList(new Tuple2("a", 0L)), of("a").zipWithIndex().stream().toListX());
+        assertEquals(asList(new Tuple2("a", 0L)), of("a").zipWithIndex().stream().to(ReactiveConvertableSequence::converter).listX());
 
     }
 
@@ -552,8 +552,8 @@ public abstract class AbstractTraversableTest {
         public void testShuffle() {
             Supplier<Traversable<Integer>> s = () ->of(1, 2, 3);
 
-            assertEquals(3, s.get().shuffle().stream().toListX().size());
-            assertThat(s.get().shuffle().stream().toListX(), hasItems(1, 2, 3));
+            assertEquals(3, s.get().shuffle().stream().to(ReactiveConvertableSequence::converter).listX().size());
+            assertThat(s.get().shuffle().stream().to(ReactiveConvertableSequence::converter).listX(), hasItems(1, 2, 3));
 
 
         }
@@ -562,8 +562,8 @@ public abstract class AbstractTraversableTest {
             Random r = new Random();
             Supplier<Traversable<Integer>> s = () ->of(1, 2, 3);
 
-            assertEquals(3, s.get().shuffle(r).stream().toListX().size());
-            assertThat(s.get().shuffle(r).stream().toListX(), hasItems(1, 2, 3));
+            assertEquals(3, s.get().shuffle(r).stream().to(ReactiveConvertableSequence::converter).listX().size());
+            assertThat(s.get().shuffle(r).stream().to(ReactiveConvertableSequence::converter).listX(), hasItems(1, 2, 3));
 
 
         }
@@ -582,7 +582,7 @@ public abstract class AbstractTraversableTest {
 
                 assertThat(of(1,2,3,4,5,6)
                         .groupedUntil(i->false).stream()
-                        .toListX().get(0).size(),equalTo(6));
+                        .to(ReactiveConvertableSequence::converter).listX().get(0).size(),equalTo(6));
 
             }
             @Test
@@ -590,7 +590,7 @@ public abstract class AbstractTraversableTest {
 
                assertThat(of(1,2,3,4,5,6).stream().peek(System.out::println)
                         .groupedWhile(i->true)
-                        .toListX().get(0)
+                        .to(ReactiveConvertableSequence::converter).listX().get(0)
                         .size(),equalTo(6));
 
             }
@@ -598,21 +598,21 @@ public abstract class AbstractTraversableTest {
             public void batchUntilSupplier(){
                 assertThat(of(1,2,3,4,5,6)
                         .groupedUntil(i->false,()-> ListX.empty()).stream()
-                        .toListX().size(),equalTo(1));
+                        .to(ReactiveConvertableSequence::converter).listX().size(),equalTo(1));
 
             }
             @Test
             public void batchWhileSupplier(){
                 assertThat(of(1,2,3,4,5,6)
                         .groupedWhile(i->true,()-> ListX.empty()).stream()
-                        .toListX()
+                        .to(ReactiveConvertableSequence::converter).listX()
                         .size(),equalTo(1));
 
             }
 
             @Test
             public void slidingNoOrder() {
-                ListX<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).stream().toListX();
+                ListX<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).stream().to(ReactiveConvertableSequence::converter).listX();
 
                 System.out.println(list);
                 assertThat(list.get(0).size(), equalTo(2));
@@ -632,7 +632,7 @@ public abstract class AbstractTraversableTest {
             public void combineNoOrder(){
                 assertThat(of(1,2,3)
                            .combine((a, b)->a.equals(b), Semigroups.intSum).stream()
-                           .toListX(),equalTo(ListX.of(1,2,3)));
+                           .to(ReactiveConvertableSequence::converter).listX(),equalTo(ListX.of(1,2,3)));
 
             }
 
@@ -640,7 +640,7 @@ public abstract class AbstractTraversableTest {
             public void zip3NoOrder(){
                 List<Tuple3<Integer,Integer,Character>> list =
                         of(1,2,3,4).zip3(of(100,200,300,400).stream(),of('a','b','c','d').stream()).stream()
-                                                        .toListX();
+                                                        .to(ReactiveConvertableSequence::converter).listX();
 
                 System.out.println(list);
                 List<Integer> right = list.stream().map(t -> t._2()).collect(java.util.stream.Collectors.toList());
@@ -661,7 +661,7 @@ public abstract class AbstractTraversableTest {
             public void zip4NoOrder(){
                 List<Tuple4<Integer,Integer,Character,String>> list =
                         of(1,2,3,4).zip4(of(100,200,300,400).stream(),of('a','b','c','d').stream(),of("hello","world","boo!","2").stream()).stream()
-                                                        .toListX();
+                                                        .to(ReactiveConvertableSequence::converter).listX();
                 System.out.println(list);
                 List<Integer> right = list.stream().map(t -> t._2()).collect(java.util.stream.Collectors.toList());
                 assertThat(right,hasItem(100));
@@ -684,7 +684,7 @@ public abstract class AbstractTraversableTest {
             @Test
             public void testIntersperseNoOrder() {
 
-                assertThat((of(1,2,3).intersperse(0)).stream().toListX(),hasItem(0));
+                assertThat((of(1,2,3).intersperse(0)).stream().to(ReactiveConvertableSequence::converter).listX(),hasItem(0));
 
 
 

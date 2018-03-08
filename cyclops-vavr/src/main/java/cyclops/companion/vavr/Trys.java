@@ -2,58 +2,28 @@ package cyclops.companion.vavr;
 
 
 import com.oath.anym.AnyMValue;
+import com.oath.cyclops.ReactiveConvertableSequence;
 import com.oath.cyclops.types.MonadicValue;
-import cyclops.monads.VavrWitness.queue;
-import cyclops.reactive.collections.mutable.ListX;
-import io.vavr.Lazy;
-import io.vavr.collection.*;
-import io.vavr.concurrent.Future;
-import cyclops.companion.CompletableFutures;
-import cyclops.companion.Optionals;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
 import cyclops.control.Either;
 import cyclops.conversion.vavr.FromCyclops;
-import cyclops.monads.*;
-import cyclops.monads.VavrWitness.*;
-import com.oath.cyclops.hkt.Higher;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.function.Function3;
 import cyclops.function.Function4;
 import cyclops.function.Monoid;
-import cyclops.monads.Witness.*;
-import cyclops.reactive.ReactiveSeq;
-import cyclops.typeclasses.*;
-import cyclops.companion.Monoids;
-import cyclops.conversion.vavr.ToCyclops;
-import cyclops.monads.VavrWitness;
-import com.oath.cyclops.data.collections.extensions.CollectionX;
-import com.oath.cyclops.types.anyM.AnyMValue;
-import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
+import cyclops.monads.VavrWitness;
 import cyclops.monads.VavrWitness.tryType;
 import cyclops.monads.WitnessType;
 import cyclops.monads.XorM;
-import cyclops.typeclasses.comonad.Comonad;
-import cyclops.typeclasses.foldable.Foldable;
-import cyclops.typeclasses.foldable.Unfoldable;
-import cyclops.typeclasses.functor.Functor;
-import cyclops.typeclasses.instances.General;
-import cyclops.typeclasses.monad.*;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.collections.mutable.ListX;
 import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-
-
-import static com.oath.cyclops.vavr.hkt.TryKind.narrowK;
-import static com.oath.cyclops.vavr.hkt.TryKind.widen;
 
 /**
  * Utility class for working with JDK Tryals
@@ -361,7 +331,7 @@ public class Trys {
     }
     /**
      * Sequence operation, take a Collection of Trys and turn it into a Try with a Collection
-     * By constrast with {@link Trys#sequencePresent(CollectionX)}, if any Trys are empty the result
+     * By constrast with {@link Trys#sequencePresent(Iterable)}, if any Trys are empty the result
      * is an empty Try
      *
      * <pre>
@@ -380,13 +350,13 @@ public class Trys {
      * @param opts Maybes to Sequence
      * @return  Maybe with a List of values
      */
-    public static <T> Try<ListX<T>> sequence(final CollectionX<Try<T>> opts) {
-        return sequence(opts.stream()).map(s -> s.toListX());
+    public static <T> Try<ListX<T>> sequence(final Iterable<Try<T>> opts) {
+        return sequence(ReactiveSeq.fromIterable(opts)).map(s -> s.to(ReactiveConvertableSequence::converter).listX());
 
     }
     /**
      * Sequence operation, take a Collection of Trys and turn it into a Try with a Collection
-     * Only successes are retained. By constrast with {@link Trys#sequence(CollectionX)} Try#empty types are
+     * Only successes are retained. By constrast with {@link Trys#sequence(Iterable)} Try#empty types are
      * tolerated and ignored.
      *
      * <pre>
@@ -402,12 +372,12 @@ public class Trys {
      * @param opts Trys to Sequence
      * @return Try with a List of values
      */
-    public static <T> Try<ListX<T>> sequencePresent(final CollectionX<Try<T>> opts) {
-        return sequence(opts.stream().filter(Try::isSuccess)).map(s->s.toListX());
+    public static <T> Try<ListX<T>> sequencePresent(final Iterable<Try<T>> opts) {
+        return sequence(ReactiveSeq.fromIterable(opts).filter(Try::isSuccess)).map(s->s.to(ReactiveConvertableSequence::converter).listX());
     }
     /**
      * Sequence operation, take a Collection of Trys and turn it into a Try with a Collection
-     * By constrast with {@link Trys#sequencePresent(CollectionX)} if any Try types are empty
+     * By constrast with {@link Trys#sequencePresent(Iterable)} if any Try types are empty
      * the return type will be an empty Try
      *
      * <pre>
@@ -432,6 +402,12 @@ public class Trys {
                 .to(VavrWitness::tryType);
 
     }
+    public static <T> Try<ReactiveSeq<T>> sequence(final ReactiveSeq<Try<T>> opts) {
+      return AnyM.sequence(opts.map(Trys::anyM), tryType.INSTANCE)
+        .map(ReactiveSeq::fromStream)
+        .to(VavrWitness::tryType);
+
+    }
     /**
      * Accummulating operation using the supplied Reducer (@see cyclops2.Reducers). A typical use case is to accumulate into a Persistent Collection type.
      * Accumulates the present results, ignores empty Trys.
@@ -451,7 +427,7 @@ public class Trys {
      * @param reducer Reducer to accumulate values with
      * @return Try with reduced value
      */
-    public static <T, R> Try<R> accumulatePresent(final CollectionX<Try<T>> tryTypeals, final Reducer<R,T> reducer) {
+    public static <T, R> Try<R> accumulatePresent(final Iterable<Try<T>> tryTypeals, final Reducer<R,T> reducer) {
         return sequencePresent(tryTypeals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -476,7 +452,7 @@ public class Trys {
      * @param reducer Monoid to combine values from each Try
      * @return Try with reduced value
      */
-    public static <T, R> Try<R> accumulatePresent(final CollectionX<Try<T>> tryTypeals, final Function<? super T, R> mapper,
+    public static <T, R> Try<R> accumulatePresent(final Iterable<Try<T>> tryTypeals, final Function<? super T, R> mapper,
                                                      final Monoid<R> reducer) {
         return sequencePresent(tryTypeals).map(s -> s.map(mapper)
                 .reduce(reducer));
@@ -502,7 +478,7 @@ public class Trys {
      * @param reducer Monoid to combine values from each Try
      * @return Try with reduced value
      */
-    public static <T> Try<T> accumulatePresent(final Monoid<T> reducer, final CollectionX<Try<T>> tryTypeals) {
+    public static <T> Try<T> accumulatePresent(final Monoid<T> reducer, final Iterable<Try<T>> tryTypeals) {
         return sequencePresent(tryTypeals).map(s -> s
                 .reduce(reducer));
     }

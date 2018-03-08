@@ -103,14 +103,14 @@ public class FuturesTest {
     @Test
     public void monadPlus(){
         FutureKind<Integer> opt = Futures.Instances.<Integer>monadPlus()
-                                      .plus(FutureKind.widen(cyclops.async.Future.future()), FutureKind.widen(Future.successful(10)))
+                                      .plus(FutureKind.widen(cyclops.control.Future.future()), FutureKind.widen(Future.successful(10)))
                                       .convert(FutureKind::narrowK);
         assertThat(opt.get(),equalTo(Future.successful(10).get()));
     }
     @Test
     public void monadPlusNonEmpty(){
 
-        Monoid<FutureKind<Integer>> m = Monoid.of(FutureKind.widen(cyclops.async.Future.future()), (a, b)->a.isCompleted() ? b : a);
+        Monoid<FutureKind<Integer>> m = Monoid.of(FutureKind.widen(cyclops.control.Future.future()), (a, b)->a.isCompleted() ? b : a);
         FutureKind<Integer> opt = Futures.Instances.<Integer>monadPlusK(m)
                                       .plus(FutureKind.widen(Future.successful(5)), FutureKind.widen(Future.successful(10)))
                                       .convert(FutureKind::narrowK);

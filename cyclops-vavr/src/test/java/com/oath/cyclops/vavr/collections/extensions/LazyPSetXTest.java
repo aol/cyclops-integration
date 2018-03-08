@@ -79,7 +79,7 @@ public class LazyPSetXTest extends AbstractCollectionXTest  {
     public void combineNoOrder(){
         assertThat(of(1,2,3)
                 .combine((a, b)->a.equals(b), Semigroups.intSum)
-                .toListX().size(),equalTo(ListX.of(1,3,2).size()));
+                .to(ReactiveConvertableSequence::converter).listX().size(),equalTo(ListX.of(1,3,2).size()));
 
     }
     @Test

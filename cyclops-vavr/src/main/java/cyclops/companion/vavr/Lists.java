@@ -1,46 +1,19 @@
 package cyclops.companion.vavr;
 
 import com.oath.anym.AnyMSeq;
-import com.oath.cyclops.vavr.hkt.*;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyLinkedListX;
-import cyclops.companion.CompletableFutures;
-import cyclops.companion.Optionals;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
-import cyclops.conversion.vavr.FromCyclops;
-import cyclops.monads.*;
-import cyclops.monads.VavrWitness.*;
 import cyclops.collections.vavr.VavrListX;
-import com.oath.cyclops.hkt.Higher;
 import cyclops.function.Function3;
 import cyclops.function.Function4;
-import cyclops.function.Monoid;
-import cyclops.monads.VavrWitness.either;
-import cyclops.monads.VavrWitness.future;
+import cyclops.monads.AnyM;
 import cyclops.monads.VavrWitness.list;
-import cyclops.monads.VavrWitness.tryType;
-import cyclops.monads.Witness.*;
+import cyclops.monads.WitnessType;
+import cyclops.monads.XorM;
 import cyclops.monads.transformers.ListT;
-import cyclops.reactive.ReactiveSeq;
-import cyclops.typeclasses.*;
-import cyclops.typeclasses.comonad.Comonad;
-import cyclops.typeclasses.foldable.Foldable;
-import cyclops.typeclasses.foldable.Unfoldable;
-import cyclops.typeclasses.functor.Functor;
-import cyclops.typeclasses.instances.General;
-import cyclops.typeclasses.monad.*;
-import io.vavr.Lazy;
-import io.vavr.collection.*;
-import io.vavr.concurrent.Future;
-import io.vavr.control.Option;
-import io.vavr.control.Try;
-import lombok.experimental.UtilityClass;
-import cyclops.data.tuple.Tuple2;
+import io.vavr.collection.List;
 
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 
 
@@ -254,7 +227,7 @@ public class Lists {
     (a,b) -> List.<Integer>of(a+b),
     (a,b,c) ->a+b+c<10,
     Tuple::tuple)
-    .toListX();
+    .to(ReactiveConvertableSequence::converter).listX();
      * }
      * </pre>
      *

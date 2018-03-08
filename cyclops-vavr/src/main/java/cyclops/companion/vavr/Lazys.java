@@ -1,52 +1,25 @@
 package cyclops.companion.vavr;
 
-import cyclops.monads.VavrWitness.*;
-import cyclops.monads.VavrWitness.list;
-import cyclops.monads.VavrWitness.stream;
-import cyclops.monads.VavrWitness.tryType;
-import io.vavr.collection.*;
-import io.vavr.concurrent.Future;
-import io.vavr.control.*;
-import cyclops.companion.CompletableFutures;
-import cyclops.companion.Optionals;
+import com.oath.cyclops.ReactiveConvertableSequence;
+import com.oath.cyclops.types.Value;
 import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
 import cyclops.conversion.vavr.FromCyclops;
-import cyclops.monads.*;
-import com.oath.cyclops.hkt.Higher;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.function.Function3;
 import cyclops.function.Function4;
 import cyclops.function.Monoid;
-import cyclops.monads.Witness.*;
-import cyclops.reactive.ReactiveSeq;
-import cyclops.typeclasses.*;
-
-import cyclops.conversion.vavr.ToCyclops;
-import com.oath.cyclops.data.collections.extensions.CollectionX;
-import com.oath.cyclops.types.Value;
-import cyclops.collections.mutable.ListX;
 import cyclops.function.Reducer;
+import cyclops.monads.AnyM;
+import cyclops.monads.Witness;
+import cyclops.monads.WitnessType;
 import cyclops.monads.transformers.EvalT;
-import cyclops.typeclasses.comonad.Comonad;
-import cyclops.typeclasses.foldable.Foldable;
-import cyclops.typeclasses.foldable.Unfoldable;
-import cyclops.typeclasses.functor.Functor;
-import cyclops.typeclasses.instances.General;
-import cyclops.typeclasses.monad.*;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.collections.mutable.ListX;
 import io.vavr.Lazy;
-import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
-
-
-import static com.oath.cyclops.vavr.hkt.LazyKind.narrowK;
-import static com.oath.cyclops.vavr.hkt.LazyKind.widen;
 
 public class Lazys {
 
@@ -218,7 +191,7 @@ public class Lazys {
 
     /**
      * Sequence operation, take a Collection of Lazys and turn it into a Lazy with a Collection
-     * By constrast with {@link Lazys#sequencePresent(CollectionX)}, if any Lazys are empty the result
+     * By constrast with {@link Lazys#sequencePresent(Iterable)}, if any Lazys are empty the result
      * is an empty Lazy
      *
      * <pre>
@@ -237,13 +210,13 @@ public class Lazys {
      * @param opts Maybes to Sequence
      * @return  Maybe with a List of values
      */
-    public static <T> Lazy<ListX<T>> sequence(final CollectionX<Lazy<T>> opts) {
-        return sequence(opts.stream()).map(s -> s.toListX());
+    public static <T> Lazy<ListX<T>> sequence(final Iterable<Lazy<T>> opts) {
+        return sequence(ReactiveSeq.fromIterable(opts)).map(s -> s.to(ReactiveConvertableSequence::converter).listX());
 
     }
     /**
      * Sequence operation, take a Collection of Lazys and turn it into a Lazy with a Collection
-     * Only successes are retained. By constrast with {@link Lazys#sequence(CollectionX)} Lazy#empty types are
+     * Only successes are retained. By constrast with {@link Lazys#sequence(Iterable)} Lazy#empty types are
      * tolerated and ignored.
      *
      * <pre>
@@ -259,12 +232,12 @@ public class Lazys {
      * @param opts Lazys to Sequence
      * @return Lazy with a List of values
      */
-    public static <T> Lazy<ListX<T>> sequencePresent(final CollectionX<Lazy<T>> opts) {
-        return sequence(opts.stream().filter(Lazy::isEvaluated)).map(s->s.toListX());
+    public static <T> Lazy<ListX<T>> sequencePresent(final Iterable<Lazy<T>> opts) {
+        return sequence(ReactiveSeq.fromIterable(opts).filter(Lazy::isEvaluated)).map(s->s.to(ReactiveConvertableSequence::converter).listX());
     }
     /**
      * Sequence operation, take a Collection of Lazys and turn it into a Lazy with a Collection
-     * By constrast with {@link Lazys#sequencePresent(CollectionX)} if any Lazy types are empty
+     * By constrast with {@link Lazys#sequencePresent(Iterable)} if any Lazy types are empty
      * the return type will be an empty Lazy
      *
      * <pre>
@@ -289,6 +262,12 @@ public class Lazys {
                 .to(Witness::eval));
 
     }
+  public static <T> Lazy<ReactiveSeq<T>> sequence(final ReactiveSeq<Lazy<T>> opts) {
+    return FromCyclops.eval(AnyM.sequence(opts.map(ToCyclops::eval).map(AnyM::fromEval), Witness.eval.INSTANCE)
+      .map(ReactiveSeq::fromStream)
+      .to(Witness::eval));
+
+  }
     /**
      * Accummulating operation using the supplied Reducer (@see cyclops2.Reducers). A typical use case is to accumulate into a Persistent Collection type.
      * Accumulates the present results, ignores empty Lazys.
@@ -308,7 +287,7 @@ public class Lazys {
      * @param reducer Reducer to accumulate values with
      * @return Lazy with reduced value
      */
-    public static <T, R> Lazy<R> accumulatePresent(final CollectionX<Lazy<T>> futureals, final Reducer<R,T> reducer) {
+    public static <T, R> Lazy<R> accumulatePresent(final Iterable<Lazy<T>> futureals, final Reducer<R,T> reducer) {
         return sequencePresent(futureals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -333,7 +312,7 @@ public class Lazys {
      * @param reducer Monoid to combine values from each Lazy
      * @return Lazy with reduced value
      */
-    public static <T, R> Lazy<R> accumulatePresent(final CollectionX<Lazy<T>> futureals, final Function<? super T, R> mapper,
+    public static <T, R> Lazy<R> accumulatePresent(final Iterable<Lazy<T>> futureals, final Function<? super T, R> mapper,
                                                    final Monoid<R> reducer) {
         return sequencePresent(futureals).map(s -> s.map(mapper)
                 .reduce(reducer));
@@ -359,7 +338,7 @@ public class Lazys {
      * @param reducer Monoid to combine values from each Lazy
      * @return Lazy with reduced value
      */
-    public static <T> Lazy<T> accumulatePresent(final Monoid<T> reducer, final CollectionX<Lazy<T>> futureals) {
+    public static <T> Lazy<T> accumulatePresent(final Monoid<T> reducer, final Iterable<Lazy<T>> futureals) {
         return sequencePresent(futureals).map(s -> s
                 .reduce(reducer));
     }
@@ -386,7 +365,7 @@ public class Lazys {
     public static <T1, T2, R> Lazy<R> combine(final Lazy<? extends T1> f, final Value<? extends T2> v,
                                               final BiFunction<? super T1, ? super T2, ? extends R> fn) {
         return narrow(FromCyclops.eval(ToCyclops.eval(f)
-                .combine(v, fn)));
+                .zip(v, fn)));
     }
     /**
      * Combine an Lazy with the provided Lazy using the supplied BiFunction
@@ -459,7 +438,7 @@ public class Lazys {
     public static <T1, T2, R> Lazy<R> zip(final Publisher<? extends T2> p, final Lazy<? extends T1> f,
                                           final BiFunction<? super T1, ? super T2, ? extends R> fn) {
         return narrow(FromCyclops.eval(ToCyclops.eval(f)
-                .zipP(p, fn)));
+                .zip(fn,p)));
     }
     /**
      * Narrow covariant type parameter

@@ -172,7 +172,7 @@ public class BaseSequentialTest {
     public void duplicateDuplicate() {
         for (int k = 0; k < ITERATIONS; k++) {
             assertThat(of(1, 2, 3).duplicate()
-                    ._1().duplicate()._1().duplicate()._1().toListX(), equalTo(ListX.of(1, 2, 3)));
+                    ._1().duplicate()._1().duplicate()._1().to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(1, 2, 3)));
         }
 
     }
@@ -181,15 +181,15 @@ public class BaseSequentialTest {
     public void duplicateDuplicateDuplicate() {
         for (int k = 0; k < ITERATIONS; k++) {
             assertThat(of(1, 2, 3).duplicate()
-                    ._1().duplicate()._1().duplicate()._1().duplicate()._1().toListX(), equalTo(ListX.of(1, 2, 3)));
+                    ._1().duplicate()._1().duplicate()._1().duplicate()._1().to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(1, 2, 3)));
         }
 
     }
 
     @Test
     public void skipDuplicateSkip() {
-        assertThat(of(1, 2, 3).duplicate()._1().skip(1).duplicate()._1().skip(1).toListX(), equalTo(ListX.of(3)));
-        assertThat(of(1, 2, 3).duplicate()._2().skip(1).duplicate()._2().skip(1).toListX(), equalTo(ListX.of(3)));
+        assertThat(of(1, 2, 3).duplicate()._1().skip(1).duplicate()._1().skip(1).to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(3)));
+        assertThat(of(1, 2, 3).duplicate()._2().skip(1).duplicate()._2().skip(1).to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(3)));
     }
 
     @Test
@@ -202,9 +202,9 @@ public class BaseSequentialTest {
         Optional<Integer> head2 = dup2._1().limit(1).to().optional().flatMap(l -> {
             return l.size() > 0 ? Optional.of(l.get(0)) : Optional.empty();
         });
-        assertThat(dup2._2().skip(1).toListX(), equalTo(ListX.of(3)));
+        assertThat(dup2._2().skip(1).to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(3)));
 
-        assertThat(of(1, 2, 3).duplicate()._1().skip(1).duplicate()._1().skip(1).toListX(), equalTo(ListX.of(3)));
+        assertThat(of(1, 2, 3).duplicate()._1().skip(1).duplicate()._1().skip(1).to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(3)));
     }
 
 
@@ -212,14 +212,14 @@ public class BaseSequentialTest {
     public void splitThenSplit() {
         assertThat(of(1, 2, 3).to().optional(), equalTo(Optional.of(ListX.of(1, 2, 3))));
         // System.out.println(of(1, 2, 3).splitAtHead()._2().listX());
-        System.out.println("split " + of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().toListX());
+        System.out.println("split " + of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().to(ReactiveConvertableSequence::converter).listX());
         assertEquals(Option.of(3), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().splitAtHead()._1());
     }
 
     @Test
     public void changesEmpty() {
         assertThat(of().changes()
-                .toListX(), equalTo(ListX.of()));
+                .to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of()));
 
 
     }
@@ -228,7 +228,7 @@ public class BaseSequentialTest {
     @Test
     public void changes() {
         assertThat(of(1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 6).changes()
-                .toListX(), equalTo(ListX.of(1, 2, 3, 4, 5, 6)));
+                .to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(1, 2, 3, 4, 5, 6)));
 
 
     }
@@ -265,7 +265,7 @@ public class BaseSequentialTest {
                     .publishTo(queue)
                     .peek(System.out::println)
                     .merge(queue)
-                    .toListX();
+                    .to(ReactiveConvertableSequence::converter).listX();
             assertThat(list, hasItems(1, 2, 3));
             assertThat(list.size(), equalTo(6));
             assertThat(list.toSet(), equalTo(SetX.of(1, 2, 3)));
@@ -384,14 +384,14 @@ public class BaseSequentialTest {
         assertThat(of(1, 2, 3, 4)
                 .parallelFanOutZipIn(ForkJoinPool.commonPool(), s1 -> s1.filter(i -> i % 2 == 0).map(i -> i * 2),
                         s2 -> s2.filter(i -> i % 2 != 0).map(i -> i * 100), (a, b) -> a + b)
-                .toListX(), Matchers.equalTo(ListX.of(104, 308)));
+                .to(ReactiveConvertableSequence::converter).listX(), Matchers.equalTo(ListX.of(104, 308)));
 
     }
 
     @Test
     public void mergePTest() {
         for (int i = 0; i < ITERATIONS; i++) {
-            ListX<Integer> list = of(3, 6, 9).mergeP(of(2, 4, 8), of(1, 5, 7)).toListX();
+            ListX<Integer> list = of(3, 6, 9).mergeP(of(2, 4, 8), of(1, 5, 7)).to(ReactiveConvertableSequence::converter).listX();
             assertThat(list, hasItems(1, 2, 3, 4, 5, 6, 7, 8, 9));
             assertThat(list.size(), Matchers.equalTo(9));
         }
@@ -409,7 +409,7 @@ public class BaseSequentialTest {
                     .fanOut(s1 -> s1.peek(System.out::println).filter(i -> i % 3 == 0).map(i -> i * 2),
                             s2 -> s2.filter(i -> i % 3 == 1).map(i -> i * 100),
                             s3 -> s3.filter(i -> i % 3 == 2).map(i -> i * 1000))
-                    .toListX();
+                    .to(ReactiveConvertableSequence::converter).listX();
             assertThat("List is "  + res,res, Matchers.hasItems(6, 100, 2000, 12, 400, 5000, 18, 700, 8000));
         }
 
@@ -421,18 +421,18 @@ public class BaseSequentialTest {
             assertThat(of(1, 2, 3, 4)
                     .fanOut(s1 -> s1.filter(i -> i % 2 == 0).map(i -> i * 2),
                             s2 -> s2.filter(i -> i % 2 != 0).map(i -> i * 100))
-                    .toListX(), Matchers.hasItems(4, 100, 8, 300));
+                    .to(ReactiveConvertableSequence::converter).listX(), Matchers.hasItems(4, 100, 8, 300));
             assertThat(of(1, 2, 3, 4, 5, 6, 7, 8, 9)
                     .fanOut(s1 -> s1.filter(i -> i % 3 == 0).map(i -> i * 2),
                             s2 -> s2.filter(i -> i % 3 == 1).map(i -> i * 100),
                             s3 -> s3.filter(i -> i % 3 == 2).map(i -> i * 1000))
-                    .toListX(), Matchers.hasItems(6, 100, 2000, 12, 400, 5000, 18, 700, 8000));
+                    .to(ReactiveConvertableSequence::converter).listX(), Matchers.hasItems(6, 100, 2000, 12, 400, 5000, 18, 700, 8000));
             assertThat(of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
                     .fanOut(s1 -> s1.filter(i -> i % 4 == 0).map(i -> i * 2),
                             s2 -> s2.filter(i -> i % 4 == 1).map(i -> i * 100),
                             s3 -> s3.filter(i -> i % 4 == 2).map(i -> i * 1000),
                             s4 -> s4.filter(i -> i % 4 == 3).map(i -> i * 10000))
-                    .toListX(), Matchers.hasItems(8, 100, 2000, 30000, 16, 500, 6000, 70000, 24, 900, 10000, 110000));
+                    .to(ReactiveConvertableSequence::converter).listX(), Matchers.hasItems(8, 100, 2000, 30000, 16, 500, 6000, 70000, 24, 900, 10000, 110000));
         }
     }
 
@@ -442,18 +442,18 @@ public class BaseSequentialTest {
             assertThat(of(1, 2, 3, 4)
                     .parallelFanOut(ForkJoinPool.commonPool(), s1 -> s1.filter(i -> i % 2 == 0).map(i -> i * 2),
                             s2 -> s2.filter(i -> i % 2 != 0).map(i -> i * 100))
-                    .toListX(), Matchers.equalTo(ListX.of(4, 100, 8, 300)));
+                    .to(ReactiveConvertableSequence::converter).listX(), Matchers.equalTo(ListX.of(4, 100, 8, 300)));
             assertThat(of(1, 2, 3, 4, 5, 6, 7, 8, 9)
                     .parallelFanOut(ForkJoinPool.commonPool(), s1 -> s1.filter(i -> i % 3 == 0).map(i -> i * 2),
                             s2 -> s2.filter(i -> i % 3 == 1).map(i -> i * 100),
                             s3 -> s3.filter(i -> i % 3 == 2).map(i -> i * 1000))
-                    .toListX(), Matchers.equalTo(ListX.of(6, 100, 2000, 12, 400, 5000, 18, 700, 8000)));
+                    .to(ReactiveConvertableSequence::converter).listX(), Matchers.equalTo(ListX.of(6, 100, 2000, 12, 400, 5000, 18, 700, 8000)));
             assertThat(of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
                     .parallelFanOut(ForkJoinPool.commonPool(), s1 -> s1.filter(i -> i % 4 == 0).map(i -> i * 2),
                             s2 -> s2.filter(i -> i % 4 == 1).map(i -> i * 100),
                             s3 -> s3.filter(i -> i % 4 == 2).map(i -> i * 1000),
                             s4 -> s4.filter(i -> i % 4 == 3).map(i -> i * 10000))
-                    .toListX(), Matchers.equalTo(ListX.of(8, 100, 2000, 30000, 16, 500, 6000, 70000, 24, 900, 10000, 110000)));
+                    .to(ReactiveConvertableSequence::converter).listX(), Matchers.equalTo(ListX.of(8, 100, 2000, 30000, 16, 500, 6000, 70000, 24, 900, 10000, 110000)));
         }
     }
 
@@ -465,15 +465,15 @@ public class BaseSequentialTest {
 
         ReactiveSeq<Integer> stream1 = topic.stream();
         ReactiveSeq<Integer> stream2 = topic.stream();
-        assertThat(stream1.toListX(), Matchers.equalTo(ListX.of(1, 2, 3)));
-        assertThat(stream2.stream().toListX(), Matchers.equalTo(ListX.of(1, 2, 3)));
+        assertThat(stream1.to(ReactiveConvertableSequence::converter).listX(), Matchers.equalTo(ListX.of(1, 2, 3)));
+        assertThat(stream2.stream().to(ReactiveConvertableSequence::converter).listX(), Matchers.equalTo(ListX.of(1, 2, 3)));
 
     }
 
 
     @Test
     public void ambTest() {
-        assertThat(of(1, 2, 3).ambWith(Spouts.of(10, 20, 30)).toListX(), isOneOf(ListX.of(10, 20, 30), ListX.of(1, 2, 3)));
+        assertThat(of(1, 2, 3).ambWith(Spouts.of(10, 20, 30)).to(ReactiveConvertableSequence::converter).listX(), isOneOf(ListX.of(10, 20, 30), ListX.of(1, 2, 3)));
     }
 
     @Test
@@ -641,7 +641,7 @@ public class BaseSequentialTest {
     public void presentConvert(){
 
         assertTrue(of(1).to().optional().isPresent());
-        assertTrue(of(1).toListX().size()>0);
+        assertTrue(of(1).to(ReactiveConvertableSequence::converter).listX().size()>0);
         assertTrue(of(1).to().dequeX().size()>0);
         assertTrue(of(1).to().linkedListX().size()>0);
         assertTrue(of(1).to().queueX().size()>0);
@@ -675,7 +675,7 @@ public class BaseSequentialTest {
         Optional<ListX<Integer>> opt = of(1, 2).to().optional();
         assertThat(opt, equalTo(Optional.of(ListX.of(1, 2))));
 
-        assertTrue(of(1, 2).toListX().size() == 2);
+        assertTrue(of(1, 2).to(ReactiveConvertableSequence::converter).listX().size() == 2);
         assertTrue(of(1, 2).to().dequeX().size() == 2);
         assertTrue(of(1, 2).to().linkedListX().size() == 2);
         assertTrue(of(1, 2).to().queueX().size() == 2);
@@ -1180,28 +1180,28 @@ public class BaseSequentialTest {
 
     @Test
     public void skipInvestigate() {
-        System.out.println("0" + of(1, 2, 3).skip(0).toListX());
+        System.out.println("0" + of(1, 2, 3).skip(0).to(ReactiveConvertableSequence::converter).listX());
 
-        assertThat(of(1, 2, 3).skip(0).toListX(), equalTo(ListX.of(1, 2, 3)));
+        assertThat(of(1, 2, 3).skip(0).to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(1, 2, 3)));
     }
 
     @Test
     public void splitAtInvestigate() {
 
 
-        System.out.println("0" + of(1, 2, 3).splitAt(0)._2().toListX());
+        System.out.println("0" + of(1, 2, 3).splitAt(0)._2().to(ReactiveConvertableSequence::converter).listX());
 
-        assertThat(of(1, 2, 3).splitAt(0)._2().toListX(), equalTo(ListX.of(1, 2, 3)));
+        assertThat(of(1, 2, 3).splitAt(0)._2().to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(1, 2, 3)));
     }
 
     @Test
     public void splitAtHeadInvestigate() {
-        System.out.println("0" + of(1, 2, 3).splitAt(0)._2().toListX());
+        System.out.println("0" + of(1, 2, 3).splitAt(0)._2().to(ReactiveConvertableSequence::converter).listX());
         System.out.println(of(1, 2, 3).splitAtHead()._1());
-        System.out.println(of(1, 2, 3).splitAtHead()._2().toListX());
+        System.out.println(of(1, 2, 3).splitAtHead()._2().to(ReactiveConvertableSequence::converter).listX());
         System.out.println(of(1, 2, 3).splitAtHead()._2().splitAtHead()._1());
-        System.out.println(of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().toListX());
-        assertThat(of(1, 2, 3).splitAtHead()._2().toListX(), equalTo(ListX.of(2, 3)));
+        System.out.println(of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().to(ReactiveConvertableSequence::converter).listX());
+        assertThat(of(1, 2, 3).splitAtHead()._2().to(ReactiveConvertableSequence::converter).listX(), equalTo(ListX.of(2, 3)));
     }
 
     @Test

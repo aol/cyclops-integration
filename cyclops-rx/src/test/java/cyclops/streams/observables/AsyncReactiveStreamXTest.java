@@ -67,7 +67,7 @@ public  class AsyncReactiveStreamXTest {
 
         assertThat(of(1,2,3)
                         .flatMapP(i-> Maybe.of(i))
-                        .toListX(),Matchers.hasItems(1,2,3));
+                        .to(ReactiveConvertableSequence::converter).listX(),Matchers.hasItems(1,2,3));
 
 
     }
@@ -199,8 +199,8 @@ public  class AsyncReactiveStreamXTest {
 	public void testCycleLong() {
 
 
-		assertEquals(asList(1, 2, 1, 2, 1, 2), Streams.oneShotStream(Stream.of(1, 2)).cycle(3).toListX());
-		assertEquals(asList(1, 2, 3, 1, 2, 3), Streams.oneShotStream(Stream.of(1, 2,3)).cycle(2).toListX());
+		assertEquals(asList(1, 2, 1, 2, 1, 2), Streams.oneShotStream(Stream.of(1, 2)).cycle(3).to(ReactiveConvertableSequence::converter).listX());
+		assertEquals(asList(1, 2, 3, 1, 2, 3), Streams.oneShotStream(Stream.of(1, 2,3)).cycle(2).to(ReactiveConvertableSequence::converter).listX());
 	}
 	@Test
 	public void onEmptySwitchEmpty(){
@@ -260,7 +260,7 @@ public  class AsyncReactiveStreamXTest {
 
 		List<Tuple2<Integer,Integer>> list =of(1,2,3,4,5,6)
 				                            .zip(of(100,200,300,400).stream())
-				                            .toListX();
+				                            .to(ReactiveConvertableSequence::converter).listX();
 
 		System.out.println(list);
 
@@ -293,7 +293,7 @@ public  class AsyncReactiveStreamXTest {
 	public void testSkipLast(){
 		assertThat(of(1,2,3,4,5)
 				.skipLast(2)
-				.toListX(),equalTo(Arrays.asList(1,2,3)));
+				.to(ReactiveConvertableSequence::converter).listX(),equalTo(Arrays.asList(1,2,3)));
 	}
 	@Test
 	public void testSkipLastForEach(){
@@ -408,12 +408,12 @@ public  class AsyncReactiveStreamXTest {
 	@Test
 	public void shuffle(){
 
-		assertEquals(3, of(1, 2, 3).shuffle().toListX().size());
+		assertEquals(3, of(1, 2, 3).shuffle().to(ReactiveConvertableSequence::converter).listX().size());
 	}
 	@Test
 	public void shuffleRandom(){
 		Random r = new Random();
-		assertEquals(3, of(1, 2, 3).shuffle(r).toListX().size());
+		assertEquals(3, of(1, 2, 3).shuffle(r).to(ReactiveConvertableSequence::converter).listX().size());
 	}
 
 

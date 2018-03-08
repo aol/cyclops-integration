@@ -1,35 +1,33 @@
 package cyclops.collections.vavr;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
-
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.FoldToList;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
 import com.oath.cyclops.types.persistent.PersistentList;
-import com.oath.cyclops.types.persistent.PersistentSet;
-import cyclops.collections.immutable.LinkedListX;
-import cyclops.collections.immutable.PersistentQueueX;
 import cyclops.control.Option;
+import cyclops.data.tuple.Tuple2;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
-import cyclops.data.tuple.Tuple2;
-;
-
-
+import cyclops.reactive.collections.immutable.LinkedListX;
 import io.vavr.collection.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
+
+;
+
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VavrListX<T>  implements PersistentList<T>, Unwrapable {
-    public static <T> LinkedListX<T> listX(ReactiveSeq<T> stream){
+    public static <T> LinkedListX<T> linkedListX(ReactiveSeq<T> stream){
         return fromStream(stream);
     }
     @Override

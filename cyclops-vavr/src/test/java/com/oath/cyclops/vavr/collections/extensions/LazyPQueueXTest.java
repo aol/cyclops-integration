@@ -89,7 +89,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
     public void combineNoOrder(){
         assertThat(of(1,2,3)
                 .combine((a, b)->a.equals(b), Semigroups.intSum)
-                .toListX().size(),equalTo(ListX.of(1,3,2).size()));
+                .to(ReactiveConvertableSequence::converter).listX().size(),equalTo(ListX.of(1,3,2).size()));
 
     }
     @Test
@@ -113,7 +113,7 @@ public class LazyPQueueXTest extends AbstractCollectionXTest  {
     public void testSkipLast(){
         assertThat(of(1,2,3,4,5)
                 .skipLast(2)
-                .toListX().size(),equalTo(Arrays.asList(1,2,3).size()));
+                .to(ReactiveConvertableSequence::converter).listX().size(),equalTo(Arrays.asList(1,2,3).size()));
     }
     @Test
     public void testSorted() {

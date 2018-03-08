@@ -302,7 +302,7 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
     @Test
     public void testSingleOptional() {
 
-        assertThat(of(1,11).single().stream().toListX(),equalTo(ListX.of(Maybe.nothing())));
+        assertThat(of(1,11).single().stream().to(ReactiveConvertableSequence::converter).listX(),equalTo(ListX.of(Maybe.nothing())));
     }
 
     @Test

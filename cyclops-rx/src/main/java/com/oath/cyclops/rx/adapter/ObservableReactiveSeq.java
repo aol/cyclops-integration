@@ -1,13 +1,16 @@
 package com.oath.cyclops.rx.adapter;
 
-import com.oath.cyclops.types.anyM.AnyMSeq;
+
+import com.oath.cyclops.types.persistent.PersistentCollection;
+import cyclops.data.Vector;
+import cyclops.data.TreeSet;
 import com.oath.cyclops.types.stream.HeadAndTail;
-import cyclops.collections.immutable.VectorX;
-import cyclops.collections.mutable.ListX;
+
 import cyclops.companion.rx.Observables;
 import cyclops.control.LazyEither;
 import cyclops.control.Maybe;
 import cyclops.control.Option;
+import cyclops.data.Seq;
 import cyclops.function.Monoid;
 import cyclops.function.Reducer;
 import cyclops.monads.AnyM;
@@ -68,7 +71,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <U, R> ReactiveSeq<R> zipS(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+    public <U, R> ReactiveSeq<R> zipWithStream(Stream<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
          if(other instanceof ReactiveSeq){
             ReactiveSeq<U> o = (ReactiveSeq<U>)other;
             return o.visit(sync->observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b))),
@@ -77,7 +80,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
 
         }
         if(other instanceof Publisher){
-            return zipP((Publisher<U>)other,zipper);
+            return zip(zipper,(Publisher<U>)other);
         }
 
         return observable(observable.zipWith(ReactiveSeq.fromStream((Stream<U>)other),(a,b)->zipper.apply(a,b)));
@@ -90,12 +93,12 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <U, R> ReactiveSeq<R> zipP(Publisher<? extends U> other, BiFunction<? super T, ? super U, ? extends R> zipper) {
+    public <U, R> ReactiveSeq<R> zip(BiFunction<? super T, ? super U, ? extends R> zipper,Publisher<? extends U> other) {
         return observable(observable.zipWith(Observables.observable(other),(a,b)->zipper.apply(a,b)));
     }
 
     @Override
-    public <U> ReactiveSeq<Tuple2<T, U>> zipP(Publisher<? extends U> other) {
+    public <U> ReactiveSeq<Tuple2<T, U>> zipWithPublisher(Publisher<? extends U> other) {
         return observable(observable.zipWith(Observables.observable(other),Tuple::tuple));
     }
 
@@ -155,9 +158,9 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <U> ReactiveSeq<Tuple2<T, U>> zipS(Stream<? extends U> other) {
+    public <U> ReactiveSeq<Tuple2<T, U>> zipWithStream(Stream<? extends U> other) {
 
-        return zipS(other,Tuple::tuple);
+        return zipWithStream(other,Tuple::tuple);
     }
 
     @Override
@@ -172,77 +175,77 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public ReactiveSeq<VectorX<T>> sliding(int windowSize, int increment) {
+    public ReactiveSeq<Seq<T>> sliding(int windowSize, int increment) {
         return observable(Observables.connectToReactiveSeq(observable).sliding(windowSize,increment));
     }
 
     @Override
-    public ReactiveSeq<ListX<T>> grouped(int groupSize) {
-        return observable(observable.buffer(groupSize).map(ListX::fromIterable));
+    public ReactiveSeq<Vector<T>> grouped(int groupSize) {
+        return observable(Observables.connectToReactiveSeq(observable).grouped(groupSize));
     }
 
     @Override
-    public ReactiveSeq<ListX<T>> groupedStatefullyUntil(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        return observable(Observables.connectToReactiveSeq(observable).groupedStatefullyUntil(predicate));
+    public ReactiveSeq<Vector<T>> groupedUntil(BiPredicate<Vector<? super T>, ? super T> predicate) {
+        return observable(Observables.connectToReactiveSeq(observable).groupedUntil(predicate));
     }
 
     @Override
-    public <C extends Collection<T>, R> ReactiveSeq<R> groupedStatefullyUntil(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
+    public <C extends PersistentCollection<T>, R> ReactiveSeq<R> groupedStatefullyUntil(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
         return observable(Observables.connectToReactiveSeq(observable).groupedStatefullyUntil(predicate,factory,finalizer));
     }
 
     @Override
-    public ReactiveSeq<ListX<T>> groupedStatefullyWhile(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        return observable(Observables.connectToReactiveSeq(observable).groupedStatefullyWhile(predicate));
-    }
-
-    @Override
-    public <C extends Collection<T>, R> ReactiveSeq<R> groupedStatefullyWhile(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return observable(Observables.connectToReactiveSeq(observable).groupedStatefullyWhile(predicate,factory,finalizer));
-    }
-
-    @Override
-    public ReactiveSeq<ListX<T>> groupedBySizeAndTime(int size, long time, TimeUnit t) {
-        return observable(Observables.connectToReactiveSeq(observable).groupedBySizeAndTime(size, time, t));
-    }
-
-    @Override
-    public <C extends Collection<? super T>> ReactiveSeq<C> groupedBySizeAndTime(int size, long time, TimeUnit unit, Supplier<C> factory) {
-        return observable(Observables.connectToReactiveSeq(observable).groupedBySizeAndTime(size,time,unit,factory));
-    }
-
-    @Override
-    public <C extends Collection<? super T>, R> ReactiveSeq<R> groupedBySizeAndTime(int size, long time, TimeUnit unit, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return observable(Observables.connectToReactiveSeq(observable).groupedBySizeAndTime(size,time,unit,factory,finalizer));
-    }
-
-    @Override
-    public <C extends Collection<? super T>, R> ReactiveSeq<R> groupedByTime(long time, TimeUnit unit, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return groupedBySizeAndTime(Integer.MAX_VALUE,time,unit,factory,finalizer);
-    }
-
-    @Override
-    public ReactiveSeq<ListX<T>> groupedByTime(long time, TimeUnit t) {
-        return observable(Observables.connectToReactiveSeq(observable).groupedByTime(time, t));
-    }
-
-    @Override
-    public <C extends Collection<? super T>> ReactiveSeq<C> groupedByTime(long time, TimeUnit unit, Supplier<C> factory) {
-        return observable(Observables.connectToReactiveSeq(observable).groupedByTime(time, unit, factory));
-    }
-
-    @Override
-    public <C extends Collection<? super T>> ReactiveSeq<C> grouped(int size, Supplier<C> supplier) {
-        return observable(Observables.connectToReactiveSeq(observable).grouped(size,supplier));
-    }
-
-    @Override
-    public ReactiveSeq<ListX<T>> groupedWhile(Predicate<? super T> predicate) {
+    public ReactiveSeq<Vector<T>> groupedWhile(BiPredicate<Vector<? super T>, ? super T> predicate) {
         return observable(Observables.connectToReactiveSeq(observable).groupedWhile(predicate));
     }
 
     @Override
-    public <C extends Collection<? super T>> ReactiveSeq<C> groupedWhile(Predicate<? super T> predicate, Supplier<C> factory) {
+    public <C extends PersistentCollection<T>, R> ReactiveSeq<R> groupedWhile(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
+        return observable(Observables.connectToReactiveSeq(observable).groupedWhile(predicate,factory,finalizer));
+    }
+
+    @Override
+    public ReactiveSeq<Vector<T>> groupedBySizeAndTime(int size, long time, TimeUnit t) {
+        return observable(Observables.connectToReactiveSeq(observable).groupedBySizeAndTime(size, time, t));
+    }
+
+    @Override
+    public <C extends PersistentCollection<? super T>> ReactiveSeq<C> groupedBySizeAndTime(int size, long time, TimeUnit unit, Supplier<C> factory) {
+        return observable(Observables.connectToReactiveSeq(observable).groupedBySizeAndTime(size,time,unit,factory));
+    }
+
+    @Override
+    public <C extends PersistentCollection<? super T>, R> ReactiveSeq<R> groupedBySizeAndTime(int size, long time, TimeUnit unit, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
+        return observable(Observables.connectToReactiveSeq(observable).groupedBySizeAndTime(size,time,unit,factory,finalizer));
+    }
+
+    @Override
+    public <C extends PersistentCollection<? super T>, R> ReactiveSeq<R> groupedByTime(long time, TimeUnit unit, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
+        return groupedBySizeAndTime(Integer.MAX_VALUE,time,unit,factory,finalizer);
+    }
+
+    @Override
+    public ReactiveSeq<Vector<T>> groupedByTime(long time, TimeUnit t) {
+        return observable(Observables.connectToReactiveSeq(observable).groupedByTime(time, t));
+    }
+
+    @Override
+    public <C extends PersistentCollection<? super T>> ReactiveSeq<C> groupedByTime(long time, TimeUnit unit, Supplier<C> factory) {
+        return observable(Observables.connectToReactiveSeq(observable).groupedByTime(time, unit, factory));
+    }
+
+    @Override
+    public <C extends PersistentCollection<? super T>> ReactiveSeq<C> grouped(int size, Supplier<C> supplier) {
+        return observable(Observables.connectToReactiveSeq(observable).grouped(size,supplier));
+    }
+
+    @Override
+    public ReactiveSeq<Vector<T>> groupedWhile(Predicate<? super T> predicate) {
+        return observable(Observables.connectToReactiveSeq(observable).groupedWhile(predicate));
+    }
+
+    @Override
+    public <C extends PersistentCollection<? super T>> ReactiveSeq<C> groupedWhile(Predicate<? super T> predicate, Supplier<C> factory) {
         return observable(Observables.connectToReactiveSeq(observable).groupedWhile(predicate,factory));
     }
 
@@ -411,13 +414,9 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
         return Observables.connectToReactiveSeq(observable).reduce(identity, accumulator, combiner);
     }
 
-    @Override
-    public ListX<T> reduce(Stream<? extends Monoid<T>> reducers) {
-        return Observables.connectToReactiveSeq(observable).reduce(reducers);
-    }
 
     @Override
-    public ListX<T> reduce(Iterable<? extends Monoid<T>> reducers) {
+    public Seq<T> reduce(Iterable<? extends Monoid<T>> reducers) {
         return Observables.connectToReactiveSeq(observable).reduce(reducers);
     }
 
@@ -456,10 +455,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
         return Observables.connectToReactiveSeq(observable).startsWith(stream);
     }
 
-    @Override
-    public AnyMSeq<reactiveSeq, T> anyM() {
-        return AnyM.fromStream(this);
-    }
+
 
     @Override
     public <R> ReactiveSeq<R> map(Function<? super T, ? extends R> fn) {
@@ -486,23 +482,20 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
         return Observables.connectToReactiveSeq(observable).flatMapToDouble(mapper);
     }
 
-    @Override
-    public <R> ReactiveSeq<R> flatMapAnyM(Function<? super T, AnyM<stream, ? extends R>> fn) {
-        return observable(observable.flatMap(a->Observables.observable(fn.apply(a))));
-    }
+
 
     @Override
-    public <R> ReactiveSeq<R> flatMapI(Function<? super T, ? extends Iterable<? extends R>> fn) {
+    public <R> ReactiveSeq<R> concatMap(Function<? super T, ? extends Iterable<? extends R>> fn) {
         return observable(observable.flatMapIterable(a->fn.apply(a)));
     }
 
     @Override
-    public <R> ReactiveSeq<R> flatMapP(Function<? super T, ? extends Publisher<? extends R>> fn) {
+    public <R> ReactiveSeq<R> mergeMap(Function<? super T, ? extends Publisher<? extends R>> fn) {
         return observable(Observable.merge(observable.map(a->Observables.observable(fn.apply(a)))));
     }
 
     @Override
-    public <R> ReactiveSeq<R> flatMapP(int maxConcurrency, Function<? super T, ? extends Publisher<? extends R>> fn) {
+    public <R> ReactiveSeq<R> mergeMap(int maxConcurrency, Function<? super T, ? extends Publisher<? extends R>> fn) {
         return observable(Observable.merge(observable.map(a->Observables.observable(fn.apply(a))),maxConcurrency));
     }
 
@@ -563,18 +556,18 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public ReactiveSeq<T> prependS(Stream<? extends T> stream) {
-        return observable(Observables.connectToReactiveSeq(observable).prependS(stream));
+    public ReactiveSeq<T> prependStream(Stream<? extends T> stream) {
+        return observable(Observables.connectToReactiveSeq(observable).prependStream(stream));
     }
 
     @Override
-    public ReactiveSeq<T> append(T... values) {
-        return observable(Observables.connectToReactiveSeq(observable).append(values));
+    public ReactiveSeq<T> appendAll(T... values) {
+        return observable(Observables.connectToReactiveSeq(observable).appendAll(values));
     }
 
     @Override
-    public ReactiveSeq<T> append(T value) {
-        return observable(Observables.connectToReactiveSeq(observable).append(value));
+    public ReactiveSeq<T> appendAll(T value) {
+        return observable(Observables.connectToReactiveSeq(observable).appendAll(value));
     }
 
     @Override
@@ -689,8 +682,8 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public ReactiveSeq<T> appendS(Stream<? extends T> other) {
-        return observable(Observables.connectToReactiveSeq(observable).appendS(other));
+    public ReactiveSeq<T> appendStream(Stream<? extends T> other) {
+        return observable(Observables.connectToReactiveSeq(observable).appendStream(other));
     }
 
     @Override
@@ -699,8 +692,8 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public ReactiveSeq<T> prepend(Iterable<? extends T> other) {
-        return observable(Observables.connectToReactiveSeq(observable).prepend(other));
+    public ReactiveSeq<T> prependAll(Iterable<? extends T> other) {
+        return observable(Observables.connectToReactiveSeq(observable).prependAll(other));
     }
 
     @Override
@@ -764,7 +757,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public ListX<ReactiveSeq<T>> multicast(int num) {
+    public Seq<ReactiveSeq<T>> multicast(int num) {
         return Observables.connectToReactiveSeq(observable).multicast(num).map(s->observable(s));
     }
 
@@ -776,35 +769,6 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     public <R> R visit(Function<? super ReactiveSeq<T>,? extends R> sync,Function<? super ReactiveSeq<T>,? extends R> reactiveStreams,
                        Function<? super ReactiveSeq<T>,? extends R> asyncNoBackPressure){
         return asyncNoBackPressure.apply(this);
-    }
-    @Override
-    public ListT<reactiveSeq, T> groupedT(int groupSize) {
-        return ListT.fromStream(grouped(groupSize));
-    }
-
-    @Override
-    public ListT<reactiveSeq, T> slidingT(int windowSize, int increment) {
-        return ListT.fromStream(sliding(windowSize,increment));
-    }
-
-    @Override
-    public ListT<reactiveSeq, T> slidingT(int windowSize) {
-        return ListT.fromStream(sliding(windowSize));
-    }
-
-    @Override
-    public ListT<reactiveSeq, T> groupedUntilT(Predicate<? super T> predicate) {
-        return ListT.fromStream(groupedUntil(predicate));
-    }
-
-    @Override
-    public ListT<reactiveSeq, T> groupedStatefullyUntilT(BiPredicate<ListX<? super T>, ? super T> predicate) {
-        return ListT.fromStream(groupedStatefullyWhile(predicate));
-    }
-
-    @Override
-    public ListT<reactiveSeq, T> groupedWhileT(Predicate<? super T> predicate) {
-        return ListT.fromStream(groupedWhile(predicate));
     }
     @Override
     public void forEachAsync(Consumer<? super T> action) {

@@ -1,10 +1,11 @@
 package com.oath.cyclops.rx.adapter;
 
 
+import com.oath.anym.extensability.AbstractFunctionalAdapter;
 import cyclops.companion.rx.Observables;
-import cyclops.monads.RxWitness.observable;
-import com.oath.cyclops.types.extensability.AbstractFunctionalAdapter;
 import cyclops.monads.AnyM;
+import cyclops.monads.RxWitness.observable;
+
 import lombok.AllArgsConstructor;
 import rx.Observable;
 
@@ -15,9 +16,6 @@ import java.util.function.Predicate;
 
 @AllArgsConstructor
 public class ObservableAdapter extends AbstractFunctionalAdapter<observable> {
-
-
-
 
 
     @Override
@@ -31,7 +29,6 @@ public class ObservableAdapter extends AbstractFunctionalAdapter<observable> {
         Observable<? extends Function<? super T, ? extends R>> fnF = observable(fn);
         Observable<R> res = fnF.zipWith(f, (a, b) -> a.apply(b));
         return Observables.anyM(res);
-
     }
 
     @Override

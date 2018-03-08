@@ -73,7 +73,7 @@ public class RxTest {
     @Test
     public void observable() {
         assertThat(Observables.anyM(Observable.just(1, 2, 3))
-                            .toListX(),
+                            .to(ReactiveConvertableSequence::converter).listX(),
                    equalTo(ListX.of(1, 2, 3)));
     }
 
@@ -81,7 +81,7 @@ public class RxTest {
     public void observableFlatMap() {
         assertThat(Observables.anyM(Observable.just(1, 2, 3))
                             .flatMap(a -> Observables.anyM(Observable.just(a + 10)))
-                            .toListX(),
+                            .to(ReactiveConvertableSequence::converter).listX(),
                    equalTo(ListX.of(11, 12, 13)));
     }
 

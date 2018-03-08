@@ -12,14 +12,11 @@ import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPSetX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
 import com.oath.cyclops.types.persistent.PersistentSet;
-import com.oath.cyclops.types.persistent.PersistentSortedSet;
-import cyclops.collections.immutable.LinkedListX;
-import cyclops.collections.immutable.OrderedSetX;
-import cyclops.collections.immutable.PersistentSetX;
-import cyclops.companion.Monoids;
+
 import cyclops.control.Option;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.collections.immutable.PersistentSetX;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
 import cyclops.data.tuple.Tuple2;
@@ -34,7 +31,7 @@ import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VavrHashSetX<T>  implements PersistentSet<T>, Unwrapable {
 
-    public static <T> PersistentSetX<T> listX(ReactiveSeq<T> stream){
+    public static <T> PersistentSetX<T> persistentSetX(ReactiveSeq<T> stream){
         return fromStream(stream);
     }
     public static <T> PersistentSetX<T> copyFromCollection(CollectionX<? extends T> vec) {
@@ -53,7 +50,7 @@ public class VavrHashSetX<T>  implements PersistentSet<T>, Unwrapable {
      * @return LazyPSetX
      */
     public static <T> LazyPSetX<T> fromStream(Stream<T> stream) {
-        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream),toPSet(), Evaluation.LAZY);
+        return new LazyPSetX<T>(null, ReactiveSeq.fromStream(stream), toPersistentSet(), Evaluation.LAZY);
     }
 
     /**
@@ -128,30 +125,31 @@ public class VavrHashSetX<T>  implements PersistentSet<T>, Unwrapable {
     }
 
 
-    public static <T> Reducer<PersistentSet<T>,T> toPSet() {
-      return Reducer.fromMonoid(Monoids.pcollectionConcat(cyclops.data.HashSet.empty()), a -> VavrHashSetX.singleton(a));
+    public static <T> Reducer<PersistentSet<T>,T> toPersistentSet() {
+      return Reducer.<PersistentSet<T>, T> of(VavrHashSetX.emptyPersistentSet(), (final PersistentSet<T> a) -> b -> a.plusAll(b), (final T x) -> VavrHashSetX.singleton(x));
+
     }
 
     public static <T> LazyPSetX<T> PSet(Set<T> q) {
-        return fromPSet(new VavrHashSetX<>(q), toPSet());
+        return fromPSet(new VavrHashSetX<>(q), toPersistentSet());
     }
-    public static <T> VavrHashSetX<T> emptyPSet(){
+    public static <T> VavrHashSetX<T> emptyPersistentSet(){
         return  new VavrHashSetX<>(HashSet.empty());
     }
     public static <T> LazyPSetX<T> empty(){
-        return fromPSet( new VavrHashSetX<>(HashSet.empty()), toPSet());
+        return fromPSet( new VavrHashSetX<>(HashSet.empty()), toPersistentSet());
     }
     private static <T> LazyPSetX<T> fromPSet(PersistentSet<T> ts, Reducer<PersistentSet<T>,T> pSetReducer) {
         return new LazyPSetX<T>(ts,null,pSetReducer, Evaluation.LAZY);
     }
     public static <T> LazyPSetX<T> singleton(T t){
-        return fromPSet(new VavrHashSetX<>(HashSet.of(t)), toPSet());
+        return fromPSet(new VavrHashSetX<>(HashSet.of(t)), toPersistentSet());
     }
     public static <T> LazyPSetX<T> of(T... t){
-        return fromPSet( new VavrHashSetX<>(HashSet.of(t)), toPSet());
+        return fromPSet( new VavrHashSetX<>(HashSet.of(t)), toPersistentSet());
     }
     public static <T> LazyPSetX<T> ofAll(Set<T> q) {
-        return fromPSet(new VavrHashSetX<>(q), toPSet());
+        return fromPSet(new VavrHashSetX<>(q), toPersistentSet());
     }
     @SafeVarargs
     public static <T> LazyPSetX<T> PSet(T... elements){

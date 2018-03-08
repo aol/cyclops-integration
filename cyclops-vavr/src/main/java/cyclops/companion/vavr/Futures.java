@@ -1,63 +1,35 @@
 package cyclops.companion.vavr;
 
 import com.oath.anym.AnyMValue;
-import cyclops.monads.VavrWitness.list;
-import cyclops.monads.VavrWitness.stream;
-import cyclops.monads.VavrWitness.tryType;
-import cyclops.reactive.collections.mutable.ListX;
-import io.vavr.Lazy;
-import io.vavr.collection.*;
-import io.vavr.control.*;
-import cyclops.companion.CompletableFutures;
-import cyclops.companion.Optionals;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
+import com.oath.cyclops.ReactiveConvertableSequence;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.react.Status;
+import com.oath.cyclops.types.Value;
 import cyclops.control.Either;
 import cyclops.conversion.vavr.FromCyclops;
-import cyclops.monads.*;
-import cyclops.monads.VavrWitness.*;
-import com.oath.cyclops.hkt.Higher;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.function.Function3;
 import cyclops.function.Function4;
 import cyclops.function.Monoid;
-import cyclops.monads.Witness.*;
-import cyclops.reactive.ReactiveSeq;
-import cyclops.typeclasses.*;
-import com.oath.cyclops.react.Status;
-import cyclops.conversion.vavr.ToCyclops;
-import cyclops.monads.VavrWitness.future;
-import com.oath.cyclops.data.collections.extensions.CollectionX;
-import com.oath.cyclops.types.Value;
-import com.oath.cyclops.types.anyM.AnyMValue;
-import cyclops.collections.mutable.ListX;
-import cyclops.companion.Monoids;
 import cyclops.function.Reducer;
+import cyclops.monads.AnyM;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.future;
+import cyclops.monads.WitnessType;
+import cyclops.monads.XorM;
 import cyclops.monads.transformers.FutureT;
-import cyclops.typeclasses.comonad.Comonad;
-import cyclops.typeclasses.foldable.Foldable;
-import cyclops.typeclasses.foldable.Unfoldable;
-import cyclops.typeclasses.functor.Functor;
-import cyclops.typeclasses.instances.General;
-import cyclops.typeclasses.monad.*;
-import io.vavr.collection.Array;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.collections.mutable.ListX;
 import io.vavr.concurrent.Future;
-
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
-
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-
-import static com.oath.cyclops.vavr.hkt.FutureKind.narrowK;
-import static com.oath.cyclops.vavr.hkt.FutureKind.widen;
 
 /**
  * Utilty methods for working with JDK CompletableFutures
@@ -143,7 +115,7 @@ public class Futures {
      * @return First Future to complete
      */
     public static <T> Future<T> anyOf(Future<T>... fts) {
-        return FromCyclops.future(cyclops.async.Future.anyOf(ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.control.Future.anyOf(ToCyclops.futures(fts)));
 
     }
     /**
@@ -157,7 +129,7 @@ public class Futures {
      */
     public static <T> Future<T> allOf(Future<T>... fts) {
 
-        return FromCyclops.future(cyclops.async.Future.allOf(ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.control.Future.allOf(ToCyclops.futures(fts)));
     }
     /**
      * Block until a Quorum of results have returned as determined by the provided Predicate
@@ -184,7 +156,7 @@ public class Futures {
     @SafeVarargs
     public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Consumer<Throwable> errorHandler, Future<T>... fts) {
 
-        return FromCyclops.future(cyclops.async.Future.quorum(breakout,errorHandler, ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.companion.Futures.quorum(breakout,errorHandler, ToCyclops.futures(fts)));
 
 
     }
@@ -212,7 +184,7 @@ public class Futures {
     @SafeVarargs
     public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Future<T>... fts) {
 
-        return FromCyclops.future(cyclops.async.Future.quorum(breakout, ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.companion.Futures.quorum(breakout, ToCyclops.futures(fts)));
 
 
     }
@@ -234,7 +206,7 @@ public class Futures {
      */
     @SafeVarargs
     public static <T> Future<T> firstSuccess(Future<T>... fts) {
-        return FromCyclops.future(cyclops.async.Future.firstSuccess(ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.control.Future.firstSuccess(ToCyclops.futures(fts)));
 
     }
 
@@ -503,7 +475,7 @@ public class Futures {
 
     /**
      * Sequence operation, take a Collection of Futures and turn it into a Future with a Collection
-     * By constrast with {@link Futures#sequencePresent(CollectionX)}, if any Futures are empty the result
+     * By constrast with {@link Futures#sequencePresent(Iterable)}, if any Futures are empty the result
      * is an empty Future
      *
      * <pre>
@@ -522,13 +494,13 @@ public class Futures {
      * @param opts Maybes to Sequence
      * @return  Maybe with a List of values
      */
-    public static <T> Future<ListX<T>> sequence(final CollectionX<Future<T>> opts) {
-        return sequence(opts.stream()).map(s -> s.toListX());
+    public static <T> Future<ListX<T>> sequence(final Iterable<Future<T>> opts) {
+        return sequence(cyclops.companion.Streams.stream(opts)).map(s -> s.to(ReactiveConvertableSequence::converter).listX());
 
     }
     /**
      * Sequence operation, take a Collection of Futures and turn it into a Future with a Collection
-     * Only successes are retained. By constrast with {@link Futures#sequence(CollectionX)} Future#empty types are
+     * Only successes are retained. By constrast with {@link Futures#sequence(Iterable)} Future#empty types are
      * tolerated and ignored.
      *
      * <pre>
@@ -544,12 +516,12 @@ public class Futures {
      * @param opts Futures to Sequence
      * @return Future with a List of values
      */
-    public static <T> Future<ListX<T>> sequencePresent(final CollectionX<Future<T>> opts) {
-        return sequence(opts.stream().filter(Future::isCompleted)).map(s->s.toListX());
+    public static <T> Future<ListX<T>> sequencePresent(final Iterable<Future<T>> opts) {
+        return sequence(cyclops.companion.Streams.stream(opts).filter(Future::isCompleted)).map(s->s.to(ReactiveConvertableSequence::converter).listX());
     }
     /**
      * Sequence operation, take a Collection of Futures and turn it into a Future with a Collection
-     * By constrast with {@link Futures#sequencePresent(CollectionX)} if any Future types are empty
+     * By constrast with {@link Futures#sequencePresent(Iterable)} if any Future types are empty
      * the return type will be an empty Future
      *
      * <pre>
@@ -593,7 +565,7 @@ public class Futures {
      * @param reducer Reducer to accumulate values with
      * @return Future with reduced value
      */
-    public static <T, R> Future<R> accumulatePresent(final CollectionX<Future<T>> futureals, final Reducer<R,T> reducer) {
+    public static <T, R> Future<R> accumulatePresent(final Iterable<Future<T>> futureals, final Reducer<R,T> reducer) {
         return sequencePresent(futureals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -618,7 +590,7 @@ public class Futures {
      * @param reducer Monoid to combine values from each Future
      * @return Future with reduced value
      */
-    public static <T, R> Future<R> accumulatePresent(final CollectionX<Future<T>> futureals, final Function<? super T, R> mapper,
+    public static <T, R> Future<R> accumulatePresent(final Iterable<Future<T>> futureals, final Function<? super T, R> mapper,
                                                      final Monoid<R> reducer) {
         return sequencePresent(futureals).map(s -> s.map(mapper)
                 .reduce(reducer));
@@ -644,7 +616,7 @@ public class Futures {
      * @param reducer Monoid to combine values from each Future
      * @return Future with reduced value
      */
-    public static <T> Future<T> accumulatePresent(final Monoid<T> reducer, final CollectionX<Future<T>> futureals) {
+    public static <T> Future<T> accumulatePresent(final Monoid<T> reducer, final Iterable<Future<T>> futureals) {
         return sequencePresent(futureals).map(s -> s
                 .reduce(reducer));
     }
@@ -671,7 +643,7 @@ public class Futures {
     public static <T1, T2, R> Future<R> combine(final Future<? extends T1> f, final Value<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
         return narrow(FromCyclops.future(ToCyclops.future(f)
-                .combine(v, fn)));
+                .zip(v, fn)));
     }
     /**
      * Combine an Future with the provided Future using the supplied BiFunction
@@ -744,7 +716,7 @@ public class Futures {
     public static <T1, T2, R> Future<R> zip(final Publisher<? extends T2> p, final Future<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
         return narrow(FromCyclops.future(ToCyclops.future(f)
-                .zipP(p, fn)));
+                .zip(fn,p)));
     }
     /**
      * Narrow covariant type parameter

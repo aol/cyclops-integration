@@ -37,7 +37,7 @@ public class FutureAdapter implements ValueAdapter<future> {
     public <T, R> AnyM<future, R> ap(AnyM<future,? extends Function<? super T,? extends R>> fn, AnyM<future, T> apply) {
         Future<T> f = future(apply);
         Future<? extends Function<? super T, ? extends R>> fnF = future(fn);
-        Future<R> res = FromCyclops.future(ToCyclops.future(fnF).combine(ToCyclops.future(f), (a, b) -> a.apply(b)));
+        Future<R> res = FromCyclops.future(ToCyclops.future(fnF).zip(ToCyclops.future(f), (a, b) -> a.apply(b)));
         return Vavr.future(res);
 
     }
