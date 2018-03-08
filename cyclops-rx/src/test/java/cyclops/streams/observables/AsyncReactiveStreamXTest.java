@@ -63,7 +63,7 @@ public  class AsyncReactiveStreamXTest {
     @Test
     public void flatMapPublisher() throws InterruptedException{
 		//of(1,2,3)
-		//		.flatMapP(i->Maybe.of(i)).printOut();
+		//		.mergeMap(i->Maybe.of(i)).printOut();
 
         assertThat(of(1,2,3)
                         .mergeMap(i-> Maybe.of(i))

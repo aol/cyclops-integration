@@ -1,10 +1,11 @@
 package cyclops.streams.observables;
 
-import cyclops.collections.mutable.ListX;
+
 import cyclops.companion.rx.Observables;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.reactive.Spouts;
 import cyclops.data.tuple.Tuple2;
+import cyclops.reactive.collections.mutable.ListX;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;

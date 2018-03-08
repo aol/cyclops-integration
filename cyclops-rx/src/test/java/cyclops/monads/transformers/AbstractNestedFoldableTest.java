@@ -1,14 +1,17 @@
 package cyclops.monads.transformers;
 
 
-import com.oath.cyclops.types.anyM.transformers.FoldableTransformerSeq;
-import cyclops.collections.mutable.ListX;
+import com.oath.anym.transformers.FoldableTransformerSeq;
+
+import com.oath.cyclops.ReactiveConvertableSequence;
+import cyclops.ReactiveReducers;
 import cyclops.companion.Reducers;
 import cyclops.control.Maybe;
 import cyclops.control.Option;
 import cyclops.data.Vector;
 import cyclops.monads.WitnessType;
 import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.collections.mutable.ListX;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
@@ -113,11 +116,6 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
                 Integer::sum).single().orElse(null),equalTo(1500));
     }
 
-    @Test
-    public void testReduceStreamOfQextendsMonoidOfT() {
-        assertThat(of("hello","2","world","4").reduce(Stream.of(Reducers.toString(","))).single().single().orElse(null).orElse(null).length(),
-                equalTo(",hello,2,world,4".length()));
-    }
 
     @Test
     public void testReduceIterableOfQextendsMonoidOfT() {
@@ -143,7 +141,7 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
 
     @Test
     public void foldRightMapToType() {
-        assertThat(of(1,2,3,4).foldRightMapToType(Reducers.toLinkedListX()).single().orElse(null).size(),
+        assertThat(of(1,2,3,4).foldRightMapToType(ReactiveReducers.toLinkedListX()).single().orElse(null).size(),
                 equalTo(4));
     }
 
@@ -206,7 +204,7 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
     }
   @Test
   public void testGroupByEager() {
-    cyclops.data.HashMap<Integer, Vector<Integer>> map1 =of(1, 2, 3, 4).groupBy(i -> i % 2);
+    cyclops.data.HashMap<Integer, Vector<Integer>> map1 =of(1, 2, 3, 4).groupBy(i -> i % 2).single().orElse(null);;
     assertEquals(Option.some(Vector.of(2, 4)), map1.get(0));
     assertEquals(Option.some(Vector.of(1, 3)), map1.get(1));
     assertEquals(2, map1.size());
@@ -273,20 +271,12 @@ public abstract class AbstractNestedFoldableTest<W extends WitnessType<W>> {
         assertThat(col.size(),equalTo(5));
     }
 
-    @Test
-    public void testToConcurrentLazyCollection() {
-        Collection<Integer> col = of(1,2,3,4,5).toNested(s->s.lazyCollectionSynchronized())
 
-                                    .single().orElse(null);
-        System.out.println("first!");
-        col.forEach(System.out::println);
-        assertThat(col.size(),equalTo(5));
-    }
 
 
     @Test
     public void testFirstValue() {
-        assertThat(of(1,2,3).firstValue().single().orElse(null),anyOf(equalTo(1),equalTo(2),equalTo(3)));
+        assertThat(of(1,2,3).firstValue(-1).single().orElse(null),anyOf(equalTo(1),equalTo(2),equalTo(3)));
     }
 
     @Test

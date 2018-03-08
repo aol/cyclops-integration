@@ -1,9 +1,10 @@
 package cyclops.monads.transformers;
 
+import cyclops.data.Seq;
+import cyclops.data.Vector;
+import com.oath.cyclops.ReactiveConvertableSequence;
 import com.oath.cyclops.types.traversable.Traversable;
-import cyclops.collections.immutable.VectorX;
-import cyclops.collections.mutable.ListX;
-import cyclops.companion.CyclopsCollectors;
+
 import cyclops.companion.Reducers;
 import cyclops.companion.Semigroups;
 import cyclops.function.Monoid;
@@ -13,6 +14,7 @@ import cyclops.reactive.Spouts;
 import cyclops.data.tuple.Tuple2;
 import cyclops.data.tuple.Tuple3;
 import cyclops.data.tuple.Tuple4;
+import cyclops.reactive.collections.mutable.ListX;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -488,7 +490,7 @@ public abstract class AbstractTraversableTest {
         public void batchBySizeCollection(){
 
 
-            assertThat(of(1,2,3,4,5,6).grouped(3,()-> ListX.<Integer>empty()).stream().elementAt(0).orElse(null).size(),is(3));
+            assertThat(of(1,2,3,4,5,6).grouped(3,()-> Vector.<Integer>empty()).stream().elementAt(0).orElse(null).size(),is(3));
 
            // assertThat(of(1,1,1,1,1,1).grouped(3,()->new ListXImpl<>()).get(1).get().size(),is(1));
         }
@@ -524,8 +526,8 @@ public abstract class AbstractTraversableTest {
         @Test
         public void zip2(){
             List<Tuple2<Integer,Integer>> list =
-                    of(1,2,3,4,5,6).zipS(Stream.of(100,200,300,400))
-                                                    .stream()
+                    of(1,2,3,4,5,6).zipWithStream((Stream.of(100,200,300,400)))
+                                             .stream()
                                                     .peek(it -> System.out.println(it))
                                                     .collect(java.util.stream.Collectors.toList());
 
@@ -597,14 +599,14 @@ public abstract class AbstractTraversableTest {
             @Test
             public void batchUntilSupplier(){
                 assertThat(of(1,2,3,4,5,6)
-                        .groupedUntil(i->false,()-> ListX.empty()).stream()
+                        .groupedUntil(i->false,()-> Vector.empty()).stream()
                         .to(ReactiveConvertableSequence::converter).listX().size(),equalTo(1));
 
             }
             @Test
             public void batchWhileSupplier(){
                 assertThat(of(1,2,3,4,5,6)
-                        .groupedWhile(i->true,()-> ListX.empty()).stream()
+                        .groupedWhile(i->true,()-> Vector.empty()).stream()
                         .to(ReactiveConvertableSequence::converter).listX()
                         .size(),equalTo(1));
 
@@ -612,7 +614,7 @@ public abstract class AbstractTraversableTest {
 
             @Test
             public void slidingNoOrder() {
-                ListX<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).stream().to(ReactiveConvertableSequence::converter).listX();
+                ListX<Seq<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).stream().to(ReactiveConvertableSequence::converter).listX();
 
                 System.out.println(list);
                 assertThat(list.get(0).size(), equalTo(2));
@@ -621,7 +623,7 @@ public abstract class AbstractTraversableTest {
 
             @Test
             public void slidingIncrementNoOrder() {
-                List<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).stream().collect(java.util.stream.Collectors.toList());
+                List<Seq<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).stream().collect(java.util.stream.Collectors.toList());
 
                 System.out.println(list);
 

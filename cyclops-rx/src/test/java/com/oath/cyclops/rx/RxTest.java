@@ -1,17 +1,19 @@
 package com.oath.cyclops.rx;
 
-import static cyclops.collections.mutable.ListX.listX;
+import static cyclops.reactive.collections.mutable.ListX.listX;
 import static cyclops.companion.rx.Observables.reactiveSeq;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.oath.cyclops.types.anyM.AnyMSeq;
+
+import com.oath.anym.AnyMSeq;
+import com.oath.cyclops.ReactiveConvertableSequence;
 import cyclops.monads.RxWitness.observable;
 
-import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx.Observables;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.reactive.Spouts;
+import cyclops.reactive.collections.mutable.ListX;
 import org.junit.Test;
 
 

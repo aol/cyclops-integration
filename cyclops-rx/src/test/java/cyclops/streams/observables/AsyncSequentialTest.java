@@ -288,7 +288,7 @@ public class AsyncSequentialTest extends BaseSequentialTest {
             return l.size() > 0 ? Optional.of(l.get(0)) : Optional.empty();
         });
         Tuple2<ReactiveSeq<Integer>, ReactiveSeq<Integer>> dup2 = dup._2().skip(1).duplicate();
-        Optional<Integer> head2 = dup2._1().limit(1).to().optional().flatMap(l -> {
+        Optional<Integer> head2 = dup2._1().limit(1).to(ReactiveConvertableSequence::converter).optional().flatMap(l -> {
             return l.size() > 0 ? Optional.of(l.get(0)) : Optional.empty();
         });
         assertThat(dup2._2().skip(1).to(ReactiveConvertableSequence::converter).listX(),equalTo(ListX.of(3)));
@@ -298,11 +298,11 @@ public class AsyncSequentialTest extends BaseSequentialTest {
     @Test
     public void skipLimitTriplicateLimitSkip() {
         Tuple3<ReactiveSeq<Integer>, ReactiveSeq<Integer>,ReactiveSeq<Integer>> dup = of(1, 2, 3).triplicate();
-        Optional<Integer> head1 = dup._1().limit(1).to().optional().flatMap(l -> {
+        Optional<Integer> head1 = dup._1().limit(1).to(ReactiveConvertableSequence::converter).optional().flatMap(l -> {
             return l.size() > 0 ? Optional.of(l.get(0)) : Optional.empty();
         });
         Tuple3<ReactiveSeq<Integer>, ReactiveSeq<Integer>,ReactiveSeq<Integer>> dup2 = dup._2().skip(1).triplicate();
-        Optional<Integer> head2 = dup2._1().limit(1).to().optional().flatMap(l -> {
+        Optional<Integer> head2 = dup2._1().limit(1).to(ReactiveConvertableSequence::converter).optional().flatMap(l -> {
             return l.size() > 0 ? Optional.of(l.get(0)) : Optional.empty();
         });
         assertThat(dup2._2().skip(1).to(ReactiveConvertableSequence::converter).listX(),equalTo(ListX.of(3)));
@@ -312,11 +312,11 @@ public class AsyncSequentialTest extends BaseSequentialTest {
     @Test
     public void skipLimitQuadruplicateLimitSkip() {
         Tuple4<ReactiveSeq<Integer>, ReactiveSeq<Integer>,ReactiveSeq<Integer>,ReactiveSeq<Integer>> dup = of(1, 2, 3).quadruplicate();
-        Optional<Integer> head1 = dup._1().limit(1).to().optional().flatMap(l -> {
+        Optional<Integer> head1 = dup._1().limit(1).to(ReactiveConvertableSequence::converter).optional().flatMap(l -> {
             return l.size() > 0 ? Optional.of(l.get(0)) : Optional.empty();
         });
         Tuple4<ReactiveSeq<Integer>, ReactiveSeq<Integer>,ReactiveSeq<Integer>,ReactiveSeq<Integer>> dup2 = dup._2().skip(1).quadruplicate();
-        Optional<Integer> head2 = dup2._1().limit(1).to().optional().flatMap(l -> {
+        Optional<Integer> head2 = dup2._1().limit(1).to(ReactiveConvertableSequence::converter).optional().flatMap(l -> {
             return l.size() > 0 ? Optional.of(l.get(0)) : Optional.empty();
         });
         assertThat(dup2._2().skip(1).to(ReactiveConvertableSequence::converter).listX(),equalTo(ListX.of(3)));
@@ -327,7 +327,7 @@ public class AsyncSequentialTest extends BaseSequentialTest {
 
     @Test
     public void splitThenSplit(){
-        assertThat(of(1,2,3).to().optional(),equalTo(Optional.of(ListX.of(1,2,3))));
+        assertThat(of(1,2,3).to(ReactiveConvertableSequence::converter).optional(),equalTo(Optional.of(ListX.of(1,2,3))));
        // System.out.println(of(1, 2, 3).splitAtHead()._2().listX());
         System.out.println("split " + of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().to(ReactiveConvertableSequence::converter).listX());
         assertEquals(Option.of(3), of(1, 2, 3).splitAtHead()._2().splitAtHead()._2().splitAtHead()._1());
