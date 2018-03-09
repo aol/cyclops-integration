@@ -30,6 +30,13 @@ public class CyclopsDeserializers  extends Deserializers.Base {
     if (raw == LazyEither.class) {
       return new LazyEitherDeserializer(type);
     }
+    if (raw == LazyEither3.class) {
+      return new LazyEither3Deserializer(type);
+    }
+    if (raw == LazyEither4.class) {
+      return new LazyEither4Deserializer(type);
+    }
+
     if (raw == Either.class) {
       return new EitherDeserializer(type);
     }

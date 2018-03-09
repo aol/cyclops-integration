@@ -55,6 +55,18 @@ public class CyclopsSerializers extends Serializers.Base {
     if (Either.class.isAssignableFrom(type.getRawClass())) {
       return new Sealed2Serializer();
     }
+    if (Sealed2.class.isAssignableFrom(type.getRawClass())) {
+      return new Sealed2Serializer();
+    }
+    if (Sealed3.class.isAssignableFrom(type.getRawClass())) {
+      return new Sealed3Serializer();
+    }
+    if (Sealed4.class.isAssignableFrom(type.getRawClass())) {
+      return new Sealed4Serializer();
+    }
+    if (Sealed5.class.isAssignableFrom(type.getRawClass())) {
+      return new Sealed5Serializer();
+    }
     return super.findSerializer(config, type, beanDesc);
   }
 }

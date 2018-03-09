@@ -43,7 +43,7 @@ public class Sealed3Serializer extends JsonSerializer<Sealed3<?,?,?>> {
       ser.serialize(new Left1Bean(l1), gen, serializers);
       return null;
     }),ExceptionSoftener.softenFunction(l2->{
-      JsonSerializer<Object> ser = serializers.findValueSerializer(Left1Bean.class);
+      JsonSerializer<Object> ser = serializers.findValueSerializer(Left2Bean.class);
       ser.serialize(new Left2Bean(l2), gen, serializers);
       return null;
     }),ExceptionSoftener.softenFunction(r->{

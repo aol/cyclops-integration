@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-import cyclops.control.Either;
-import cyclops.control.LazyEither;
+import cyclops.control.LazyEither4;
+import cyclops.control.LazyEither5;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,9 +16,9 @@ import lombok.Setter;
 
 import java.io.IOException;
 
-final class LazyEitherDeserializer extends StdDeserializer<LazyEither<?,?>>  {
+final class LazyEither5Deserializer extends StdDeserializer<LazyEither5<?,?,?,?,?>>  {
 
-  protected LazyEitherDeserializer(JavaType valueType) {
+  protected LazyEither5Deserializer(JavaType valueType) {
     super(valueType);
 
   }
@@ -32,19 +32,34 @@ final class LazyEitherDeserializer extends StdDeserializer<LazyEither<?,?>>  {
   public static class LazyEitherBean{
 
     @Getter @Setter
-    private  Object left;
+    private  Object left1;
+    @Getter @Setter
+    private  Object left2;
+    @Getter @Setter
+    private  Object left3;
+    @Getter @Setter
+    private  Object left4;
     @Getter @Setter
     private  Object right;
   }
 
   @Override
-  public LazyEither<?,?> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+  public LazyEither5<?,?,?,?,?> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
     JsonDeserializer ser = ctxt.findRootValueDeserializer(ctxt.getTypeFactory().constructSimpleType(LazyEitherBean.class, new JavaType[0]));
     LazyEitherBean x = (LazyEitherBean)ser.deserialize(p, ctxt);
-    if(x.left!=null){
-      return LazyEither.left(x.left);
+    if(x.left1!=null){
+      return LazyEither5.left1(x.left1);
     }
-    return LazyEither.right(x.right);
+    if(x.left2!=null){
+      return LazyEither5.left2(x.left2);
+    }
+    if(x.left3!=null){
+      return LazyEither5.left3(x.left2);
+    }
+    if(x.left4!=null){
+      return LazyEither5.left4(x.left2);
+    }
+    return LazyEither5.right(x.right);
   }
 
 

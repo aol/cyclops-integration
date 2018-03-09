@@ -56,15 +56,15 @@ public class Sealed5Serializer extends JsonSerializer<Sealed5<?,?,?,?,?>> {
       ser.serialize(new Left1Bean(l1), gen, serializers);
       return null;
     }),ExceptionSoftener.softenFunction(l2->{
-      JsonSerializer<Object> ser = serializers.findValueSerializer(Left1Bean.class);
+      JsonSerializer<Object> ser = serializers.findValueSerializer(Left2Bean.class);
       ser.serialize(new Left2Bean(l2), gen, serializers);
       return null;
     }),ExceptionSoftener.softenFunction(l3->{
-      JsonSerializer<Object> ser = serializers.findValueSerializer(Left1Bean.class);
+      JsonSerializer<Object> ser = serializers.findValueSerializer(Left3Bean.class);
       ser.serialize(new Left3Bean(l3), gen, serializers);
       return null;
     }),ExceptionSoftener.softenFunction(l4->{
-      JsonSerializer<Object> ser = serializers.findValueSerializer(Left1Bean.class);
+      JsonSerializer<Object> ser = serializers.findValueSerializer(Left4Bean.class);
       ser.serialize(new Left4Bean(l4), gen, serializers);
       return null;
     }),ExceptionSoftener.softenFunction(r->{

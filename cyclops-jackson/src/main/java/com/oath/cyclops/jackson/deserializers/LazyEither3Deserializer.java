@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import cyclops.control.Either;
 import cyclops.control.LazyEither;
+import cyclops.control.LazyEither3;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,9 +17,9 @@ import lombok.Setter;
 
 import java.io.IOException;
 
-final class LazyEitherDeserializer extends StdDeserializer<LazyEither<?,?>>  {
+final class LazyEither3Deserializer extends StdDeserializer<LazyEither3<?,?,?>>  {
 
-  protected LazyEitherDeserializer(JavaType valueType) {
+  protected LazyEither3Deserializer(JavaType valueType) {
     super(valueType);
 
   }
@@ -32,19 +33,24 @@ final class LazyEitherDeserializer extends StdDeserializer<LazyEither<?,?>>  {
   public static class LazyEitherBean{
 
     @Getter @Setter
-    private  Object left;
+    private  Object left1;
+    @Getter @Setter
+    private  Object left2;
     @Getter @Setter
     private  Object right;
   }
 
   @Override
-  public LazyEither<?,?> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+  public LazyEither3<?,?,?> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
     JsonDeserializer ser = ctxt.findRootValueDeserializer(ctxt.getTypeFactory().constructSimpleType(LazyEitherBean.class, new JavaType[0]));
     LazyEitherBean x = (LazyEitherBean)ser.deserialize(p, ctxt);
-    if(x.left!=null){
-      return LazyEither.left(x.left);
+    if(x.left1!=null){
+      return LazyEither3.left1(x.left1);
     }
-    return LazyEither.right(x.right);
+    if(x.left2!=null){
+      return LazyEither3.left2(x.left2);
+    }
+    return LazyEither3.right(x.right);
   }
 
 
