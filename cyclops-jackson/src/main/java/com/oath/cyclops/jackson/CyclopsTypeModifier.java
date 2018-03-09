@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.type.ReferenceType;
 import com.fasterxml.jackson.databind.type.TypeBindings;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.type.TypeModifier;
+import com.oath.cyclops.types.Value;
 import cyclops.control.Either;
 import cyclops.control.Eval;
 import cyclops.control.Option;
@@ -30,6 +31,9 @@ public class CyclopsTypeModifier extends TypeModifier {
     if (raw==Trampoline.class)
       return  ReferenceType.upgradeFrom(type,type.containedTypeOrUnknown(0));
     if (raw==Either.class)
+      return  ReferenceType.upgradeFrom(type,type.containedTypeOrUnknown(0));
+
+    if (raw==Value.class)
       return  ReferenceType.upgradeFrom(type,type.containedTypeOrUnknown(0));
 
     return type;

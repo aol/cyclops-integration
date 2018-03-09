@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.type.ReferenceType;
 import com.oath.cyclops.jackson.deserializers.OptionDeserializer;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Option;
-import cyclops.control.Trampoline;
+import cyclops.control.*;
 
 public class CyclopsDeserializers  extends Deserializers.Base {
 
@@ -24,7 +21,22 @@ public class CyclopsDeserializers  extends Deserializers.Base {
     if (raw == Eval.class) {
       return new EvalDeserializer(type);
     }
+    if (raw == Future.class) {
+      return new EvalDeserializer(type);
+    }
+    if (raw == Ior.class) {
+      return new IorDeserializer(type);
+    }
+    if (raw == LazyEither.class) {
+      return new LazyEitherDeserializer(type);
+    }
+    if (raw == Either.class) {
+      return new EitherDeserializer(type);
+    }
     if (raw == Trampoline.class) {
+      return new TrampolineDeserializer(type);
+    }
+    if (raw == Unrestricted.class) {
       return new TrampolineDeserializer(type);
     }
     return super.findBeanDeserializer(type, config, beanDesc);
