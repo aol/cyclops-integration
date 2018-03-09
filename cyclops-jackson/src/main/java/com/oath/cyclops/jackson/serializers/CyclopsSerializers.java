@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.type.ReferenceType;
 import cyclops.control.Either;
 import cyclops.control.Eval;
 import cyclops.control.Option;
+import cyclops.control.Trampoline;
 
 public class CyclopsSerializers extends Serializers.Base {
 
@@ -21,6 +22,9 @@ public class CyclopsSerializers extends Serializers.Base {
     }
     if (Eval.class.isAssignableFrom(type.getRawClass())) {
       return new EvalSerializer(type,true,contentTypeSerializer,contentValueSerializer);
+    }
+    if (Trampoline.class.isAssignableFrom(type.getRawClass())) {
+      return new TrampolineSerializer(type,true,contentTypeSerializer,contentValueSerializer);
     }
 
     return super.findReferenceSerializer(config, type, beanDesc, contentTypeSerializer, contentValueSerializer);

@@ -8,6 +8,7 @@ import com.oath.cyclops.jackson.deserializers.OptionDeserializer;
 import cyclops.control.Eval;
 import cyclops.control.Maybe;
 import cyclops.control.Option;
+import cyclops.control.Trampoline;
 
 public class CyclopsDeserializers  extends Deserializers.Base {
 
@@ -22,6 +23,9 @@ public class CyclopsDeserializers  extends Deserializers.Base {
     }
     if (raw == Eval.class) {
       return new EvalDeserializer(type);
+    }
+    if (raw == Trampoline.class) {
+      return new TrampolineDeserializer(type);
     }
     return super.findBeanDeserializer(type, config, beanDesc);
   }

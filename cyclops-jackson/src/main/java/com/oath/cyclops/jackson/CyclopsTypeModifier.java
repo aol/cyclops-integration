@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.type.TypeModifier;
 import cyclops.control.Either;
 import cyclops.control.Eval;
 import cyclops.control.Option;
+import cyclops.control.Trampoline;
 
 import java.lang.reflect.Type;
 
@@ -25,6 +26,8 @@ public class CyclopsTypeModifier extends TypeModifier {
       return  ReferenceType.upgradeFrom(type,type.containedTypeOrUnknown(0));
 
     if (raw==Eval.class)
+      return  ReferenceType.upgradeFrom(type,type.containedTypeOrUnknown(0));
+    if (raw==Trampoline.class)
       return  ReferenceType.upgradeFrom(type,type.containedTypeOrUnknown(0));
     if (raw==Either.class)
       return  ReferenceType.upgradeFrom(type,type.containedTypeOrUnknown(0));
