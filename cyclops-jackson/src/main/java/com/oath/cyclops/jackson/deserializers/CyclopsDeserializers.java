@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.type.ReferenceType;
 import com.oath.cyclops.jackson.deserializers.OptionDeserializer;
+import com.oath.cyclops.types.persistent.PersistentMap;
+import com.oath.cyclops.types.traversable.IterableX;
 import cyclops.control.*;
 
 public class CyclopsDeserializers  extends Deserializers.Base {
@@ -12,6 +14,12 @@ public class CyclopsDeserializers  extends Deserializers.Base {
   @Override
   public JsonDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config, BeanDescription beanDesc) throws JsonMappingException {
     Class<?> raw = type.getRawClass();
+    if (IterableX.class.isAssignableFrom(type.getRawClass())) {
+      return new IterableXDeserializer(raw,type.containedTypeOrUnknown(0).getRawClass());
+    }
+    if (PersistentMap.class.isAssignableFrom(type.getRawClass())) {
+      return new PersistentMapDeserializer(raw);
+    }
     if (raw == Maybe.class) {
       return new MaybeDeserializer(type);
     }

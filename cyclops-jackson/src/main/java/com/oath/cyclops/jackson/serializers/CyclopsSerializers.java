@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.Serializers;
+import com.fasterxml.jackson.databind.ser.impl.BeanAsArraySerializer;
+import com.fasterxml.jackson.databind.ser.std.SerializableSerializer;
 import com.fasterxml.jackson.databind.type.CollectionLikeType;
 import com.fasterxml.jackson.databind.type.ReferenceType;
 import com.oath.cyclops.matching.Sealed2;
@@ -13,8 +15,10 @@ import com.oath.cyclops.matching.Sealed3;
 import com.oath.cyclops.matching.Sealed4;
 import com.oath.cyclops.matching.Sealed5;
 import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.persistent.PersistentMap;
 import com.oath.cyclops.types.traversable.IterableX;
 import cyclops.control.*;
+import cyclops.data.tuple.*;
 
 public class CyclopsSerializers extends Serializers.Base {
 
@@ -61,6 +65,25 @@ public class CyclopsSerializers extends Serializers.Base {
 
   @Override
   public JsonSerializer<?> findSerializer(SerializationConfig config, JavaType type, BeanDescription beanDesc) {
+
+    if (Tuple1.class==type.getRawClass()) {
+      return new Tuple1Serializer();
+    }
+    if (Tuple2.class==type.getRawClass()) {
+      return new Tuple2Serializer();
+    }
+    if (Tuple3.class==type.getRawClass()) {
+      return new Tuple3Serializer();
+    }
+    if (Tuple4.class==type.getRawClass()) {
+      return new Tuple4Serializer();
+    }
+    if (Tuple5.class==type.getRawClass()) {
+      return new Tuple5Serializer();
+    }
+    if(PersistentMap.class.isAssignableFrom(type.getRawClass())) {
+      return new PersistentMapSerializer();
+    }
     if (IterableX.class.isAssignableFrom(type.getRawClass())) {
       return new IterableXSerializer();
     }

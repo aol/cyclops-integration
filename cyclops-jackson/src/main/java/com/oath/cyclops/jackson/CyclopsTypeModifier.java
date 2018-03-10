@@ -8,6 +8,7 @@ import cyclops.control.Either;
 import cyclops.control.Eval;
 import cyclops.control.Option;
 import cyclops.control.Trampoline;
+import cyclops.data.HashMap;
 
 import java.lang.reflect.Type;
 
