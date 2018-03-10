@@ -1,11 +1,9 @@
 package com.oath.cyclops.jackson;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.type.ReferenceType;
-import com.fasterxml.jackson.databind.type.TypeBindings;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.type.TypeModifier;
+import com.fasterxml.jackson.databind.type.*;
 import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.traversable.IterableX;
 import cyclops.control.Either;
 import cyclops.control.Eval;
 import cyclops.control.Option;

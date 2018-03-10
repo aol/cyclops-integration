@@ -6,12 +6,14 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.Serializers;
+import com.fasterxml.jackson.databind.type.CollectionLikeType;
 import com.fasterxml.jackson.databind.type.ReferenceType;
 import com.oath.cyclops.matching.Sealed2;
 import com.oath.cyclops.matching.Sealed3;
 import com.oath.cyclops.matching.Sealed4;
 import com.oath.cyclops.matching.Sealed5;
 import com.oath.cyclops.types.Value;
+import com.oath.cyclops.types.traversable.IterableX;
 import cyclops.control.*;
 
 public class CyclopsSerializers extends Serializers.Base {
@@ -51,10 +53,21 @@ public class CyclopsSerializers extends Serializers.Base {
   }
 
   @Override
+  public JsonSerializer<?> findCollectionLikeSerializer(SerializationConfig config, CollectionLikeType type, BeanDescription beanDesc, TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer) {
+
+    return super.findCollectionLikeSerializer(config, type, beanDesc, elementTypeSerializer, elementValueSerializer);
+  }
+
+
+  @Override
   public JsonSerializer<?> findSerializer(SerializationConfig config, JavaType type, BeanDescription beanDesc) {
+    if (IterableX.class.isAssignableFrom(type.getRawClass())) {
+      return new IterableXSerializer();
+    }
     if (Either.class.isAssignableFrom(type.getRawClass())) {
       return new Sealed2Serializer();
     }
+
     if (Sealed2.class.isAssignableFrom(type.getRawClass())) {
       return new Sealed2Serializer();
     }
