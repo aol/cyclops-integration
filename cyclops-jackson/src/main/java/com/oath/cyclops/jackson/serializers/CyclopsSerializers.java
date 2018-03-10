@@ -81,6 +81,15 @@ public class CyclopsSerializers extends Serializers.Base {
     if (Tuple5.class==type.getRawClass()) {
       return new Tuple5Serializer();
     }
+    if (Tuple6.class==type.getRawClass()) {
+      return new Tuple6Serializer();
+    }
+    if (Tuple7.class==type.getRawClass()) {
+      return new Tuple7Serializer();
+    }
+    if (Tuple8.class==type.getRawClass()) {
+      return new Tuple8Serializer();
+    }
     if(PersistentMap.class.isAssignableFrom(type.getRawClass())) {
       return new PersistentMapSerializer();
     }

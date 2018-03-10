@@ -17,19 +17,19 @@ public class Tuple1Serializer extends JsonSerializer<Tuple1<?>> {
   private static final long serialVersionUID = 1L;
 
 
-  @AllArgsConstructor
-  public static class T1 {
-    @Getter
-    @Setter
-    private final Object first;
-  }
 
   @Override
   public void serialize(Tuple1<?> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
 
 
-      JsonSerializer<Object> ser = serializers.findValueSerializer(T1.class);
-      ser.serialize(new T1(value._1()), gen, serializers);
+      Object[] array = new Object[]{value._1()};
+      gen.writeStartArray();
+      for(Object o : array) {
+        JsonSerializer<Object> ser = serializers.findValueSerializer(o.getClass());
+        ser.serialize(o, gen, serializers);
+      }
+      gen.writeEndArray();
+
 
   }
 }

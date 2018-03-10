@@ -8,18 +8,29 @@ import com.oath.cyclops.jackson.deserializers.OptionDeserializer;
 import com.oath.cyclops.types.persistent.PersistentMap;
 import com.oath.cyclops.types.traversable.IterableX;
 import cyclops.control.*;
+import cyclops.data.tuple.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class CyclopsDeserializers  extends Deserializers.Base {
 
+  private Set<Class> tuples = new HashSet<>();
+  {
+   tuples.add(Tuple0.class);
+   tuples.add(Tuple1.class);
+    tuples.add(Tuple2.class);
+    tuples.add(Tuple3.class);
+    tuples.add(Tuple4.class);
+    tuples.add(Tuple5.class);
+    tuples.add(Tuple6.class);
+    tuples.add(Tuple7.class);
+    tuples.add(Tuple8.class);
+  }
   @Override
   public JsonDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config, BeanDescription beanDesc) throws JsonMappingException {
     Class<?> raw = type.getRawClass();
-    if (IterableX.class.isAssignableFrom(type.getRawClass())) {
-      return new IterableXDeserializer(raw,type.containedTypeOrUnknown(0).getRawClass());
-    }
-    if (PersistentMap.class.isAssignableFrom(type.getRawClass())) {
-      return new PersistentMapDeserializer(raw);
-    }
+
     if (raw == Maybe.class) {
       return new MaybeDeserializer(type);
     }
@@ -53,6 +64,15 @@ public class CyclopsDeserializers  extends Deserializers.Base {
     }
     if (raw == Unrestricted.class) {
       return new TrampolineDeserializer(type);
+    }
+    if(tuples.contains(raw)) {
+      return new TupleDeserializer(raw);
+    }
+    if (IterableX.class.isAssignableFrom(type.getRawClass())) {
+      return new IterableXDeserializer(raw,type.containedTypeOrUnknown(0).getRawClass());
+    }
+    if (PersistentMap.class.isAssignableFrom(type.getRawClass())) {
+      return new PersistentMapDeserializer(raw);
     }
     return super.findBeanDeserializer(type, config, beanDesc);
   }

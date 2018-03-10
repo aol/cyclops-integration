@@ -16,28 +16,17 @@ public class Tuple4Serializer extends JsonSerializer<Tuple4<?,?,?,?>> {
   private static final long serialVersionUID = 1L;
 
 
-  @AllArgsConstructor
-  public static class T4 {
-    @Getter
-    @Setter
-    private final Object first;
-    @Getter
-    @Setter
-    private final Object second;
-    @Getter
-    @Setter
-    private final Object third;
-    @Getter
-    @Setter
-    private final Object fourth;
-  }
 
   @Override
   public void serialize(Tuple4<?,?,?,?> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
 
-
-      JsonSerializer<Object> ser = serializers.findValueSerializer(T4.class);
-      ser.serialize(new T4(value._1(),value._2(),value._3(),value._4()), gen, serializers);
+    Object[] array = new Object[]{value._1(),value._2(),value._3(),value._4()};
+    gen.writeStartArray();
+    for(Object o : array) {
+      JsonSerializer<Object> ser = serializers.findValueSerializer(o.getClass());
+      ser.serialize(o, gen, serializers);
+    }
+    gen.writeEndArray();
 
   }
 }
