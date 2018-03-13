@@ -4,6 +4,7 @@ import cyclops.data.LazySeq;
 import cyclops.data.Seq;
 import cyclops.data.Vector;
 import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.collections.mutable.ListX;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,9 +30,17 @@ public class IterableXTest {
     assertThat(s,equalTo(Vector.of(1,2,3)));
   }
   @Test
+  public void listX(){
+    System.out.println(JacksonUtil.serializeToJson(ListX.of(1,2,3)));
+    ListX<Integer> s = JacksonUtil.convertFromJson(JacksonUtil.serializeToJson(ListX.of(1,2,3)),ListX.class);
+    assertThat(s,equalTo(ListX.of(1,2,3)));
+  }
+  @Test
   public void reactiveSeq(){
     System.out.println(JacksonUtil.serializeToJson(ReactiveSeq.of(1,2,3)));
     ReactiveSeq<Integer> s = JacksonUtil.convertFromJson(JacksonUtil.serializeToJson(ReactiveSeq.of(1,2,3)),ReactiveSeq.class);
     assertThat(s.toList(),equalTo(ReactiveSeq.of(1,2,3).toList()));
   }
+
+
 }

@@ -1,7 +1,6 @@
 package com.oath.cyclops.jackson;
 
 import cyclops.data.Seq;
-import cyclops.data.Vector;
 import cyclops.data.tuple.Tuple;
 import cyclops.data.tuple.Tuple1;
 import org.junit.Test;

@@ -3,6 +3,7 @@ package com.oath.cyclops.jackson.deserializers;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.ReferenceType;
 import com.oath.cyclops.jackson.deserializers.OptionDeserializer;
 import com.oath.cyclops.types.persistent.PersistentMap;
@@ -17,8 +18,8 @@ public class CyclopsDeserializers  extends Deserializers.Base {
 
   private Set<Class> tuples = new HashSet<>();
   {
-   tuples.add(Tuple0.class);
-   tuples.add(Tuple1.class);
+    tuples.add(Tuple0.class);
+    tuples.add(Tuple1.class);
     tuples.add(Tuple2.class);
     tuples.add(Tuple3.class);
     tuples.add(Tuple4.class);
@@ -75,6 +76,15 @@ public class CyclopsDeserializers  extends Deserializers.Base {
       return new PersistentMapDeserializer(raw);
     }
     return super.findBeanDeserializer(type, config, beanDesc);
+  }
+
+  @Override
+  public JsonDeserializer<?> findCollectionDeserializer(CollectionType type, DeserializationConfig config, BeanDescription beanDesc, TypeDeserializer elementTypeDeserializer, JsonDeserializer<?> elementDeserializer) throws JsonMappingException {
+    Class<?> raw = type.getRawClass();
+    if (IterableX.class.isAssignableFrom(type.getRawClass())) {
+      return new IterableXDeserializer(raw,type.containedTypeOrUnknown(0).getRawClass());
+    }
+    return super.findCollectionDeserializer(type, config, beanDesc, elementTypeDeserializer, elementDeserializer);
   }
 
   @Override

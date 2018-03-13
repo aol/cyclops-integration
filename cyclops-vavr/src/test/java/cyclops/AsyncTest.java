@@ -2,9 +2,12 @@ package cyclops;
 
 import com.oath.anym.AnyMValue;
 import cyclops.companion.vavr.Trys;
+import cyclops.data.LazySeq;
 import cyclops.monads.VavrWitness.future;
 import cyclops.monads.VavrWitness.tryType;
 import cyclops.monads.WitnessType;
+import cyclops.reactive.ReactiveSeq;
+import io.vavr.collection.List;
 import io.vavr.concurrent.Future;
 import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
