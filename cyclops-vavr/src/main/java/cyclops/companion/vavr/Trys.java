@@ -1,7 +1,7 @@
 package cyclops.companion.vavr;
 
 
-import com.oath.anym.AnyMValue;
+import com.oath.cyclops.anym.AnyMValue;
 import com.oath.cyclops.ReactiveConvertableSequence;
 import com.oath.cyclops.types.MonadicValue;
 import cyclops.control.Either;

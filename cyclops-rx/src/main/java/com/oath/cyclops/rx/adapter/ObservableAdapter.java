@@ -1,7 +1,8 @@
 package com.oath.cyclops.rx.adapter;
 
 
-import com.oath.anym.extensability.AbstractFunctionalAdapter;
+
+import com.oath.cyclops.anym.extensability.AbstractMonadAdapter;
 import cyclops.companion.rx.Observables;
 import cyclops.monads.AnyM;
 import cyclops.monads.RxWitness.observable;
@@ -15,7 +16,7 @@ import java.util.function.Predicate;
 
 
 @AllArgsConstructor
-public class ObservableAdapter extends AbstractFunctionalAdapter<observable> {
+public class ObservableAdapter extends AbstractMonadAdapter<observable> {
 
 
     @Override

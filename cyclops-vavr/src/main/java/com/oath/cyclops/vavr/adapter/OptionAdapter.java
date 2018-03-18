@@ -1,8 +1,8 @@
 package com.oath.cyclops.vavr.adapter;
 
 
-import com.oath.anym.AnyMValue;
-import com.oath.anym.extensability.ValueAdapter;
+import com.oath.cyclops.anym.AnyMValue;
+import com.oath.cyclops.anym.extensability.ValueAdapter;
 import cyclops.conversion.vavr.FromCyclops;
 import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.Vavr;

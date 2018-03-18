@@ -1,6 +1,6 @@
 package cyclops.companion.vavr;
 
-import com.oath.anym.AnyMSeq;
+import com.oath.cyclops.anym.AnyMSeq;
 import cyclops.control.Either;
 import cyclops.control.Trampoline;
 import cyclops.function.Function3;

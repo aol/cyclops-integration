@@ -1,6 +1,6 @@
 package cyclops.companion.vavr;
 
-import com.oath.anym.AnyMSeq;
+import com.oath.cyclops.anym.AnyMSeq;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyLinkedListX;
 import cyclops.collections.vavr.VavrListX;
 import cyclops.function.Function3;

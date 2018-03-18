@@ -1,6 +1,6 @@
 package com.oath.cyclops.vavr.adapter;
 
-import com.oath.anym.extensability.AbstractFunctionalAdapter;
+import com.oath.cyclops.anym.extensability.AbstractMonadAdapter;
 import cyclops.monads.VavrWitness;
 
 import cyclops.monads.AnyM;
@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 
 
 @AllArgsConstructor
-public abstract class TraversableAdapter<W extends VavrWitness.TraversableWitness<W>> extends AbstractFunctionalAdapter<W> {
+public abstract class TraversableAdapter<W extends VavrWitness.TraversableWitness<W>> extends AbstractMonadAdapter<W> {
 
 
     W instance;

@@ -1,8 +1,8 @@
 package cyclops.monads;
 
 
-import com.oath.anym.AnyMSeq;
-import com.oath.anym.AnyMValue;
+import com.oath.cyclops.anym.AnyMSeq;
+import com.oath.cyclops.anym.AnyMValue;
 
 
 import cyclops.control.Future;

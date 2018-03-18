@@ -1,7 +1,7 @@
 package cyclops.monads.transformers;
 
 
-import com.oath.anym.transformers.FoldableTransformerSeq;
+import com.oath.cyclops.anym.transformers.FoldableTransformerSeq;
 import cyclops.companion.rx.Observables;
 import cyclops.monads.AnyMs;
 import cyclops.monads.Witness;

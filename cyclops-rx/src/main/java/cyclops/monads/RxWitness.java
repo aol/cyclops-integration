@@ -2,7 +2,7 @@ package cyclops.monads;
 
 
 
-import com.oath.anym.extensability.MonadAdapter;
+import com.oath.cyclops.anym.extensability.MonadAdapter;
 import com.oath.cyclops.rx.adapter.ObservableAdapter;
 import com.oath.cyclops.rx.adapter.ObservableReactiveSeq;
 import rx.Observable;

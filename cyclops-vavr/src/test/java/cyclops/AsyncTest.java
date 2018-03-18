@@ -1,6 +1,6 @@
 package cyclops;
 
-import com.oath.anym.AnyMValue;
+import com.oath.cyclops.anym.AnyMValue;
 import cyclops.companion.vavr.Trys;
 import cyclops.data.LazySeq;
 import cyclops.monads.VavrWitness.future;

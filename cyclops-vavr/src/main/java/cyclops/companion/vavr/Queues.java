@@ -1,6 +1,6 @@
 package cyclops.companion.vavr;
 
-import com.oath.anym.AnyMSeq;
+import com.oath.cyclops.anym.AnyMSeq;
 import com.oath.cyclops.hkt.Higher;
 import cyclops.companion.CompletableFutures;
 import cyclops.companion.Optionals;
