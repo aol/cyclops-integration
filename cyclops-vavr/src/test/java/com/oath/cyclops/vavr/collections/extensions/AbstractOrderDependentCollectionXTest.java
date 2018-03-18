@@ -1,15 +1,17 @@
 package com.oath.cyclops.vavr.collections.extensions;
 
+import com.oath.cyclops.ReactiveConvertableSequence;
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.types.stream.HeadAndTail;
 
-import cyclops.collections.immutable.VectorX;
-import cyclops.collections.mutable.ListX;
 import cyclops.companion.Semigroups;
 import cyclops.control.Trampoline;
+import cyclops.data.Seq;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple3;
 import cyclops.data.tuple.Tuple4;
+import cyclops.reactive.collections.immutable.VectorX;
+import cyclops.reactive.collections.mutable.ListX;
 import org.junit.Test;
 
 import java.io.Serializable;
@@ -78,25 +80,25 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
 
     @Test
     public void testOnEmptyOrdered() throws X {
-        assertEquals(asList(1), of().onEmpty(1).toListX());
-        assertEquals(asList(1), of().onEmptyGet(() -> 1).toListX());
+        assertEquals(asList(1), of().onEmpty(1).to().listX());
+        assertEquals(asList(1), of().onEmptyGet(() -> 1).to().listX());
 
-        assertEquals(asList(2), of(2).onEmpty(1).toListX());
-        assertEquals(asList(2), of(2).onEmptyGet(() -> 1).toListX());
-        assertEquals(asList(2), of(2).onEmptyError(() -> new X()).toListX());
+        assertEquals(asList(2), of(2).onEmpty(1).to().listX());
+        assertEquals(asList(2), of(2).onEmptyGet(() -> 1).to().listX());
+        assertEquals(asList(2), of(2).onEmptyError(() -> new X()).to().listX());
 
-        assertEquals(asList(2, 3), of(2, 3).onEmpty(1).toListX());
-        assertEquals(asList(2, 3), of(2, 3).onEmptyGet(() -> 1).toListX());
-        assertEquals(asList(2, 3), of(2, 3).onEmptyError(() -> new X()).toListX());
+        assertEquals(asList(2, 3), of(2, 3).onEmpty(1).to().listX());
+        assertEquals(asList(2, 3), of(2, 3).onEmptyGet(() -> 1).to().listX());
+        assertEquals(asList(2, 3), of(2, 3).onEmptyError(() -> new X()).to().listX());
     }
     @Test
     public void testCycle() {
-        assertEquals(asList(1, 2, 1, 2, 1, 2),of(1, 2).cycle(3).toListX());
-        assertEquals(asList(1, 2, 3, 1, 2, 3), of(1, 2, 3).cycle(2).toListX());
+        assertEquals(asList(1, 2, 1, 2, 1, 2),of(1, 2).cycle(3).to().listX());
+        assertEquals(asList(1, 2, 3, 1, 2, 3), of(1, 2, 3).cycle(2).to().listX());
     }
     @Test
     public void testCycleTimes() {
-        assertEquals(asList(1, 2, 1, 2, 1, 2),of(1, 2).cycle(3).toListX());
+        assertEquals(asList(1, 2, 1, 2, 1, 2),of(1, 2).cycle(3).to().listX());
 
     }
 
@@ -104,18 +106,18 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
     @Test
     public void testCycleWhile() {
         count =0;
-        assertEquals(asList(1, 2,3, 1, 2,3),of(1, 2, 3).cycleWhile(next->count++<6).toListX());
+        assertEquals(asList(1, 2,3, 1, 2,3),of(1, 2, 3).cycleWhile(next->count++<6).to().listX());
 
     }
     @Test
     public void testCycleUntil() {
         count =0;
-        assertEquals(asList(1, 2,3, 1, 2,3),of(1, 2, 3).cycleUntil(next->count++==6).toListX());
+        assertEquals(asList(1, 2,3, 1, 2,3),of(1, 2, 3).cycleUntil(next->count++==6).to().listX());
 
     }
     @Test
     public void sliding() {
-        ListX<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).toListX();
+        ListX<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(2).map(VectorX::fromIterable).to().listX();
 
         System.out.println(list);
         assertThat(list.get(0), hasItems(1, 2));
@@ -124,7 +126,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
 
     @Test
     public void slidingIncrement() {
-        List<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).collect(Collectors.toList());
+        List<VectorX<Integer>> list = of(1, 2, 3, 4, 5, 6).sliding(3, 2).map(VectorX::fromIterable).collect(Collectors.toList());
 
         System.out.println(list);
         assertThat(list.get(0), hasItems(1, 2, 3));
@@ -135,7 +137,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
     public void combine(){
         assertThat(of(1,1,2,3)
                    .combine((a, b)->a.equals(b), Semigroups.intSum)
-                   .toListX(),equalTo(ListX.of(4,3)));
+                   .to().listX(),equalTo(ListX.of(4,3)));
 
     }
 
@@ -143,7 +145,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
 	public void zip3(){
 		List<Tuple3<Integer,Integer,Character>> list =
 				of(1,2,3,4,5,6).zip3(of(100,200,300,400).stream(),of('a','b','c').stream())
-												.toListX();
+												.to().listX();
 
 		System.out.println(list);
 		List<Integer> right = list.stream().map(t -> t._2()).collect(Collectors.toList());
@@ -164,7 +166,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
 	public void zip4(){
 		List<Tuple4<Integer,Integer,Character,String>> list =
 				of(1,2,3,4,5,6).zip4(of(100,200,300,400).stream(),of('a','b','c').stream(),of("hello","world").stream())
-												.toListX();
+												.to().listX();
 		System.out.println(list);
 		List<Integer> right = list.stream().map(t -> t._2()).collect(Collectors.toList());
 		assertThat(right,hasItem(100));
@@ -187,7 +189,7 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
 	@Test
 	public void testIntersperse() {
 
-		assertThat(((CollectionX<Integer>)of(1,2,3).intersperse(0)).toListX(),equalTo(Arrays.asList(1,0,2,0,3)));
+		assertThat(((CollectionX<Integer>)of(1,2,3).intersperse(0)).to().listX(),equalTo(Arrays.asList(1,0,2,0,3)));
 
 
 
@@ -201,13 +203,13 @@ public abstract class AbstractOrderDependentCollectionXTest extends AbstractColl
 
 
 
-		assertThat((((CollectionX<Integer>)of(1, "a", 2, "b", 3).ofType(Integer.class))).toListX(),containsInAnyOrder(1, 2, 3));
+		assertThat((((CollectionX<Integer>)of(1, "a", 2, "b", 3).ofType(Integer.class))).to().listX(),containsInAnyOrder(1, 2, 3));
 
-		assertThat((((CollectionX<Integer>)of(1, "a", 2, "b", 3).ofType(Integer.class))).toListX(),not(containsInAnyOrder("a", "b",null)));
+		assertThat((((CollectionX<Integer>)of(1, "a", 2, "b", 3).ofType(Integer.class))).to().listX(),not(containsInAnyOrder("a", "b",null)));
 
 		assertThat(((CollectionX<Serializable>)of(1, "a", 2, "b", 3)
 
-				.ofType(Serializable.class)).toListX(),containsInAnyOrder(1, "a", 2, "b", 3));
+				.ofType(Serializable.class)).to().listX(),containsInAnyOrder(1, "a", 2, "b", 3));
 
 	}
 

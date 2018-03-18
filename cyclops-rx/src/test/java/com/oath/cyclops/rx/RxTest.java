@@ -1,17 +1,19 @@
 package com.oath.cyclops.rx;
 
-import static cyclops.collections.mutable.ListX.listX;
+import static cyclops.reactive.collections.mutable.ListX.listX;
 import static cyclops.companion.rx.Observables.reactiveSeq;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.oath.cyclops.types.anyM.AnyMSeq;
+
+import com.oath.cyclops.anym.AnyMSeq;
+import com.oath.cyclops.ReactiveConvertableSequence;
 import cyclops.monads.RxWitness.observable;
 
-import cyclops.collections.mutable.ListX;
 import cyclops.companion.rx.Observables;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.reactive.Spouts;
+import cyclops.reactive.collections.mutable.ListX;
 import org.junit.Test;
 
 
@@ -73,7 +75,7 @@ public class RxTest {
     @Test
     public void observable() {
         assertThat(Observables.anyM(Observable.just(1, 2, 3))
-                            .toListX(),
+                            .to(ReactiveConvertableSequence::converter).listX(),
                    equalTo(ListX.of(1, 2, 3)));
     }
 
@@ -81,7 +83,7 @@ public class RxTest {
     public void observableFlatMap() {
         assertThat(Observables.anyM(Observable.just(1, 2, 3))
                             .flatMap(a -> Observables.anyM(Observable.just(a + 10)))
-                            .toListX(),
+                            .to(ReactiveConvertableSequence::converter).listX(),
                    equalTo(ListX.of(11, 12, 13)));
     }
 

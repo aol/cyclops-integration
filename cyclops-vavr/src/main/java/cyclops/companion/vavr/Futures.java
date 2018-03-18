@@ -1,65 +1,35 @@
 package cyclops.companion.vavr;
 
-import cyclops.monads.VavrWitness.list;
-import cyclops.monads.VavrWitness.stream;
-import cyclops.monads.VavrWitness.tryType;
-import io.vavr.Lazy;
-import io.vavr.collection.*;
-import io.vavr.control.*;
-import com.oath.cyclops.vavr.hkt.*;
-import cyclops.companion.CompletableFutures;
-import cyclops.companion.Optionals;
-import cyclops.control.Eval;
-import cyclops.control.Maybe;
-import cyclops.control.Reader;
+import com.oath.cyclops.anym.AnyMValue;
+import com.oath.cyclops.ReactiveConvertableSequence;
+import com.oath.cyclops.data.collections.extensions.CollectionX;
+import com.oath.cyclops.react.Status;
+import com.oath.cyclops.types.Value;
 import cyclops.control.Either;
 import cyclops.conversion.vavr.FromCyclops;
-import cyclops.monads.*;
-import cyclops.monads.VavrWitness.*;
-import com.oath.cyclops.hkt.Higher;
+import cyclops.conversion.vavr.ToCyclops;
 import cyclops.function.Function3;
 import cyclops.function.Function4;
 import cyclops.function.Monoid;
-import cyclops.monads.Witness.*;
-import cyclops.reactive.ReactiveSeq;
-import cyclops.typeclasses.*;
-import com.oath.cyclops.vavr.hkt.ArrayKind;
-import com.oath.cyclops.vavr.hkt.ListKind;
-import com.oath.cyclops.react.Status;
-import cyclops.conversion.vavr.ToCyclops;
-import cyclops.monads.VavrWitness.future;
-import com.oath.cyclops.vavr.hkt.FutureKind;
-import com.oath.cyclops.data.collections.extensions.CollectionX;
-import com.oath.cyclops.types.Value;
-import com.oath.cyclops.types.anyM.AnyMValue;
-import cyclops.collections.mutable.ListX;
-import cyclops.companion.Monoids;
 import cyclops.function.Reducer;
+import cyclops.monads.AnyM;
+import cyclops.monads.VavrWitness;
+import cyclops.monads.VavrWitness.future;
+import cyclops.monads.WitnessType;
+import cyclops.monads.XorM;
 import cyclops.monads.transformers.FutureT;
-import cyclops.typeclasses.comonad.Comonad;
-import cyclops.typeclasses.foldable.Foldable;
-import cyclops.typeclasses.foldable.Unfoldable;
-import cyclops.typeclasses.functor.Functor;
-import cyclops.typeclasses.instances.General;
-import cyclops.typeclasses.monad.*;
-import io.vavr.collection.Array;
+import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.collections.mutable.ListX;
 import io.vavr.concurrent.Future;
-
 import lombok.experimental.UtilityClass;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
-
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-
-import static com.oath.cyclops.vavr.hkt.FutureKind.narrowK;
-import static com.oath.cyclops.vavr.hkt.FutureKind.widen;
 
 /**
  * Utilty methods for working with JDK CompletableFutures
@@ -71,9 +41,7 @@ import static com.oath.cyclops.vavr.hkt.FutureKind.widen;
 public class Futures {
 
 
-    public static  <W1,T> Coproduct<W1,future,T> coproduct(Future<T> type, InstanceDefinitions<W1> def1){
-        return Coproduct.of(Either.right(widen(type)),def1, Instances.definitions());
-    }
+
     public static  <W1 extends WitnessType<W1>,T> XorM<W1,future,T> xorM(Future<T> type){
         return XorM.right(anyM(type));
     }
@@ -147,7 +115,7 @@ public class Futures {
      * @return First Future to complete
      */
     public static <T> Future<T> anyOf(Future<T>... fts) {
-        return FromCyclops.future(cyclops.async.Future.anyOf(ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.control.Future.anyOf(ToCyclops.futures(fts)));
 
     }
     /**
@@ -161,7 +129,7 @@ public class Futures {
      */
     public static <T> Future<T> allOf(Future<T>... fts) {
 
-        return FromCyclops.future(cyclops.async.Future.allOf(ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.control.Future.allOf(ToCyclops.futures(fts)));
     }
     /**
      * Block until a Quorum of results have returned as determined by the provided Predicate
@@ -188,7 +156,7 @@ public class Futures {
     @SafeVarargs
     public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Consumer<Throwable> errorHandler, Future<T>... fts) {
 
-        return FromCyclops.future(cyclops.async.Future.quorum(breakout,errorHandler, ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.companion.Futures.quorum(breakout,errorHandler, ToCyclops.futures(fts)));
 
 
     }
@@ -216,7 +184,7 @@ public class Futures {
     @SafeVarargs
     public static <T> Future<ListX<T>> quorum(Predicate<Status<T>> breakout, Future<T>... fts) {
 
-        return FromCyclops.future(cyclops.async.Future.quorum(breakout, ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.companion.Futures.quorum(breakout, ToCyclops.futures(fts)));
 
 
     }
@@ -238,7 +206,7 @@ public class Futures {
      */
     @SafeVarargs
     public static <T> Future<T> firstSuccess(Future<T>... fts) {
-        return FromCyclops.future(cyclops.async.Future.firstSuccess(ToCyclops.futures(fts)));
+        return FromCyclops.future(cyclops.control.Future.firstSuccess(ToCyclops.futures(fts)));
 
     }
 
@@ -507,7 +475,7 @@ public class Futures {
 
     /**
      * Sequence operation, take a Collection of Futures and turn it into a Future with a Collection
-     * By constrast with {@link Futures#sequencePresent(CollectionX)}, if any Futures are empty the result
+     * By constrast with {@link Futures#sequencePresent(Iterable)}, if any Futures are empty the result
      * is an empty Future
      *
      * <pre>
@@ -526,13 +494,13 @@ public class Futures {
      * @param opts Maybes to Sequence
      * @return  Maybe with a List of values
      */
-    public static <T> Future<ListX<T>> sequence(final CollectionX<Future<T>> opts) {
-        return sequence(opts.stream()).map(s -> s.toListX());
+    public static <T> Future<ListX<T>> sequence(final Iterable<Future<T>> opts) {
+        return sequence(cyclops.companion.Streams.stream(opts)).map(s -> s.to(ReactiveConvertableSequence::converter).listX());
 
     }
     /**
      * Sequence operation, take a Collection of Futures and turn it into a Future with a Collection
-     * Only successes are retained. By constrast with {@link Futures#sequence(CollectionX)} Future#empty types are
+     * Only successes are retained. By constrast with {@link Futures#sequence(Iterable)} Future#empty types are
      * tolerated and ignored.
      *
      * <pre>
@@ -548,12 +516,12 @@ public class Futures {
      * @param opts Futures to Sequence
      * @return Future with a List of values
      */
-    public static <T> Future<ListX<T>> sequencePresent(final CollectionX<Future<T>> opts) {
-        return sequence(opts.stream().filter(Future::isCompleted)).map(s->s.toListX());
+    public static <T> Future<ListX<T>> sequencePresent(final Iterable<Future<T>> opts) {
+        return sequence(cyclops.companion.Streams.stream(opts).filter(Future::isCompleted)).map(s->s.to(ReactiveConvertableSequence::converter).listX());
     }
     /**
      * Sequence operation, take a Collection of Futures and turn it into a Future with a Collection
-     * By constrast with {@link Futures#sequencePresent(CollectionX)} if any Future types are empty
+     * By constrast with {@link Futures#sequencePresent(Iterable)} if any Future types are empty
      * the return type will be an empty Future
      *
      * <pre>
@@ -597,7 +565,7 @@ public class Futures {
      * @param reducer Reducer to accumulate values with
      * @return Future with reduced value
      */
-    public static <T, R> Future<R> accumulatePresent(final CollectionX<Future<T>> futureals, final Reducer<R,T> reducer) {
+    public static <T, R> Future<R> accumulatePresent(final Iterable<Future<T>> futureals, final Reducer<R,T> reducer) {
         return sequencePresent(futureals).map(s -> s.mapReduce(reducer));
     }
     /**
@@ -622,7 +590,7 @@ public class Futures {
      * @param reducer Monoid to combine values from each Future
      * @return Future with reduced value
      */
-    public static <T, R> Future<R> accumulatePresent(final CollectionX<Future<T>> futureals, final Function<? super T, R> mapper,
+    public static <T, R> Future<R> accumulatePresent(final Iterable<Future<T>> futureals, final Function<? super T, R> mapper,
                                                      final Monoid<R> reducer) {
         return sequencePresent(futureals).map(s -> s.map(mapper)
                 .reduce(reducer));
@@ -648,7 +616,7 @@ public class Futures {
      * @param reducer Monoid to combine values from each Future
      * @return Future with reduced value
      */
-    public static <T> Future<T> accumulatePresent(final Monoid<T> reducer, final CollectionX<Future<T>> futureals) {
+    public static <T> Future<T> accumulatePresent(final Monoid<T> reducer, final Iterable<Future<T>> futureals) {
         return sequencePresent(futureals).map(s -> s
                 .reduce(reducer));
     }
@@ -675,7 +643,7 @@ public class Futures {
     public static <T1, T2, R> Future<R> combine(final Future<? extends T1> f, final Value<? extends T2> v,
                                                 final BiFunction<? super T1, ? super T2, ? extends R> fn) {
         return narrow(FromCyclops.future(ToCyclops.future(f)
-                .combine(v, fn)));
+                .zip(v, fn)));
     }
     /**
      * Combine an Future with the provided Future using the supplied BiFunction
@@ -748,7 +716,7 @@ public class Futures {
     public static <T1, T2, R> Future<R> zip(final Publisher<? extends T2> p, final Future<? extends T1> f,
                                             final BiFunction<? super T1, ? super T2, ? extends R> fn) {
         return narrow(FromCyclops.future(ToCyclops.future(f)
-                .zipP(p, fn)));
+                .zip(fn,p)));
     }
     /**
      * Narrow covariant type parameter
@@ -760,500 +728,6 @@ public class Futures {
         return (Future<T>) futureal;
     }
 
-    public static <T> Active<future,T> allTypeclasses(Future<T> future){
-        return Active.of(widen(future), Futures.Instances.definitions());
-    }
-    public static <T,W2,R> Nested<future,W2,R> mapM(Future<T> future, Function<? super T,? extends Higher<W2,R>> fn, InstanceDefinitions<W2> defs){
-        Future<Higher<W2, R>> e = future.map(fn);
-        FutureKind<Higher<W2, R>> lk = widen(e);
-        return Nested.of(lk, Futures.Instances.definitions(), defs);
-    }
-
-    /**
-     * Companion class for creating Type Class instances for working with Futures
-     * @author johnmcclean
-     *
-     */
-    @UtilityClass
-    public static class Instances {
-
-        public static  InstanceDefinitions<future> definitions() {
-            return new InstanceDefinitions<future>() {
-
-                @Override
-                public <T, R> Functor<future> functor() {
-                    return Instances.functor();
-                }
-
-                @Override
-                public <T> Pure<future> unit() {
-                    return Instances.unit();
-                }
-
-                @Override
-                public <T, R> Applicative<future> applicative() {
-                    return Instances.applicative();
-                }
-
-                @Override
-                public <T, R> Monad<future> monad() {
-                    return Instances.monad();
-                }
-
-                @Override
-                public <T, R> Maybe<MonadZero<future>> monadZero() {
-                    return Maybe.just(Instances.monadZero());
-                }
-
-                @Override
-                public <T> Maybe<MonadPlus<future>> monadPlus() {
-                    return Maybe.just(Instances.monadPlus());
-                }
-
-                @Override
-                public <T> MonadRec<future> monadRec() {
-                    return Instances.monadRec();
-                }
-
-                @Override
-                public <T> Maybe<MonadPlus<future>> monadPlus(Monoid<Higher<future, T>> m) {
-                    return Maybe.just(Instances.monadPlus(m));
-                }
-
-                @Override
-                public <C2, T> Traverse<future> traverse() {
-                    return Instances.traverse();
-                }
-
-                @Override
-                public <T> Foldable<future> foldable() {
-                    return Instances.foldable();
-                }
-
-                @Override
-                public <T> Maybe<Comonad<future>> comonad() {
-                    return Maybe.just(Instances.comonad());
-                }
-
-                @Override
-                public <T> Maybe<Unfoldable<future>> unfoldable() {
-                    return Maybe.nothing();
-                }
-            };
-        }
-
-        /**
-         *
-         * Transform a Future, mulitplying every element by 2
-         *
-         * <pre>
-         * {@code
-         *  FutureKind<Integer> future = Futures.functor().map(i->i*2, FutureKind.widen(Future.successful(1));
-         *
-         *  //[2]
-         *
-         *
-         * }
-         * </pre>
-         *
-         * An example fluent api working with Futures
-         * <pre>
-         * {@code
-         *   FutureKind<Integer> ft = Futures.unit()
-        .unit("hello")
-        .then(h->Futures.functor().map((String v) ->v.length(), h))
-        .convert(FutureKind::narrowK);
-         *
-         * }
-         * </pre>
-         *
-         *
-         * @return A functor for Futures
-         */
-        public static <T,R>Functor<future> functor(){
-            BiFunction<FutureKind<T>,Function<? super T, ? extends R>,FutureKind<R>> map = Instances::map;
-            return General.functor(map);
-        }
-        /**
-         * <pre>
-         * {@code
-         * FutureKind<String> ft = Futures.unit()
-        .unit("hello")
-        .convert(FutureKind::narrowK);
-
-        //Arrays.asFuture("hello"))
-         *
-         * }
-         * </pre>
-         *
-         *
-         * @return A factory for Futures
-         */
-        public static <T> Pure<future> unit(){
-            return General.<future,T>unit(Instances::of);
-        }
-        /**
-         *
-         * <pre>
-         * {@code
-         * import static com.oath.cyclops.hkt.jdk.FutureKind.widen;
-         * import static com.oath.cyclops.util.function.Lambda.l1;
-         *
-        Futures.applicative()
-        .ap(widen(Future.successful(l1(this::multiplyByTwo))),widen(asFuture(1,2,3)));
-         *
-         * //[2,4,6]
-         * }
-         * </pre>
-         *
-         *
-         * Example fluent API
-         * <pre>
-         * {@code
-         * FutureKind<Function<Integer,Integer>> ftFn =Futures.unit()
-         *                                                  .unit(Lambda.l1((Integer i) ->i*2))
-         *                                                  .convert(FutureKind::narrowK);
-
-        FutureKind<Integer> ft = Futures.unit()
-        .unit("hello")
-        .then(h->Futures.functor().map((String v) ->v.length(), h))
-        .then(h->Futures.applicative().ap(ftFn, h))
-        .convert(FutureKind::narrowK);
-
-        //Arrays.asFuture("hello".length()*2))
-         *
-         * }
-         * </pre>
-         *
-         *
-         * @return A zipper for Futures
-         */
-        public static <T,R> Applicative<future> applicative(){
-            BiFunction<FutureKind< Function<T, R>>,FutureKind<T>,FutureKind<R>> ap = Instances::ap;
-            return General.applicative(functor(), unit(), ap);
-        }
-        /**
-         *
-         * <pre>
-         * {@code
-         * import static com.oath.cyclops.hkt.jdk.FutureKind.widen;
-         * FutureKind<Integer> ft  = Futures.monad()
-        .flatMap(i->widen(Future.successful(i), widen(Future.successful(3))
-        .convert(FutureKind::narrowK);
-         * }
-         * </pre>
-         *
-         * Example fluent API
-         * <pre>
-         * {@code
-         *    FutureKind<Integer> ft = Futures.unit()
-        .unit("hello")
-        .then(h->Futures.monad().flatMap((String v) ->Futures.unit().unit(v.length()), h))
-        .convert(FutureKind::narrowK);
-
-        //Arrays.asFuture("hello".length())
-         *
-         * }
-         * </pre>
-         *
-         * @return Type class with monad functions for Futures
-         */
-        public static <T,R> Monad<future> monad(){
-
-            BiFunction<Higher<future,T>,Function<? super T, ? extends Higher<future,R>>,Higher<future,R>> flatMap = Instances::flatMap;
-            return General.monad(applicative(), flatMap);
-        }
-        public static <T,R> MonadRec<future> monadRec(){
-            return new MonadRec<future>() {
-                @Override
-                public <T, R> Higher<future, R> tailRec(T initial, Function<? super T, ? extends Higher<future, ? extends Either<T, R>>> fn) {
-                    return widen(Futures.tailRecEither(initial,fn.andThen(FutureKind::narrowK)));
-                }
-            };
-        }
-        /**
-         *
-         * <pre>
-         * {@code
-         *  FutureKind<String> ft = Futures.unit()
-        .unit("hello")
-        .then(h->Futures.monadZero().filter((String t)->t.startsWith("he"), h))
-        .convert(FutureKind::narrowK);
-
-        //Arrays.asFuture("hello"));
-         *
-         * }
-         * </pre>
-         *
-         *
-         * @return A filterable monad (with default value)
-         */
-        public static <T,R> MonadZero<future> monadZero(){
-
-            return General.monadZero(monad(), FutureKind.promise());
-        }
-        /**
-         * <pre>
-         * {@code
-         *  FutureKind<Integer> ft = Futures.<Integer>monadPlus()
-        .plus(FutureKind.widen(Arrays.asFuture()), FutureKind.widen(Future.successful((10)))
-        .convert(FutureKind::narrowK);
-        //Future(10)
-         *
-         * }
-         * </pre>
-         * @return Type class for combining Futures by concatenation
-         */
-        public static <T> MonadPlus<future> monadPlus(){
-            Monoid<cyclops.async.Future<T>> mn = Monoids.firstSuccessfulFuture();
-            Monoid<FutureKind<T>> m = Monoid.of(widen(mn.zero()), (f, g)-> widen(
-                    mn.apply(ToCyclops.future(f), ToCyclops.future(g))));
-
-            Monoid<Higher<future,T>> m2= (Monoid)m;
-            return General.monadPlus(monadZero(),m2);
-        }
-        /**
-         *
-         * <pre>
-         * {@code
-         *  Monoid<FutureKind<Integer>> m = Monoid.of(FutureKind.widen(Future.failed(e), (a,b)->a.isEmpty() ? b : a);
-        FutureKind<Integer> ft = Futures.<Integer>monadPlus(m)
-        .plus(FutureKind.widen(Future.successful(5), FutureKind.widen(Future.successful(10))
-        .convert(FutureKind::narrowK);
-        //Future(5)
-         *
-         * }
-         * </pre>
-         *
-         * @param m Monoid to use for combining Futures
-         * @return Type class for combining Futures
-         */
-        public static <T> MonadPlus<future> monadPlus(Monoid<Higher<future, T>> m){
-            Monoid<Higher<future,T>> m2= (Monoid)m;
-            return General.monadPlus(monadZero(),m2);
-        }
-        public static <T> MonadPlus<future> monadPlusK(Monoid<FutureKind<T>> m){
-            Monoid<Higher<future,T>> m2= (Monoid)m;
-            return General.monadPlus(monadZero(),m2);
-        }
-
-        /**
-         * @return Type class for traversables with traverse / sequence operations
-         */
-        public static <C2,T> Traverse<future> traverse(){
-
-            return General.traverseByTraverse(applicative(), Instances::traverseA);
-        }
-
-        /**
-         *
-         * <pre>
-         * {@code
-         * int sum  = Futures.foldable()
-        .foldLeft(0, (a,b)->a+b, FutureKind.widen(Future.successful(4));
-
-        //4
-         *
-         * }
-         * </pre>
-         *
-         *
-         * @return Type class for folding / reduction operations
-         */
-        public static <T> Foldable<future> foldable(){
-            return new Foldable<future>() {
-                @Override
-                public <T> T foldRight(Monoid<T> monoid, Higher<future, T> ds) {
-                    return narrowK(ds).recover(e->monoid.zero()).get();
-                }
-
-                @Override
-                public <T> T foldLeft(Monoid<T> monoid, Higher<future, T> ds) {
-                    return narrowK(ds).recover(e->monoid.zero()).get();
-                }
-
-                @Override
-                public <T, R> R foldMap(Monoid<R> mb, Function<? super T, ? extends R> fn, Higher<future, T> nestedA) {
-                   return narrowK(nestedA).<R>map(fn).recover(e -> mb.zero()).get();
-                }
-            };
-
-
-        }
-        public static <T> Comonad<future> comonad(){
-            Function<? super Higher<future, T>, ? extends T> extractFn = maybe -> maybe.convert(FutureKind::narrow).get();
-            return General.comonad(functor(), unit(), extractFn);
-        }
-
-        private <T> FutureKind<T> of(T value){
-            return widen(Future.successful(value));
-        }
-        private static <T,R> FutureKind<R> ap(FutureKind<Function< T, R>> lt, FutureKind<T> list){
-            return widen(ToCyclops.future(lt).combine(ToCyclops.future(list), (a, b)->a.apply(b)));
-
-        }
-        private static <T,R> Higher<future,R> flatMap(Higher<future,T> lt, Function<? super T, ? extends  Higher<future,R>> fn){
-            return widen(FutureKind.narrow(lt).flatMap(fn.andThen(FutureKind::narrowK)));
-        }
-        private static <T,R> FutureKind<R> map(FutureKind<T> lt, Function<? super T, ? extends R> fn){
-            return widen(lt.map(fn));
-        }
-
-
-        private static <C2,T,R> Higher<C2, Higher<future, R>> traverseA(Applicative<C2> applicative, Function<? super T, ? extends Higher<C2, R>> fn,
-                                                                              Higher<future, T> ds){
-            Future<T> future = FutureKind.narrow(ds);
-            return applicative.map(FutureKind::successful, fn.apply(future.get()));
-        }
-
-    }
-
-    public static interface FutureNested{
-
-
-        public static <T> Nested<future,option,T> option(Future<Option<T>> type){
-            return Nested.of(widen(type.map(OptionKind::widen)),Instances.definitions(),Options.Instances.definitions());
-        }
-        public static <T> Nested<future,tryType,T> futureTry(Future<Try<T>> type){
-            return Nested.of(widen(type.map(TryKind::widen)),Instances.definitions(),Trys.Instances.definitions());
-        }
-        public static <T> Nested<future,future,T> future(Future<Future<T>> type){
-            return Nested.of(widen(type.map(FutureKind::widen)),Instances.definitions(),Futures.Instances.definitions());
-        }
-        public static <T> Nested<future,lazy,T> lazy(Future<Lazy<T>> nested){
-            return Nested.of(widen(nested.map(LazyKind::widen)),Instances.definitions(),Lazys.Instances.definitions());
-        }
-        public static <L, R> Nested<future,Higher<VavrWitness.either,L>, R> either(Future<io.vavr.control.Either<L, R>> nested){
-            return Nested.of(widen(nested.map(EitherKind::widen)),Instances.definitions(),Eithers.Instances.definitions());
-        }
-        public static <T> Nested<future,VavrWitness.queue,T> queue(Future<Queue<T>> nested){
-            return Nested.of(widen(nested.map(QueueKind::widen)), Instances.definitions(),Queues.Instances.definitions());
-        }
-        public static <T> Nested<future,stream,T> stream(Future<Stream<T>> nested){
-            return Nested.of(widen(nested.map(StreamKind::widen)),Instances.definitions(),Streams.Instances.definitions());
-        }
-        public static <T> Nested<future,list,T> list(Future<List<T>> nested){
-            return Nested.of(widen(nested.map(ListKind::widen)), Instances.definitions(),Lists.Instances.definitions());
-        }
-        public static <T> Nested<future,array,T> array(Future<Array<T>> nested){
-            return Nested.of(widen(nested.map(ArrayKind::widen)),Instances.definitions(),Arrays.Instances.definitions());
-        }
-        public static <T> Nested<future,vector,T> vector(Future<Vector<T>> nested){
-            return Nested.of(widen(nested.map(VectorKind::widen)),Instances.definitions(),Vectors.Instances.definitions());
-        }
-        public static <T> Nested<future,hashSet,T> set(Future<HashSet<T>> nested){
-            return Nested.of(widen(nested.map(HashSetKind::widen)),Instances.definitions(), HashSets.Instances.definitions());
-        }
-
-        public static <T> Nested<future,reactiveSeq,T> reactiveSeq(Future<ReactiveSeq<T>> nested){
-            FutureKind<ReactiveSeq<T>> x = widen(nested);
-            FutureKind<Higher<reactiveSeq,T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),ReactiveSeq.Instances.definitions());
-        }
-
-        public static <T> Nested<future,maybe,T> maybe(Future<Maybe<T>> nested){
-            FutureKind<Maybe<T>> x = widen(nested);
-            FutureKind<Higher<maybe,T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),Maybe.Instances.definitions());
-        }
-        public static <T> Nested<future,eval,T> eval(Future<Eval<T>> nested){
-            FutureKind<Eval<T>> x = widen(nested);
-            FutureKind<Higher<eval,T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),Eval.Instances.definitions());
-        }
-        public static <T> Nested<future,Witness.future,T> cyclopsFuture(Future<cyclops.async.Future<T>> nested){
-            FutureKind<cyclops.async.Future<T>> x = widen(nested);
-            FutureKind<Higher<Witness.future,T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),cyclops.async.Future.Instances.definitions());
-        }
-        public static <S, P> Nested<future,Higher<Witness.either,S>, P> xor(Future<Either<S, P>> nested){
-            FutureKind<Either<S, P>> x = widen(nested);
-            FutureKind<Higher<Higher<Witness.either,S>, P>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),Either.Instances.definitions());
-        }
-        public static <S,T> Nested<future,Higher<reader,S>, T> reader(Future<Reader<S, T>> nested,S defaultValue){
-            FutureKind<Reader<S, T>> x = widen(nested);
-            FutureKind<Higher<Higher<reader,S>, T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),Reader.Instances.definitions(defaultValue));
-        }
-        public static <S extends Throwable, P> Nested<future,Higher<Witness.tryType,S>, P> cyclopsTry(Future<cyclops.control.Try<P, S>> nested){
-            FutureKind<cyclops.control.Try<P, S>> x = widen(nested);
-            FutureKind<Higher<Higher<Witness.tryType,S>, P>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(),cyclops.control.Try.Instances.definitions());
-        }
-        public static <T> Nested<future,optional,T> optional(Future<Optional<T>> nested){
-            FutureKind<Optional<T>> x = widen(nested);
-            FutureKind<Higher<optional,T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(), Optionals.Instances.definitions());
-        }
-        public static <T> Nested<future,completableFuture,T> completableFuture(Future<CompletableFuture<T>> nested){
-            FutureKind<CompletableFuture<T>> x = widen(nested);
-            FutureKind<Higher<completableFuture,T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(), CompletableFutures.Instances.definitions());
-        }
-        public static <T> Nested<future,Witness.stream,T> javaStream(Future<java.util.stream.Stream<T>> nested){
-            FutureKind<java.util.stream.Stream<T>> x = widen(nested);
-            FutureKind<Higher<Witness.stream,T>> y = (FutureKind)x;
-            return Nested.of(y,Instances.definitions(), cyclops.companion.Streams.Instances.definitions());
-        }
-
-
-
-
-    }
-    public static interface NestedFuture{
-        public static <T> Nested<reactiveSeq,future,T> reactiveSeq(ReactiveSeq<Future<T>> nested){
-            ReactiveSeq<Higher<future,T>> x = nested.map(FutureKind::widenK);
-            return Nested.of(x,ReactiveSeq.Instances.definitions(),Instances.definitions());
-        }
-
-        public static <T> Nested<maybe,future,T> maybe(Maybe<Future<T>> nested){
-            Maybe<Higher<future,T>> x = nested.map(FutureKind::widenK);
-
-            return Nested.of(x,Maybe.Instances.definitions(),Instances.definitions());
-        }
-        public static <T> Nested<eval,future,T> eval(Eval<Future<T>> nested){
-            Eval<Higher<future,T>> x = nested.map(FutureKind::widenK);
-
-            return Nested.of(x,Eval.Instances.definitions(),Instances.definitions());
-        }
-        public static <T> Nested<Witness.future,future,T> cyclopsFuture(cyclops.async.Future<Future<T>> nested){
-            cyclops.async.Future<Higher<future,T>> x = nested.map(FutureKind::widenK);
-
-            return Nested.of(x,cyclops.async.Future.Instances.definitions(),Instances.definitions());
-        }
-        public static <S, P> Nested<Higher<Witness.either,S>,future, P> xor(Either<S, Future<P>> nested){
-            Either<S, Higher<future,P>> x = nested.map(FutureKind::widenK);
-
-            return Nested.of(x,Either.Instances.definitions(),Instances.definitions());
-        }
-        public static <S,T> Nested<Higher<reader,S>,future, T> reader(Reader<S, Future<T>> nested,S defaultValue){
-
-            Reader<S, Higher<future, T>>  x = nested.map(FutureKind::widenK);
-
-            return Nested.of(x,Reader.Instances.definitions(defaultValue),Instances.definitions());
-        }
-        public static <S extends Throwable, P> Nested<Higher<Witness.tryType,S>,future, P> cyclopsTry(cyclops.control.Try<Future<P>, S> nested){
-            cyclops.control.Try<Higher<future,P>, S> x = nested.map(FutureKind::widenK);
-
-            return Nested.of(x,cyclops.control.Try.Instances.definitions(),Instances.definitions());
-        }
-        public static <T> Nested<optional,future,T> optional(Optional<Future<T>> nested){
-            Optional<Higher<future,T>> x = nested.map(FutureKind::widenK);
-
-            return  Nested.of(Optionals.OptionalKind.widen(x), Optionals.Instances.definitions(), Instances.definitions());
-        }
-        public static <T> Nested<completableFuture,future,T> completableFuture(CompletableFuture<Future<T>> nested){
-            CompletableFuture<Higher<future,T>> x = nested.thenApply(FutureKind::widenK);
-
-            return Nested.of(CompletableFutures.CompletableFutureKind.widen(x), CompletableFutures.Instances.definitions(),Instances.definitions());
-        }
-        public static <T> Nested<Witness.stream,future,T> javaStream(java.util.stream.Stream<Future<T>> nested){
-            java.util.stream.Stream<Higher<future,T>> x = nested.map(FutureKind::widenK);
-
-            return Nested.of(cyclops.companion.Streams.StreamKind.widen(x), cyclops.companion.Streams.Instances.definitions(),Instances.definitions());
-        }
-    }
 
 
 }

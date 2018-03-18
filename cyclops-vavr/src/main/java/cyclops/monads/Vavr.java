@@ -1,10 +1,14 @@
 package cyclops.monads;
 
 
-import com.oath.cyclops.types.anyM.AnyMSeq;
-import com.oath.cyclops.types.anyM.AnyMValue;
-import cyclops.async.Future;
+import com.oath.cyclops.anym.AnyMSeq;
+import com.oath.cyclops.anym.AnyMValue;
 
+
+import cyclops.control.Future;
+import cyclops.monads.VavrWitness.*;
+import cyclops.monads.VavrWitness.hashSet;
+import cyclops.monads.VavrWitness.option;
 import io.vavr.collection.*;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
@@ -16,44 +20,44 @@ public class Vavr {
 
 
 
-    public static <T> AnyMValue<VavrWitness.tryType,T> tryM(Try<T> tryM) {
+    public static <T> AnyMValue<tryType,T> tryM(Try<T> tryM) {
         return AnyM.ofValue(tryM, VavrWitness.tryType.INSTANCE);
     }
 
-    public static <R> AnyM<VavrWitness.either,R> either(Either<?,R> either) {
+    public static <R> AnyM<either,R> either(Either<?,R> either) {
         return AnyM.ofValue(either, VavrWitness.either.INSTANCE);
     }
-    public static <T> AnyMSeq<VavrWitness.stream,T> stream(Stream<T> stream) {
+    public static <T> AnyMSeq<stream,T> stream(Stream<T> stream) {
         return AnyM.ofSeq(stream, VavrWitness.stream.INSTANCE);
     }
-    public static <T> AnyMSeq<VavrWitness.list,T> list(List<T> list) {
+    public static <T> AnyMSeq<list,T> list(List<T> list) {
         return AnyM.ofSeq(list, VavrWitness.list.INSTANCE);
     }
-    public static <T> AnyMSeq<VavrWitness.array,T> array(Array<T> array) {
+    public static <T> AnyMSeq<array,T> array(Array<T> array) {
         return AnyM.ofSeq(array, VavrWitness.array.INSTANCE);
     }
-    public static <T> AnyMSeq<VavrWitness.vector,T> vector(Vector<T> vector) {
+    public static <T> AnyMSeq<vector,T> vector(Vector<T> vector) {
         return AnyM.ofSeq(vector, VavrWitness.vector.INSTANCE);
     }
-    public static <T> AnyMSeq<VavrWitness.queue,T> queue(Queue<T> queue) {
+    public static <T> AnyMSeq<queue,T> queue(Queue<T> queue) {
         return AnyM.ofSeq(queue, VavrWitness.queue.INSTANCE);
     }
 
-    public static <T> AnyMSeq<VavrWitness.charSeq,T> charSeq(CharSeq charSeq) {
+    public static <T> AnyMSeq<charSeq,T> charSeq(CharSeq charSeq) {
         return AnyM.ofSeq(charSeq, VavrWitness.charSeq.INSTANCE);
     }
-    public static <T> AnyMSeq<VavrWitness.hashSet,T> hashSet(HashSet<T> set) {
-        return AnyM.ofSeq(set, VavrWitness.hashSet.INSTANCE);
+    public static <T> AnyMSeq<hashSet,T> hashSet(HashSet<T> set) {
+        return AnyM.ofSeq(set, hashSet.INSTANCE);
     }
-    public static <T> AnyMValue<VavrWitness.future,T> option(Future<T> option) {
-        return AnyM.ofValue(option, VavrWitness.future.INSTANCE);
+    public static <T> AnyMValue<future,T> future(Future<T> option) {
+        return AnyM.ofValue(option, future.INSTANCE);
     }
-    public static <T> AnyMValue<VavrWitness.option,T> option(Option<T> option) {
+    public static <T> AnyMValue<option,T> option(Option<T> option) {
         return AnyM.ofValue(option, VavrWitness.option.INSTANCE);
     }
 
-    public static <R> AnyMValue<VavrWitness.future,R> future(io.vavr.concurrent.Future<R> res) {
-        return AnyM.ofValue(res, VavrWitness.future.INSTANCE);
+    public static <R> AnyMValue<future,R> future(io.vavr.concurrent.Future<R> res) {
+        return AnyM.ofValue(res, future.INSTANCE);
     }
 
 }

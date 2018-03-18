@@ -1,8 +1,8 @@
 package com.oath.cyclops.vavr.adapter;
 
 
-import com.oath.cyclops.types.anyM.AnyMValue;
-import com.oath.cyclops.types.extensability.ValueAdapter;
+import com.oath.cyclops.anym.AnyMValue;
+import com.oath.cyclops.anym.extensability.ValueAdapter;
 import cyclops.conversion.vavr.FromCyclops;
 import cyclops.conversion.vavr.ToCyclops;
 import cyclops.monads.Vavr;
@@ -32,7 +32,7 @@ public class OptionAdapter implements ValueAdapter<option> {
     public <T, R> AnyM<option, R> ap(AnyM<option,? extends Function<? super T,? extends R>> fn, AnyM<option, T> apply) {
         Option<T> f = option(apply);
         Option<? extends Function<? super T, ? extends R>> fnF = option(fn);
-        Option<R> res = FromCyclops.option(ToCyclops.maybe(fnF).combine(ToCyclops.maybe(f), (a, b) -> a.apply(b)));
+        Option<R> res = FromCyclops.option(ToCyclops.maybe(fnF).zip(ToCyclops.maybe(f), (a, b) -> a.apply(b)));
         return Vavr.option(res);
 
     }

@@ -1,10 +1,8 @@
 package cyclops;
 
-import cyclops.collections.immutable.*;
 
 import cyclops.collections.vavr.*;
-import cyclops.companion.MapXs;
-import cyclops.companion.PersistentMapXs;
+import cyclops.reactive.collections.immutable.*;
 import io.vavr.collection.*;
 import org.junit.Test;
 

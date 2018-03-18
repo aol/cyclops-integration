@@ -19,7 +19,7 @@ public class FromCyclops {
     public static <T> Lazy<T> eval(Eval<T> opt){
         return Lazy.of(opt);
     }
-    public static <T> Future<T> future(cyclops.async.Future<T> future){
+    public static <T> Future<T> future(cyclops.control.Future<T> future){
         Promise<T> result =  Promise.make();
 
         future.peek(n->result.complete(Try.success(n)));

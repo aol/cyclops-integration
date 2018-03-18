@@ -1,6 +1,5 @@
 rootProject.name = 'com.oath.cyclops'
 include ':cyclops-vavr'
-include ':cyclops-reactor'
 include ':cyclops-rx'
-include 'cyclops-rxjava2'
+include ':cyclops-jackson'
 

@@ -6,20 +6,20 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.data.collections.extensions.lazy.immutable.LazyPOrderedSetX;
 import com.oath.cyclops.types.Unwrapable;
 import com.oath.cyclops.types.foldable.Evaluation;
 import com.oath.cyclops.types.persistent.PersistentSortedSet;
-import cyclops.collections.immutable.OrderedSetX;
-import cyclops.collections.immutable.VectorX;
+
 import cyclops.control.Option;
 import cyclops.function.Reducer;
 import cyclops.reactive.ReactiveSeq;
 import cyclops.data.tuple.Tuple2;
 
 
-
+import cyclops.reactive.collections.immutable.OrderedSetX;
 import io.vavr.collection.SortedSet;
 import io.vavr.collection.TreeSet;
 import lombok.AccessLevel;
@@ -27,9 +27,17 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.Wither;
 
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
 
+public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
+    private final SortedSet<T> set;
+
+    private VavrTreeSetX(SortedSet<T> set){
+      this.set = set;
+    }
+
+    public VavrTreeSetX<T> withSet(SortedSet<T> set){
+      return new VavrTreeSetX<>(set);
+    }
     public static <T> OrderedSetX<T> treeSetX(ReactiveSeq<T> stream, Comparator<? super T> c){
         return fromStream(stream,c);
     }
@@ -37,10 +45,13 @@ public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
         return fromStream(stream);
     }
     public static <T> OrderedSetX<T> copyFromCollection(CollectionX<T> vec, Comparator<T> comp) {
-
         return VavrTreeSetX.empty(comp)
-                .plusAll(vec);
+                           .plusAll(vec);
+    }
 
+    @Override
+    public Comparator<? super T> comparator() {
+      return set.comparator();
     }
 
     @Override
@@ -151,10 +162,11 @@ public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
                                            (final T x) -> VavrTreeSetX.singleton(comparator,x));
     }
     public static <T extends Comparable<? super T>> VavrTreeSetX<T> emptyPersistentSortedSet() {
-        return new VavrTreeSetX<T>(TreeSet.empty());
+      VavrTreeSetX<T> x = new VavrTreeSetX<T>(TreeSet.empty());
+      return x;
     }
     public static <T> VavrTreeSetX<T> emptyPersistentSortedSet(Comparator<? super T> comparator) {
-        return new VavrTreeSetX<T>(TreeSet.empty(comparator));
+        return new VavrTreeSetX<T>(TreeSet.<T>empty(comparator));
     }
     public static <T extends Comparable<? super T>> LazyPOrderedSetX<T> empty() {
         return fromPersistentSortedSet(new VavrTreeSetX<T>(
@@ -193,8 +205,7 @@ public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
         return fromPersistentSortedSet(of(elements), toPersistentSortedSet());
     }
 
-    @Wither
-    private final SortedSet<T> set;
+
 
     @Override
     public VavrTreeSetX<T> plus(T e) {
@@ -241,7 +252,9 @@ public class VavrTreeSetX<T> implements PersistentSortedSet<T>, Unwrapable {
     }
 
 
-    public int indexOf(T o) {
+
+
+  public int indexOf(T o) {
         return set.toStream()
                   .zipWithIndex()
                   .find(t -> t._1.equals(o))

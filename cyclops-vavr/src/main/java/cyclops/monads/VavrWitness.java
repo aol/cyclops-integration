@@ -2,8 +2,9 @@ package cyclops.monads;
 
 
 
+import com.oath.cyclops.anym.extensability.MonadAdapter;
 import com.oath.cyclops.vavr.adapter.*;
-import com.oath.cyclops.types.extensability.FunctionalAdapter;
+
 
 import io.vavr.collection.*;
 import io.vavr.concurrent.Future;
@@ -42,8 +43,8 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<stream> adapter() {
-            return new TraversableAdapter(INSTANCE){
+        public MonadAdapter<stream> adapter() {
+            return new TraversableAdapter<stream>(INSTANCE){
 
                 @Override
                 public Traversable traversableFromIterable(Iterable value) {
@@ -67,8 +68,8 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<list> adapter() {
-            return new TraversableAdapter(INSTANCE){
+        public MonadAdapter<list> adapter() {
+            return new TraversableAdapter<list>(INSTANCE){
 
                 @Override
                 public Traversable traversableFromIterable(Iterable value) {
@@ -92,8 +93,8 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<vector> adapter() {
-            return new TraversableAdapter(INSTANCE){
+        public MonadAdapter<vector> adapter() {
+            return new TraversableAdapter<vector>(INSTANCE){
 
                 @Override
                 public Traversable traversableFromIterable(Iterable value) {
@@ -117,8 +118,8 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<array> adapter() {
-            return new TraversableAdapter(INSTANCE){
+        public MonadAdapter<array> adapter() {
+            return new TraversableAdapter<array>(INSTANCE){
 
                 @Override
                 public Traversable traversableFromIterable(Iterable value) {
@@ -142,8 +143,8 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<charSeq> adapter() {
-            return new TraversableAdapter(INSTANCE){
+        public MonadAdapter<charSeq> adapter() {
+            return new TraversableAdapter<charSeq>(INSTANCE){
 
                 @Override
                 public Traversable traversableFromIterable(Iterable value) {
@@ -167,8 +168,8 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<queue> adapter() {
-            return new TraversableAdapter(INSTANCE){
+        public MonadAdapter<queue> adapter() {
+            return new TraversableAdapter<queue>(INSTANCE){
 
                 @Override
                 public Traversable traversableFromIterable(Iterable value) {
@@ -196,7 +197,7 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<option> adapter() {
+        public MonadAdapter<option> adapter() {
             return new OptionAdapter();
         }
 
@@ -208,7 +209,7 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<future> adapter() {
+        public MonadAdapter<future> adapter() {
             return new FutureAdapter();
         }
 
@@ -220,7 +221,7 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<either> adapter() {
+        public MonadAdapter<either> adapter() {
             return new EitherAdapter();
         }
 
@@ -232,7 +233,7 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<tryType> adapter() {
+        public MonadAdapter<tryType> adapter() {
             return new TryAdapter();
         }
 
@@ -241,7 +242,7 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<lazy> adapter() {
+        public MonadAdapter<lazy> adapter() {
             return null;
         }
 
@@ -250,7 +251,7 @@ public interface VavrWitness {
         INSTANCE;
 
         @Override
-        public FunctionalAdapter<hashSet> adapter() {
+        public MonadAdapter<hashSet> adapter() {
             return new TraversableAdapter(INSTANCE){
 
                 @Override

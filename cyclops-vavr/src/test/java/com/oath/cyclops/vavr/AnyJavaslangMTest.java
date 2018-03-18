@@ -11,16 +11,16 @@ import java.util.stream.Collectors;
 
 
 import com.oath.cyclops.types.functor.Transformable;
-import cyclops.async.LazyReact;
 
-import cyclops.collections.mutable.ListX;
-import cyclops.collections.mutable.SortedSetX;
 import cyclops.companion.vavr.Lists;
 import cyclops.companion.vavr.Options;
 import cyclops.companion.vavr.Trys;
+import cyclops.futurestream.LazyReact;
 import cyclops.monads.AnyM;
 import cyclops.monads.Vavr;
 import cyclops.reactive.ReactiveSeq;
+import cyclops.reactive.collections.mutable.ListX;
+import cyclops.reactive.collections.mutable.SortedSetX;
 import org.junit.Test;
 
 
@@ -80,7 +80,7 @@ public class AnyJavaslangMTest {
     public void listFlatMap() {
 
         ListX.of(1, 2)
-             .flatMap(i -> Array.range(i, 4))
+             .concatMap(i -> Array.range(i, 4))
              .forEach(System.out::println);
 
     }
@@ -101,7 +101,7 @@ public class AnyJavaslangMTest {
              .forEach(System.out::println);
 
         ReactiveSeq.of(1, 2, 3, 4)
-                   .flatMapI(i -> Stream.iterate(1, a -> a + 1)
+                   .concatMap(i -> Stream.iterate(1, a -> a + 1)
                                                .take(i))
                    .map(i -> i + 2);
 

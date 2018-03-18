@@ -2,7 +2,6 @@ package cyclops;
 
 import com.oath.cyclops.data.collections.extensions.CollectionX;
 import com.oath.cyclops.types.foldable.To;
-import cyclops.collections.immutable.PersistentMapX;
 import cyclops.collections.vavr.*;
 import io.vavr.Tuple2;
 import io.vavr.collection.*;
