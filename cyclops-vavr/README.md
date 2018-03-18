@@ -1,6 +1,5 @@
 # Vavr Integration
 
-v9.0.0 of cyclops-javaslang requires v0.9.0 of Vavr.
 
 
 ## Articles 
@@ -12,8 +11,8 @@ v9.0.0 of cyclops-javaslang requires v0.9.0 of Vavr.
 ## Get cyclops-javaslang
 
 
-* [![Maven Central : cyclops-vavr](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-vavr/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-vavr)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-vavr/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-vavr)
-* [Javadoc for Cyclops Vavr](http://www.javadoc.io/doc/com.aol.cyclops/cyclops-vavr/)
+* [![Maven Central : cyclops-vavr](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-vavr-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-vavr) 
+* [Javadoc for Cyclops Vavr](http://www.javadoc.io/doc/com.oath.cyclops/cyclops-vavr-integration/)
 
 # Features
 

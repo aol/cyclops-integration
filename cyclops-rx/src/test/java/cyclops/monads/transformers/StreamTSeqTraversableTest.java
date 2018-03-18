@@ -19,13 +19,13 @@ public class StreamTSeqTraversableTest extends AbstractTraversableTest {
 
     @Override
     public <T> Traversable<T> of(T... elements) {
-       return AnyMs.liftM(Observables.of(elements),Witness.reactiveSeq.CO_REACTIVE);
+       return AnyMs.liftM(Observables.of(elements),Witness.reactiveSeq.ITERATIVE);
 
     }
 
     @Override
     public <T> Traversable<T> empty() {
-      return AnyMs.liftM(Observables.empty(),Witness.reactiveSeq.CO_REACTIVE);
+      return AnyMs.liftM(Observables.empty(),Witness.reactiveSeq.ITERATIVE);
     }
 
     @Test

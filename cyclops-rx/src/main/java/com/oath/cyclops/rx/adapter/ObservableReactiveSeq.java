@@ -190,8 +190,8 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public <C extends PersistentCollection<T>, R> ReactiveSeq<R> groupedStatefullyUntil(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
-        return observable(Observables.connectToReactiveSeq(observable).groupedStatefullyUntil(predicate,factory,finalizer));
+    public <C extends PersistentCollection<T>, R> ReactiveSeq<R> groupedUntil(BiPredicate<C, ? super T> predicate, Supplier<C> factory, Function<? super C, ? extends R> finalizer) {
+        return observable(Observables.connectToReactiveSeq(observable).groupedUntil(predicate,factory,finalizer));
     }
 
     @Override
@@ -566,7 +566,7 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public ReactiveSeq<T> appendAll(T value) {
+    public ReactiveSeq<T> append(T value) {
         return observable(Observables.connectToReactiveSeq(observable).appendAll(value));
     }
 
@@ -687,8 +687,8 @@ public class ObservableReactiveSeq<T> implements ReactiveSeq<T> {
     }
 
     @Override
-    public ReactiveSeq<T> append(Iterable<? extends T> other) {
-        return  observable(Observables.connectToReactiveSeq(observable).append(other));
+    public ReactiveSeq<T> appendAll(Iterable<? extends T> other) {
+        return  observable(Observables.connectToReactiveSeq(observable).appendAll(other));
     }
 
     @Override
