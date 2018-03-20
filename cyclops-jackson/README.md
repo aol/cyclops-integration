@@ -8,3 +8,12 @@
 
 
 JSON Serialiazation and Deserialization of Cyclops Control and Data Types
+
+```java
+import com.oath.cyclops.jackson.CyclopsModule;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+ObjectMapper mapper = new ObjectMapper();
+
+mapper = mapper.registerModule(new CyclopsModule());
+```
