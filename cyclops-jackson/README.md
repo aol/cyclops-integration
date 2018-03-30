@@ -3,8 +3,8 @@
 ## Get cyclops-jackson
 
 
-* [![Maven Central : cyclops-rx](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-jackson-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-jackson-integration)  
-* [Javadoc for cyclops-jackson](http://www.javadoc.io/doc/com.oath.cyclops/cyclops-cyclops-jackson-integration)
+* [![Maven Central : cyclops-jackson-integration](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-jackson-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-jackson-integration)  
+* [Javadoc for cyclops-jackson-integration](http://www.javadoc.io/doc/com.oath.cyclops/cyclops-cyclops-jackson-integration)
 
 
 JSON Serialiazation and Deserialization of Cyclops Control and Data Types
