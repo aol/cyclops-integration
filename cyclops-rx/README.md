@@ -4,7 +4,7 @@
 ## Get cyclops-rx-integration
 
 
-* [![Maven Central : cyclops-rx](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-rx-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rx)   [![javadoc.io](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rx/badge.svg)](https://javadocio-badges.herokuapp.com/com.aol.cyclops/cyclops-rx)
+* [![Maven Central : cyclops-rx](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-rx-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-rx-integration)  
 * [Javadoc for cyclops-rx](http://www.javadoc.io/doc/com.oath.cyclops/cyclops-rx-integration)
 
 
