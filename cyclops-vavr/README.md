@@ -11,7 +11,7 @@
 ## Get cyclops-javaslang
 
 
-* [![Maven Central : cyclops-vavr](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-vavr-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aol.cyclops/cyclops-vavr-integration) 
+* [![Maven Central : cyclops-vavr](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-vavr-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.oath.cyclops/cyclops-vavr-integration) 
 * [Javadoc for Cyclops Vavr](http://www.javadoc.io/doc/com.oath.cyclops/cyclops-vavr-integration/)
 
 # Features
