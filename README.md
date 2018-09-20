@@ -20,7 +20,7 @@ cyclops provides a common set of APIs across the major functional libraries for 
 
 ## AnyM : a type safe abstraction across Any Monadic type in Java.
 
-Define ulta-generic code that can be used by types across Vavr, Reactor, cyclops-react, Guava, JDK, Functional Java, RxJava. 
+Define ultra-generic code that can be used by types across Vavr, Reactor, cyclops-react, Guava, JDK, Functional Java, RxJava. 
 
 ```java
 public <W extends WitnessType<W>> AnyMSeq<W,Integer> sumAdjacent(AnyMSeq<W,Integer> sequence){
